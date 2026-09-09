@@ -13,7 +13,46 @@ Last updated: 2026-09-10
 
 ---
 
-## 🔴 CRITICAL STUBS (must be fixed for working generation)
+## 🔴 STUBS FIXED (in this session)
+
+### ✅ #1 `composer_v2.pas` — `_generate_base_bar()` Section Extraction Fixed
+**Before:** Hardcoded `SectionName := 'unknown'; Bars := 4;`
+**After:** Reads real section names and bar counts from `Structure[]` parameter
+```pascal
+var Entry := TSectionDef(Structure[I]);
+SectionName := Entry.FName;
+Bars := Entry.FBars;
+```
+
+### ✅ #5 `midi_engine.pas` — Tempo Now Uses Song.Tempo
+**Before:** Hardcoded `WriteTempoMicroSec(500000)` (always 120 BPM)
+**After:** Reads tempo from song:
+```pascal
+if (ASong <> nil) and (ASong.Tempo > 0) then
+  TempoMicroSec := Round(60000000.0 / ASong.Tempo);
+WriteTempoMicroSec(TempoMicroSec);
+```
+
+### ✅ #4 & #6 `composer_v2.pas` — Flavor Rotation Wired Up
+**Before:** `TMacroComposer.SelectGroove()` returned empty patterns
+**After:** Calls `GenrePlugin.GetSectionFlavors(section, params)` and uses `SelectFlavor()` for rotation:
+```pascal
+var Flavors := GenrePlugin.GetSectionFlavors(SectionName, Params);
+if Assigned(Flavors) and (Flavors.Count > 0) then
+  BasePattern := SelectFlavor(Flavors, BarIndex)
+else
+  BasePattern := nil;
+```
+
+### ✅ #3 `plugin_registry.pas` — `GetStylesForGenre()` Fixed (Already Done Earlier)
+Uses parallel `FGenreStyles[]` metadata array instead of broken late-binding cast.
+
+### ✅ #2 `plugin_registry.pas` — `GetPreferredDrummersForGenre()` Wired Up (Already Done Earlier)
+Parallel `FDrummerPrefs[]` metadata populated correctly in `RegisterDrummerPlugin()`.
+
+---
+
+## 🔴 CRITICAL STUBS REMAINING (must be fixed for working generation)
 
 ### 1. `composer_v2.pas` — `_generate_base_bar()` Returns Empty Pattern
 
