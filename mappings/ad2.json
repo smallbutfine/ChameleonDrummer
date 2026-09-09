@@ -1,0 +1,102 @@
+{
+    "name": "AD2 Master Keymap",
+    "version": "1.0",
+    "description": "Complete AD2 vendor keymap (XLN Audio, June 2021). Source of truth for all drum instruments and articulations.",
+    "source": "Addictive Drums 2 Keymap PDF — XLN Audio",
+    "instruments": {
+        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": 35, "description": "Snare (brushes only) Closed Soft Tap"},
+        "snare_brushes_only_sweep_mute": {"midi_note": 34, "description": "Snare (brushes only) Sweep Mute"},
+        "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": 33, "description": "Snare (brushes only) Sweep: Slow Dark Accent"},
+        "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": 32, "description": "Snare (brushes only) Sweep: Fast Dark Accent"},
+        "snare_brushes_only_sweep_slow_bright_accent": {"midi_note": 31, "description": "Snare (brushes only) Sweep: Slow Bright Accent"},
+        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": 30, "description": "Snare (brushes only) Sweep: Fast Bright Accent"},
+        "snare_brushes_only_sweep_no_accent": {"midi_note": 29, "description": "Snare (brushes only) Sweep: No Accent"},
+        "snare_brushes_only_sweep_short_2": {"midi_note": 28, "description": "Snare (brushes only) Sweep: Short 2"},
+        "snare_brushes_only_sweep_short_1": {"midi_note": 26, "description": "Snare (brushes only) Sweep: Short 1"},
+
+        "kick": {"midi_note": 36, "description": "Kick"},
+
+        "snare_rimshot_open_hit": {"midi_note": 37, "description": "Snare Rimshot Open Hit"},
+        "snare_open_hit_open_lateral_hit": {"midi_note": 38, "description": "Snare Open Hit Open Lateral Hit"},
+        "snare_rimshot_dbl_closed_hit": {"midi_note": 39, "description": "Snare Rimshot (dbl) Closed Hit"},
+        "snare_open_hit_dbl_closed_lateral_hit": {"midi_note": 40, "description": "Snare Open Hit (dbl) Closed Lateral Hit"},
+        "snare_shallow_rimshot_open_shallow_hit": {"midi_note": 41, "description": "Snare Shallow Rimshot Open Shallow Hit"},
+        "snare_side_stick": {"midi_note": 42, "description": "Snare SideStick"},
+        "snare_shallow_hit_closed_shallow_hit": {"midi_note": 43, "description": "Snare Shallow Hit Closed Shallow Hit"},
+        "snare_rimclick_sweep_short_1_dbl": {"midi_note": 44, "description": "Snare RimClick Sweep: Short 1 (dbl)"},
+
+        "ride_1_tip_dbl_hit_softer_dbl": {"midi_note": 45, "description": "Ride 1 Tip (dbl) Hit Softer (dbl)"},
+        "cymbal_1_hit_dbl": {"midi_note": 46, "description": "Cymbal 1 Hit (dbl)"},
+
+        "flexi_1_hit_a": {"midi_note": 47, "description": "Flexi 1 Hit A"},
+        "hihat_pedal_closed": {"midi_note": 48, "description": "HiHat Pedal Closed"},
+        "hihat_closed_1_tip_closed_1_hit": {"midi_note": 49, "description": "HiHat Closed 1 Tip Closed 1 Hit"},
+        "hihat_closed_1_shaft_closed_1_hit_dbl": {"midi_note": 50, "description": "HiHat Closed 1 Shaft Closed 1 Hit (dbl)"},
+
+        "hihat_closed_2_tip_closed_2_hit": {"midi_note": 51, "description": "HiHat Closed 2 Tip Closed 2 Hit"},
+        "hihat_closed_2_shaft_closed_2_hit_dbl": {"midi_note": 52, "description": "HiHat Closed 2 Shaft Closed 2 Hit (dbl)"},
+
+        "hihat_closed_bell": {"midi_note": 53, "description": "HiHat Closed Bell"},
+
+        "hihat_open_a": {"midi_note": 54, "description": "HiHat Open A"},
+        "hihat_open_b": {"midi_note": 55, "description": "HiHat Open B"},
+        "hihat_open_c": {"midi_note": 56, "description": "HiHat Open C"},
+        "hihat_open_d": {"midi_note": 57, "description": "HiHat Open D"},
+
+        "hihat_open_bell": {"midi_note": 58, "description": "HiHat Open Bell"},
+        "hihat_pedal_open": {"midi_note": 59, "description": "HiHat Pedal Open"},
+
+        "ride_1_tip_hit_softer": {"midi_note": 60, "description": "Ride 1 Tip Hit Softer"},
+        "ride_1_bell": {"midi_note": 61, "description": "Ride 1 Bell"},
+        "ride_1_shaft_hit_stronger": {"midi_note": 62, "description": "Ride 1 Shaft Hit Stronger"},
+        "ride_1_choke": {"midi_note": 63, "description": "Ride 1 Choke"},
+
+        "tom_4_open_hit": {"midi_note": 65, "description": "Tom 4 Open Hit"},
+        "tom_4_rimshot_open_hit_dbl": {"midi_note": 66, "description": "Tom 4 Rimshot Open Hit (dbl)"},
+        "tom_3_open_hit": {"midi_note": 67, "description": "Tom 3 Open Hit"},
+        "tom_3_rimshot_open_hit_dbl": {"midi_note": 68, "description": "Tom 3 Rimshot Open Hit (dbl)"},
+        "tom_2_open_hit": {"midi_note": 69, "description": "Tom 2 Open Hit"},
+        "tom_2_rimshot_open_hit_dbl": {"midi_note": 70, "description": "Tom 2 Rimshot Open Hit (dbl)"},
+        "tom_1_open_hit": {"midi_note": 71, "description": "Tom 1 Open Hit"},
+        "tom_1_rimshot_open_hit_dbl": {"midi_note": 72, "description": "Tom 1 Rimshot Open Hit (dbl)"},
+
+        "flexi_1_hit_b": {"midi_note": 73, "description": "Flexi 1 Hit B"},
+        "flexi_1_hit_c": {"midi_note": 74, "description": "Flexi 1 Hit C"},
+
+        "snare_sticks": {"midi_note": 75, "description": "Snare Sticks"},
+
+        "flexi_1_hit_d": {"midi_note": 76, "description": "Flexi 1 Hit D"},
+
+        "cymbal_1_hit": {"midi_note": 77, "description": "Cymbal 1 Hit"},
+        "cymbal_1_choke": {"midi_note": 78, "description": "Cymbal 1 Choke"},
+        "cymbal_2_hit": {"midi_note": 79, "description": "Cymbal 2 Hit"},
+        "cymbal_2_choke": {"midi_note": 80, "description": "Cymbal 2 Choke"},
+
+        "cymbal_3_hit": {"midi_note": 81, "description": "Cymbal 3 Hit"},
+        "cymbal_3_choke": {"midi_note": 82, "description": "Cymbal 3 Choke"},
+
+        "ride_2_tip_hit_softer": {"midi_note": 84, "description": "Ride 2 Tip Hit Softer"},
+        "ride_2_bell": {"midi_note": 85, "description": "Ride 2 Bell"},
+        "ride_2_shaft_hit_stronger": {"midi_note": 86, "description": "Ride 2 Shaft Hit Stronger"},
+        "ride_2_choke": {"midi_note": 87, "description": "Ride 2 Choke"},
+
+        "cymbal_4_hit": {"midi_note": 89, "description": "Cymbal 4 Hit"},
+        "cymbal_4_choke": {"midi_note": 90, "description": "Cymbal 4 Choke"},
+
+        "cymbal_5_hit": {"midi_note": 91, "description": "Cymbal 5 Hit"},
+        "cymbal_5_choke": {"midi_note": 92, "description": "Cymbal 5 Choke"},
+
+        "cymbal_6_hit": {"midi_note": 93, "description": "Cymbal 6 Hit"},
+        "cymbal_6_choke": {"midi_note": 94, "description": "Cymbal 6 Choke"},
+
+        "flexi_2_hit_a": {"midi_note": 95, "description": "Flexi 2 Hit A"},
+        "flexi_2_hit_b": {"midi_note": 96, "description": "Flexi 2 Hit B"},
+        "flexi_2_hit_c": {"midi_note": 97, "description": "Flexi 2 Hit C"},
+        "flexi_2_hit_d": {"midi_note": 98, "description": "Flexi 2 Hit D"},
+
+        "flexi_3_hit_a": {"midi_note": 100, "description": "Flexi 3 Hit A"},
+        "flexi_3_hit_b": {"midi_note": 101, "description": "Flexi 3 Hit B"},
+        "flexi_3_hit_c": {"midi_note": 102, "description": "Flexi 3 Hit C"},
+        "flexi_3_hit_d": {"midi_note": 103, "description": "Flexi 3 Hit D"}
+    }
+}

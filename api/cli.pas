@@ -202,27 +202,23 @@ begin
     Exit;
   end;
 
-  DrumKit := TDrumKit.Create;
-  try
-    // Load keymap from JSON files dynamically
-    DrumKit.SetKeymap(Args.Mapping);
+  // Load keymap from JSON files dynamically via factory method
+  DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
 
-    Song := FGenerator.CreateSong(
-      Args.Genre,
-      Args.Style,
-      Args.Tempo,
-      DrumKit
-    );
+  Song := FGenerator.CreateSong(
+    Args.Genre,
+    Args.Style,
+    Args.Tempo,
+    nil,   // AStructure - use genre default
+    DrumKit // Pass pre-loaded keymap
+  );
 
-    // Save MIDI output
-    if (Args.OutputFile = '') then
-      Args.OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping]);
+  // Save MIDI output
+  if (Args.OutputFile = '') then
+    Args.OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping]);
 
-    FGenerator.ExportMIDI(Song, Args.OutputFile);
-    Writeln(Format('Song generated: %s (mapping: %s)', [Args.OutputFile, Args.Mapping]));
-  finally
-    DrumKit.Free;
-  end;
+  FGenerator.ExportMIDI(Song, Args.OutputFile);
+  Writeln(Format('Song generated: %s (mapping: %s)', [Args.OutputFile, Args.Mapping]));
 end;
 
 procedure TCLIInterface.HandlePattern(const Args: TCLIArgs);
@@ -236,20 +232,16 @@ begin
     Exit;
   end;
 
-  DrumKit := TDrumKit.Create;
-  try
-    DrumKit.SetKeymap(Args.Mapping);
+  // Load keymap from JSON files dynamically via factory method
+  DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
 
-    Pattern := FGenerator.GeneratePattern(Args.Genre, Args.Style, DrumKit);
+  Pattern := FGenerator.GeneratePattern(Args.Genre, Args.Style, DrumKit);
 
-    if (Args.OutputFile = '') then
-      Args.OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style]);
+  if (Args.OutputFile = '') then
+    Args.OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style]);
 
-    FGenerator.ExportPatternMIDI(Pattern, Args.OutputFile, Args.Tempo);
-    Writeln(Format('Pattern generated: %s', [Args.OutputFile]));
-  finally
-    DrumKit.Free;
-  end;
+  FGenerator.ExportPatternMIDI(Pattern, Args.OutputFile, Args.Tempo);
+  Writeln(Format('Pattern generated: %s', [Args.OutputFile]));
 end;
 
 procedure TCLIInterface.HandleList(const Args: TCLIArgs);

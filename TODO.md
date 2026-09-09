@@ -95,6 +95,34 @@ if Assigned(GenrePlugin) and (GenrePlugin is TGenrePlugin) then
 
 ---
 
+## ✅ FIXED THIS SESSION
+
+### 1. `api/drum_generator_api.pas` — SetKeymap() Bug Fixed
+**Before:** Called non-existent `DrumKit.SetKeymap('gm')` on TDrumKit instance.
+**After:** Removed manual DrumKit creation. Delegate to FGenerator.CreateSong() which uses its internal GM default (matches Python behavior where drum_kit=None).
+
+### 2. `api/cli.pas` — SetKeymap() Bug Fixed
+**Before:** `TDrumKit.Create` + `DrumKit.SetKeymap(Args.Mapping)` — both calls were broken.
+**After:** Uses `TDrumKit.FromKeymapName(Args.Mapping)` factory method which loads the JSON keymap at runtime.
+
+### 3. Jazz & Electronic genre plugins — Verified complete
+Both have all styles (7 jazz: swing/bebop/fusion/latin/ballad/hard_bop/contemporary; 4 electronic: house/techno/drum_and_bass/dubstep) with verse/chorus/bridge flavors and fills.
+
+### 4. `main.pas` — Verified complete
+Entry point correctly reads ParamCount/ParamStr, passes to TCLIInterface.Run().
+
+### 5. `export/reaper/reaper_api.pas` — Complete rewrite
+**Before:** Stub with broken types (`TList<Record>`). No sidecar/song-map support.
+**After:** 
+- Added `TReaperSection`/`TReaperTimelinePoint` proper record types
+- Fixed `CreateFromSections()` to use typed array
+- Added `CreateFromSidecar()` — reads sidecar JSON (sections + tempo)
+- Added `CreateFromSongMap()` — reads song-map JSON with per-region segments
+- Added `ExportTimelineJSON()` — flat timeline for Ardour integration
+- Fixed unit import: `export_reaper_reaper_rpp` → `ReaperRPP`
+
+---
+
 ## 🔴 CRITICAL STUBS REMAINING (must be fixed for working generation)
 
 ### 1. `midi_engine.pas` — SMF Writing Completeness

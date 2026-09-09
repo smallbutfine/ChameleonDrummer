@@ -78,17 +78,9 @@ end;
 
 function TDrumGeneratorAPI.CreateSong(const AGenre, AStyle: String; ATempo: Integer = 120;
   const ADrummer: String = ''): TSong;
-var
-  DrumKit: TDrumKit;
 begin
-  DrumKit := TDrumKit.Create;
-  try
-    DrumKit.SetKeymap('gm'); // Default to GM
-
-    Result := FGenerator.CreateSong(AGenre, AStyle, ATempo, DrumKit);
-  finally
-    DrumKit.Free;
-  end;
+  // Let the generator create its own DrumKit with default GM keymap.
+  Result := FGenerator.CreateSong(AGenre, AStyle, ATempo);
 end;
 
 function TDrumGeneratorAPI.MetalSong(const AStyle: String; ATempo: Integer = 155;

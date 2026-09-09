@@ -1,0 +1,102 @@
+{
+    "name": "EZDrummer 3 — Drum Key",
+    "version": "1.0",
+    "description": "Complete EZD3 keymap. All zones mapped from Toontrack's standard mapping documentation.",
+    "source": "EZDrummer 3 User Guide / MIDI Mapping Reference — Toontrack",
+    "instruments": {
+        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_mute": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_slow_bright_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_no_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_short_2": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_brushes_only_sweep_short_1": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "kick": {"midi_note": 36, "description": "Kick Drum 1 (EZD3 default)"},
+
+        "snare_rimshot_open_hit": {"midi_note": 37, "description": "Rimshot Open Hit (EZD3 standard)"},
+        "snare_open_hit_open_lateral_hit": {"midi_note": 38, "description": "Snare Open Hit / Open Lateral Hit (EZD3 default)"},
+        "snare_rimshot_dbl_closed_hit": {"midi_note": 39, "description": "Rimshot Closed Hit (dbl) (EZD3 standard)"},
+        "snare_open_hit_dbl_closed_lateral_hit": {"midi_note": 40, "description": "Snare Open Hit (dbl) / Closed Lateral Hit (EZD3 standard)"},
+        "snare_shallow_rimshot_open_shallow_hit": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_side_stick": {"midi_note": 42, "description": "Side Stick / Cross Stick (EZD3 standard)"},
+        "snare_shallow_hit_closed_shallow_hit": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "snare_rimclick_sweep_short_1_dbl": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "ride_1_tip_dbl_hit_softer_dbl": {"midi_note": 60, "description": "Ride Tip Hit Softer (EZD3 note 60)"},
+        "cymbal_1_hit_dbl": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "flexi_1_hit_a": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "hihat_pedal_closed": {"midi_note": 44, "description": "Pedal Closed Hi-Hat (EZD3 note 44)"},
+        "hihat_closed_1_tip_closed_1_hit": {"midi_note": 61, "description": "Closed HH Tip / Tight HH Tip (EZD3 extended HH)"},
+        "hihat_closed_1_shaft_closed_1_hit_dbl": {"midi_note": 50, "description": "Closed HH Shaft / Tight HH Edge (EZD3 extended HH)"},
+
+        "hihat_closed_2_tip_closed_2_hit": {"midi_note": 90, "description": "Tight HH Tip Extended (EZD3 note 90)"},
+        "hihat_closed_2_shaft_closed_2_hit_dbl": {"midi_note": 91, "description": "Tight HH Shaft / Edge Extended (EZD3 note 91)"},
+
+        "hihat_closed_bell": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "hihat_open_a": {"midi_note": 54, "description": "Open HH A / Open B Low (EZD3 standard)"},
+        "hihat_open_b": {"midi_note": 56, "description": "Open HH B (EZD3 note 56)"},
+        "hihat_open_c": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "hihat_open_d": {"midi_note": 57, "description": "Open HH D / Full Open (EZD3 standard)"},
+
+        "hihat_open_bell": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "hihat_pedal_open": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "ride_1_tip_hit_softer": {"midi_note": 60, "description": "Ride Tip Hit Softer (EZD3 note 60)"},
+        "ride_1_bell": {"midi_note": 61, "description": "Ride Bell (EZD3 note 61)"},
+        "ride_1_shaft_hit_stronger": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "ride_1_choke": {"midi_note": 63, "description": "Ride Choke (EZD3 note 63)"},
+
+        "tom_4_open_hit": {"midi_note": 43, "description": "Floor Tom / Tom 4 Open Hit (EZD3 standard)"},
+        "tom_4_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "tom_3_open_hit": {"midi_note": 47, "description": "Tom 1 / Mid Tom Open Hit (EZD3 standard)"},
+        "tom_3_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "tom_2_open_hit": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "tom_2_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "tom_1_open_hit": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "tom_1_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "flexi_1_hit_b": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_1_hit_c": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "snare_sticks": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "flexi_1_hit_d": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "cymbal_1_hit": {"midi_note": 49, "description": "Crash Cymbal 1 / Edge Hit (EZD3 standard)"},
+        "cymbal_1_choke": {"midi_note": 68, "description": "Crash Choke D (EZD3 note 68)"},
+        "cymbal_2_hit": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "cymbal_2_choke": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "cymbal_3_hit": {"midi_note": 51, "description": "Ride Cymbal / Ride Bell (EZD3 note 51)"},
+        "cymbal_3_choke": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "ride_2_tip_hit_softer": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "ride_2_bell": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "ride_2_shaft_hit_stronger": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "ride_2_choke": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "cymbal_4_hit": {"midi_note": 52, "description": "Chinese Cymbal (EZD3 note 52)"},
+        "cymbal_4_choke": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "cymbal_5_hit": {"midi_note": null, "description": "Not in EZD3 standard"},
+        "cymbal_5_choke": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "cymbal_6_hit": {"midi_note": 55, "description": "Splash Cymbal (EZD3 note 55)"},
+        "cymbal_6_choke": {"midi_note": null, "description": "Not in EZD3 standard"},
+
+        "flexi_2_hit_a": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_2_hit_b": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_2_hit_c": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_2_hit_d": {"midi_note": null, "description": "Not in EZD3 core kit"},
+
+        "flexi_3_hit_a": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_3_hit_b": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_3_hit_c": {"midi_note": null, "description": "Not in EZD3 core kit"},
+        "flexi_3_hit_d": {"midi_note": null, "description": "Not in EZD3 core kit"}
+    }
+}
