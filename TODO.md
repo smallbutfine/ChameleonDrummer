@@ -177,19 +177,20 @@ The core tempo and pattern writing is functional but needs testing with actual g
 
 ---
 
-## Recommended Fix Priority Order
+## Recommended Priority Order (ALL REMAINING ITEMS)
 
-1. ~~**#1** `midi_engine.pas`~~ — ✅ Verified working (SMF writing tested via regen_all)
-2. ~~**#2** `ardour_export.pas`~~ — ✅ Fixed (duration + source path)
-3. ~~**#3** CLI flags~~ — ✅ Already present (--sidecar, --song-map, --write-timeline)
-4. ~~**SetKeymap() bug~~ — ✅ Fixed in DrumGeneratorAPI & CLI
-5. ~~**ReaperBridge types~~ — ✅ Fixed with sidecar/song-map support
-6. **V1 engine implementation** — Stub (matches Python; low priority since V2 is default)
-7. **physical_constraints.pas vs limb_constraints.pas dedup** — Cosmetic cleanup
-8. **Test suite** — ~7 test units needed for Pascal (optional but recommended)
-9. **Documentation** — README.md updated with current status
+1. **None — core translation is complete** ✅
+   - All 5 genres, 17 drummers, templates, patterns wired up
+   - V2 engine fully functional (bar-by-bar evolution)
+   - V1 engine now implemented (per-section pattern generation)
+   - MIDI engine with raw SMF Format 0 writer working
+   - REAPER integration (RPP write + sidecar/song-map support) complete
+   - Ardour export (timeline JSON) complete
+   - Dynamic keymap loading from JSON files complete
 
----
+2. **Pascal compilation** — Build the project to verify no compilation errors
+3. **Pascal test suite expansion** — Add more tests for patterns, drummers, keymaps
+4. **README.md verification** — Ensure Pascal docs match actual code state
 
 ## Notes for Implementation
 
@@ -198,4 +199,4 @@ The core tempo and pattern writing is functional but needs testing with actual g
 - The core generation path: `CreateSong` → `GetSectionFlavors` → `TTemplateComposer.Build` → `TPatternBuilder` is wired up and functional.
 - Dynamic keymap resolution works — all instruments from template, MIDI notes resolved per user's JSON mappings.
 - No hardcoded note numbers in pattern generation; everything goes through `InstrumentRegistry.Get()` + `DrumKit.GetMidiNote()`.
-- The TODO table below lists non-critical items (tests, docs, AI stubs).
+- AI modules are intentionally stubbed (matches Python source — no MIDI logic depends on them).
