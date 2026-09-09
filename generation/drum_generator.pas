@@ -78,6 +78,11 @@ private
   procedure LoadPlugins;
   function GetGenreDefaultStructure(const Genre: string): TArray<TStructureEntry>;
 
+  { ── Private helpers for V1 engine. */
+  function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit = nil): TPattern;
+  procedure _GenerateVariations(const APattern: TPattern; out AResult: TList<TPatternVariation>; const AParams: TGenerationParameters);
+  procedure _GenerateFills(const Genre: string; out AResult: TList<TFill>; const AParams: TGenerationParameters);
+
 public
   constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar). */
   destructor Destroy; override;
@@ -428,18 +433,28 @@ function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer =
 { Public entry — selects V1 (static) or V2 (bar-by-bar). */
 var
   Engine: string;
+  Tempo: Integer;
+  Structure: TArray<TStructureEntry>;
+  Params: TGenerationParameters;
+  SongName: String;
+  SectionName: String;
+  Bars: Integer;
+  Pattern: TPattern;
+  Section: TSection;
+  Variations: TList<TPatternVariation>;
+  Fills: TList<TFill>;
 begin
   { Resolve engine. */
   Engine := AEngineOverride;
   if Engine = '' then
     Engine := FComposerEngine;
 
-  { Resolve tempo. */
-  var Tempo: Integer := ATempo;
+  { Resolve tempo — use genre-aware default when zero. */
+  Tempo := ATempo;
   if Tempo = 0 then
     Tempo := GetDefaultBpm(Genre, Style);
 
-  { Update drum kit / MIDI engine. */
+  { Update drum kit / MIDI engine if new kit provided. */
   if Assigned(ADrumKit) then
   begin
     FDrumKit := ADrumKit;
@@ -450,17 +465,64 @@ begin
   if Engine = 'v2' then
     Exit(CreateSongV2(Genre, Style, Tempo, AStructure, ADrumKit));
 
-  { V1: static pattern reuse (original behavior — stub for now). */
-  { This mirrors the original create_song_v1() that reused one pattern for all bars. */
-  var Params := TGenerationParameters.Create(Genre, Style);
-  var SongName := Genre + '_' + Style + '_song';
+  { ── Engine V1: Static pattern reuse — per-section pattern generation. ── }
+  Params := TGenerationParameters.Create(Genre, Style);
+  SongName := Genre + '_' + Style + '_song';
   Result := TSong.Create(SongName, Tempo);
   Result.FGlobalParameters := Params;
 
-  { Stub: create one section with a placeholder pattern. */
-  { Full V1 impl would query the genre plugin for its single pattern and repeat. */
-  var Section := TSection.Create('full', TPattern.Create(Genre + '_' + Style), Length(AStructure));
-  Result.Sections.Add(Section);
+  { Use default structure if none provided. */
+  if (AStructure = nil) or (Length(AStructure) = 0) then
+    Structure := GetGenreDefaultStructure(Genre)
+  else
+    Structure := AStructure;
+
+  for var SecIdx := Low(Structure) to High(Structure) do
+  begin
+    SectionName := Structure[SecIdx].Name;
+    Bars := Structure[SecIdx].Bars;
+
+    { Generate pattern for this section. */
+    Pattern := GeneratePattern(Genre, SectionName, TDrumKit.Create);
+    try
+      if Assigned(Pattern) then
+      begin
+        Section := TSection.Create(SectionName, Pattern, Bars);
+        Result.Sections.Add(Section);
+
+        { Add variations for high complexity. */
+        if Params.FComplexity > 0.5 then
+        begin
+          Variations := TList<TPatternVariation>.Create;
+          try
+            _GenerateVariations(Pattern, Variations, Params);
+            Section.FVariations.AddRange(Variations);
+          finally
+            Variations.Free;
+          end;
+        end;
+
+        { Add fills for this section. */
+        Fills := TList<TFill>.Create;
+        try
+          _GenerateFills(Genre, Fills, Params);
+          Section.FFills.AddRange(Fills);
+        finally
+          Fills.Free;
+        end;
+      end
+      else
+      begin
+        { Pattern generation failed — create empty section. */
+        Section := TSection.Create(SectionName, TPattern.Create(''), Bars);
+        Result.Sections.Add(Section);
+      end;
+    except
+      on E: Exception do
+        Writeln('[Warning] Failed to generate section "' + SectionName + '": ', E.Message);
+        { Continue with next section. */
+    end;
+  end;
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
@@ -473,6 +535,67 @@ procedure TDrumGenerator.SavePatternMidi(const APattern: TPattern; const AOutput
 begin
   if not Assigned(FMidiEngine) then Exit;
   FMidiEngine.SavePattern(APattern, AOutputPath, FDrumKit);
+end;
+
+{ ── V1 helpers — pattern generation, variations, fills. ── }
+
+function TDrumGenerator.GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit): TPattern;
+var
+  GenrePlugin: TObject;
+  Params: TGenerationParameters;
+begin
+  Result := nil;
+
+  try
+    if not Assigned(FPluginManager) then Exit;
+
+    { Query genre plugin by name. */
+    GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
+    if not Assigned(GenrePlugin) then Exit;
+
+    { Delegate to genre plugin's pattern generator. */
+    Params := TGenerationParameters.Create(Genre, 'default');
+    try
+      Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
+    finally
+      Params.Free;
+    end;
+  except
+    on E: Exception do
+      Writeln('[Warning] GeneratePattern failed: ', E.Message);
+  end;
+end;
+
+procedure TDrumGenerator._GenerateVariations(const APattern: TPattern; out AResult: TList<TPatternVariation>; const AParams: TGenerationParameters);
+begin
+  { V1 variations — simple pattern copy. */
+  AResult := TList<TPatternVariation>.Create;
+  
+  if not Assigned(APattern) then Exit;
+  
+  var VarName := APattern.Name + '_variation';
+  AResult.Add(TPatternVariation.Create('variation', VarName, 1.0));
+end;
+
+procedure TDrumGenerator._GenerateFills(const Genre: string; out AResult: TList<TFill>; const AParams: TGenerationParameters);
+var
+  GenrePlugin: TObject;
+begin
+  { V1 fills — get common fills from genre plugin. */
+  AResult := TList<TFill>.Create;
+  
+  try
+    GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
+    if not Assigned(GenrePlugin) then Exit;
+    
+    { Get common fills from genre plugin. */
+    var CommonFills := (GenrePlugin as TGenrePlugin).GetCommonFills;
+    if Assigned(CommonFills) and (CommonFills.Count > 0) then
+      AResult.AddRange(CommonFills);
+  except
+    on E: Exception do
+      Writeln('[Warning] _GenerateFills failed: ', E.Message);
+  end;
 end;
 
 end.

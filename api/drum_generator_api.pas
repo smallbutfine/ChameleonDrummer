@@ -90,16 +90,8 @@ begin
 end;
 
 function TDrumGeneratorAPI.GeneratePattern(const AGenre, AStyle: String): TPattern;
-var
-  DrumKit: TDrumKit;
 begin
-  DrumKit := TDrumKit.Create;
-  try
-    DrumKit.SetKeymap('gm');
-    Result := FGenerator.GeneratePattern(AGenre, AStyle, DrumKit);
-  finally
-    DrumKit.Free;
-  end;
+  Result := FGenerator.GeneratePattern(AGenre, 'verse', nil);
 end;
 
 procedure TDrumGeneratorAPI.SaveAsMIDI(ASong: TSong; const AFileName: String);
