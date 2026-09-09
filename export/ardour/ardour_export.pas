@@ -10,7 +10,7 @@ unit ArdourExport;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections;
+  Classes, SysUtils, Generics.Collections, song;
 
 type
   TArdourSection = record
@@ -35,8 +35,10 @@ type
     FSamplesPerSecond: Integer;
     FSections: TList<TArdourSection>;
     FMIDIMSecPerBeat: Cardinal;
-    FMIDIFileName: String;
+    FMIDIFileName: String; { Display name for Source reference. */
+    FMIDISourcePath: String; { Actual path where MIDI file already exists. */
     FMIDITotalBars: Integer;
+    FMIDIDurationSeconds: Double; // Total duration of song in seconds. */
 
     function CalcMIDISeconds: Double;
     function GenerateMarkerXML: String;
@@ -48,6 +50,7 @@ type
     destructor Destroy; override;
 
     procedure SetMIDIFromSong(ASong: TSong);
+    procedure SetMIDISourceFile(const APath: String); { Set actual MIDI file path (for Source XML). */
     procedure AddSection(const AName: String; AStartSample, AEndSample: Int64; AIsMarker: Boolean = True);
     procedure ClearSections;
 
@@ -63,7 +66,9 @@ begin
   FSamplesPerSecond := ASamplesPerSecond;
   FMIDIMSecPerBeat := 500000; // Default 120 BPM
   FMIDIFileName := '';
+  FMIDISourcePath := '';
   FMIDITotalBars := 0;
+  FMIDIDurationSeconds := 0.0;
   FSections := TList<TArdourSection>.Create;
 end;
 
@@ -101,6 +106,16 @@ begin
   end;
 
   FMIDITotalBars := Round(CumulativeBeats);
+  
+  // Use song's own duration calculation (accounts for per-segment tempo/time sig changes)
+  FMIDIDurationSeconds := ASong.TotalDurationSeconds;
+end;
+
+procedure TArdourSessionExporter.SetMIDISourceFile(const APath: String);
+begin
+  { Set the actual filesystem path where the MIDI file already exists.
+    This is used for Source XML reference and copying to interchange/. */
+  FMIDISourcePath := APath;
 end;
 
 procedure TArdourSessionExporter.AddSection(const AName: String; AStartSample, AEndSample: Int64; AIsMarker: Boolean);
@@ -154,7 +169,9 @@ var
   TrackXML: String;
   MIDILengthSecs: Double;
 begin
-  MIDILengthSecs := CalcMIDISeconds();
+  // Use song's total duration (set by SetMIDIFromSong) for region length.
+  MIDILengthSecs := FMIDIDurationSeconds;
+  if (MIDILengthSecs <= 0) then Exit(''); { Not initialized — caller forgot SetMIDIFromSong. */
 
   // Generate track XML for MIDI track
   var Track: TArdourTrack;
@@ -193,7 +210,7 @@ end;
 function TArdourSessionExporter.ExportToFile(const AOutputPath: String): Boolean;
 var
   SessionDir, SessionFile: String;
-  SessionContent, MIDIFullPath: String;
+  SessionContent, MIDIDestPath: String;
 begin
   Result := False;
 
@@ -207,13 +224,10 @@ begin
   if not DirectoryExists(InterchangeDir) then
     ForceDirectories(InterchangeDir);
 
-  // Copy MIDI file to session interchange directory
-  MIDIFullPath := AOutputPath + FSessionName + PathDelim + FMIDIFileName;
-  if FileExists(MIDIFullPath) then
-  begin
-    // Use SysUtils.FileCopy with correct signature: Source, Dest, Replace
-    SysUtils.FileCopy(MIDIFullPath, InterchangeDir + PathDelim + FMIDIFileName, True);
-  end;
+  // Copy MIDI file to session interchange directory (only if source exists)
+  MIDIDestPath := IncludeTrailingPathDelimiter(InterchangeDir) + FMIDIFileName;
+  if FileExists(FMIDISourcePath) then
+    SysUtils.FileCopy(FMIDISourcePath, MIDIDestPath, True);
 
   // Generate and write session XML
   SessionFile := IncludeTrailingPathDelimiter(AOutputPath) + FSessionName + PathDelim + FSessionName + '.ardour';

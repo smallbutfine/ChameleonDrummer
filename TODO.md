@@ -7,8 +7,8 @@ Last updated: 2026-09-10
 | Metric | Value |
 |--------|-------|
 | Units completed | 54 / 61 (~88%) |
-| Stubs fixed this session | 7 files (drum_generator, composer_v2, templates, plugin_registry) |
-| Remaining stubs | **3** across 2 files |
+| Stubs fixed this session | 8 files (drum_generator, composer_v2, templates, ardour_export) |
+| Remaining stubs | **2** across 2 files |
 | Non-critical remaining | ~7 units (tests, docs, examples) |
 
 ---
@@ -102,11 +102,6 @@ The core tempo and pattern writing is functional but needs testing with actual g
 
 **Action needed:** Run regen_all and verify MIDI files contain proper patterns for all genres/drummers.
 
-### 2. `ardour_export.pas` — MIDI Duration Calculation
-`CalcMIDISeconds` uses uninitialized `FMIDITotalBars`.
-
-**Action needed:** Accept duration from caller or parse SMF file header directly.
-
 ---
 
 ## 🟡 MEDIUM PRIORITY (functional but incomplete)
@@ -120,8 +115,8 @@ The core tempo and pattern writing is functional but needs testing with actual g
 ### 10. `composer_v2.pas` — Intensity Curve Interpolation
 **Status:** Functional, matches Python logic. **No change needed.**
 
-### 11. `ardour_export.pas` — MIDI File Path Handling
-**Action needed:** Accept actual MIDI file path as a parameter from the calling context.
+### 11. `ardour_export.pas` — MIDI Source Path Handling (FIXED)
+**Status:** Fixed — `FMIDISourcePath` set via new `SetMIDISourceFile()` method; `FMIDIDurationSeconds` set from `ASong.TotalDurationSeconds`. No stale field calculation.
 
 ---
 
