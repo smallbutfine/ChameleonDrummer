@@ -6,10 +6,10 @@ Last updated: 2026-09-10
 
 | Metric | Value |
 |--------|-------|
-| Units completed | 54 / 61 (~88%) |
-| Stubs fixed this session | 8 files (drum_generator, composer_v2, templates, ardour_export) |
-| Remaining stubs | **2** across 2 files |
-| Non-critical remaining | ~7 units (tests, docs, examples) |
+| **Pascal units complete** | **~57 / 61 (~93%)** |
+| Critical bugs fixed | SetKeymap() in API/CLI, ReaperBridge types |
+| Remaining stubs | **4**: V1 engine, physical_constraints dedup, test suite, AI modules (intentionally stubbed) |
+| Feature parity | **Core generation + REAPER integration complete** |
 
 ---
 
@@ -167,9 +167,15 @@ The core tempo and pattern writing is functional but needs testing with actual g
 
 ## Recommended Fix Priority Order
 
-1. **#1** `midi_engine.pas` — Verify SMF writing with actual generated songs (run regen_all)
-2. **#2** `ardour_export.pas` — Fix MIDI duration calc if needed for Ardour integration
-3. **#3** CLI argument parsing in `main.pas` — Add `--sidecar`, `--song-map`, `--write-timeline`
+1. ~~**#1** `midi_engine.pas`~~ — ✅ Verified working (SMF writing tested via regen_all)
+2. ~~**#2** `ardour_export.pas`~~ — ✅ Fixed (duration + source path)
+3. ~~**#3** CLI flags~~ — ✅ Already present (--sidecar, --song-map, --write-timeline)
+4. ~~**SetKeymap() bug~~ — ✅ Fixed in DrumGeneratorAPI & CLI
+5. ~~**ReaperBridge types~~ — ✅ Fixed with sidecar/song-map support
+6. **V1 engine implementation** — Stub (matches Python; low priority since V2 is default)
+7. **physical_constraints.pas vs limb_constraints.pas dedup** — Cosmetic cleanup
+8. **Test suite** — ~7 test units needed for Pascal (optional but recommended)
+9. **Documentation** — README.md updated with current status
 
 ---
 
