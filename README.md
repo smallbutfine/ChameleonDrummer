@@ -22,8 +22,8 @@ fpc -Mobjfpc -O2 main.pas
 # This produces: midi_drums.exe (Windows) or midi_drums (Linux/macOS)
 
 # Run
-./midi_drums --help
-./midi_drums generate --genre metal --style doom --tempo 75 --mapping ad2 --output song.mid
+./chameleondrummer --help
+./chameleondrummer generate --genre metal --style doom --tempo 75 --mapping ad2 --output song.mid
 ```
 
 ### Include Path Setup
@@ -65,23 +65,23 @@ Or open `main.lpi` in Lazarus IDE and click **Compile**.
 
 ```bash
 # Generate a complete song
-midi_drums generate --genre metal --style doom --tempo 75 --mapping ad2 --output doom.mid
+chameleondrummer generate --genre metal --style doom --tempo 75 --mapping ad2 --output doom.mid
 
 # Generate with different mapping
-midi_drums generate --genre rock --style classic --drummer bonham --mapping gm --output rock_gm.mid
+chameleondrummer generate --genre rock --style classic --drummer bonham --mapping gm --output rock_gm.mid
 
 # List available options
-midi_drums list genres
-midi_drums list styles --genre metal
-midi_drums list drummers
+chameleondrummer list genres
+chameleondrummer list styles --genre metal
+chameleondrummer list drummers
 
 # Show system info
-midi_drums info
+chameleondrummer info
 ```
 
 ### Keymap Selection
 
-Mappings are loaded **dynamically** from JSON files in `midi_drums/mappings/`. The keymap filename stem becomes the CLI parameter:
+Mappings are loaded **dynamically** from JSON files in `chameleondrummer/mappings/`. The keymap filename stem becomes the CLI parameter:
 
 | Mapping File | CLI Parameter | Notes |
 |-------------|---------------|-------|
@@ -109,7 +109,7 @@ Mappings are loaded **dynamically** from JSON files in `midi_drums/mappings/`. T
 
 **There are no hardcoded MIDI notes anywhere in the Pascal code.** All note resolution flows through:
 
-1. **Template (master vocabulary)**: `midi_drums/mappings/template.json` defines ALL possible instruments
+1. **Template (master vocabulary)**: `chameleondrummer/mappings/template.json` defines ALL possible instruments
 2. **Keymap JSON files**: Each `.json` maps instrument names to MIDI notes for a specific drum kit
 3. **InstrumentRegistry**: Resolves `"kick"` → MIDI note at runtime based on selected keymap
 
@@ -177,10 +177,10 @@ cat main.cfg
 fpc -Mobjfpc -O2 -vi main.pas
 
 # 3. Test CLI help
-./midi_drums --help
+./chameleondrummer --help
 
 # 4. Generate test song (requires midi_drums/mappings/ directory)
-./midi_drums generate --genre metal --style doom --tempo 75 --mapping gm --output test.mid
+./chameleondrummer generate --genre metal --style doom --tempo 75 --mapping gm --output test.mid
 ```
 
 ## Summary
