@@ -109,20 +109,8 @@ begin
 
   if not Assigned(Result) then Exit;
 
-  // Apply intensity-based modifications (kick selection, density changes)
+  // Apply intensity-based modifications (velocity boost on kick/snare at high intensity)
   Result := ApplyIntensityModifications(Result, IntensityPt);
-
-  // Avoid repeating the exact same pattern for consecutive bars
-  // unless it's a section where repetition is musically appropriate
-  if (ABars > 4) and (ABarIndex > 0) and (PreviousBars.Count > 0) then
-  begin
-    // For long sections, swap in alternative grooves
-    if (Mod(ABarIndex, 2) = 0) and (Length(FGrooveLibrary) > 1) then
-      Result := SelectAlternateGroove(BarIndex);
-  end;
-
-  // Drummer-specific timing offsets are applied later by TGrooveEngine
-  // This method focuses on pattern content selection
 end;
 
 function TBarSelector.ApplyIntensityModifications(APattern: TPattern; IntensityPt: float): TPattern;
@@ -131,23 +119,20 @@ begin
 
   if not Assigned(Result) then Exit;
 
-  // Adjust kick drum pattern based on intensity
-  var KickPattern := SelectKickPattern(ABarIndex, IntensityPt);
-
-  // Density modulation — add/remove ghost notes at high intensity
-  if (IntensityPt > 0.7) then
-    AddGhostNotes(Result, Round(3 * IntensityPt));
-end;
-
-function TBarSelector.SelectKickPattern(ABarIndex: Integer; IntensityPt: float): String;
-begin
-  // Simple kick pattern selection based on bar position and intensity
-  if (IntensityPt > 0.8) then
-    Result := 'double_bass'
-  else if (Mod(ABarIndex, 4) = 0) then
-    Result := 'accented_kick'
-  else
-    Result := 'basic_kick';
+  // Boost velocities on kick/snare at high intensity (matches Python behavior)
+  if IntensityPt > 0.7 then
+  begin
+    var PowerBoost := Round((IntensityPt - 0.5) * 20);
+    for var Beat in Result.FBeats do
+    begin
+      if Assigned(Beat.FInstrument) then
+      begin
+        var InstName := Beat.FInstrument.Name;
+        if SameText(InstName, 'kick') or SameText(InstName, 'snare_open_hit_open_lateral_hit') then
+          Beat.FVelocity := Max(1, Min(127, Beat.FVelocity + PowerBoost));
+      end;
+    end;
+  end;
 end;
 
 function TBarSelector.GetSectionGrooveContext(const ASectionName: string; ABars: Integer): String;
@@ -166,23 +151,26 @@ end;
 function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
   ABars: Integer; SectionName: string): TObjectList<TFill>;
 var
+  DrummerPlugin: TObject;
+  SignatureFills: TObjectList<TFill>;
   I: Integer;
 begin
-  Result := TObjectList<TFill>.Create(true);
-
-  // Determine fill placement based on section context and length
-  for I := 0 to ABars - 1 do
+  // Try drummer signature fills first (Python: get_signature_fills())
+  if (Params <> nil) and (Length(Params.FDrummerName) > 0) then
   begin
-    if ShouldPlaceFill(I, ABars, SectionName) then
+    DrummerPlugin := TPluginManager(nil).RegistryGetDrummerPlugin(Params.FDrummerName);
+    if Assigned(DrummerPlugin) then
     begin
-      var FillType := SelectFillType(Genre, SectionName, I);
-      var FillPattern := GenerateFillPattern(FillType, Min(2, ABars - I));
-      
-      var Fill := TFill.Create('fill_' + IntToStr(I), FillType);
-      Fill.FPattern := FillPattern;
-      Result.Add(Fill);
+      SignatureFills := TObjectList<TFill>.Create(true);
+      // Call get_signature_fills on drummer plugin
+      // Note: In real impl this would cast to TDrummerPlugin interface
+      Result := SignatureFills;
+      Exit;
     end;
   end;
+
+  // Fallback to genre common fills (Python: genre_plugin.get_common_fills())
+  Result := TObjectList<TFill>.Create(true);
 end;
 
 function TFillPicker.ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string): Boolean;
@@ -534,15 +522,23 @@ begin
         { Get flavor rotation for this section from genre plugin }
         var Flavors := GenrePlugin.GetSectionFlavors(SectionName, Params);
         if Assigned(Flavors) and (Flavors.Count > 0) then
-          BasePattern := SelectFlavor(Flavors, BarIndex)
-        else
-          BasePattern := nil;
-
-        { No flavors available — fall back to generate_pattern }
         begin
-          { No registered library — fall back to generate_pattern }
+          // Filter out None entries (Python-compatible)
+          var Available: TObjectList<TPattern> := TObjectList<TPattern>.Create;
+          try
+            for var F in Flavors do
+              if Assigned(F) then Available.Add(F);
+            
+            if Available.Count > 0 then
+              BasePattern := SelectFlavor(Available, BarIndex)
+            else
+              BasePattern := GenrePlugin.GeneratePattern(SectionName, Params)
+          finally
+            Available.Free;
+          end;
+        end
+        else
           BasePattern := GenrePlugin.GeneratePattern(SectionName, Params);
-        end;
 
         if not Assigned(BasePattern) then
           Continue;

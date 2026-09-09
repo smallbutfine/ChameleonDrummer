@@ -354,13 +354,13 @@ end;
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
 begin
   if not Assigned(FMidiEngine) then Exit;
-  FMidiEngine.SaveSongMidi(ASong, AOutputPath);
+  FMidiEngine.SaveSong(ASong, AOutputPath, FDrumKit);
 end;
 
 procedure TDrumGenerator.SavePatternMidi(const APattern: TPattern; const AOutputPath: string; ATempo: Integer = 120);
 begin
   if not Assigned(FMidiEngine) then Exit;
-  FMidiEngine.SavePatternMidi(APattern, AOutputPath, ATempo);
+  FMidiEngine.SavePattern(APattern, AOutputPath, FDrumKit);
 end;
 
 end.
