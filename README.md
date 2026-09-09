@@ -1,4 +1,4 @@
-# MIDI Drums — FreePascal/Lazarus Translation (COMPLETE)
+# ChameleonDrummer — FreePascal/Lazarus Translation (COMPLETE)
 
 ## Overview
 
