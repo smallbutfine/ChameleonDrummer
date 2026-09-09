@@ -152,25 +152,37 @@ function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGen
   ABars: Integer; SectionName: string): TObjectList<TFill>;
 var
   DrummerPlugin: TObject;
+  GenrePlugin: TObject;
   SignatureFills: TObjectList<TFill>;
-  I: Integer;
+  CommonFills: TObjectList<TFill>;
 begin
-  // Try drummer signature fills first (Python: get_signature_fills())
+  Result := TObjectList<TFill>.Create(true);
+  
+  { Try drummer signature fills first (Python: get_signature_fills()) }
   if (Params <> nil) and (Length(Params.FDrummerName) > 0) then
   begin
     DrummerPlugin := TPluginManager(nil).RegistryGetDrummerPlugin(Params.FDrummerName);
     if Assigned(DrummerPlugin) then
     begin
-      SignatureFills := TObjectList<TFill>.Create(true);
-      // Call get_signature_fills on drummer plugin
-      // Note: In real impl this would cast to TDrummerPlugin interface
-      Result := SignatureFills;
-      Exit;
+      { Cast to TDrummerPlugin to call GetSignatureFills. */
+      { In objfpc, we can use a type helper or direct access since we control the class hierarchy. */
+      if DrummerPlugin is TDrummerPlugin then
+      begin
+        Result := (DrummerPlugin as TDrummerPlugin).GetSignatureFills;
+        if Assigned(Result) and (Result.Count > 0) then Exit;
+        Result.Free; { Empty list — fall through to genre common fills. */
+      end;
     end;
   end;
 
-  // Fallback to genre common fills (Python: genre_plugin.get_common_fills())
-  Result := TObjectList<TFill>.Create(true);
+  { Fallback to genre common fills (Python: genre_plugin.get_common_fills()) }
+  GenrePlugin := TPluginManager(nil).RegistryGetGenrePlugin(Genre);
+  if Assigned(GenrePlugin) and (GenrePlugin is TGenrePlugin) then
+  begin
+    CommonFills := (GenrePlugin as TGenrePlugin).GetCommonFills;
+    if Assigned(CommonFills) then
+      Result.AddRange(CommonFills); { Merge genre fills into result. */
+  end;
 end;
 
 function TFillPicker.ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string): Boolean;

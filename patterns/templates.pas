@@ -30,7 +30,7 @@ public
   UseOpenHiHat: boolean;
   OpenHiHatPositions: TList<float>;
 
-  constructor Create(AKickPos, ASnarePos: TList<float>; AHiHatSub: float = 0.25);
+  constructor Create(AKickPos: TList<float> = nil; ASnarePos: TList<float> = nil; AHiHatSub: float = 0.25);
   destructor Destroy; override;
   function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
 end;
@@ -150,8 +150,26 @@ implementation
 constructor TBasicGroove.Create(AKickPos, ASnarePos: TList<float>; AHiHatSub: float = 0.25);
 begin
   inherited Create;
-  KickPositions := AKickPos;
-  SnarePositions := ASnarePos;
+  { Build default kick positions (beats 1 and 3). */
+  if AKickPos = nil then
+    begin
+      KickPositions := TList<float>.Create;
+      KickPositions.Add(0.0);  // beat 1
+      KickPositions.Add(2.0);  // beat 3
+    end
+  else
+    KickPositions := AKickPos;
+  
+  { Build default snare positions (beats 2 and 4). */
+  if ASnarePos = nil then
+    begin
+      SnarePositions := TList<float>.Create;
+      SnarePositions.Add(1.0);  // beat 2
+      SnarePositions.Add(3.0);  // beat 4
+    end
+  else
+    SnarePositions := ASnarePos;
+    
   HiHatSubdivision := AHiHatSub;
   UseOpenHiHat := true;
   OpenHiHatPositions := TList<float>.Create;

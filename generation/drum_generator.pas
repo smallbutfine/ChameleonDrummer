@@ -107,6 +107,11 @@ end;
 
 implementation
 
+uses
+  Metal, Rock, Jazz, Funk, Electronic, { genre plugins }
+  Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
+  Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues; { drummer plugins }
+
 { ── GetDefaultBpm — genre/style-aware default BPM. */ }
 
 function GetDefaultBpm(const Genre, Style: string): Integer;
@@ -237,10 +242,117 @@ begin
 end;
 
 procedure TDrumGenerator.LoadPlugins;
+var
+  GS: TArray<string>; { Genre Styles }
+  PD: TArray<string>; { Pref Drummers }
+  DG: TArray<string>; { Drummer Genres }
 begin
-  { In real impl: scan plugins/genres/*.pas and plugins/drummers/*.pas, */
-  { load each module, register all TGenrePlugin/TDrummerPlugin subclasses. */
-  { For now — stub. Real system uses dynamic module loading or RTTI discovery. */
+  { ── Register genre plugins ─────────────────────────────────────}
+
+  { Metal — 7 styles, drummers: hoglan, peart, dee, rich, haake }
+  SetLength(GS, 7); GS[0] := 'heavy'; GS[1] := 'death'; GS[2] := 'power';
+  GS[3] := 'progressive'; GS[4] := 'thrash'; GS[5] := 'doom'; GS[6] := 'breakdown';
+  SetLength(PD, 5); PD[0] := 'hoglan'; PD[1] := 'peart'; PD[2] := 'dee';
+  PD[3] := 'rich'; PD[4] := 'haake';
+  FPluginManager.Registry.RegisterGenrePlugin('metal', TMetalGenrePlugin.Create, GS, PD);
+
+  { Rock — 7 styles, drummers: bonham, porcaro, copeland }
+  SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'classic'; GS[1] := 'blues';
+  GS[2] := 'alternative'; GS[3] := 'progressive'; GS[4] := 'punk';
+  GS[5] := 'hard'; GS[6] := 'pop';
+  SetLength(PD, 0); SetLength(PD, 3); PD[0] := 'bonham';
+  PD[1] := 'porcaro'; PD[2] := 'copeland';
+  FPluginManager.Registry.RegisterGenrePlugin('rock', TRockGenrePlugin.Create, GS, PD);
+
+  { Jazz — 7 styles, drummers: weckl, halpern }
+  SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'swing'; GS[1] := 'bebop';
+  GS[2] := 'fusion'; GS[3] := 'latin'; GS[4] := 'ballad';
+  GS[5] := 'hard_bop'; GS[6] := 'contemporary';
+  SetLength(PD, 0); SetLength(PD, 2); PD[0] := 'weckl'; PD[1] := 'halpern';
+  FPluginManager.Registry.RegisterGenrePlugin('jazz', TJazzGenrePlugin.Create, GS, PD);
+
+  { Funk — 7 styles, drummers: chambers, porcaro }
+  SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'classic'; GS[1] := 'pfunk';
+  GS[2] := 'shuffle'; GS[3] := 'new_orleans'; GS[4] := 'fusion';
+  GS[5] := 'minimal'; GS[6] := 'heavy';
+  SetLength(PD, 0); SetLength(PD, 2); PD[0] := 'chambers'; PD[1] := 'porcaro';
+  FPluginManager.Registry.RegisterGenrePlugin('funk', TFunkGenrePlugin.Create, GS, PD);
+
+  { Electronic — 4 styles, no preferred drummers }
+  SetLength(GS, 0); SetLength(GS, 4); GS[0] := 'house'; GS[1] := 'techno';
+  GS[2] := 'drum_and_bass'; GS[3] := 'dubstep';
+  FPluginManager.Registry.RegisterGenrePlugin('electronic', TElectronicGenrePlugin.Create, GS, []);
+
+  { ── Register drummer plugins ─────────────────────────────────}
+  SetLength(DG, 0);
+
+  { bonham — rock, metal, blues }
+  SetLength(DG, 3); DG[0] := 'rock'; DG[1] := 'metal'; DG[2] := 'blues';
+  FPluginManager.Registry.RegisterDrummerPlugin('bonham', TBonhamPlugin.Create, DG);
+
+  { porcaro — rock, funk }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
+  FPluginManager.Registry.RegisterDrummerPlugin('porcaro', TPorcaroPlugin.Create, DG);
+
+  { weckl — jazz, funk }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'funk';
+  FPluginManager.Registry.RegisterDrummerPlugin('weckl', TWecklPlugin.Create, DG);
+
+  { chambers — funk, rock }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'funk'; DG[1] := 'rock';
+  FPluginManager.Registry.RegisterDrummerPlugin('chambers', TChambersPlugin.Create, DG);
+
+  { roeder — metal }
+  SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('roeder', TRoederPlugin.Create, DG);
+
+  { dee — metal, rock }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'rock';
+  FPluginManager.Registry.RegisterDrummerPlugin('dee', TDeePlugin.Create, DG);
+
+  { hoglan — metal }
+  SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('hoglan', THoglanPlugin.Create, DG);
+
+  { peart — metal, rock }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'rock';
+  FPluginManager.Registry.RegisterDrummerPlugin('peart', TPeartPlugin.Create, DG);
+
+  { rich — jazz, rock }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'rock';
+  FPluginManager.Registry.RegisterDrummerPlugin('rich', TRichPlugin.Create, DG);
+
+  { copeland — rock, funk }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
+  FPluginManager.Registry.RegisterDrummerPlugin('copeland', TCopelandPlugin.Create, DG);
+
+  { carey — metal }
+  SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('carey', TCareyPlugin.Create, DG);
+
+  { smith — rock, funk }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
+  FPluginManager.Registry.RegisterDrummerPlugin('smith', TSmithPlugin.Create, DG);
+
+  { moon — metal }
+  SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('moon', TMoonPlugin.Create, DG);
+
+  { watts — rock, funk }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
+  FPluginManager.Registry.RegisterDrummerPlugin('watts', TWattsPlugin.Create, DG);
+
+  { haake — metal }
+  SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('haake', THaakePlugin.Create, DG);
+
+  { halpern — jazz, metal }
+  SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('halpern', THalpernPlugin.Create, DG);
+
+  { doomblues — metal }
+  SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
+  FPluginManager.Registry.RegisterDrummerPlugin('doomblues', TCompositeDoomBluesPlugin.Create, DG);
 end;
 
 function TDrumGenerator.GetGenreDefaultStructure(const Genre: string): TArray<TStructureEntry>;
