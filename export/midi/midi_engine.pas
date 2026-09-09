@@ -239,7 +239,12 @@ begin
   CumulativeTime := 0.0;
 
   FEvents.Clear;
-  WriteTempoMicroSec(500000); // Default 120 BPM
+
+  // Write tempo meta event from actual song tempo
+  var TempoMicroSec: Cardinal := 500000; { Default 120 BPM }
+  if (ASong <> nil) and (ASong.Tempo > 0) then
+    TempoMicroSec := Round(60000000.0 / ASong.Tempo);
+  WriteTempoMicroSec(TempoMicroSec);
 
   if not Assigned(ASong) or not Assigned(ASong.Sections) then Exit;
 

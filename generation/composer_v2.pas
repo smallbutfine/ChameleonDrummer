@@ -373,7 +373,8 @@ begin
     Exit(mpTurnaround);
 end;
 
-function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase; ARng: TThreadedRandom): TPattern;
+function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
+  ARng: TThreadedRandom; GenrePlugin: TGenrePlugin): TPattern;
 begin
   // Select groove from genre plugin's library based on phase
   var GrooveCount := 3; // Default 3 grooves per section
@@ -387,7 +388,15 @@ begin
 
   var Index := GetNextGrooveIndex(GrooveCount);
 
-  // Return a basic pattern (in real impl, would query GenrePlugin.GetSectionGrooves)
+  // Query genre plugin for section flavors
+  if Assigned(GenrePlugin) then
+  begin
+    var Flavors := GenrePlugin.GetSectionFlavors(SectionName, nil); { Params set later in caller }
+    if (Flavors <> nil) and (Flavors.Count > 0) then
+      Exit(Flavors[Index mod Flavors.Count]);
+  end;
+
+  // Fallback: create a basic pattern
   Result := TPattern.Create('groove_' + Genre + '_' + IntToStr(Index));
 end;
 
@@ -499,9 +508,10 @@ begin
   { Iterate over each section in structure }
   for var I := 0 to Structure.Count - 1 do
   begin
-    { Extract section_name and bars from tuple record — simplified }
-    SectionName := 'unknown';
-    Bars := 4;
+  { Extract section_name and bars from Structure[] }
+    var Entry := TSectionDef(Structure[I]);
+    SectionName := Entry.FName;
+    Bars := Entry.FBars;
 
     GeneratedBars := TObjectList<TPattern>.Create(true);
     try
@@ -521,10 +531,14 @@ begin
         { Determine macro-composer phase for purposeful variation }
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
 
-        { Select from the registered groove library (phase-aware selection) }
-        BasePattern := MacroComposer.SelectGroove(Genre, SectionName, Phase, FRng);
+        { Get flavor rotation for this section from genre plugin }
+        var Flavors := GenrePlugin.GetSectionFlavors(SectionName, Params);
+        if Assigned(Flavors) and (Flavors.Count > 0) then
+          BasePattern := SelectFlavor(Flavors, BarIndex)
+        else
+          BasePattern := nil;
 
-        if not Assigned(BasePattern) then
+        { No flavors available — fall back to generate_pattern }
         begin
           { No registered library — fall back to generate_pattern }
           BasePattern := GenrePlugin.GeneratePattern(SectionName, Params);
