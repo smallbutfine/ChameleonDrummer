@@ -1,0 +1,56 @@
+name: Build & Release LV2 Installer
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*' # Reagiert auf Tags wie v1.0.0, v2.1.0 etc.
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Installiert Lazarus und FPC automatisch auf der GitHub-VM
+      - name: Install Lazarus & FPC
+        uses: gloriodum/lazarus-action@v1
+        with:
+          lazarus-version: 'stable'
+
+      # Bereitet Verzeichnis-Verknüpfungen für die Batch vor
+      - name: Prepare FPC Directory Shortcut
+        run: |
+          mkdir C:\lazarus\fpc\3.2.2\bin\
+          mklink /D "C:\lazarus\fpc\3.2.2\bin\x86_64-win64" "$env:LAZARUS_DIR\fpc\3.2.2\bin\x86_64-win64"
+        shell: powershell
+
+      # Startet das Skript. Erkennt automatisch, ob Git-Tag oder lokaler Zähler greifen soll
+      - name: Run Build and Deploy Script
+        run: |
+          ./build_and_deploy.bat
+
+      - name: Find Installer Filename
+        id: find_installer
+        run: |
+          $file = Get-ChildItem -Filter "*_Setup_*.exe" | Select-Object -First 1
+          echo "FILENAME=$($file.Name)" >> $env:GITHUB_OUTPUT
+        shell: powershell
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LV2-Windows-Installer
+          path: './${{ steps.find_installer.outputs.FILENAME }}'
+
+      # Erstellt den offiziellen Release NUR, wenn es sich um ein hochgeladenes Git-Tag handelt
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: './${{ steps.find_installer.outputs.FILENAME }}'
+          generate_release_notes: true

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Project LookName="ChameleonDrummer">
+    <Filename Value="ChameleonDrummer.lpr"/>
+    <Interface>
+      <IDEVersion Value="3.0"/>
+      <UnitCount Value="56"/>
+      <Units>
+        <Unit Count="1">
+          <Name Value="main.pas" InterfaceFilename="ChameleonDrummer.lfm"/>
+        </Unit>
+        <Unit Count="2">
+          <Name Value="core/models/kit.pas"/>
+        </Unit>
+        <Unit Count="3">
+          <Name Value="core/models/pattern.pas"/>
+        </Unit>
+        <Unit Count="4">
+          <Name Value="core/models/song.pas"/>
+        </Unit>
+        <Unit Count="5">
+          <Name Value="core/value_objects/time_signature.pas"/>
+        </Unit>
+        <Unit Count="6">
+          <Name Value="core/value_objects/generation_parameters.pas"/>
+        </Unit>
+        <Unit Count="7">
+          <Name Value="generation/composer_v2.pas"/>
+        </Unit>
+        <Unit Count="8">
+          <Name Value="generation/drum_generator.pas"/>
+        </Unit>
+        <Unit Count="9">
+          <Name Value="generation/builders/pattern_builder.pas"/>
+        </Unit>
+        <Unit Count="10">
+          <Name Value="patterns/templates.pas"/>
+        </Unit>
+        <Unit Count="11">
+          <Name Value="plugins/registry/plugin_registry.pas"/>
+        </Unit>
+        <Unit Count="12">
+          <Name Value="plugins/interfaces/genre_plugin.pas"/>
+        </Unit>
+        <Unit Count="13">
+          <Name Value="plugins/interfaces/drummer_plugin.pas"/>
+        </Unit>
+        <Unit Count="14">
+          <Name Value="plugins/genres/metal.pas"/>
+        </Unit>
+        <Unit Count="15">
+          <Name Value="plugins/genres/rock.pas"/>
+        </Unit>
+        <Unit Count="16">
+          <Name Value="plugins/genres/jazz.pas"/>
+        </Unit>
+        <Unit Count="17">
+          <Name Value="plugins/genres/funk.pas"/>
+        </Unit>
+        <Unit Count="18">
+          <Name Value="plugins/genres/electronic.pas"/>
+        </Unit>
+        <Unit Count="19">
+          <Name Value="plugins/drummers/bonham.pas"/>
+        </Unit>
+        <Unit Count="20">
+          <Name Value="plugins/drummers/carey.pas"/>
+        </Unit>
+        <Unit Count="21">
+          <Name Value="plugins/drummers/chambers.pas"/>
+        </Unit>
+        <Unit Count="22">
+          <Name Value="plugins/drummers/copeland.pas"/>
+        </Unit>
+        <Unit Count="23">
+          <Name Value="plugins/drummers/dee.pas"/>
+        </Unit>
+        <Unit Count="24">
+          <Name Value="plugins/drummers/haake.pas"/>
+        </Unit>
+        <Unit Count="25">
+          <Name Value="plugins/drummers/halpern.pas"/>
+        </Unit>
+        <Unit Count="26">
+          <Name Value="plugins/drummers/hoglan.pas"/>
+        </Unit>
+        <Unit Count="27">
+          <Name Value="plugins/drummers/moon.pas"/>
+        </Unit>
+        <Unit Count="28">
+          <Name Value="plugins/drummers/peart.pas"/>
+        </Unit>
+        <Unit Count="29">
+          <Name Value="plugins/drummers/porcaro.pas"/>
+        </Unit>
+        <Unit Count="30">
+          <Name Value="plugins/drummers/rich.pas"/>
+        </Unit>
+        <Unit Count="31">
+          <Name Value="plugins/drummers/roeder.pas"/>
+        </Unit>
+        <Unit Count="32">
+          <Name Value="plugins/drummers/smith.pas"/>
+        </Unit>
+        <Unit Count="33">
+          <Name Value="plugins/drummers/watts.pas"/>
+        </Unit>
+        <Unit Count="34">
+          <Name Value="plugins/drummers/weckl.pas"/>
+        </Unit>
+        <Unit Count="35">
+          <Name Value="plugins/drummers/doom_blues.pas"/>
+        </Unit>
+        <Unit Count="36">
+          <Name Value="modifications/drummer_mods.pas"/>
+        </Unit>
+        <Unit Count="37">
+          <Name Value="modifications/riff_lock.pas"/>
+        </Unit>
+        <Unit Count="38">
+          <Name Value="modifications/snare_accent_reaction.pas"/>
+        </Unit>
+        <Unit Count="39">
+          <Name Value="humanization/advanced_humanization.pas"/>
+        </Unit>
+        <Unit Count="40">
+          <Name Value="humanization/limb_constraints.pas"/>
+        </Unit>
+        <Unit Count="41">
+          <Name Value="validation/physical_constraints.pas"/>
+        </Unit>
+        <Unit Count="42">
+          <Name Value="utils/pattern_fixer.pas"/>
+        </Unit>
+        <Unit Count="43">
+          <Name Value="api/drum_generator_api.pas"/>
+        </Unit>
+        <Unit Count="44">
+          <Name Value="api/cli.pas"/>
+        </Unit>
+        <Unit Count="45">
+          <Name Value="export/midi/midi_engine.pas"/>
+        </Unit>
+        <Unit Count="46">
+          <Name Value="export/reaper/reaper_api.pas"/>
+        </Unit>
+        <Unit Count="47">
+          <Name Value="export/reaper/reaper_rpp.pas"/>
+        </Unit>
+        <Unit Count="48">
+          <Name Value="export/ardour/ardour_export.pas"/>
+        </Unit>
+        <Unit Count="49">
+          <Name Value="ai/ai_api.pas"/>
+        </Unit>
+        <Unit Count="50">
+          <Name Value="ai/backends.pas"/>
+        </Unit>
+        <Unit Count="51">
+          <Name Value="ai/pattern_generator.pas"/>
+        </Unit>
+        <Unit Count="52">
+          <Name Value="config/constants.pas"/>
+        </Unit>
+        <Unit Count="53">
+          <Name Value="tests/test_runner.pas"/>
+        </Unit>
+        <Unit Count="54">
+          <Name Value="tests/test_kit.pas"/>
+        </Unit>
+      </Units>
+    </Interface>
+  </Project>
+  <General>
+    <Options>
+      <CompilerType Value="fpc">
+        <Filename Value="C:/lazarus/fpc/3.2.2/bin/x86_64-win64/fpc.exe"/>
+      </CompilerType>
+      <Target>
+        <UseUnitDefs Value="0"/>
+        <TargetFile Value="ChameleonDrummer.exe"/>
+        <OS Type="win64">
+          <Architecture Type="x86_64"/>
+        </OS>
+      </Target>
+      <CompilerOptions>
+        <Internals Version="12"/>
+        <Paths>
+          <UnitOutputPath Value="bin"/>
+          <PpuOutputPath Value="bin"/>
+          <Other Value="api;generation;generation/engines;generation/builders;patterns;plugins/interfaces;plugins/registry;plugins/genres;plugins/drummers;modifications;humanization;validation;utils;ai;config;export/midi;export/reaper;export/ardour;core/models;core/value_objects;mappings"/>
+        </Paths>
+        <CodeGeneration>
+          <Optimize Value="1"/>
+          <Warnings AsErrors="0" Hints="0" Notes="0"/>
+        </CodeGeneration>
+      </CompilerOptions>
+    </Options>
+  </General>
+</CONFIG>

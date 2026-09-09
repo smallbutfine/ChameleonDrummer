@@ -13,8 +13,8 @@ uses
 
 type
 { ── Type aliases for FPC 3.2.x compatibility ─────────────────────────── }
-TStrDict = TDictionary<string, string>;
-TStrBoolDict = TDictionary<string, boolean>;
+TStrDict = specialize TDictionary<string, string>;
+TStrBoolDict = specialize TDictionary<string, boolean>;
 
 { Forward declaration for self-reference }
 TDrumInstrument = class;
@@ -48,7 +48,7 @@ end;
   Initialized from the master template at startup. }
 TInstrumentRegistry = class(TObject)
 private
-  class var Finstruments: TDictionary<string, TObject>;
+  class var Finstruments: specialize TDictionary<string, TObject>;
   class var FInitialized: boolean;
   class procedure ClearInternal; static;
 public
@@ -69,13 +69,13 @@ end;
 { KeymapLoader — loads and manages keymap JSON files from the mappings directory. }
 TKeymapLoader = class(TObject)
 private
-  class var FLoadedKeymaps: TDictionary<string, TJSONValue>; static;
+  class var FLoadedKeymaps: specialize TDictionary<string, TJSONValue>; static;
 public
   class function LoadAll: TArray<TJSONValue>; static;
   class function GetKeymap(const AName: string): TJSONValue; static;
   class function GetMidiNote(const InstrumentName, KeymapName: string): Integer; static;
-  class function GetAllInstruments: TDictionary<string, boolean>; static;
-  class function GetUnmappedInstruments(const KeymapName: string): TDictionary<string, boolean>; static;
+  class function GetAllInstruments: specialize TDictionary<string, boolean>; static;
+  class function GetUnmappedInstruments(const KeymapName: string): specialize TDictionary<string, boolean>; static;
   class procedure GenerateUserKeymap(const TargetPath: string); static;
 
   class constructor Create;
@@ -100,8 +100,8 @@ end;
   MIDI note mappings are resolved at runtime by loading keymap files. }
 TDrumKit = class(TObject)
 private
-  FVelocityRanges: TDictionary<string, TVelocityRange>;
-  FCustomMappings: TDictionary<string, Integer>;
+FVelocityRanges: specialize TDictionary<string, TVelocityRange>;
+FCustomMappings: specialize TDictionary<string, Integer>;
 public
   Name: string;
   Channel: Integer;
@@ -126,7 +126,7 @@ public
   class function FromKeymapName(const KeymapName: string): TDrumKit; static;
 
   { List all available keymaps as presets. }
-  class function ListPresets: TDictionary<string, string>; static;
+class function ListPresets: specialize TDictionary<string, string>; static;
 
   { Create a DrumKit from a mapping file name (exact file stem). }
   class function FromPreset(const PresetName: string): TDrumKit; static;
@@ -143,7 +143,7 @@ implementation
 
 { ── DrumInstrument ────────────────────────────────────────────────────────── }
 
-constructor TDrumInstrument.Create(const AName, ADescription: string; const AMetadata: TDictionary<string, string> = nil);
+constructor TDrumInstrument.Create(const AName, ADescription: string; const AMetadata: specialize TDictionary<string, string> = nil);
 begin
   inherited Create;
   FName := AName;
