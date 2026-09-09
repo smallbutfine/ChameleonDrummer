@@ -14,7 +14,7 @@ This is the complete FreePascal (FPC) translation of the Python `midi-drums` pro
 ### Command-Line Build
 
 ```bash
-cd B:\dev\github\midi-drums\pascal
+cd B:\dev\github\ChameleonDrummer
 
 # Compile with FPC
 fpc -Mobjfpc -O2 main.pas

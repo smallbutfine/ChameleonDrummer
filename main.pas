@@ -1,13 +1,13 @@
-program MidiDrums;
+program ChameleonDrummer;
 
 {$mode objfpc}{$H+}
 
-{ MIDI Drums Generator — Pascal Translation
+{ MIDI drums generator — Pascal Translation
   Main entry point. Equivalent to midi_drums/__main__.py in Python.
-  
-  Usage: midi_drums <command> [options]
+
+  Usage: chameleondrummer <command> [options]
     Commands: generate, pattern, list, info
-  
+
   Options are passed through to the CLI interface.
 }
 
@@ -27,7 +27,7 @@ begin
   ArgCount := ParamCount;
   SetLength(Args, ArgCount + 1);
   Args[0] := ParamStr(0); // Program name
-  
+
   for I := 1 to ArgCount do
     Args[I] := ParamStr(I);
 
