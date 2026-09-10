@@ -1,4 +1,4 @@
-unit TimeSignature;
+﻿unit TimeSignature;
 
 {$mode objfpc}{$H+}
 
@@ -8,7 +8,7 @@ interface
 
 type
 
-{ TimeSignature — time signature representation. }
+{ TimeSignature â€” time signature representation. }
 TTimeSignature = record
   Numerator: Integer;
   Denominator: Integer;
@@ -22,7 +22,7 @@ end;
 
 implementation
 
-{ ── TimeSignature ─────────────────────────────────────────────────────────── }
+{ â”€â”€ TimeSignature â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TTimeSignature.Create(ANumerator, ADenominator: Integer = 4);
 begin

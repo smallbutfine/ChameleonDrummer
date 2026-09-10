@@ -1,4 +1,4 @@
-unit Pattern;
+﻿unit Pattern;
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
 
 type
 
-{ ── Beat ─────────────────────────────────────────────────────────────────── }
+{ â”€â”€ Beat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { Individual drum hit within a pattern.
   instrument_promoted is provenance, not a playing instruction: it is True only when this beat's instrument was changed in place by GenrePlugin._apply_ride_hihat_logic promoting an existing hi-hat beat to a higher-energy cymbal for a high-energy section. }
@@ -39,31 +39,31 @@ public
   procedure Validate;
 end;
 
-{ ── Pattern ───────────────────────────────────────────────────────────────── }
+{ â”€â”€ Pattern â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { Complete drum pattern with timing and metadata. }
 TPattern = class(TObject)
 private
   FName: string;
-  FBeats: TObjectList<TBeat>;
+  FBeats: specialize TList<TBeat>;
   FTimeSignature: TTimeSignature;
   FSubdivision: Integer;
   FSwingRatio: float;
-  FMetadata: TDictionary<string, string>;
+  FMetadata: specialize TDictionary<string, string>;
 public
   constructor Create(const AName: string); overload;
   destructor Destroy; override;
 
   property Name: string read FName write FName;
-  property Beats: TObjectList<TBeat> read FBeats;
+  property Beats: specialize TList<TBeat> read FBeats;
   property TimeSignature: TTimeSignature read FTimeSignature write FTimeSignature;
   property Subdivision: Integer read FSubdivision write FSubdivision;
   property SwingRatio: float read FSwingRatio write FSwingRatio;
-  property Metadata: TDictionary<string, string> read FMetadata;
+  property Metadata: specialize TDictionary<string, string> read FMetadata;
 
   function AddBeat(APosition: float; AInstrument: TDrumInstrument; AVelocity: Integer = 100): TPattern; overload;
-  function GetBeatsAtPosition(APosition: float; ATolerance: float = 0.01): TObjectList<TBeat>;
-  function GetBeatsByInstrument(AInstrument: TDrumInstrument): TObjectList<TBeat>;
+  function GetBeatsAtPosition(APosition: float; ATolerance: float = 0.01): specialize TList<TBeat>;
+  function GetBeatsByInstrument(AInstrument: TDrumInstrument): specialize TList<TBeat>;
   function DurationBars: float;
   function Humanize(ATimingVariance: float = 0.02; AVelocityVariance: Integer = 10): TPattern;
   function Copy: TPattern;
@@ -71,7 +71,7 @@ end;
 
 implementation
 
-{ ── Beat ─────────────────────────────────────────────────────────────────── }
+{ â”€â”€ Beat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TBeat.Create(APosition: float; AInstrument: TDrumInstrument; AVelocity: Integer = 100);
 begin
@@ -99,17 +99,17 @@ begin
     raise Exception.CreateFmt('Position cannot be negative, got %f', [FPosition]);
 end;
 
-{ ── Pattern ───────────────────────────────────────────────────────────────── }
+{ â”€â”€ Pattern â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TPattern.Create(const AName: string);
 begin
   inherited Create;
   FName := AName;
-  FBeats := TObjectList<TBeat>.Create(true); { auto-destroy items }
+  FBeats := specialize TList<TBeat>.Create(true); { auto-destroy items }
   FTimeSignature := TTimeSignature.Create(4, 4);
   FSubdivision := 16;
   FSwingRatio := 0.0;
-  FMetadata := TDictionary<string, string>.Create;
+  FMetadata := specialize TDictionary<string, string>.Create;
 end;
 
 destructor TPattern.Destroy;
@@ -128,11 +128,11 @@ begin
   Result := Self;
 end;
 
-function TPattern.GetBeatsAtPosition(APosition: float; ATolerance: float = 0.01): TObjectList<TBeat>;
+function TPattern.GetBeatsAtPosition(APosition: float; ATolerance: float = 0.01): specialize TList<TBeat>;
 var
   Beat: TBeat;
 begin
-  Result := TObjectList<TBeat>.Create(true);
+  Result := specialize TList<TBeat>.Create(true);
   for Beat in FBeats do
   begin
     if Abs(Beat.FPosition - APosition) <= ATolerance then
@@ -140,11 +140,11 @@ begin
   end;
 end;
 
-function TPattern.GetBeatsByInstrument(AInstrument: TDrumInstrument): TObjectList<TBeat>;
+function TPattern.GetBeatsByInstrument(AInstrument: TDrumInstrument): specialize TList<TBeat>;
 var
   Beat: TBeat;
 begin
-  Result := TObjectList<TBeat>.Create(true);
+  Result := specialize TList<TBeat>.Create(true);
   for Beat in FBeats do
   begin
     if Beat.FInstrument.Equals(AInstrument) then
@@ -173,9 +173,9 @@ end;
 function TPattern.Humanize(ATimingVariance: float = 0.02; AVelocityVariance: Integer = 10): TPattern;
 var
   Beat: TBeat;
-  HumanizedBeats: TObjectList<TBeat>;
+  HumanizedBeats: specialize TList<TBeat>;
 begin
-  HumanizedBeats := TObjectList<TBeat>.Create(true);
+  HumanizedBeats := specialize TList<TBeat>.Create(true);
 
   for Beat in FBeats do
   begin

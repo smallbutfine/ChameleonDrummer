@@ -1,4 +1,4 @@
-unit AIBackends;
+﻿unit AIBackends;
 
 {$mode objfpc}{$H+}
 
@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, JSON, Generics.Collections;
 
 // ============================================================================
-// TAIBackend — Base class for AI generation backends
+// TAIBackend â€” Base class for AI generation backends
 // ============================================================================
 type
   TAIBackend = class
@@ -29,7 +29,7 @@ type
   end;
 
 // ============================================================================
-// TOpenAIBackend — OpenAI-compatible backend (ChatGPT, GPT-4)
+// TOpenAIBackend â€” OpenAI-compatible backend (ChatGPT, GPT-4)
 // ============================================================================
 type
   TOpenAIBackend = class(TAIBackend)
@@ -39,7 +39,7 @@ type
   end;
 
 // ============================================================================
-// TLangchainBackend — LangChain agent backend
+// TLangchainBackend â€” LangChain agent backend
 // ============================================================================
 type
   TLagChainBackend = class(TAIBackend)
@@ -49,12 +49,12 @@ type
   end;
 
 // ============================================================================
-// TAIBackendManager — Manages multiple AI backends
+// TAIBackendManager â€” Manages multiple AI backends
 // ============================================================================
 type
   TAIBackendManager = class
   private
-    FBackends: TList<TAIBackend>;
+    FBackends: specialize TList<TAIBackend>;
     FDefaultBackend: Integer;
   public
     constructor Create;
@@ -114,7 +114,7 @@ end;
 { TAIBackendManager }
 constructor TAIBackendManager.Create;
 begin
-  FBackends := TList<TAIBackend>.Create;
+  FBackends := specialize TList<TAIBackend>.Create;
   FDefaultBackend := -1;
 end;
 

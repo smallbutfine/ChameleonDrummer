@@ -1,4 +1,4 @@
-unit PatternFixer;
+﻿unit PatternFixer;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Pattern;
 
 // ============================================================================
-// TPatternFixer — Post-generation pattern repair utilities
+// TPatternFixer â€” Post-generation pattern repair utilities
 // ============================================================================
 type
   TPatternFixer = class
@@ -152,7 +152,7 @@ begin
 
       // Check for empty bars
       if (APattern.Beats[BarIdx].Count = 0) then
-        Issues.Add(Format('Bar %d: Empty — would add basic framework', [BarIdx]));
+        Issues.Add(Format('Bar %d: Empty â€” would add basic framework', [BarIdx]));
 
       // Check for velocity issues
       for BeatIdx := 0 to APattern.Beats[BarIdx].Count - 1 do

@@ -1,11 +1,11 @@
-unit ConfigConstants;
+﻿unit ConfigConstants;
 
 {$mode objfpc}{$H+}
 
 interface
 
 // ============================================================================
-// VELOCITY — All drum velocity constants (no magic numbers)
+// VELOCITY â€” All drum velocity constants (no magic numbers)
 // ============================================================================
 type
   TVelocity = record class
@@ -48,7 +48,7 @@ type
   end;
 
 // ============================================================================
-// TIMING — Beat position and duration constants
+// TIMING â€” Beat position and duration constants
 // ============================================================================
 type
   TTiming = record class
@@ -77,7 +77,7 @@ type
   end;
 
 // ============================================================================
-// DEFAULTS — Default parameters for generation
+// DEFAULTS â€” Default parameters for generation
 // ============================================================================
 type
   TDefaults = record class
@@ -121,7 +121,7 @@ type
   end;
 
 // ============================================================================
-// GENRE_DEFAULT_BPM — Genre-specific default tempos from published tempo data
+// GENRE_DEFAULT_BPM â€” Genre-specific default tempos from published tempo data
 // ============================================================================
 type
   TGenreBPM = record class
@@ -170,7 +170,7 @@ type
   end;
 
 // ============================================================================
-// GENRE_ARCHETYPES — Default song structures per genre (sections with bar counts)
+// GENRE_ARCHETYPES â€” Default song structures per genre (sections with bar counts)
 // ============================================================================
 type
   TSectionDef = record
@@ -243,7 +243,7 @@ type
   end;
 
 // ============================================================================
-// DRUMMER_FILLS — Default fill counts per drummer
+// DRUMMER_FILLS â€” Default fill counts per drummer
 // ============================================================================
 type
   TDrummerFillCount = record class
@@ -267,7 +267,7 @@ type
   end;
 
 // ============================================================================
-// GROVE_RESTRAINTS — Genre-specific rhythmic constraints
+// GROVE_RESTRAINTS â€” Genre-specific rhythmic constraints
 // ============================================================================
 type
   TGrooveRestraints = record class
@@ -290,7 +290,7 @@ type
   end;
 
 // ============================================================================
-// TIME_SIGNATURE_DEFAULTS — Default time signatures per genre
+// TIME_SIGNATURE_DEFAULTS â€” Default time signatures per genre
 // ============================================================================
 type
   TTimeSigDefaults = record class

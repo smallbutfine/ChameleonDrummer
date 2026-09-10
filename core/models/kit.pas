@@ -41,14 +41,14 @@ public
 
   { Equality }
   function Equals(Other: TDrumInstrument): boolean;
-  function GetHashCode: Integer; override;
+  function GetHashCode: Integer;
 end;
 
 { InstrumentRegistry — manages all registered drum instruments.
   Initialized from the master template at startup. }
 TInstrumentRegistry = class(TObject)
 private
-  class var Finstruments: TDictionary<string, TObject>;
+  class var Finstruments: specialize TDictionary<string, TObject>;
   class var FInitialized: boolean;
   class procedure ClearInternal; static;
 public
@@ -69,7 +69,7 @@ end;
 { KeymapLoader — loads and manages keymap JSON files from the mappings directory. }
 TKeymapLoader = class(TObject)
 private
-  class var FLoadedKeymaps: TDictionary<string, TJSONValue>; static;
+  class var FLoadedKeymaps: specialize TDictionary<string, TJSONValue>; static;
 public
   class function LoadAll: TArray<TJSONValue>; static;
   class function GetKeymap(const AName: string): TJSONValue; static;
@@ -286,7 +286,7 @@ begin
         InstDesc := InstObj.Values['description'].ValueS;
 
       { Source metadata }
-      var Metadata: TDictionary<string, string> := TDictionary<string, string>.Create;
+      var Metadata: specialize TDictionary<string, string> := specialize TDictionary<string, string>.Create;
       try
         var SourceVal := Instruments.Values['source'];
         if Assigned(SourceVal) then
@@ -600,7 +600,7 @@ begin
     raise Exception.Create('Keymap not found: ' + KeymapName);
 
   Instruments := Keymap.AsObject;
-  var CustomMappings := TDictionary<string, Integer>.Create;
+  var CustomMappings := specialize TDictionary<string, Integer>.Create;
   try
     for InstName in Instruments.Elements do
     begin

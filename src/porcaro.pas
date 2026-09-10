@@ -1,4 +1,4 @@
-unit Porcaro;
+﻿unit Porcaro;
 
 {$mode objfpc}{$H+}
 
@@ -20,7 +20,7 @@ type
     destructor Destroy; override;
 
     function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: TList<TFill>;
+    function GetSignatureFills: specialize TList<TFill>;
     function GetDrummerName: String; override;
     function GetCompatibleGenres: TStringList; override;
   end;
@@ -57,11 +57,11 @@ begin
   Result := Styled;
 end;
 
-function TPorcaroPlugin.GetSignatureFills: TList<TFill>;
+function TPorcaroPlugin.GetSignatureFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   with TFill.Create('porcaro_shuffle_fill', 'Jeff Porcaro shuffle fill') do
   begin

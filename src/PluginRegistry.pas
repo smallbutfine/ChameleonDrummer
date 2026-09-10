@@ -1,8 +1,8 @@
-unit PluginRegistry;
+﻿unit PluginRegistry;
 
 {$mode objfpc}{$H+}
 
-{ Plugin registry — stores genre/drummer plugins keyed by lowercase name,
+{ Plugin registry â€” stores genre/drummer plugins keyed by lowercase name,
   with parallel arrays holding style metadata to avoid circular imports. }
 
 interface
@@ -25,8 +25,8 @@ type
 
 TPluginRegistry = class(TObject)
 private
-  FGenrePlugins: TDictionary<string, TObject>;
-  FDrummerPlugins: TDictionary<string, TObject>;
+  FGenrePlugins: specialize TDictionary<string, TObject>;
+  FDrummerPlugins: specialize TDictionary<string, TObject>;
   FGenreStyles: TArray<TGenreStyleInfo>;
   FDrummerPrefs: TArray<TDrummerPrefInfo>;
 
@@ -72,9 +72,9 @@ end;
 
 implementation
 
-{ ═══════════════════════════════════════════════════════════════ }
-{ ═  TPluginRegistry                                             }
-{ ═══════════════════════════════════════════════════════════════ }
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ â•  TPluginRegistry                                             }
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
 
 constructor TPluginRegistry.Create;
 begin
@@ -324,7 +324,7 @@ begin
   if GenreKey >= 0 then
     Exit(FGenreStyles[GenreKey].Styles);
 
-  // Not found — return empty array
+  // Not found â€” return empty array
   SetLength(Result, 0);
 end;
 
@@ -345,9 +345,9 @@ begin
       end;
 end;
 
-{ ═══════════════════════════════════════════════════════════════ }
-{ ═  TPluginDiscovery                                            }
-{ ═══════════════════════════════════════════════════════════════ }
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ â•  TPluginDiscovery                                            }
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
 
 constructor TPluginDiscovery.Create(ARegistry: TPluginRegistry);
 begin
@@ -382,9 +382,9 @@ begin
   end;
 end;
 
-{ ═══════════════════════════════════════════════════════════════ }
-{ ═  TPluginManager                                              }
-{ ═══════════════════════════════════════════════════════════════ }
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ â•  TPluginManager                                              }
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
 
 constructor TPluginManager.Create;
 begin

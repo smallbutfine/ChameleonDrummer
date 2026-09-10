@@ -1,4 +1,4 @@
-unit Electronic;
+﻿unit Electronic;
 
 {$mode objfpc}{$H+}
 
@@ -37,8 +37,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
-    function GetSectionGrooves: TList<TPattern>;
-    function GetCommonFills: TList<TFill>;
+    function GetSectionGrooves: specialize TList<TPattern>;
+    function GetCommonFills: specialize TList<TFill>;
     function GetHighEnergyTimekeeper: String; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -221,12 +221,12 @@ begin
   Result := GetFlavorBridge(BarIndex);
 end;
 
-function TElectronicGenrePlugin.GetSectionGrooves: TList<TPattern>;
+function TElectronicGenrePlugin.GetSectionGrooves: specialize TList<TPattern>;
 var
-  GrooveList: TList<TPattern>;
+  GrooveList: specialize TList<TPattern>;
   BarIdx: Integer;
 begin
-  GrooveList := TList<TPattern>.Create;
+  GrooveList := specialize TList<TPattern>.Create;
 
   for BarIdx := 0 to 3 do
     GrooveList.Add(GetFlavorVerse(BarIdx));
@@ -240,11 +240,11 @@ begin
   Result := GrooveList;
 end;
 
-function TElectronicGenrePlugin.GetCommonFills: TList<TFill>;
+function TElectronicGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   with TFill.Create('electronic_tom_drop', 'Electronic tom drop') do
   begin

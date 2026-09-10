@@ -1,4 +1,4 @@
-unit ReaperAPI;
+﻿unit ReaperAPI;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   core_models_song, ReaperRPP;
 
 // ============================================================================
-// TReaperSection — section definition for REAPER marker/region creation
+// TReaperSection â€” section definition for REAPER marker/region creation
 // ============================================================================
 type
   TReaperSection = record
@@ -21,7 +21,7 @@ type
   end;
 
 // ============================================================================
-// TReaperTimelinePoint — tempo/time-sig change point for song-map mode
+// TReaperTimelinePoint â€” tempo/time-sig change point for song-map mode
 // ============================================================================
 type
   TReaperTimelinePoint = record
@@ -34,13 +34,13 @@ type
   end;
 
 // ============================================================================
-// TReaperBridge — high-level API for REAPER project integration
+// TReaperBridge â€” high-level API for REAPER project integration
 // ============================================================================
 type
   TReaperBridge = class
   private
     FRPPWriter: TReaperRPPWriter;
-    FMarkers: TList<TReaperMarker>;
+    FMarkers: specialize TList<TReaperMarker>;
     function MeasuresToSeconds(Measures, BarsPerMeasure: Integer; BPM: Integer): Double;
   public
     constructor Create;
@@ -61,9 +61,9 @@ type
 
     // Write resolved timeline JSON for Ardour integration
     function ExportTimelineJSON(const ATimelinePoints: TArray<TReaperTimelinePoint>
-      const AColorGroups: TList<TRecord>; const AOutputPath: String): Boolean;
+      const AColorGroups: specialize TList<TRecord>; const AOutputPath: String): Boolean;
 
-    property Markers: TList<TReaperMarker> read FMarkers;
+    property Markers: specialize TList<TReaperMarker> read FMarkers;
   end;
 
 implementation
@@ -80,7 +80,7 @@ end;
 constructor TReaperBridge.Create;
 begin
   FRPPWriter := TReaperRPPWriter.Create;
-  FMarkers := TList<TReaperMarker>.Create;
+  FMarkers := specialize TList<TReaperMarker>.Create;
 end;
 
 destructor TReaperBridge.Destroy;
@@ -231,10 +231,10 @@ begin
 end;
 
 function TReaperBridge.ExportTimelineJSON(const ATimelinePoints: TArray<TReaperTimelinePoint>;
-  const AColorGroups: TList<Record>; const AOutputPath: String): Boolean;
+  const AColorGroups: specialize TList<Record>; const AOutputPath: String): Boolean;
 {
   Write timeline JSON for Ardour integration.
-  Flat format — no nested objects — parseable by Lua string patterns.
+  Flat format â€” no nested objects â€” parseable by Lua string patterns.
 }
 var
   Output: TStringList;

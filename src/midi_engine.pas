@@ -1,8 +1,8 @@
-unit MIDIEngine;
+﻿unit MIDIEngine;
 
 {$mode objfpc}{$H+}
 
-{ TMIDIEngine — Raw SMF Format 0 writer (zero external dependencies).
+{ TMIDIEngine â€” Raw SMF Format 0 writer (zero external dependencies).
   Generates standard .mid files by writing binary MIDI events directly.
   Compatible with all DAWs and drum VSTs without midiutil/mido. }
 
@@ -19,7 +19,7 @@ type
     Data: TArray<Byte>;
   end;
 
-  { ── Helper functions (standalone) ───────────────────────────────────── }
+  { â”€â”€ Helper functions (standalone) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 function IntToBinBE(Value, Bytes: Integer): TByteArray;
 procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
@@ -28,7 +28,7 @@ procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
   private
     FTicksPerBeat: Integer;
     FHeaderData: TArray<Byte>;
-    FEvents: TList<TMIDIEvent>;
+    FEvents: specialize TList<TMIDIEvent>;
     FDrumKit: TDrumKit;
 
     function EncodeVLQ(Value: Integer): TArray<Byte>;
@@ -40,8 +40,8 @@ procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
     { Dynamic MIDI note resolution using drum kit/keymap (CRITICAL!) }
     function ResolveNote(AInstrument: TObject): Integer;
 
-    { Beat deduplication — keeps loudest when same instrument at same position }
-    procedure DedupeBeats(Beats: TObjectList<TBeat>; out DedupedBeats: TObjectList<TBeat>);
+    { Beat deduplication â€” keeps loudest when same instrument at same position }
+    procedure DedupeBeats(Beats: TObjecspecialize TList<TBeat>; out DedupedBeats: TObjecspecialize TList<TBeat>);
 
   public
     constructor Create(ATicksPerBeat: Integer = Defaults.MIDI_RESOLUTION; ADrumKit: TDrumKit = nil);
@@ -57,7 +57,7 @@ procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
 
 implementation
 
-{ ── Helper Functions ───────────────────────────────────────────────────── }
+{ â”€â”€ Helper Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 function IntToBinBE(Value, Bytes: Integer): TByteArray;
 var I: Integer;
@@ -97,12 +97,12 @@ begin
   SetLength(Output, Count);
 end;
 
-{ ── Constructor/Destructor ─────────────────────────────────────────────── }
+{ â”€â”€ Constructor/Destructor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TMIDIEngine.Create(ATicksPerBeat: Integer; ADrumKit: TDrumKit);
 begin
   FTicksPerBeat := ATicksPerBeat;
-  FEvents := TList<TMIDIEvent>.Create;
+  FEvents := specialize TList<TMIDIEvent>.Create;
   FDrumKit := ADrumKit;
 
   // SMF Format 0 header: MThd <length name="6"> <format name="0"> <ntrks name="1"> <division>
@@ -124,12 +124,12 @@ begin
   inherited Destroy;
 end;
 
-{ ── Internal Helpers ───────────────────────────────────────────────────── }
+{ â”€â”€ Internal Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 function TMIDIEngine.EncodeVLQ(Value: Integer): TArray<Byte>;
-var TempBytes: TList<Byte>; Temp: Integer;
+var TempBytes: specialize TList<Byte>; Temp: Integer;
 begin
-  TempBytes := TList<Byte>.Create;
+  TempBytes := specialize TList<Byte>.Create;
   try
     if Value < 0 then Value := Abs(Value);
 
@@ -208,7 +208,7 @@ begin
   end;
 end;
 
-{ ── CRITICAL PRODUCTION CODE: Dynamic Note Resolution ──────────────────── }
+{ â”€â”€ CRITICAL PRODUCTION CODE: Dynamic Note Resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 function TMIDIEngine.ResolveNote(AInstrument: TObject): Integer;
 var InstName: string; Note: Integer;
@@ -237,12 +237,12 @@ begin
     Result := -1; { No drum kit available }
 end;
 
-{ ── CRITICAL PRODUCTION CODE: Beat Deduplication ───────────────────────── }
+{ â”€â”€ CRITICAL PRODUCTION CODE: Beat Deduplication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
-procedure TMIDIEngine.DedupeBeats(Beats: TObjectList<TBeat>; out DedupedBeats: TObjectList<TBeat>);
-var KeyDict: TDictionary<string, TBeat>; Beat: TBeat; InstName: string; KeyStr: string; Existing: TBeat;
+procedure TMIDIEngine.DedupeBeats(Beats: TObjecspecialize TList<TBeat>; out DedupedBeats: TObjecspecialize TList<TBeat>);
+var KeyDict: specialize TDictionary<string, TBeat>; Beat: TBeat; InstName: string; KeyStr: string; Existing: TBeat;
 begin
-  DedupedBeats := TObjectList<TBeat>.Create(true);
+  DedupedBeats := TObjecspecialize TList<TBeat>.Create(true);
   KeyDict := TDictionary<string, TBeat>.Create;
 
   try
@@ -272,7 +272,7 @@ begin
   end;
 end;
 
-{ ── Pattern → bytes ───────────────────────────────────────────────────── }
+{ â”€â”€ Pattern â†’ bytes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 function TMIDIEngine.PatternToBytes(APattern: TPattern; ADrumKit: TDrumKit): TBytes;
 var I, J, MIDINote, Velocity: Integer; NoteOnEvent, NoteOffEvent: TArray<Byte>; EndOfTrack: TArray<Byte>;
@@ -339,12 +339,12 @@ begin
     Move(TrackBytes[0], Result[7], Length(TrackBytes));
 end;
 
-{ ── Song → bytes (FIXED: now reads actual patterns instead of hardcoded notes) ─ }
+{ â”€â”€ Song â†’ bytes (FIXED: now reads actual patterns instead of hardcoded notes) â”€ }
 
 function TMIDIEngine.SongToBytes(ASong: TSong; ADrumKit: TDrumKit): TBytes;
 var I, J: Integer; SectionBars: Integer; MIDINote, Velocity: Integer;
   NoteOnEvent, NoteOffEvent: TArray<Byte>; EndOfTrack: TArray<Byte>; CumulativeTime: Double;
-  Pattern: TPattern; DedupedBeats: TObjectList<TBeat>; Beat: TBeat;
+  Pattern: TPattern; DedupedBeats: TObjecspecialize TList<TBeat>; Beat: TBeat;
 begin
   Result := nil;
   CumulativeTime := 0.0;
@@ -369,7 +369,7 @@ begin
     if not Assigned(Pattern) or not Assigned(Pattern.Beats) then Continue;
 
     // Deduplicate beats first
-    DedupedBeats := TObjectList<TBeat>.Create(true);
+    DedupedBeats := TObjecspecialize TList<TBeat>.Create(true);
     DedupeBeats(Pattern.Beats, DedupedBeats);
 
     for J := 0 to SectionBars - 1 do
@@ -426,7 +426,7 @@ begin
     Move(TrackBytes[0], Result[7], Length(TrackBytes));
 end;
 
-{ ── File Write Convenience ─────────────────────────────────────────────── }
+{ â”€â”€ File Write Convenience â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 procedure TMIDIEngine.SavePattern(APattern: TPattern; const AFileName: String; ADrumKit: TDrumKit);
 var LData: TBytes; FStream: TFileStream;

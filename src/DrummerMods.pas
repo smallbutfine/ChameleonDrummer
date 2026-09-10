@@ -1,4 +1,4 @@
-unit DrummerMods;
+﻿unit DrummerMods;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Pattern;
 
 // ============================================================================
-// BehindBeatTiming — delays hits slightly behind the beat (Bonham signature)
+// BehindBeatTiming â€” delays hits slightly behind the beat (Bonham signature)
 // ============================================================================
 type
   TBehindBeatTiming = class
@@ -21,7 +21,7 @@ type
   end;
 
 // ============================================================================
-// TriplettVocabulary — adds triplet-based fills and phrasing
+// TriplettVocabulary â€” adds triplet-based fills and phrasing
 // ============================================================================
 type
   TTripeltVocabulary = class
@@ -33,7 +33,7 @@ type
   end;
 
 // ============================================================================
-// HeavyAccents — increases accent contrast for power playing
+// HeavyAccents â€” increases accent contrast for power playing
 // ============================================================================
 type
   THeavyAccents = class
@@ -45,7 +45,7 @@ type
   end;
 
 // ============================================================================
-// GhostNoteLayer — adds subtle ghost notes for groove
+// GhostNoteLayer â€” adds subtle ghost notes for groove
 // ============================================================================
 type
   TGhostNoteLayer = class
@@ -57,7 +57,7 @@ type
   end;
 
 // ============================================================================
-// LinearCoordination — removes simultaneous hits for linear playing
+// LinearCoordination â€” removes simultaneous hits for linear playing
 // ============================================================================
 type
   TLinearCoordination = class
@@ -69,7 +69,7 @@ type
   end;
 
 // ============================================================================
-// ShuffleFeelApplication — adds shuffle/swing feel (Porcaro signature)
+// ShuffleFeelApplication â€” adds shuffle/swing feel (Porcaro signature)
 // ============================================================================
 type
   TShuffleFeelApplication = class
@@ -81,7 +81,7 @@ type
   end;
 
 // ============================================================================
-// FastChopsTriplets — fast technical fills (Chambers signature)
+// FastChopsTriplets â€” fast technical fills (Chambers signature)
 // ============================================================================
 type
   TFastChopsTriplets = class
@@ -93,7 +93,7 @@ type
   end;
 
 // ============================================================================
-// PocketStretching — subtle groove variations (Chambers signature)
+// PocketStretching â€” subtle groove variations (Chambers signature)
 // ============================================================================
 type
   TPocketStretching = class
@@ -102,7 +102,7 @@ type
   end;
 
 // ============================================================================
-// MinimalCreativity — sparse, atmospheric approach (Roeder signature)
+// MinimalCreativity â€” sparse, atmospheric approach (Roeder signature)
 // ============================================================================
 type
   TMinimalCreativity = class
@@ -111,7 +111,7 @@ type
   end;
 
 // ============================================================================
-// SpeedPrecision — consistent timing/velocity (Dee signature)
+// SpeedPrecision â€” consistent timing/velocity (Dee signature)
 // ============================================================================
 type
   TSpeedPrecision = class
@@ -123,7 +123,7 @@ type
   end;
 
 // ============================================================================
-// TwistedAccents — displaced accents (Dee signature)
+// TwistedAccents â€” displaced accents (Dee signature)
 // ============================================================================
 type
   TTwistedAccents = class
@@ -135,7 +135,7 @@ type
   end;
 
 // ============================================================================
-// MechanicalPrecision — extreme quantization (Hoglan signature)
+// MechanicalPrecision â€” extreme quantization (Hoglan signature)
 // ============================================================================
 type
   TMechanicalPrecision = class
@@ -147,7 +147,7 @@ type
   end;
 
 // ============================================================================
-// BlastBeatApplication — applies blast beats for metal (Hoglan signature)
+// BlastBeatApplication â€” applies blast beats for metal (Hoglan signature)
 // ============================================================================
 type
   TBlastBeatApplication = class

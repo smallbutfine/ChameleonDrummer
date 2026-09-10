@@ -1,8 +1,8 @@
-unit ArdourExport;
+﻿unit ArdourExport;
 
 {$mode objfpc}{$H+}
 
-{ TArdourSessionExporter — Generates complete Ardour session XML files.
+{ TArdourSessionExporter â€” Generates complete Ardour session XML files.
   Creates .ardour project directories with MIDI tracks and markers
   pre-configured. Compatible with Ardour 8/9 via native C++ engine
   integration. }
@@ -33,7 +33,7 @@ type
   private
     FSessionName: String;
     FSamplesPerSecond: Integer;
-    FSections: TList<TArdourSection>;
+    FSections: specialize TList<TArdourSection>;
     FMIDIMSecPerBeat: Cardinal;
     FMIDIFileName: String; { Display name for Source reference. */
     FMIDISourcePath: String; { Actual path where MIDI file already exists. */
@@ -69,7 +69,7 @@ begin
   FMIDISourcePath := '';
   FMIDITotalBars := 0;
   FMIDIDurationSeconds := 0.0;
-  FSections := TList<TArdourSection>.Create;
+  FSections := specialize TList<TArdourSection>.Create;
 end;
 
 destructor TArdourSessionExporter.Destroy;
@@ -171,7 +171,7 @@ var
 begin
   // Use song's total duration (set by SetMIDIFromSong) for region length.
   MIDILengthSecs := FMIDIDurationSeconds;
-  if (MIDILengthSecs <= 0) then Exit(''); { Not initialized — caller forgot SetMIDIFromSong. */
+  if (MIDILengthSecs <= 0) then Exit(''); { Not initialized â€” caller forgot SetMIDIFromSong. */
 
   // Generate track XML for MIDI track
   var Track: TArdourTrack;

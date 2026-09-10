@@ -1,4 +1,4 @@
-unit Jazz;
+﻿unit Jazz;
 
 {$mode objfpc}{$H+}
 
@@ -38,8 +38,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
-    function GetSectionGrooves: TList<TPattern>;
-    function GetCommonFills: TList<TFill>;
+    function GetSectionGrooves: specialize TList<TPattern>;
+    function GetCommonFills: specialize TList<TFill>;
     function GetHighEnergyTimekeeper: String; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -209,7 +209,7 @@ begin
   case FStyle of
     'swing':
       begin
-        // Bridge — switch to ride bell or hi-hat
+        // Bridge â€” switch to ride bell or hi-hat
         if (BarIndex mod 2 = 0) then
           Composer.Add(TSteadyRide.Create)
         else
@@ -262,12 +262,12 @@ begin
   Result := GetFlavorBridge(BarIndex);
 end;
 
-function TJazzGenrePlugin.GetSectionGrooves: TList<TPattern>;
+function TJazzGenrePlugin.GetSectionGrooves: specialize TList<TPattern>;
 var
-  GrooveList: TList<TPattern>;
+  GrooveList: specialize TList<TPattern>;
   BarIdx: Integer;
 begin
-  GrooveList := TList<TPattern>.Create;
+  GrooveList := specialize TList<TPattern>.Create;
 
   for BarIdx := 0 to 1 do
     GrooveList.Add(GetFlavorVerse(BarIdx));
@@ -281,11 +281,11 @@ begin
   Result := GrooveList;
 end;
 
-function TJazzGenrePlugin.GetCommonFills: TList<TFill>;
+function TJazzGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   with TFill.Create('jazz_tom_roll', 'Jazz tom roll') do
   begin

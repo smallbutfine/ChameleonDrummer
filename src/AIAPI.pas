@@ -1,4 +1,4 @@
-unit AIAPI;
+﻿unit AIAPI;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   AIPatternGenerator, Song;
 
 // ============================================================================
-// TAIAPI — High-level AI generation API entry point
+// TAIAPI â€” High-level AI generation API entry point
 // ============================================================================
 type
   TAIAPI = class

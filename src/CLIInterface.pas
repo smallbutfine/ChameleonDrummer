@@ -1,4 +1,4 @@
-unit CLIInterface;
+﻿unit CLIInterface;
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
   PluginRegistry, Kit, MIDIEngine;
 
 // ============================================================================
-// TCLIInterface — command-line interface for MIDI Drums Generator
+// TCLIInterface â€” command-line interface for MIDI Drums Generator
 // ============================================================================
 type
   TCLIArgs = record

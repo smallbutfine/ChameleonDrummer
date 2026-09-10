@@ -1,4 +1,4 @@
-unit Song;
+﻿unit Song;
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
 
 type
 
-{ ── Fill ──────────────────────────────────────────────────────────────────── }
+{ â”€â”€ Fill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { A drum fill pattern. }
 TFill = class(TObject)
@@ -28,24 +28,24 @@ public
   property SectionPosition: string read FSectionPosition write FSectionPosition;
 end;
 
-{ ── PatternVariation ──────────────────────────────────────────────────────── }
+{ â”€â”€ PatternVariation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { Variation of a base pattern. }
 TPatternVariation = class(TObject)
 private
   FPattern: TPattern;
   FProbability: float;
-  FBars: TObjectList<Integer>;
+  FBars: TObjecspecialize TList<Integer>;
 public
   constructor Create(APattern: TPattern);
   destructor Destroy; override;
 
   property Pattern: TPattern read FPattern write FPattern;
   property Probability: float read FProbability write FProbability;
-  property Bars: TObjectList<Integer> read FBars; { nil = any bar }
+  property Bars: TObjecspecialize TList<Integer> read FBars; { nil = any bar }
 end;
 
-{ ── SongSegment ───────────────────────────────────────────────────────────── }
+{ â”€â”€ SongSegment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { A tempo/time-signature-homogeneous slice within a Section.
   Mirrors the song_creator REAPER tool's region-segment shape ({bars, bpm, num, denom}) so a Section can contain a mid-section tempo or meter change.
@@ -64,21 +64,21 @@ public
   property TimeSignature: TTimeSignature read FTimeSignature write FTimeSignature;
 end;
 
-{ ── Section ───────────────────────────────────────────────────────────────── }
+{ â”€â”€ Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { Song section (verse, chorus, etc.) with pattern and variations. }
 TSection = class(TObject)
 private
-  FBeats: TObjectList<Integer>; { local bar indices for fills }
+  FBeats: TObjecspecialize TList<Integer>; { local bar indices for fills }
 public
   Name: string;
   Pattern: TPattern;
   Bars: Integer;
-  Variations: TObjectList<TPatternVariation>;
-  Fills: TObjectList<TFill>;
-  SectionParameters: TDictionary<string, string>;
-  Segments: TObjectList<TSongSegment>;
-  GrooveOffsetsMs: TList<Single>;
+  Variations: TObjecspecialize TList<TPatternVariation>;
+  Fills: TObjecspecialize TList<TFill>;
+  SectionParameters: specialize TDictionary<string, string>;
+  Segments: TObjecspecialize TList<TSongSegment>;
+  GrooveOffsetsMs: specialize TList<Single>;
 
   constructor Create(const AName: string; APattern: TPattern; ABars: Integer = 4);
   destructor Destroy; override;
@@ -88,13 +88,13 @@ public
   function SegmentForBar(ABarNumber: Integer): TSongSegment;
   function EffectiveTempo(ABarNumber, ASongTempo: Integer): Integer;
   function EffectiveTimeSignature(ABarNumber: Integer; ASongTimeSignature: TTimeSignature): TTimeSignature;
-  function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): TObjectList<TRecord>; { tuple of (bars, tempo, time_signature) }
+  function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): TObjecspecialize TList<TRecord>; { tuple of (bars, tempo, time_signature) }
 
   function GetEffectivePattern(ABarNumber: Integer): TPattern;
   function ShouldAddFill(ABarNumber: Integer; AFillFrequency: float): TFill;
 end;
 
-{ ── Song ──────────────────────────────────────────────────────────────────── }
+{ â”€â”€ Song â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { Complete song structure with sections and global parameters. }
 TSong = class(TObject)
@@ -102,9 +102,9 @@ public
   Name: string;
   Tempo: Integer;
   TimeSignature: TTimeSignature;
-  Sections: TObjectList<TSection>;
+  Sections: TObjecspecialize TList<TSection>;
   GlobalParameters: TGenerationParameters;
-  Metadata: TDictionary<string, string>;
+  Metadata: specialize TDictionary<string, string>;
 
   constructor Create(const AName: string; ATempo: Integer = 120);
   destructor Destroy; override;
@@ -112,16 +112,16 @@ public
   function AddSection(ASection: TSection): TSong;
   function TotalBars: Integer;
   function TotalDurationSeconds: float;
-  function SectionStartTimes: TList<Single>;
+  function SectionStartTimes: specialize TList<Single>;
   function GetSectionByName(const AName: string): TSection;
-  function GetSectionsByName(const AName: string): TObjectList<TSection>;
+  function GetSectionsByName(const AName: string): TObjecspecialize TList<TSection>;
 
   class function CreateSimpleStructure(const AName: string; ATempo: Integer = 120; const AGenre, AStyle: string): TSong; static;
 end;
 
 implementation
 
-{ ── Fill ──────────────────────────────────────────────────────────────────── }
+{ â”€â”€ Fill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TFill.Create(APattern: TPattern);
 begin
@@ -136,7 +136,7 @@ begin
   inherited Destroy;
 end;
 
-{ ── PatternVariation ──────────────────────────────────────────────────────── }
+{ â”€â”€ PatternVariation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TPatternVariation.Create(APattern: TPattern);
 begin
@@ -153,7 +153,7 @@ begin
   inherited Destroy;
 end;
 
-{ ── SongSegment ───────────────────────────────────────────────────────────── }
+{ â”€â”€ SongSegment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TSongSegment.Create(ABars: Integer);
 begin
@@ -170,7 +170,7 @@ begin
   inherited Destroy;
 end;
 
-{ ── Section ───────────────────────────────────────────────────────────────── }
+{ â”€â”€ Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TSection.Create(const AName: string; APattern: TPattern; ABars: Integer = 4);
 begin
@@ -178,11 +178,11 @@ begin
   Name := AName;
   Pattern := APattern;
   Bars := ABars;
-  Variations := TObjectList<TPatternVariation>.Create(true);
-  Fills := TObjectList<TFill>.Create(true);
+  Variations := TObjecspecialize TList<TPatternVariation>.Create(true);
+  Fills := TObjecspecialize TList<TFill>.Create(true);
   SectionParameters := TDictionary<string, string>.Create;
-  Segments := TObjectList<TSongSegment>.Create(true);
-  GrooveOffsetsMs := TList<Single>.Create;
+  Segments := TObjecspecialize TList<TSongSegment>.Create(true);
+  GrooveOffsetsMs := specialize TList<Single>.Create;
   ValidateSegments;
 end;
 
@@ -249,10 +249,10 @@ begin
     Result := Segment.FTimeSignature;
 end;
 
-function TSection.ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): TObjectList<TRecord>;
+function TSection.ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): TObjecspecialize TList<TRecord>;
 { Returns list of (bars, tempo, time_signature) triples }
 begin
-  Result := TObjectList<TRecord>.Create(true);
+  Result := TObjecspecialize TList<TRecord>.Create(true);
   if Segments.Count > 0 then
     for var Segment in Segments do
     begin
@@ -316,7 +316,7 @@ begin
   end;
 end;
 
-{ ── Song ──────────────────────────────────────────────────────────────────── }
+{ â”€â”€ Song â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TSong.Create(const AName: string; ATempo: Integer = 120);
 begin
@@ -324,7 +324,7 @@ begin
   Name := AName;
   Tempo := ATempo;
   TimeSignature := TTimeSignature.Create(4, 4);
-  Sections := TObjectList<TSection>.Create(true);
+  Sections := TObjecspecialize TList<TSection>.Create(true);
   GlobalParameters := nil;
   Metadata := TDictionary<string, string>.Create;
 
@@ -358,7 +358,7 @@ end;
 function TSong.TotalDurationSeconds: float;
 var
   Section: TSection;
-  BarSpecs: TObjectList<TRecord>;
+  BarSpecs: TObjecspecialize TList<TRecord>;
   Bars, Tempo: Integer;
   TimeSig: TTimeSignature;
 begin
@@ -368,12 +368,12 @@ begin
       Result := Result + (Bars * TimeSig.BeatsPerBar) / (Tempo / 60.0);
 end;
 
-function TSong.SectionStartTimes: TList<Single>;
+function TSong.SectionStartTimes: specialize TList<Single>;
 var
   Elapsed: Single;
   Section: TSection;
 begin
-  Result := TList<Single>.Create;
+  Result := specialize TList<Single>.Create;
   Elapsed := 0.0;
   for Section in Sections do
   begin
@@ -395,11 +395,11 @@ begin
   Result := nil;
 end;
 
-function TSong.GetSectionsByName(const AName: string): TObjectList<TSection>;
+function TSong.GetSectionsByName(const AName: string): TObjecspecialize TList<TSection>;
 var
   Section: TSection;
 begin
-  Result := TObjectList<TSection>.Create(true);
+  Result := TObjecspecialize TList<TSection>.Create(true);
   for Section in Sections do
     if Section.Name = AName then
       Result.Add(Section);

@@ -1,4 +1,4 @@
-unit Patterns;
+﻿unit Patterns;
 
 {$mode objfpc}{$H+}
 
@@ -12,29 +12,29 @@ uses
 
 type
 
-{ ── PatternTemplate — abstract base for composable pattern structures. */ }
+{ â”€â”€ PatternTemplate â€” abstract base for composable pattern structures. */ }
 
 TPatternTemplate = abstract class(TObject)
 public
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; virtual; abstract;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; virtual; abstract;
 end;
 
-{ ── BasicGroove — standard groove (kick + snare + hihat). */ }
+{ â”€â”€ BasicGroove â€” standard groove (kick + snare + hihat). */ }
 
 TBasicGroove = class(TPatternTemplate)
 public
-  KickPositions: TList<float>;
-  SnarePositions: TList<float>;
+  KickPositions: specialize TList<float>;
+  SnarePositions: specialize TList<float>;
   HiHatSubdivision: float;
   UseOpenHiHat: boolean;
-  OpenHiHatPositions: TList<float>;
+  OpenHiHatPositions: specialize TList<float>;
 
-  constructor Create(AKickPos: TList<float> = nil; ASnarePos: TList<float> = nil; AHiHatSub: float = 0.25);
+  constructor Create(AKickPos: specialize TList<float> = nil; ASnarePos: specialize TList<float> = nil; AHiHatSub: float = 0.25);
   destructor Destroy; override;
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 end;
 
-{ ── DoubleBassPedal — fast double bass pattern for metal. */ }
+{ â”€â”€ DoubleBassPedal â€” fast double bass pattern for metal. */ }
 
 TDoubleBassPedal = class(TPatternTemplate)
 public
@@ -45,7 +45,7 @@ public
   TimekeeperVariant: string;
 
   constructor Create(ASubdiv: float = 0.25; AIntensity: float = 1.0; APatternType: string = 'continuous'; ATimekeeper: boolean = true; ATimekeeperVar: string = 'ride');
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 
 private
   function GenContinuous(Builder: TPatternBuilder; Bars: Integer; IncludeTK: boolean): TPatternBuilder;
@@ -53,14 +53,14 @@ private
   function GenTriplet(Builder: TPatternBuilder; Bars: Integer; IncludeTK: boolean): TPatternBuilder;
 end;
 
-{ ── BlastBeat — death metal blast beat patterns. */ }
+{ â”€â”€ BlastBeat â€” death metal blast beat patterns. */ }
 
 TBlastBeat = class(TPatternTemplate)
 public
   Style: string;
   Intensity: float;
   constructor Create(AS tyle: string = 'traditional'; AIntensity: float = 1.0); { Note: param name preserved from source typo for compat. */
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 
 private
   function TradBlast(Builder: TPatternBuilder; Bars: Integer): TPatternBuilder;
@@ -68,17 +68,17 @@ private
   function GravBlast(Builder: TPatternBuilder; Bars: Integer): TPatternBuilder;
 end;
 
-{ ── SteadyRidePattern — straight ride for rock/metal. */ }
+{ â”€â”€ SteadyRidePattern â€” straight ride for rock/metal. */ }
 
 TSteadyRide = class(TPatternTemplate)
 public
   Subdivision: float;
   UseBell, UseShaft: boolean;
   constructor Create(ASubdiv: float = 0.25);
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 end;
 
-{ ── JazzRidePattern — jazz ride with swing feel. */ }
+{ â”€â”€ JazzRidePattern â€” jazz ride with swing feel. */ }
 
 TJazzRide = class(TPatternTemplate)
 public
@@ -86,38 +86,38 @@ public
   AccentPattern: string; { 'standard', 'elvin', 'tony' */
   UseBell, UseShaft: boolean;
   constructor Create(ASwing: float = 0.33);
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 
 private
   function AccentVel(TripletIdx: Integer): Integer;
 end;
 
-{ ── FunkGhostNotes — funk ghost notes on snare. */ }
+{ â”€â”€ FunkGhostNotes â€” funk ghost notes on snare. */ }
 
 TFunkGhost = class(TPatternTemplate)
 public
   Density: float;
   EmphasizeOne: boolean;
-  MainSnarePositions: TList<float>;
+  MainSnarePositions: specialize TList<float>;
   constructor Create(ADensity: float = 0.7);
   destructor Destroy; override;
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 end;
 
-{ ── CrashAccents — crash cymbal accents for emphasis. */ }
+{ â”€â”€ CrashAccents â€” crash cymbal accents for emphasis. */ }
 
 TCrashAccent = class(TPatternTemplate)
 public
-  Positions: TList<float>;
+  Positions: specialize TList<float>;
   UseChina: boolean;
   Intensity: float;
   CrashType: string; { 'light', 'heavy', 'splash' or '' (default crash). */
-  constructor Create(APositions: TList<float> = nil);
+  constructor Create(APositions: specialize TList<float> = nil);
   destructor Destroy; override;
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 end;
 
-{ ── TomFill — tom fill patterns for transitions. */ }
+{ â”€â”€ TomFill â€” tom fill patterns for transitions. */ }
 
 TTomFill = class(TPatternTemplate)
 public
@@ -126,15 +126,15 @@ public
   StartPosition: float;
   UseEdge: boolean;
   constructor Create(AS tyle: string = 'descending'; ASubdiv: float = 0.0625; AStartPos: float = 3.0);
-  function Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder; override;
+  function Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
 end;
 
-{ ── TemplateComposer — composable pattern builder (fluent API). */ }
+{ â”€â”€ TemplateComposer â€” composable pattern builder (fluent API). */ }
 
 TTemplateComposer = class(TObject)
 private
   FPName: string;
-  FTemplates: TObjectList<TPatternTemplate>;
+  FTemplates: TObjecspecialize TList<TPatternTemplate>;
 public
   constructor Create(const AName: string);
   destructor Destroy; override;
@@ -144,15 +144,15 @@ end;
 
 implementation
 
-{ ── BasicGroove ─────────────────────────────────────────────────────────── }
+{ â”€â”€ BasicGroove â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
-constructor TBasicGroove.Create(AKickPos, ASnarePos: TList<float>; AHiHatSub: float = 0.25);
+constructor TBasicGroove.Create(AKickPos, ASnarePos: specialize TList<float>; AHiHatSub: float = 0.25);
 begin
   inherited Create;
   { Build default kick positions (beats 1 and 3). */
   if AKickPos = nil then
     begin
-      KickPositions := TList<float>.Create;
+      KickPositions := specialize TList<float>.Create;
       KickPositions.Add(0.0);  // beat 1
       KickPositions.Add(2.0);  // beat 3
     end
@@ -162,7 +162,7 @@ begin
   { Build default snare positions (beats 2 and 4). */
   if ASnarePos = nil then
     begin
-      SnarePositions := TList<float>.Create;
+      SnarePositions := specialize TList<float>.Create;
       SnarePositions.Add(1.0);  // beat 2
       SnarePositions.Add(3.0);  // beat 4
     end
@@ -171,7 +171,7 @@ begin
     
   HiHatSubdivision := AHiHatSub;
   UseOpenHiHat := true;
-  OpenHiHatPositions := TList<float>.Create;
+  OpenHiHatPositions := specialize TList<float>.Create;
 end;
 
 destructor TBasicGroove.Destroy;
@@ -182,7 +182,7 @@ begin
   inherited Destroy;
 end;
 
-function TBasicGroove.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TBasicGroove.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Complexity, Dynamics: float;
   Pos: float;
@@ -230,7 +230,7 @@ begin
           if Abs(BeatPos - OP) < 0.001 then
             ShouldOpen := true;
 
-      { Downbeat → bell accent; offbeat → weighted closed variant. */
+      { Downbeat â†’ bell accent; offbeat â†’ weighted closed variant. */
       if (Round(RelativePos) = RelativePos) or ShouldOpen then
         Builder.HiHatClosedBell(BeatPos, 90)
       else
@@ -247,7 +247,7 @@ begin
   Result := Builder;
 end;
 
-{ ── DoubleBassPedal ─────────────────────────────────────────────────────── }
+{ â”€â”€ DoubleBassPedal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TDoubleBassPedal.Create(ASubdiv: float = 0.25; AIntensity: float = 1.0; APatternType: string = 'continuous'; ATimekeeper: boolean = true; ATimekeeperVar: string = 'ride');
 begin
@@ -342,7 +342,7 @@ begin
   Result := Builder;
 end;
 
-function TDoubleBassPedal.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TDoubleBassPedal.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars: Integer;
 begin
@@ -355,10 +355,10 @@ begin
   else
     Result := GenContinuous(Builder, Bars, IncludeTK);
 
-  { NOTE: The above has a type issue — Intensity is float but I passed boolean IncludeTK. This is intentional simplification for Pascal's strict typing. In production, this would be fixed. */
+  { NOTE: The above has a type issue â€” Intensity is float but I passed boolean IncludeTK. This is intentional simplification for Pascal's strict typing. In production, this would be fixed. */
 end;
 
-{ ── BlastBeat ───────────────────────────────────────────────────────────── }
+{ â”€â”€ BlastBeat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TBlastBeat.Create(AS tyle: string = 'traditional'; AIntensity: float = 1.0);
 begin
@@ -427,7 +427,7 @@ begin
   Result := Builder;
 end;
 
-function TBlastBeat.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TBlastBeat.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars: Integer;
 begin
@@ -441,7 +441,7 @@ begin
     Result := TradBlast(Builder, Bars); { default traditional. */
 end;
 
-{ ── SteadyRide ──────────────────────────────────────────────────────────── }
+{ â”€â”€ SteadyRide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TSteadyRide.Create(ASubdiv: float = 0.25);
 begin
@@ -449,7 +449,7 @@ begin
   Subdivision := ASubdiv;
 end;
 
-function TSteadyRide.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TSteadyRide.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars, Bar, NumHits, I: Integer;
   BO, Pos: float;
@@ -488,7 +488,7 @@ begin
   Result := Builder;
 end;
 
-{ ── JazzRide ────────────────────────────────────────────────────────────── }
+{ â”€â”€ JazzRide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TJazzRide.Create(ASwing: float = 0.33);
 begin
@@ -500,7 +500,7 @@ end;
 function TJazzRide.AccentVel(TripletIdx: Integer): Integer;
 begin
   if AccentPattern = 'elvin' then
-    Exit(Min(Max(80, 80), 127)) { Elvin Jones — accent every 4th */
+    Exit(Min(Max(80, 80), 127)) { Elvin Jones â€” accent every 4th */
   else if AccentPattern = 'tony' then
   begin
     if TripletIdx mod 3 = 0 then
@@ -518,7 +518,7 @@ begin
   end;
 end;
 
-function TJazzRide.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TJazzRide.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars, Bar, I: Integer;
   BO, Pos: float;
@@ -549,14 +549,14 @@ begin
   Result := Builder;
 end;
 
-{ ── FunkGhost ───────────────────────────────────────────────────────────── }
+{ â”€â”€ FunkGhost â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TFunkGhost.Create(ADensity: float = 0.7);
 begin
   inherited Create;
   Density := ADensity;
   EmphasizeOne := true;
-  MainSnarePositions := TList<float>.Create;
+  MainSnarePositions := specialize TList<float>.Create;
   MainSnarePositions.Add(1.0);
   MainSnarePositions.Add(3.0);
 end;
@@ -567,7 +567,7 @@ begin
   inherited Destroy;
 end;
 
-function TFunkGhost.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TFunkGhost.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars, Bar, I: Integer;
   BO, Pos, RelPos: float;
@@ -607,22 +607,22 @@ begin
 
       { Probabilistic ghost notes. */
       if Random < Density then
-        Builder.SnareGhostNote(Pos, 50); { Simplified — needs helper in TPatternBuilder */
+        Builder.SnareGhostNote(Pos, 50); { Simplified â€” needs helper in TPatternBuilder */
     end; { for I. */
   end; { for Bar. */
   Result := Builder;
 end;
 
-{ ── CrashAccent ─────────────────────────────────────────────────────────── }
+{ â”€â”€ CrashAccent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
-constructor TCrashAccent.Create(APositions: TList<float> = nil);
+constructor TCrashAccent.Create(APositions: specialize TList<float> = nil);
 begin
   inherited Create;
   if APositions <> nil then
     Positions := APositions
   else
   begin
-    Positions := TList<float>.Create;
+    Positions := specialize TList<float>.Create;
     Positions.Add(0.0);
   end;
   UseChina := false;
@@ -635,7 +635,7 @@ begin
   inherited Destroy;
 end;
 
-function TCrashAccent.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TCrashAccent.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars, Bar: Integer;
   BO, Pos, AbsPos: float;
@@ -669,7 +669,7 @@ begin
   Result := Builder;
 end;
 
-{ ── TomFill ─────────────────────────────────────────────────────────────── }
+{ â”€â”€ TomFill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TTomFill.Create(AS tyle: string = 'descending'; ASubdiv: float = 0.0625; AStartPos: float = 3.0);
 begin
@@ -679,7 +679,7 @@ begin
   StartPosition := AStartPos;
 end;
 
-function TTomFill.Generate(const Builder: TPatternBuilder; const Kwargs: TDictionary<string, string>): TPatternBuilder;
+function TTomFill.Generate(const Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
   Bars, I, NumHits: Integer;
   BO: float;
@@ -693,12 +693,12 @@ begin
   begin
     var Pos := StartPosition + (I * Subdiv);
     if FillPattern = 'descending' then
-      Builder.Tom(Pos, '1') { High tom → descending pitch */
+      Builder.Tom(Pos, '1') { High tom â†’ descending pitch */
     else if FillPattern = 'ascending' then
       Builder.Tom(Pos, '4') { Floor tom up. */
     else
     begin
-      { Around — spread across toms. */
+      { Around â€” spread across toms. */
       var TomNum: string := IntToStr((I mod 4) + 1);
       Builder.Tom(Pos, TomNum);
     end;
@@ -707,13 +707,13 @@ begin
   Result := Builder;
 end;
 
-{ ── TemplateComposer ───────────────────────────────────────────────────── }
+{ â”€â”€ TemplateComposer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TTemplateComposer.Create(const AName: string);
 begin
   inherited Create;
   FPName := AName;
-  FTemplates := TObjectList<TPatternTemplate>.Create(true);
+  FTemplates := TObjecspecialize TList<TPatternTemplate>.Create(true);
 end;
 
 destructor TTemplateComposer.Destroy;
@@ -730,7 +730,7 @@ end;
 
 function TTemplateComposer.Build(ABars: Integer = 1; AComplexity: float = 0.5): TPattern;
 var
-  Kwargs: TDictionary<string, string>;
+  Kwargs: specialize TDictionary<string, string>;
   Builder: TPatternBuilder;
   Template: TPatternTemplate;
 begin

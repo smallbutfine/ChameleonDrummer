@@ -1,4 +1,4 @@
-unit APICli;
+﻿unit APICli;
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
   PluginRegistry, Kit;
 
 // ============================================================================
-// TCLIInterface — command-line interface for MIDI Drums Generator
+// TCLIInterface â€” command-line interface for MIDI Drums Generator
 // ============================================================================
 type
   TCLIArgs = record

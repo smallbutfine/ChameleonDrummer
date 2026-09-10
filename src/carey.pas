@@ -1,4 +1,4 @@
-unit Carey;
+﻿unit Carey;
 
 {$mode objfpc}{$H+}
 
@@ -21,7 +21,7 @@ type
     destructor Destroy; override;
 
     function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: TList<TFill>;
+    function GetSignatureFills: specialize TList<TFill>;
     function GetDrummerName: String; override;
     function GetCompatibleGenres: TStringList; override;
   end;
@@ -63,11 +63,11 @@ begin
   Result := Styled;
 end;
 
-function TCareyPlugin.GetSignatureFills: TList<TFill>;
+function TCareyPlugin.GetSignatureFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   with TFill.Create('carey_tom_cascade', 'Danny Carey deep tom cascade') do
   begin

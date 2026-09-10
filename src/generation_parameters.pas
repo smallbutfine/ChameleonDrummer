@@ -1,4 +1,4 @@
-unit GenerationParameters;
+﻿unit GenerationParameters;
 
 {$mode objfpc}{$H+}
 
@@ -10,7 +10,7 @@ uses Generics.Collections;
 
 type
 
-{ GenerationParameters — parameters controlling pattern generation. }
+{ GenerationParameters â€” parameters controlling pattern generation. }
 TGenerationParameters = class(TObject)
 private
   FGenre: string;
@@ -24,7 +24,7 @@ private
   FRideThreshold: float;
   FSongGenreContext: string;
   FContextBlend: float;
-  FCustomParameters: TDictionary<string, string>;
+  FCustomParameters: specialize TDictionary<string, string>;
 public
   constructor Create(AGenre, AStyle: string; ADrummer: string = '';
     AComplexity: float = 0.5; ADynamics: float = 0.6; AHumanization: float = 0.5;
@@ -42,12 +42,12 @@ public
   property RideThreshold: float read FRideThreshold write FRideThreshold;
   property SongGenreContext: string read FSongGenreContext write FSongGenreContext;
   property ContextBlend: float read FContextBlend write FContextBlend;
-  property CustomParameters: TDictionary<string, string> read FCustomParameters;
+  property CustomParameters: specialize TDictionary<string, string> read FCustomParameters;
 end;
 
 implementation
 
-{ ── GenerationParameters ─────────────────────────────────────────────────── }
+{ â”€â”€ GenerationParameters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TGenerationParameters.Create(AGenre, AStyle: string; ADrummer: string = '';
   AComplexity: float = 0.5; ADynamics: float = 0.6; AHumanization: float = 0.5;

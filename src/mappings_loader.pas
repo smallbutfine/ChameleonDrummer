@@ -1,8 +1,8 @@
-unit MappingsLoader;
+﻿unit MappingsLoader;
 
 {$mode objfpc}{$H+}
 
-{ Keymap Loader — discover, validate, and load drum instrument mappings.
+{ Keymap Loader â€” discover, validate, and load drum instrument mappings.
   Direct translation of midi_drums/mappings/loader.py }
 
 interface
@@ -11,7 +11,7 @@ uses
   Classes, SysUtils, fpjson, Generics.Collections;
 
 type
-  // TKeymapInfo — metadata about a single loaded keymap file
+  // TKeymapInfo â€” metadata about a single loaded keymap file
   TKeymapInfo = class(TObject)
   private
     FName: string;
@@ -32,7 +32,7 @@ type
     property instruments: specialize TDictionary<string,TJSONObject> read Finstruments write Finstruments;
   end;
 
-// ── Template & Discovery Functions ───────────────────────────────────────────
+// â”€â”€ Template & Discovery Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function load_template(const template_path: string = ''): TKeymapInfo;
 procedure discover_keymaps(const mappings_dir: string; out keymaps: TArray<TKeymapInfo>);
 function get_all_instruments(const template_path: string = ''): specialize TDictionary<string,string>;
@@ -42,7 +42,7 @@ procedure generate_user_keymap(const target_path: string);
 procedure print_keymap_summary(keymaps: TArray<TKeymapInfo> = nil; const cnt: Integer = 0);
 procedure print_missing(const keymap_name, mappings_dir: string);
 
-// ── Internals ────────────────────────────────────────────────────────────────
+// â”€â”€ Internals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _default_template_path: string;
 function _default_mappings_dir: string;
 function _load_keymap_file(const path: string): TKeymapInfo;
@@ -50,7 +50,7 @@ function _validate_keymap(const keymap: TKeymapInfo): TArray<string>;
 
 implementation
 
-// ── TKeymapInfo ──────────────────────────────────────────────────────────────
+// â”€â”€ TKeymapInfo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 constructor TKeymapInfo.Create;
 begin
   inherited Create;
@@ -67,7 +67,7 @@ begin
   inherited Destroy;
 end;
 
-// ── Default paths ────────────────────────────────────────────────────────────
+// â”€â”€ Default paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _default_mappings_dir: string;
 const
   DEFAULT_DIR = 'mappings';
@@ -80,7 +80,7 @@ begin
   Result := _default_mappings_dir() + '/template.json';
 end;
 
-// ── load_template ────────────────────────────────────────────────────────────
+// â”€â”€ load_template â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function load_template(const template_path: string = ''): TKeymapInfo;
 var
   Lpath: string;
@@ -92,7 +92,7 @@ begin
   Result := _load_keymap_file(Lpath);
 end;
 
-// ── _load_keymap_file ────────────────────────────────────────────────────────
+// â”€â”€ _load_keymap_file â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _load_keymap_file(const path: string): TKeymapInfo;
 var
   LJDoc: TJSONValue;
@@ -127,7 +127,7 @@ begin
   if Assigned(LJDoc) then LJDoc.Free;
 end;
 
-// ── discover_keymaps ─────────────────────────────────────────────────────────
+// â”€â”€ discover_keymaps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 procedure discover_keymaps(const mappings_dir: string; out keymaps: TArray<TKeymapInfo>);
 var
   SearchRec: TSearchRec;
@@ -153,7 +153,7 @@ begin
   end;
 end;
 
-// ── get_all_instruments ──────────────────────────────────────────────────────
+// â”€â”€ get_all_instruments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function get_all_instruments(const template_path: string = ''): specialize TDictionary<string,string>;
 var
   Ltmpl: TKeymapInfo;
@@ -166,7 +166,7 @@ begin
   Ltmpl.Free;
 end;
 
-// ── get_mapped_instruments ───────────────────────────────────────────────────
+// â”€â”€ get_mapped_instruments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function get_mapped_instruments(const keymap_name, mappings_dir: string): specialize TDictionary<string,string>;
 var
   Lpath: string;
@@ -206,7 +206,7 @@ begin
   end;
 end;
 
-// ── get_unmapped_instruments ─────────────────────────────────────────────────
+// â”€â”€ get_unmapped_instruments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function get_unmapped_instruments(const keymap_name, mappings_dir: string): specialize TDictionary<string,string>;
 var
   LMapped, LAll: specialize TDictionary<string,string>;
@@ -224,7 +224,7 @@ begin
   LAll.Free;
 end;
 
-// ── generate_user_keymap ─────────────────────────────────────────────────────
+// â”€â”€ generate_user_keymap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 procedure generate_user_keymap(const target_path: string);
 var
   LTemplate: TKeymapInfo;
@@ -273,7 +273,7 @@ begin
   LTemplate.Free;
 end;
 
-// ── print_keymap_summary ─────────────────────────────────────────────────────
+// â”€â”€ print_keymap_summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 procedure print_keymap_summary(keymaps: TArray<TKeymapInfo>; const cnt: Integer);
 var
   Lall_instruments, LMapped: specialize TDictionary<string,string>;
@@ -317,7 +317,7 @@ begin
   Lall_instruments.Free;
 end;
 
-// ── print_missing ────────────────────────────────────────────────────────────
+// â”€â”€ print_missing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 procedure print_missing(const keymap_name, mappings_dir: string);
 var
   Lunmapped: specialize TDictionary<string,string>;
@@ -379,7 +379,7 @@ begin
   Ltmpl.Free;
 end;
 
-// ── _validate_keymap ─────────────────────────────────────────────────────────
+// â”€â”€ _validate_keymap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function _validate_keymap(const keymap: TKeymapInfo): TArray<string>;
 var
   Ltmpl: TKeymapInfo;
@@ -419,7 +419,7 @@ begin
   Lwarnings.Free;
 end;
 
-// ── Helper: FileToStr ────────────────────────────────────────────────────────
+// â”€â”€ Helper: FileToStr â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function FileToStr(const AFileName: string): string;
 var
   LStream: TFileStream;
@@ -434,8 +434,8 @@ begin
   end;
 end;
 
-// ── Helper: TJJSONObject.TryGetValue ─────────────────────────────────────────
-{ fpjson TJSONObject doesn't have TryGetValue in FPC 3.2 — we patch via inline }
+// â”€â”€ Helper: TJJSONObject.TryGetValue â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+{ fpjson TJSONObject doesn't have TryGetValue in FPC 3.2 â€” we patch via inline }
 type
   TJJSONObjectHelper = class helper for TJJSONObject
     function TryGetValue(const AName: string; out AValue: TJSONValue): Boolean;
@@ -454,7 +454,7 @@ begin
   Result := False;
 end;
 
-// ── Helper: TJString ─────────────────────────────────────────────────────────
+// â”€â”€ Helper: TJString â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 { fpjson TJSONString wrapper }
 type
   TJSONString = class(TJSONString) // forward ref, already defined in fpjson
@@ -467,7 +467,7 @@ begin
   Result := FValue; // fpjson internal field
 end;
 
-// ── Stub: TStringList.IndexOfName (fpjson uses this internally) ──────────────
-{ Already defined in fpjson — no need to reimplement }
+// â”€â”€ Stub: TStringList.IndexOfName (fpjson uses this internally) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+{ Already defined in fpjson â€” no need to reimplement }
 
 end.

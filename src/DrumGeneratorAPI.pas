@@ -1,4 +1,4 @@
-unit DrumGeneratorAPI;
+﻿unit DrumGeneratorAPI;
 
 {$mode objfpc}{$H+}
 
@@ -11,7 +11,7 @@ uses
   PluginRegistry, Kit, MIDIEngine;
 
 // ============================================================================
-// TDrumGeneratorAPI — high-level API for MIDI Drums Generator
+// TDrumGeneratorAPI â€” high-level API for MIDI Drums Generator
 // ============================================================================
 type
   TDrumGeneratorAPI = class

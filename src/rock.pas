@@ -1,4 +1,4 @@
-unit Rock;
+﻿unit Rock;
 
 {$mode objfpc}{$H+}
 
@@ -38,8 +38,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
-    function GetSectionGrooves: TList<TPattern>;
-    function GetCommonFills: TList<TFill>;
+    function GetSectionGrooves: specialize TList<TPattern>;
+    function GetCommonFills: specialize TList<TFill>;
     function GetHighEnergyTimekeeper: String; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -266,12 +266,12 @@ begin
   Result := GetFlavorBridge(BarIndex);
 end;
 
-function TRockGenrePlugin.GetSectionGrooves: TList<TPattern>;
+function TRockGenrePlugin.GetSectionGrooves: specialize TList<TPattern>;
 var
-  GrooveList: TList<TPattern>;
+  GrooveList: specialize TList<TPattern>;
   BarIdx: Integer;
 begin
-  GrooveList := TList<TPattern>.Create;
+  GrooveList := specialize TList<TPattern>.Create;
 
   for BarIdx := 0 to 2 do
     GrooveList.Add(GetFlavorVerse(BarIdx));
@@ -292,11 +292,11 @@ begin
   Result := GrooveList;
 end;
 
-function TRockGenrePlugin.GetCommonFills: TList<TFill>;
+function TRockGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   with TFill.Create('rock_tom_downfill', 'Rock tom cascade') do
   begin

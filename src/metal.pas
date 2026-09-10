@@ -1,4 +1,4 @@
-unit Metal;
+﻿unit Metal;
 
 {$mode objfpc}{$H+}
 
@@ -39,8 +39,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
-    function GetSectionGrooves: TList<TPattern>;
-    function GetCommonFills: TList<TFill>;
+    function GetSectionGrooves: specialize TList<TPattern>;
+    function GetCommonFills: specialize TList<TFill>;
     function GetHighEnergyTimekeeper: String; override;
 
     // Flavor rotation helpers
@@ -121,46 +121,46 @@ begin
   case FStyle of
     'heavy':
       begin
-        // Classic heavy metal — Sabbath/Iron Maiden style
+        // Classic heavy metal â€” Sabbath/Iron Maiden style
         Composer.Add(TBasicGroove.Create);
         if (BarIndex mod 2 = 0) then
           Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'death':
       begin
-        // Death metal — blast beats, double bass
+        // Death metal â€” blast beats, double bass
         Composer.Add(TDoubleBassPedal.Create('continuous', 16));
         if (IntensityFactor > 0.7) then
           Composer.Add(TBlastBeat.Create('traditional', IntensityFactor));
       end;
     'power':
       begin
-        // Power metal — anthemic, driving
+        // Power metal â€” anthemic, driving
         Composer.Add(TBasicGroove.Create);
         Composer.Add(TDoubleBassPedal.Create('gallop', 16));
       end;
     'progressive':
       begin
-        // Progressive — complex syncopation
+        // Progressive â€” complex syncopation
         Composer.Add(TBasicGroove.Create);
         if (BarIndex mod 3 = 0) then
           Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'thrash':
       begin
-        // Thrash — fast aggressive
+        // Thrash â€” fast aggressive
         Composer.Add(TDoubleBassPedal.Create('continuous', 16));
         if (IntensityFactor > 0.6) then
           Composer.Add(TBlastBeat.Create('hammer', IntensityFactor * 0.9));
       end;
     'doom':
       begin
-        // Doom — slow, heavy, crushing
+        // Doom â€” slow, heavy, crushing
         Composer.Add(TBasicGroove.Create);
       end;
     'breakdown':
       begin
-        // Breakdown — syncopated chugs
+        // Breakdown â€” syncopated chugs
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
   else
@@ -180,43 +180,43 @@ begin
   case FStyle of
     'heavy':
       begin
-        // Heavy chorus — bigger crash accents
+        // Heavy chorus â€” bigger crash accents
         Composer.Add(TBasicGroove.Create);
         Composer.Add(TCrashAccents.Create);
       end;
     'death':
       begin
-        // Death chorus — extended blast
+        // Death chorus â€” extended blast
         Composer.Add(TDoubleBassPedal.Create('continuous', 16));
         Composer.Add(TBlastBeat.Create('gravity', FIntensity));
       end;
     'power':
       begin
-        // Power chorus — gallop drive
+        // Power chorus â€” gallop drive
         Composer.Add(TDoubleBassPedal.Create('gallop', 16));
         Composer.Add(TCrashAccents.Create);
       end;
     'progressive':
       begin
-        // Progressive chorus — odd meter feel
+        // Progressive chorus â€” odd meter feel
         Composer.Add(TBasicGroove.Create);
         if (BarIndex mod 2 = 0) then
           Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'thrash':
       begin
-        // Thrash chorus — relentless double bass
+        // Thrash chorus â€” relentless double bass
         Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'doom':
       begin
-        // Doom chorus — crushing sustained hits
+        // Doom chorus â€” crushing sustained hits
         Composer.Add(TBasicGroove.Create);
         Composer.Add(TCrashAccents.Create);
       end;
     'breakdown':
       begin
-        // Breakdown chorus — half-time chugs
+        // Breakdown chorus â€” half-time chugs
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
   else
@@ -236,42 +236,42 @@ begin
   case FStyle of
     'heavy':
       begin
-        // Heavy bridge — build up with tom fill
+        // Heavy bridge â€” build up with tom fill
         Composer.Add(TBasicGroove.Create);
         Composer.Add(TTomFill.Create('descending'));
       end;
     'death':
       begin
-        // Death bridge — sparse blast
+        // Death bridge â€” sparse blast
         if (BarIndex mod 2 = 0) then
           Composer.Add(TBlastBeat.Create('traditional', FIntensity * 0.8));
         Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'power':
       begin
-        // Power bridge — melodic ride pattern
+        // Power bridge â€” melodic ride pattern
         Composer.Add(TSteadyRide.Create);
       end;
     'progressive':
       begin
-        // Progressive bridge — complex layering
+        // Progressive bridge â€” complex layering
         Composer.Add(TBasicGroove.Create);
         if (BarIndex mod 2 = 0) then
           Composer.Add(TDoubleBassPedal.Create('gallop', 16));
       end;
     'thrash':
       begin
-        // Thrash bridge — half-time chug
+        // Thrash bridge â€” half-time chug
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
     'doom':
       begin
-        // Doom bridge — minimal crushing
+        // Doom bridge â€” minimal crushing
         Composer.Add(TBasicGroove.Create);
       end;
     'breakdown':
       begin
-        // Breakdown bridge — stop-time feel
+        // Breakdown bridge â€” stop-time feel
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
   else
@@ -297,12 +297,12 @@ begin
   Result := GetFlavorBridge(BarIndex);
 end;
 
-function TMetalGenrePlugin.GetSectionGrooves: TList<TPattern>;
+function TMetalGenrePlugin.GetSectionGrooves: specialize TList<TPattern>;
 var
-  GrooveList: TList<TPattern>;
+  GrooveList: specialize TList<TPattern>;
   BarIdx: Integer;
 begin
-  GrooveList := TList<TPattern>.Create;
+  GrooveList := specialize TList<TPattern>.Create;
 
   // Verse grooves (3 per style)
   for BarIdx := 0 to 2 do
@@ -328,11 +328,11 @@ begin
   Result := GrooveList;
 end;
 
-function TMetalGenrePlugin.GetCommonFills: TList<TFill>;
+function TMetalGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   // Tom fill variants
   with TFill.Create('metal_tom_downfill', 'Descending tom cascade') do

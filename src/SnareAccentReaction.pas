@@ -1,4 +1,4 @@
-unit SnareAccentReaction;
+﻿unit SnareAccentReaction;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Pattern;
 
 // ============================================================================
-// TSnaeAccentReaction — reacts snare velocity to kick accents
+// TSnaeAccentReaction â€” reacts snare velocity to kick accents
 // ============================================================================
 type
   TSnaeAccentReaction = class

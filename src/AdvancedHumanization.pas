@@ -1,4 +1,4 @@
-unit AdvancedHumanization;
+﻿unit AdvancedHumanization;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Pattern;
 
 // ============================================================================
-// THumanizationContext — holds context for context-aware humanization
+// THumanizationContext â€” holds context for context-aware humanization
 // ============================================================================
 type
   THumanizationContext = record
@@ -22,7 +22,7 @@ type
   end;
 
 // ============================================================================
-// TAdvancedHumanizer — context-aware timing and velocity humanization
+// TAdvancedHumanizer â€” context-aware timing and velocity humanization
 // ============================================================================
 type
   TAdvancedHumanizer = class

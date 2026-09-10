@@ -1,8 +1,8 @@
-unit GenrePlugin;
+﻿unit GenrePlugin;
 
 {$mode objfpc}{$H+}
 
-{ GenrePlugin interface — abstract base class for genre-specific pattern generators.
+{ GenrePlugin interface â€” abstract base class for genre-specific pattern generators.
   Each concrete genre (metal, rock, jazz, funk, electronic) extends this class
   to provide its own style patterns and fill libraries. }
 
@@ -14,7 +14,7 @@ uses
 
 type
 
-{ GenrePlugin — abstract base class for genre-specific pattern generators.
+{ GenrePlugin â€” abstract base class for genre-specific pattern generators.
   Concrete implementations (MetalGenrePlugin, RockGenrePlugin, etc.) must:
   - Override genre_name and supported_styles properties
   - Implement generate_pattern() for each section type
@@ -22,56 +22,56 @@ type
 
 TGenrePlugin = abstract class(TObject)
 private
-  FIntensityProfile: TDictionary<string, float>; { cached. */
+  FIntensityProfile: specialize TDictionary<string, float>; { cached. */
 
 protected
-  procedure SetIntensityProfile(const AProfile: TDictionary<string, float>); virtual;
+  procedure SetIntensityProfile(const AProfile: specialize TDictionary<string, float>); virtual;
 
 public
   constructor Create; virtual;
   destructor Destroy; override;
 
-  { ── Abstract properties (must be overridden). */ }
+  { â”€â”€ Abstract properties (must be overridden). */ }
   property GenreName: string read GetGenreName write SetGenreName abstract;
   property SupportedStyles: TArray<string> read GetSupportedStyles write SetSupportedStyles abstract;
 
-  { ── Intensity profile — characteristic "feel" of this genre. */ }
-  property IntensityProfile: TDictionary<string, float> read FIntensityProfile write SetIntensityProfile;
-  function GetIntensityProfile: TDictionary<string, float>; virtual;
+  { â”€â”€ Intensity profile â€” characteristic "feel" of this genre. */ }
+  property IntensityProfile: specialize TDictionary<string, float> read FIntensityProfile write SetIntensityProfile;
+  function GetIntensityProfile: specialize TDictionary<string, float>; virtual;
 
-  { ── Core abstract methods. */ }
+  { â”€â”€ Core abstract methods. */ }
   function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; abstract;
-  function GetCommonFills: TObjectList<TFill>; abstract;
+  function GetCommonFills: TObjecspecialize TList<TFill>; abstract;
 
-  { ── Context blending — adapt patterns for cross-genre songs. */ }
-  function ApplyContextBlend(const APattern: TPattern; const ContextProfile: TDictionary<string, float>;
+  { â”€â”€ Context blending â€” adapt patterns for cross-genre songs. */ }
+  function ApplyContextBlend(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
     BlendAmount: float): TPattern;
 
-  { ── Hi-hat → ride/crash promotion logic. */ }
+  { â”€â”€ Hi-hat â†’ ride/crash promotion logic. */ }
   function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; virtual;
   function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: float; BarIndex: Integer): TDrumInstrument; virtual;
   function ApplyRideHihatLogic(const APattern: TPattern; const Section: string;
     const Parameters: TGenerationParameters): TPattern;
 
-  { ── Helper methods. */ }
-  function GetSectionVariations(const Section: string): TObjectList<TPattern>; virtual;
-  function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): TObjectList<TPattern>; virtual;
+  { â”€â”€ Helper methods. */ }
+  function GetSectionVariations(const Section: string): TObjecspecialize TList<TPattern>; virtual;
+  function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): TObjecspecialize TList<TPattern>; virtual;
   function SupportsStyle(const Style: string): boolean;
   function ValidateParameters(const Parameters: TGenerationParameters): boolean;
 
 protected
   { Virtual helpers for subclasses. */ }
-  function ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: TDictionary<string, float>;
+  function ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
     BlendAmount: float): TPattern; virtual;
 end;
 
-{ ── Promotable timekeeping cymbals set (shared with timekeeping.pas). */ }
+{ â”€â”€ Promotable timekeeping cymbals set (shared with timekeeping.pas). */ }
 
 { Note: Actual set is defined in timekeeping.pas. This unit references it. */
 
 implementation
 
-{ ── GenrePlugin base class ──────────────────────────────────────────────── }
+{ â”€â”€ GenrePlugin base class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TGenrePlugin.Create;
 begin
@@ -94,7 +94,7 @@ end;
 
 function TGenrePlugin.GetGenreName: string;
 begin
-  { Virtual method — abstract, must be overridden in subclass. */
+  { Virtual method â€” abstract, must be overridden in subclass. */
   raise Exception.Create('GetGenreName not implemented.');
 end;
 
@@ -105,7 +105,7 @@ end;
 
 function TGenrePlugin.GetSupportedStyles: TArray<string>;
 begin
-  Result := nil; { Abstract — must be overridden. */
+  Result := nil; { Abstract â€” must be overridden. */
 end;
 
 procedure TGenrePlugin.SetSupportedStyles(const Value: TArray<string>);
@@ -113,12 +113,12 @@ begin
   { Stub. */
 end;
 
-function TGenrePlugin.GetIntensityProfile: TDictionary<string, float>;
+function TGenrePlugin.GetIntensityProfile: specialize TDictionary<string, float>;
 begin
   Result := FIntensityProfile;
 end;
 
-function TGenrePlugin.ApplyContextBlend(const APattern: TPattern; const ContextProfile: TDictionary<string, float>;
+function TGenrePlugin.ApplyContextBlend(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
   BlendAmount: float): TPattern;
 { Adapt pattern to match context genre characteristics. Blends power/aggression/density dimensions. */
 begin
@@ -128,9 +128,9 @@ begin
   Result := ApplyContextBlendInternal(APattern, ContextProfile, BlendAmount);
 end;
 
-function TGenrePlugin.ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: TDictionary<string, float>;
+function TGenrePlugin.ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
   BlendAmount: float): TPattern;
-{ Core blend logic — power boost on kick/snare, timing quantization for aggression, ghost notes for density. */
+{ Core blend logic â€” power boost on kick/snare, timing quantization for aggression, ghost notes for density. */
 var
   Adapted: TPattern;
   BlendedPower, BlendedAggression, BlendedDensity: float;
@@ -187,7 +187,7 @@ end;
 
 function TGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 { Instrument that hi-hat timekeeping is promoted to for high-energy sections.
-  Default = ride cymbal. Subclasses may override (e.g., rock/metal → crash/china). */
+  Default = ride cymbal. Subclasses may override (e.g., rock/metal â†’ crash/china). */
 begin
   Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer'); { Default ride timekeeper. */
 end;
@@ -266,26 +266,26 @@ begin
 
     if Pos('hihat_open', InstName) = 1 then
     begin
-      { Open HH → crash/choke accent (not a timekeeper). */
+      { Open HH â†’ crash/choke accent (not a timekeeper). */
       PromotedCrash := GetOpenHhCrashVariant(APattern, Beat.FPosition, BarIndex);
       Beat.FInstrument := PromotedCrash;
       Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
     end
     else if IsDownbeat and (BarIndex >= 4) and ((BarIndex - 4) mod 4 = 0) then
     begin
-      { Every 4th bar from bar 5 → bell accent for timbral variety. */
+      { Every 4th bar from bar 5 â†’ bell accent for timbral variety. */
       Beat.FInstrument := TInstrumentRegistry.Get('ride_1_bell');
       Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
     end
     else if IsDownbeat then
     begin
-      { Downbeat → main timekeeper (ride, china, or crash per genre). */
+      { Downbeat â†’ main timekeeper (ride, china, or crash per genre). */
       Beat.FInstrument := Timekeeper;
       Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
     end
     else
     begin
-      { Offbeat → ride shaft / lighter variant. */
+      { Offbeat â†’ ride shaft / lighter variant. */
       Beat.FInstrument := TInstrumentRegistry.Get('ride_1_shaft_hit_stronger');
       Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
     end;
@@ -312,18 +312,18 @@ begin
   Result := Switched;
 end;
 
-function TGenrePlugin.GetSectionVariations(const Section: string): TObjectList<TPattern>;
-{ Default returns empty — override in subclass for section variations. */
+function TGenrePlugin.GetSectionVariations(const Section: string): TObjecspecialize TList<TPattern>;
+{ Default returns empty â€” override in subclass for section variations. */
 begin
-  Result := TObjectList<TPattern>.Create(true);
+  Result := TObjecspecialize TList<TPattern>.Create(true);
 end;
 
-function TGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): TObjectList<TPattern>;
+function TGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): TObjecspecialize TList<TPattern>;
 { Get alternative pattern flavors for a section. Default returns only the standard pattern. */
 var
   StandardPattern: TPattern;
 begin
-  Result := TObjectList<TPattern>.Create(true);
+  Result := TObjecspecialize TList<TPattern>.Create(true);
 
   { Default: return only the standard pattern (no flavor variety). */
   try
@@ -338,7 +338,7 @@ end;
 function TGenrePlugin.SupportsStyle(const Style: string): boolean;
 { Check if this plugin supports the given style (must be overridden). */
 begin
-  Result := False; { Abstract — must be overridden. */
+  Result := False; { Abstract â€” must be overridden. */
 end;
 
 function TGenrePlugin.ValidateParameters(const Parameters: TGenerationParameters): boolean;

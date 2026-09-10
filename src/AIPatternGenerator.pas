@@ -1,4 +1,4 @@
-unit AIPatternGenerator;
+﻿unit AIPatternGenerator;
 
 {$mode objfpc}{$H+}
 
@@ -10,7 +10,7 @@ uses
   DrumGenerator, AIBackends;
 
 // ============================================================================
-// TAIGenerationRequest — Request parameters for AI pattern generation
+// TAIGenerationRequest â€” Request parameters for AI pattern generation
 // ============================================================================
 type
   TAIGenerationRequest = record
@@ -24,7 +24,7 @@ type
   end;
 
 // ============================================================================
-// TAIGenerationResult — Result from AI pattern generation
+// TAIGenerationResult â€” Result from AI pattern generation
 // ============================================================================
 type
   TAIGenerationResult = record
@@ -35,7 +35,7 @@ type
   end;
 
 // ============================================================================
-// TAIPatternGenerator — High-level AI-driven pattern generation API
+// TAIPatternGenerator â€” High-level AI-driven pattern generation API
 // ============================================================================
 type
   TAIPatternGenerator = class
@@ -139,7 +139,7 @@ end;
 function TAIPatternGenerator.GenerateSongStructure(const AGenre, AStyle: String): TArray<Record>;
 begin
   // Return suggested song structure from AI based on genre/style
-  // Placeholder — would query AI for creative structure suggestions
+  // Placeholder â€” would query AI for creative structure suggestions
   SetLength(Result, 0);
 end;
 

@@ -1,4 +1,4 @@
-unit RiffLock;
+﻿unit RiffLock;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Pattern;
 
 // ============================================================================
-// TRiffAccentTracker — tracks and locks kick accents to snare patterns
+// TRiffAccentTracker â€” tracks and locks kick accents to snare patterns
 // ============================================================================
 type
   TRiffAccentTracker = class

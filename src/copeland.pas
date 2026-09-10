@@ -1,4 +1,4 @@
-unit Copeland;
+﻿unit Copeland;
 
 {$mode objfpc}{$H+}
 
@@ -20,7 +20,7 @@ type
     destructor Destroy; override;
 
     function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: TList<TFill>;
+    function GetSignatureFills: specialize TList<TFill>;
     function GetDrummerName: String; override;
     function GetCompatibleGenres: TStringList; override;
   end;
@@ -57,11 +57,11 @@ begin
   Result := Styled;
 end;
 
-function TCopelandPlugin.GetSignatureFills: TList<TFill>;
+function TCopelandPlugin.GetSignatureFills: specialize TList<TFill>;
 var
-  FillList: TList<TFill>;
+  FillList: specialize TList<TFill>;
 begin
-  FillList := TList<TFill>.Create;
+  FillList := specialize TList<TFill>.Create;
 
   with TFill.Create('copeland_reggae_fill', 'Copeland reggae/ska fill') do
   begin

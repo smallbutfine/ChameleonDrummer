@@ -1,4 +1,4 @@
-unit ReaperRPP;
+﻿unit ReaperRPP;
 
 {$mode objfpc}{$H+}
 
@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Generics.Collections;
 
 // ============================================================================
-// TReaperMarker — represents a single marker in an .rpp file
+// TReaperMarker â€” represents a single marker in an .rpp file
 // ============================================================================
 type
   TReaperMarker = record
@@ -18,28 +18,28 @@ type
   end;
 
 // ============================================================================
-// TReaperRPPReader — parses .rpp files to extract markers and regions
+// TReaperRPPReader â€” parses .rpp files to extract markers and regions
 // ============================================================================
 type
   TReaperRPPReader = class
   private
-    FMarkers: TList<TReaperMarker>;
+    FMarkers: specialize TList<TReaperMarker>;
     function ParseMarkerLine(const Line: String): TReaperMarker;
   public
     constructor Create;
     destructor Destroy; override;
 
     function LoadFromFile(const AFilePath: String): Boolean;
-    function GetMarkers: TList<TReaperMarker>;
+    function GetMarkers: specialize TList<TReaperMarker>;
   end;
 
 // ============================================================================
-// TReaperRPPWriter — writes .rpp files with markers and regions
+// TReaperRPPWriter â€” writes .rpp files with markers and regions
 // ============================================================================
 type
   TReaperRPPWriter = class
   private
-    FMarkers: TList<TReaperMarker>;
+    FMarkers: specialize TList<TReaperMarker>;
     FTitle: String;
     FTMPFile: String;
     function EscapeRPPString(const S: String): String;
@@ -51,14 +51,14 @@ type
     procedure ClearMarkers;
 
     function SaveToFile(const AFilePath: String; const AMIDIFile: String): Boolean;
-    function GetMarkers: TList<TReaperMarker>;
+    function GetMarkers: specialize TList<TReaperMarker>;
   end;
 
 implementation
 
 constructor TReaperRPPReader.Create;
 begin
-  FMarkers := TList<TReaperMarker>.Create;
+  FMarkers := specialize TList<TReaperMarker>.Create;
 end;
 
 destructor TReaperRPPReader.Destroy;
@@ -144,7 +144,7 @@ begin
   end;
 end;
 
-function TReaperRPPReader.GetMarkers: TList<TReaperMarker>;
+function TReaperRPPReader.GetMarkers: specialize TList<TReaperMarker>;
 begin
   Result := FMarkers;
 end;
@@ -152,7 +152,7 @@ end;
 { TReaperRPPWriter }
 constructor TReaperRPPWriter.Create;
 begin
-  FMarkers := TList<TReaperMarker>.Create;
+  FMarkers := specialize TList<TReaperMarker>.Create;
   FTitle := '';
   FTMPFile := '';
 end;
@@ -239,7 +239,7 @@ begin
   end;
 end;
 
-function TReaperRPPWriter.GetMarkers: TList<TReaperMarker>;
+function TReaperRPPWriter.GetMarkers: specialize TList<TReaperMarker>;
 begin
   Result := FMarkers;
 end;

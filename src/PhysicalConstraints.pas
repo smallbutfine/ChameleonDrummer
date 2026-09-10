@@ -1,8 +1,8 @@
-unit PhysicalConstraints;
+﻿unit PhysicalConstraints;
 
 {$mode objfpc}{$H+}
 
-{ PhysicalConstraints — thin wrapper that delegates to LimbConstraints.
+{ PhysicalConstraints â€” thin wrapper that delegates to LimbConstraints.
   This eliminates duplication while maintaining backward compatibility for
   any code that imports TPhysicalConstraintChecker. }
 
@@ -13,7 +13,7 @@ uses
   Pattern, LimbConstraints;
 
 // ============================================================================
-// TPhysicalConstraintResult — Result of physical playability validation
+// TPhysicalConstraintResult â€” Result of physical playability validation
 // (kept for backward compat; functionally identical to TLimbConstraintEngine)
 // ============================================================================
 type
@@ -25,7 +25,7 @@ type
   end;
 
 // ============================================================================
-// TPhysicalConstraintChecker — Thin wrapper over TLimbConstraintEngine.
+// TPhysicalConstraintChecker â€” Thin wrapper over TLimbConstraintEngine.
 // All logic is delegated to the canonical engine in limb_constraints.pas.
 // ============================================================================
 type

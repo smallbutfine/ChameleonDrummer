@@ -1,4 +1,4 @@
-unit LimbConstraints;
+﻿unit LimbConstraints;
 
 {$mode objfpc}{$H+}
 
@@ -9,7 +9,7 @@ uses
   Pattern;
 
 // ============================================================================
-// TLimbConstraintEngine — checks if a pattern is physically playable
+// TLimbConstraintEngine â€” checks if a pattern is physically playable
 // ============================================================================
 type
   TLimbConstraintEngine = class
