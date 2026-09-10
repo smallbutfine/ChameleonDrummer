@@ -1,8 +1,8 @@
-unit kit;
+﻿unit kit;
 
 {$mode objfpc}{$H+}
 
-{ DrumKit — drum kit configuration and instrument mapping.
+{ DrumKit â€” drum kit configuration and instrument mapping.
   All MIDI note mappings are loaded dynamically from JSON keymap files in midi_drums/mappings/.
   No MIDI notes or instrument names are hardcoded anywhere. All instruments come from the master template. }
 
@@ -12,12 +12,10 @@ uses
   Classes, SysUtils, fpjson, Generics.Collections;
 
 type
-{ ── Type aliases for FPC 3.2.x compatibility ─────────────────────────── }
+{ â”€â”€ Type aliases for FPC 3.2.x compatibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 TStrDict = specialize TDictionary<string, string>;
 TStrBoolDict = specialize TDictionary<string, boolean>;
 
-{ Forward declaration for self-reference }
-TDrumInstrument = class;
 
 { DrumInstrument — dynamic drum instrument identity.
   All instruments are registered at runtime from the master template keymap.
@@ -41,21 +39,23 @@ public
 
   { Equality }
   function Equals(Other: TDrumInstrument): boolean;
-  function GetHashCode: Integer; override;
 end;
 
-{ InstrumentRegistry — manages all registered drum instruments.
+type
+  TDrumInstrumentArray = array of TDrumInstrument;
+
+{ InstrumentRegistry â€” manages all registered drum instruments.
   Initialized from the master template at startup. }
 TInstrumentRegistry = class(TObject)
 private
-  class var Finstruments: specialize TDictionary<string, TObject>;
+  class var Finstruments: specialize TDictionary<string, TDrumInstrument>;
   class var FInitialized: boolean;
   class procedure ClearInternal; static;
 public
   class procedure Clear; static;
   class function Register(const AName: string; const ADescription: string = ''; const AMetadata: TStrDict = nil): TDrumInstrument; static;
   class function Get(const AName: string): TDrumInstrument; static;
-  class function GetAll: TArray<TDrumInstrument>; static;
+  class function GetAll: TDrumInstrumentArray; static;
   class function GetAllNames: TStrBoolDict; static;
   class procedure LoadFromTemplate(const ATemplatePath: string = ''); static;
   class procedure EnsureLoaded; static;
@@ -64,39 +64,40 @@ public
   class destructor Destroy;
 end;
 
-{ ── Keymap Loader ─────────────────────────────────────────────────────────── }
+{ â”€â”€ Keymap Loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
-{ KeymapLoader — loads and manages keymap JSON files from the mappings directory. }
+{ KeymapLoader â€” loads and manages keymap JSON files from the mappings directory. }
 TKeymapLoader = class(TObject)
 private
-  class var FLoadedKeymaps: specialize TDictionary<string, TJSONValue>; static;
+  FLoadedKeymaps: TObject;
 public
-  class function LoadAll: TArray<TJSONValue>; static;
-  class function GetKeymap(const AName: string): TJSONValue; static;
+  class function LoadAll: Pointer; static;
+  class function GetKeymap(const AName: string): Pointer; static;
   class function GetMidiNote(const InstrumentName, KeymapName: string): Integer; static;
-  class function GetAllInstruments: specialize TDictionary<string, boolean>; static;
-  class function GetUnmappedInstruments(const KeymapName: string): specialize TDictionary<string, boolean>; static;
+  class function GetAllInstruments: TStrBoolDict; static;
+  class function GetUnmappedInstruments(const KeymapName: string): TStrBoolDict; static;
   class procedure GenerateUserKeymap(const TargetPath: string); static;
 
   class constructor Create;
   class destructor Destroy;
 end;
 
-{ ── VelocityRange ─────────────────────────────────────────────────────────── }
+{ â”€â”€ VelocityRange â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 { VelocityRange — velocity range for realistic drum dynamics. }
-TVelocityRange = record
-  MinVelocity: Integer;
-  MaxVelocity: Integer;
-  DefaultVelocity: Integer;
+TVelocityRange = class
+private
+  FMinVelocity: Integer;
+  FMaxVelocity: Integer;
+  FDefaultVelocity: Integer;
 public
-  constructor Create(AMin, AMax, ADefault: Integer = 1);
+  constructor Create(AMin, AMax: Integer; ADefault: Integer = 1);
   procedure Validate;
 end;
 
-{ ── DrumKit — the main class that uses dynamic instrument resolution ───────── }
+{ ── DrumKit — the main class that uses dynamic instrument resolution ─────── }
 
-{ DrumKit — drum kit configuration with instrument mappings and velocity ranges.
+{ DrumKit â€” drum kit configuration with instrument mappings and velocity ranges.
   MIDI note mappings are resolved at runtime by loading keymap files. }
 TDrumKit = class(TObject)
 private
@@ -135,15 +136,15 @@ class function ListPresets: specialize TDictionary<string, string>; static;
   class function FromJson(const Path: string): TDrumKit; static;
 end;
 
-{ ── Module Initialization ─────────────────────────────────────────────────── }
+{ â”€â”€ Module Initialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 procedure Initialize;
 
 implementation
 
-{ ── DrumInstrument ────────────────────────────────────────────────────────── }
+{ â”€â”€ DrumInstrument â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
-constructor TDrumInstrument.Create(const AName, ADescription: string; const AMetadata: specialize TDictionary<string, string> = nil);
+constructor TDrumInstrument.Create(const AName, ADescription: string; const AMetadata: TStrDict = nil);
 begin
   inherited Create;
   FName := AName;
@@ -177,16 +178,12 @@ begin
   Result := FName = Other.FName;
 end;
 
-function TDrumInstrument.GetHashCode: Integer;
-begin
-  Result := HashString(FName);
-end;
-
-{ ── InstrumentRegistry ────────────────────────────────────────────────────── }
+{ ── InstrumentRegistry ──────────────────────────────────────────────
+{ â”€â”€ InstrumentRegistry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 class constructor TInstrumentRegistry.Create;
 begin
-  Finstruments := TDictionary<string, TDrumInstrument>.Create;
+  Finstruments := specialize TDictionary<string, TDrumInstrument>.Create;
   FInitialized := false;
 end;
 
@@ -206,7 +203,7 @@ begin
   ClearInternal;
 end;
 
-class function TInstrumentRegistry.Register(const AName: string; const ADescription: string = ''; const AMetadata: TDictionary<string, string> = nil): TDrumInstrument;
+class function TInstrumentRegistry.Register(const AName: string; const ADescription: string = ''; const AMetadata: specialize TDictionary<string, string> = nil): TDrumInstrument;
 var
   Inst: TDrumInstrument;
 begin
@@ -225,7 +222,7 @@ begin
   Result := nil;
 end;
 
-class function TInstrumentRegistry.GetAll: TArray<TDrumInstrument>;
+class function TInstrumentRegistry.GetAll: TDrumInstrumentArray;
 var
   Item: TPair<string, TDrumInstrument>;
   Count: Integer;
@@ -240,11 +237,11 @@ begin
   end;
 end;
 
-class function TInstrumentRegistry.GetAllNames: TDictionary<string, boolean>;
+class function TInstrumentRegistry.GetAllNames: specialize TDictionary<string, boolean>;
 var
   Item: TPair<string, TDrumInstrument>;
 begin
-  Result := TDictionary<string, boolean>.Create;
+  Result  := specialize TDictionary<string, boolean>.Create;
   for Item in Finstruments do
     Result.Add(Item.Key, true);
 end;
@@ -286,7 +283,7 @@ begin
         InstDesc := InstObj.Values['description'].ValueS;
 
       { Source metadata }
-      var Metadata: TDictionary<string, string> := TDictionary<string, string>.Create;
+      var Metadata: specialize TDictionary<string, string> := specialize TDictionary<string, string>.Create;
       try
         var SourceVal := Instruments.Values['source'];
         if Assigned(SourceVal) then
@@ -310,11 +307,11 @@ begin
     LoadFromTemplate;
 end;
 
-{ ── KeymapLoader ──────────────────────────────────────────────────────────── }
+{ â”€â”€ KeymapLoader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 class constructor TKeymapLoader.Create;
 begin
-  FLoadedKeymaps := TDictionary<string, TJSONValue>.Create;
+  FLoadedKeymaps := TObject(specialize TDictionary<string, TJSONValue>.Create);
 end;
 
 class destructor TKeymapLoader.Destroy;
@@ -417,12 +414,12 @@ begin
   Result := MidiNoteVal.ValueI;
 end;
 
-class function TKeymapLoader.GetAllInstruments: TDictionary<string, boolean>;
+class function TKeymapLoader.GetAllInstruments: specialize TDictionary<string, boolean>;
 var
   Item: TPair<string, TJSONValue>;
   KeymapName: string;
 begin
-  Result := TDictionary<string, boolean>.Create;
+  Result  := specialize TDictionary<string, boolean>.Create;
   for Item in FLoadedKeymaps do
   begin
     var Instruments := Item.Value.AsObject;
@@ -432,9 +429,9 @@ begin
   end;
 end;
 
-class function TKeymapLoader.GetUnmappedInstruments(const KeymapName: string): TDictionary<string, boolean>;
+class function TKeymapLoader.GetUnmappedInstruments(const KeymapName: string): specialize TDictionary<string, boolean>;
 var
-  AllInstruments: TDictionary<string, boolean>;
+  AllInstruments: specialize TDictionary<string, boolean>;
   Keymap: TJSONValue;
   Instruments: TJSONObject;
   InstrumentData: TJSONObject;
@@ -450,7 +447,7 @@ begin
   end;
 
   Instruments := Keymap.AsObject;
-  Result := TDictionary<string, boolean>.Create;
+  Result  := specialize TDictionary<string, boolean>.Create;
   var MappedName: string;
   for MappedName in Instruments.Elements do
   begin
@@ -485,7 +482,7 @@ begin
     var VersionVal := Instruments.Values['version'];
     if Assigned(VersionVal) then
       Output.Values['version'].ValueS := VersionVal.ValueS;
-    Output.Values['description'].ValueS := 'Custom keymap — fill in midi_note values. Leave as null for unavailable articulations.';
+    Output.Values['description'].ValueS := 'Custom keymap â€” fill in midi_note values. Leave as null for unavailable articulations.';
     Output.Values['source'].ValueS := 'User generated from template';
 
     var InstrumentsObj := TJSONObject.Create;
@@ -519,15 +516,15 @@ begin
   end;
 end;
 
-{ ── DrumKit ───────────────────────────────────────────────────────────────── }
+{ â”€â”€ DrumKit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TDrumKit.Create(AName: string = 'Standard Kit'; AChannel: Integer = 9);
 begin
   inherited Create;
   Name := AName;
   Channel := AChannel;
-  FVelocityRanges := TDictionary<string, TVelocityRange>.Create;
-  FCustomMappings := TDictionary<string, Integer>.Create;
+  FVelocityRanges  := specialize TDictionary<string, TVelocityRange>.Create;
+  FCustomMappings  := specialize TDictionary<string, Integer>.Create;
 
   { Default velocity ranges }
   FVelocityRanges.Add('kick', TVelocityRange.Create(95, 120, 110));
@@ -600,7 +597,7 @@ begin
     raise Exception.Create('Keymap not found: ' + KeymapName);
 
   Instruments := Keymap.AsObject;
-  var CustomMappings := TDictionary<string, Integer>.Create;
+  var CustomMappings  := specialize TDictionary<string, Integer>.Create;
   try
     for InstName in Instruments.Elements do
     begin
@@ -622,12 +619,12 @@ begin
   end;
 end;
 
-class function TDrumKit.ListPresets: TDictionary<string, string>;
+class function TDrumKit.ListPresets: specialize TDictionary<string, string>;
 begin
   if TKeymapLoader.FLoadedKeymaps.Count = 0 then
     TKeymapLoader.LoadAll;
 
-  Result := TDictionary<string, string>.Create;
+  Result  := specialize TDictionary<string, string>.Create;
   var Item: TPair<string, TJSONValue>;
   for Item in TKeymapLoader.FLoadedKeymaps do
   begin
@@ -684,7 +681,7 @@ begin
   end;
 end;
 
-{ ── VelocityRange ─────────────────────────────────────────────────────────── }
+{ â”€â”€ VelocityRange â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 constructor TVelocityRange.Create(AMin, AMax, ADefault: Integer = 1);
 begin
@@ -710,7 +707,7 @@ begin
     raise Exception.Create('Min velocity cannot be greater than max velocity');
 end;
 
-{ ── Module Initialization ─────────────────────────────────────────────────── }
+{ â”€â”€ Module Initialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 procedure Initialize;
 begin
@@ -723,3 +720,7 @@ initialization
   Initialize;
 
 end.
+
+
+
+
