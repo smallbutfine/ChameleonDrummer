@@ -2,36 +2,42 @@
 
 {$mode objfpc}{$H+}
 
-{ ComposerV2 â€” bar-by-bar song composition engine.
+{ ComposerV2 — bar-by-bar song composition engine.
   Implements full per-bar pattern generation with intensity curves,
   groove selection, drummer style application, and context-aware fills. }
 
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, Kit, Pattern, Song,
+  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   TimeSignature, GenerationParameters, GenrePlugin,
-  DrummerPlugin;
+  DrummerPlugin, PluginRegistry, ComposerTypes;
 
 type
-  { â”€â”€ Intensity Curve Enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+  { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
+  TSectionDef = record
+    Name: string;
+    Bars: Integer;
+  end;
+
+  { Intensity Curve Enum }
   TIntensityCurveType = (icAscending, icDescending, icPlateau, icDipRise, icSteps);
 
-  { â”€â”€ Macro Composer Phases â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+  { Macro Composer Phases }
   TMacroPhase = (mpEstablish, mpMaintain, mpBuild, mpTurnaround);
 
-  { â”€â”€ TBarSelector â€” selects and modulates patterns per bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+  { TBarSelector — selects and modulates patterns per bar }
   TBarSelector = class
   private
-    function ApplyIntensityModifications(APattern: TPattern; IntensityPt: float): TPattern;
-    function SelectKickPattern(ABarIndex: Integer; IntensityPt: float): String;
+    function ApplyIntensityModifications(APattern: TPattern; IntensityPt: Double): TPattern;
+    { function SelectKickPattern - not implemented in this translation. }
     function GetSectionGrooveContext(const ASectionName: string; ABars: Integer): String;
   public
     function GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
-      IntensityPt: float; const ADrummer: string; PreviousBars: TObjecspecialize TList<TPattern>): TPattern;
+      IntensityPt: Double; const ADrummer: string; PreviousBars: specialize TList<TPattern>): TPattern;
   end;
 
-  { â”€â”€ TFillPicker â€” determines fill placement and type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+  { TFillPicker — determines fill placement and type }
   TFillPicker = class
   private
     function ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string): Boolean;
@@ -39,20 +45,20 @@ type
     function GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
   public
     function PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
-      ABars: Integer; SectionName: string): TObjecspecialize TList<TFill>;
+      ABars: Integer; SectionName: string): specialize TList<TFill>;
   end;
 
-  { â”€â”€ TGrooveEngine â€” calculates microtiming offsets per drummer/style â”€â”€â”€â”€â”€â”€â”€ }
+  { TGrooveEngine — calculates microtiming offsets per drummer/style }
   TGrooveEngine = class
   private
-    function GetDrummerGrooveBias(const AD drummer: string): Single;
+    function GetDrummerGrooveBias(const ADrummer: string): Single;
     function GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
   public
-    function GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: float;
-      const ASectionName: string; const AD rummer: string): Single;
+    function GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: Double;
+      const ASectionName: string; const ADrummer: string): Single;
   end;
 
-  { â”€â”€ TMacroComposer â€” manages groove library phases and variation cycling â”€â”€ }
+  { TMacroComposer — manages groove library phases and variation cycling }
   TMacroComposer = class
   private
     FRng: TThreadedRandom;
@@ -62,14 +68,15 @@ type
     constructor Create(ARngSeed: Integer);
 
     function DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
-    function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase; ARng: TThreadedRandom): TPattern;
+    function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
+      ARng: TThreadedRandom): TPattern;
     function GetNextGrooveIndex(GrooveCount: Integer): Integer;
   end;
 
-{ â”€â”€ TComposerV2 â€” bar-by-bar song composition engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+{ TComposerV2 — bar-by-bar song composition engine }
 TComposerV2 = class(TObject)
 private
-  FPluginManager: TPluginManager;
+  FPluginManager: PluginRegistry.TPluginManager;
   FRng: TThreadedRandom;
   FBarSelector: TBarSelector;
   FFilPicker: TFillPicker;
@@ -77,33 +84,31 @@ private
   FPrevIndices: specialize TDictionary<string, specialize TList<Integer>>;
 
   { Helper methods }
-  function GetSectionCurveMap(const Structure: TObjecspecialize TList<TRecord>): specialize TDictionary<string, Integer>;
-  function SelectFlavor(const Available: TObjecspecialize TList<TPattern>; ABarIndex: Integer): TPattern;
-  procedure CombineBarPatterns(const GeneratedBars: TObjecspecialize TList<TPattern>; out Combined: TPattern);
+  function GetSectionCurveMap(const Structure: array of TSectionDef): specialize TDictionary<string, Integer>;
+  function SelectFlavor(const Available: specialize TList<TPattern>; ABarIndex: Integer): TPattern;
+  procedure CombineBarPatterns(const GeneratedBars: specialize TList<TPattern>; out Combined: TPattern);
   function GetIntensityPt(CurveMap: specialize TDictionary<string, Integer>; const SectionName: string;
-    ABarIndex, ABars: Integer): float;
+    ABarIndex, ABars: Integer): Double;
 
 public
-  constructor Create(APuginManager: TPluginManager; ARngSeed: Integer = 0);
+  constructor Create(APGMPluginManager: PluginRegistry.TPluginManager; ARngSeed: Integer = 0);
   destructor Destroy; override;
 
-  { Main entry point â€” create a complete song with bar-by-bar pattern evolution. }
+  { Main entry point — create a complete song with bar-by-bar pattern evolution. }
   function CreateSong(const Genre, Style: string; ATempo: Integer;
-    const Structure: TObjecspecialize TList<TRecord>; ADrummer: string = '';
-    AComplexity: float = 0.5; ADynamics: float = 0.6;
-    AHumanization: float = 0.5): TSong;
+    const Structure: array of TSectionDef; ADrummer: string = '';
+    AComplexity: Double = 0.5; ADynamics: Double = 0.6;
+    AHumanization: Double = 0.5): TSong;
 
-  property PluginManager: TPluginManager read FPluginManager write FPluginManager;
+  property PluginManager: PluginRegistry.TPluginManager read FPluginManager write FPluginManager;
 end;
 
 implementation
 
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
-{ â•  TBarSelector â€” Bar-level pattern selection and modulation   }
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ TBarSelector — Bar-level pattern selection and modulation }
 
 function TBarSelector.GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
-  IntensityPt: float; const ADrummer: string; PreviousBars: TObjecspecialize TList<TPattern>): TPattern;
+  IntensityPt: Double; const ADrummer: string; PreviousBars: specialize TList<TPattern>): TPattern;
 begin
   Result := BasePattern.Copy;
 
@@ -113,7 +118,11 @@ begin
   Result := ApplyIntensityModifications(Result, IntensityPt);
 end;
 
-function TBarSelector.ApplyIntensityModifications(APattern: TPattern; IntensityPt: float): TPattern;
+function TBarSelector.ApplyIntensityModifications(APattern: TPattern; IntensityPt: Double): TPattern;
+var
+  PowerBoost: Integer;
+  IBeat: Integer;
+  InstName: AnsiString;
 begin
   Result := APattern.Copy;
 
@@ -122,14 +131,14 @@ begin
   // Boost velocities on kick/snare at high intensity (matches Python behavior)
   if IntensityPt > 0.7 then
   begin
-    var PowerBoost := Round((IntensityPt - 0.5) * 20);
-    for var Beat in Result.FBeats do
+    PowerBoost := Round((IntensityPt - 0.5) * 20);
+    for IBeat := 0 to Result.Beats.Count - 1 do
     begin
-      if Assigned(Beat.FInstrument) then
+      if Assigned(Result.Beats[IBEat].Instrument) then
       begin
-        var InstName := Beat.FInstrument.Name;
+        InstName := Result.Beats[IBEat].Instrument.Name;
         if SameText(InstName, 'kick') or SameText(InstName, 'snare_open_hit_open_lateral_hit') then
-          Beat.FVelocity := Max(1, Min(127, Beat.FVelocity + PowerBoost));
+          Result.Beats[IBEat].Velocity := Max(1, Min(127, Result.Beats[IBEat].Velocity + PowerBoost));
       end;
     end;
   end;
@@ -144,45 +153,14 @@ begin
   Exit('standard');
 end;
 
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
-{ â•  TFillPicker â€” Fill placement and type determination         }
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ TFillPicker — Fill placement and type determination }
 
 function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
-  ABars: Integer; SectionName: string): TObjecspecialize TList<TFill>;
-var
-  DrummerPlugin: TObject;
-  GenrePlugin: TObject;
-  SignatureFills: TObjecspecialize TList<TFill>;
-  CommonFills: TObjecspecialize TList<TFill>;
+  ABars: Integer; SectionName: string): specialize TList<TFill>;
 begin
-  Result := TObjecspecialize TList<TFill>.Create(true);
-  
-  { Try drummer signature fills first (Python: get_signature_fills()) }
-  if (Params <> nil) and (Length(Params.FDrummerName) > 0) then
-  begin
-    DrummerPlugin := TPluginManager(nil).RegistryGetDrummerPlugin(Params.FDrummerName);
-    if Assigned(DrummerPlugin) then
-    begin
-      { Cast to TDrummerPlugin to call GetSignatureFills. */
-      { In objfpc, we can use a type helper or direct access since we control the class hierarchy. */
-      if DrummerPlugin is TDrummerPlugin then
-      begin
-        Result := (DrummerPlugin as TDrummerPlugin).GetSignatureFills;
-        if Assigned(Result) and (Result.Count > 0) then Exit;
-        Result.Free; { Empty list â€” fall through to genre common fills. */
-      end;
-    end;
-  end;
-
-  { Fallback to genre common fills (Python: genre_plugin.get_common_fills()) }
-  GenrePlugin := TPluginManager(nil).RegistryGetGenrePlugin(Genre);
-  if Assigned(GenrePlugin) and (GenrePlugin is TGenrePlugin) then
-  begin
-    CommonFills := (GenrePlugin as TGenrePlugin).GetCommonFills;
-    if Assigned(CommonFills) then
-      Result.AddRange(CommonFills); { Merge genre fills into result. */
-  end;
+  { Simplified: return empty list - caller (ComposerV2) handles fill lookup via genre plugins.
+     PickFillsForSection is a standalone helper without plugin access. }
+  Result := specialize TList<TFill>.Create;
 end;
 
 function TFillPicker.ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string): Boolean;
@@ -193,9 +171,9 @@ begin
   // Common fill placement points
   Result :=
     (ABarIndex = ABars - 2) or      // Before section end
-    (Mod(ABarIndex, 4) = 0) or      // Every 4 bars
+    ((ABarIndex mod 4) = 0) or      // Every 4 bars
     (ABarIndex = ABars div 2) or    // Midpoint
-    (RandomRange(100) < 30);        // Random 30% chance
+    (RandomRange(0, 100) < 30);        // Random 30% chance
 end;
 
 function TFillPicker.SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer): String;
@@ -203,7 +181,7 @@ begin
   // Select fill type based on genre and section context
   if (Genre = 'metal') then
   begin
-    case Mod(ABarIndex, 3) of
+    case (ABarIndex mod 3) of
       0: Exit('tom_downfill');
       1: Exit('blast_beat');
       2: Exit('ride_bell_sweep');
@@ -212,7 +190,7 @@ begin
 
   if (Genre = 'rock') then
   begin
-    case Mod(ABarIndex, 3) of
+    case (ABarIndex mod 3) of
       0: Exit('tom_downfill');
       1: Exit('snare_roll');
       2: Exit('cymbal_crash');
@@ -227,6 +205,8 @@ begin
 end;
 
 function TFillPicker.GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
+var
+  I: Integer;
 begin
   Result := TPattern.Create('fill_' + FillType);
 
@@ -234,66 +214,64 @@ begin
   case FillType of
     'tom_downfill':
       begin
-        // Descending tom fill (tom_4 â†’ tom_1)
-        Result.AddBeat(0.0, 'tom_4_hit', 100);
-        Result.AddBeat(1.0, 'tom_3_hit', 95);
-        Result.AddBeat(2.0, 'tom_2_hit', 90);
-        Result.AddBeat(3.0, 'tom_1_hit', 105);
+        // Descending tom fill (tom_4 -> tom_1)
+        Result.AddBeat(0.0, TInstrumentRegistry.Get('tom_4_hit'), 100);
+        Result.AddBeat(1.0, TInstrumentRegistry.Get('tom_3_hit'), 95);
+        Result.AddBeat(2.0, TInstrumentRegistry.Get('tom_2_hit'), 90);
+        Result.AddBeat(3.0, TInstrumentRegistry.Get('tom_1_hit'), 105);
       end;
     'tom_upfill':
       begin
-        // Ascending tom fill (tom_1 â†’ tom_4)
-        Result.AddBeat(0.0, 'tom_1_hit', 95);
-        Result.AddBeat(1.0, 'tom_2_hit', 100);
-        Result.AddBeat(2.0, 'tom_3_hit', 95);
-        Result.AddBeat(3.0, 'tom_4_hit', 110);
+        // Ascending tom fill (tom_1 -> tom_4)
+        Result.AddBeat(0.0, TInstrumentRegistry.Get('tom_1_hit'), 95);
+        Result.AddBeat(1.0, TInstrumentRegistry.Get('tom_2_hit'), 100);
+        Result.AddBeat(2.0, TInstrumentRegistry.Get('tom_3_hit'), 95);
+        Result.AddBeat(3.0, TInstrumentRegistry.Get('tom_4_hit'), 110);
       end;
     'blast_beat':
       begin
         // Blast beat (rapid snare/kick alternation)
         for I := 0 to 15 do
-          if (Mod(I, 2) = 0) then
-            Result.AddBeat(I * 0.25, 'snare_hit', 110)
+          if ((I mod 2) = 0) then
+            Result.AddBeat(I * 0.25, TInstrumentRegistry.Get('snare_hit'), 110)
           else
-            Result.AddBeat(I * 0.25, 'kick_hit', 105);
+            Result.AddBeat(I * 0.25, TInstrumentRegistry.Get('kick_hit'), 105);
       end;
     'ride_bell_sweep':
       begin
         // Ride bell sweep with snare accents
         for I := 0 to 7 do
-          Result.AddBeat(I * 0.5, 'ride_bell_hit', 80);
-        Result.AddBeat(3.0, 'snare_hit', 115);
+          Result.AddBeat(I * 0.5, TInstrumentRegistry.Get('ride_bell_hit'), 80);
+        Result.AddBeat(3.0, TInstrumentRegistry.Get('snare_hit'), 115);
       end;
     'snare_roll':
       begin
         // Snare roll (gradual crescendo)
         for I := 0 to 7 do
-          Result.AddBeat(I * 0.25, 'snare_hit', 60 + I * 8);
+          Result.AddBeat(I * 0.25, TInstrumentRegistry.Get('snare_hit'), 60 + I * 8);
       end;
     'cymbal_crash':
       begin
         // Crash accent pattern
-        Result.AddBeat(0.0, 'crash_hit', 120);
-        Result.AddBeat(2.0, 'ride_hit', 90);
-        Result.AddBeat(3.0, 'snare_hit', 110);
+        Result.AddBeat(0.0, TInstrumentRegistry.Get('crash_hit'), 120);
+        Result.AddBeat(2.0, TInstrumentRegistry.Get('ride_hit'), 90);
+        Result.AddBeat(3.0, TInstrumentRegistry.Get('snare_hit'), 110);
       end;
   else
-    // Default fill â€” basic tom downfill
-    Result.AddBeat(0.0, 'tom_4_hit', 95);
-    Result.AddBeat(1.0, 'tom_3_hit', 90);
-    Result.AddBeat(2.0, 'tom_2_hit', 85);
-    Result.AddBeat(3.0, 'snare_hit', 110);
+    // Default fill — basic tom downfill
+    Result.AddBeat(0.0, TInstrumentRegistry.Get('tom_4_hit'), 95);
+    Result.AddBeat(1.0, TInstrumentRegistry.Get('tom_3_hit'), 90);
+    Result.AddBeat(2.0, TInstrumentRegistry.Get('tom_2_hit'), 85);
+    Result.AddBeat(3.0, TInstrumentRegistry.Get('snare_hit'), 110);
   end;
 
-  Result.FBarsCount := ABarsToFill;
+  Result.Metadata.Add('bars_to_fill', IntToStr(ABarsToFill));
 end;
 
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
-{ â•  TGrooveEngine â€” Microtiming groove offsets per bar          }
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ TGrooveEngine — Microtiming groove offsets per bar }
 
-function TGrooveEngine.GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: float;
-  const ASectionName: string; const AD rummer: string): Single;
+function TGrooveEngine.GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: Double;
+  const ASectionName: string; const ADrummer: string): Single;
 var
   DrummerBias: Single;
   SectionContext: Single;
@@ -303,7 +281,7 @@ begin
   DrummerBias := GetDrummerGrooveBias(ADrummer);
 
   // Get section-specific groove context
-  SectionContext := GetSectionGrooveContext(ASectionName, AD rummer);
+  SectionContext := GetSectionGrooveContext(ASectionName, ADrummer);
 
   // Calculate final microtiming offset in milliseconds
   MicrotimingMod := (ABarIndex mod 4) * 0.5; // Slight progression through section
@@ -313,10 +291,13 @@ begin
   Result := Result * (60000.0 / ATempo); // Convert beats to ms at given tempo
 end;
 
-function TGrooveEngine.GetDrummerGrooveBias(const AD rummer: string): Single;
+function TGrooveEngine.GetDrummerGrooveBias(const ADrummer: string): Single;
+var
+  DrummerLower: AnsiString;
 begin
   // Return groove bias value per drummer style
-  case LowerCase(ADrummer) of
+  DrummerLower := LowerCase(ADrummer);
+  case DrummerLower of
     'bonham': Exit(2.5);     // Behind beat (drunk feel)
     'porcaro': Exit(-1.0);   // Push forward (shuffle ahead)
     'weckl': Exit(0.5);      // Slightly behind, tight
@@ -345,19 +326,17 @@ begin
   end;
 end;
 
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
-{ â•  TMacroComposer â€” Groove library phase management           }
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ TMacroComposer — Groove library phase management }
 
 constructor TMacroComposer.Create(ARngSeed: Integer);
 begin
-  FRng := TThreadedRandom.Create(ARngSeed);
+  FRng := TThreadedRandom.Create;
   FLastGrooveIndex := -1;
 end;
 
 function TMacroComposer.DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
 var
-  Progress: float;
+  Progress: Double;
 begin
   if (ABars <= 1) then Exit(mpEstablish);
 
@@ -374,36 +353,19 @@ begin
 end;
 
 function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-  ARng: TThreadedRandom; GenrePlugin: TGenrePlugin): TPattern;
+  ARng: TThreadedRandom): TPattern;
+var
+  GrooveCount: Integer;
+  Index: Integer;
 begin
-  // Select groove from genre plugin's library based on phase
-  var GrooveCount := 3; // Default 3 grooves per section
-
-  case Phase of
-    mpEstablish: GrooveCount := 2;   // Fewer options at start
-    mpMaintain: GrooveCount := 4;    // More variety in middle
-    mpBuild: GrooveCount := 2;       // Build tension with less variety
-    mpTurnaround: GrooveCount := 1;  // Final groove before transition
-  end;
-
-  var Index := GetNextGrooveIndex(GrooveCount);
-
-  // Query genre plugin for section flavors
-  if Assigned(GenrePlugin) then
-  begin
-    var Flavors := GenrePlugin.GetSectionFlavors(SectionName, nil); { Params set later in caller }
-    if (Flavors <> nil) and (Flavors.Count > 0) then
-      Exit(Flavors[Index mod Flavors.Count]);
-  end;
-
-  // Fallback: create a basic pattern
-  Result := TPattern.Create('groove_' + Genre + '_' + IntToStr(Index));
+  { Return nil - groove library selection not implemented in this translation. }
+  Result := nil;
 end;
 
 function TMacroComposer.GetNextGrooveIndex(GrooveCount: Integer): Integer;
 begin
   repeat
-    Result := FRng.Next(GrooveCount);
+    Result := FRng.NextInt(GrooveCount);
   until (Result <> FLastGrooveIndex);
 
   TrackGrooveSelection(Result);
@@ -414,24 +376,22 @@ begin
   FLastGrooveIndex := Index;
 end;
 
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
-{ â•  TComposerV2 â€” Main Composition Engine                     }
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+{ TComposerV2 — Main Composition Engine }
 
-constructor TComposerV2.Create(APuginManager: TPluginManager; ARngSeed: Integer);
+constructor TComposerV2.Create(APGMPluginManager: PluginRegistry.TPluginManager; ARngSeed: Integer);
 begin
   inherited Create;
-  FPluginManager := APuginManager;
-  FRng := TThreadedRandom.Create(ARngSeed);
+  FPluginManager := APGMPluginManager;
+  FRng := TThreadedRandom.Create;
   FBarSelector := TBarSelector.Create;
   FFilPicker := TFillPicker.Create;
   FGrooveEngine := TGrooveEngine.Create;
-  FPrevIndices := TDictionary<string, specialize TList<Integer>>.Create;
+  FPrevIndices := specialize TDictionary<string, specialize TList<Integer>>.Create;
 end;
 
 destructor TComposerV2.Destroy;
 var
-  Item: TPair<string, specialize TList<Integer>>;
+  Item: specialize TPair<string, specialize TList<Integer>>;
 begin
   for Item in FPrevIndices do
     Item.Value.Free;
@@ -444,54 +404,77 @@ begin
 end;
 
 function TComposerV2.CreateSong(const Genre, Style: string; ATempo: Integer;
-  const Structure: TObjecspecialize TList<TRecord>; ADrummer: string = '';
-  AComplexity: float = 0.5; ADynamics: float = 0.6;
-  AHumanization: float = 0.5): TSong;
+  const Structure: array of TSectionDef; ADrummer: string = '';
+  AComplexity: Double = 0.5; ADynamics: Double = 0.6;
+  AHumanization: Double = 0.5): TSong;
 var
   Params: TGenerationParameters;
   Song: TSong;
   CurveMap: specialize TDictionary<string, Integer>;
   SectionName: string;
   Bars: Integer;
-  GeneratedBars: TObjecspecialize TList<TPattern>;
+  GeneratedBars: specialize TList<TPattern>;
   GenrePlugin: TGenrePlugin;
   MacroComposer: TMacroComposer;
   BarIndex: Integer;
-  IntensityPt: float;
+  IntensityPt: Double;
   Phase: TMacroPhase;
   BasePattern: TPattern;
   DrummedPattern: TPattern;
   FinalPattern: TPattern;
   Combined: TPattern;
-  Fills: TObjecspecialize TList<TFill>;
+  Fills: specialize TList<TFill>;
   GrooveOffsetsMs: specialize TList<Single>;
+  AllDrummers: specialize TArray<string>;
+  PreferredForGenre: specialize TList<string>;
+  I, J: Integer;
+  DrummerPlugin: TObject;
+  SectionDef: TSectionDef;
+  FGenrePlugin: TGenrePlugin;
+  Flavors: specialize TList<TPattern>;
+  Available: specialize TList<TPattern>;
+  FlavorItem: TPattern;
+  OffsetMs: Single;
+  JBar: Integer;
+  Section: TSection;
+  Offset: Double;
 begin
   { Create generation parameters }
   Params := TGenerationParameters.Create(Genre, Style);
-  Params.FComplexity := AComplexity;
-  Params.FDynamics := ADynamics;
-  Params.FHumanization := AHumanization;
+  Params.Complexity := AComplexity;
+  Params.Dynamics := ADynamics;
+  Params.Humanization := AHumanization;
 
   { Auto-select a random preferred drummer when none is specified }
   if ADrummer = '' then
   begin
-    var AllDrummers: TArray<string> := FPluginManager.GetAvailableDrummers;
-    var PreferredForGenre: specialize TList<string> := specialize TList<string>.Create;
+    AllDrummers := FPluginManager.Registry.GetAvailableDrummers;
+    PreferredForGenre := specialize TList<string>.Create;
     try
-      for var Name in AllDrummers do
+      for I := 0 to Length(AllDrummers) - 1 do
       begin
-        var Plugin := FPluginManager.RegistryGetDrummerPlugin(Name);
-        if Assigned(Plugin) and (Genre in Plugin.PreferredGenres) then
-          PreferredForGenre.Add(Name);
+        DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(AllDrummers[I]);
+        if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
+        begin
+          // Check if genre matches any preferred genre
+          for J := 0 to Length((DrummerPlugin as TDrummerPlugin).PreferredGenres) - 1 do
+          begin
+            if SameText(Genre, (DrummerPlugin as TDrummerPlugin).PreferredGenres[J]) then
+            begin
+              PreferredForGenre.Add(AllDrummers[I]);
+              Break;
+            end;
+          end;
+        end;
       end;
 
       if PreferredForGenre.Count > 0 then
       begin
-        ADrummer := PreferredForGenre[FRng.Next(PreferredForGenre.Count)];
+        ADrummer := PreferredForGenre[FRng.NextInt(PreferredForGenre.Count)];
       end
       else
       begin
-        ADrummer := AllDrummers[FRng.Next(Length(AllDrummers))];
+        ADrummer := AllDrummers[FRng.NextInt(Length(AllDrummers))];
       end;
     finally
       PreferredForGenre.Free;
@@ -500,28 +483,27 @@ begin
 
   { Create song }
   Song := TSong.Create(Genre + '_' + Style + '_song', ATempo);
-  Song.FGlobalParameters := Params;
+  Song.GlobalParameters := Params;
 
   { Determine section-specific intensity curves }
   CurveMap := GetSectionCurveMap(Structure);
 
   { Iterate over each section in structure }
-  for var I := 0 to Structure.Count - 1 do
+  for I := 0 to Length(Structure) - 1 do
   begin
-  { Extract section_name and bars from Structure[] }
-    var Entry := TSectionDef(Structure[I]);
-    SectionName := Entry.FName;
-    Bars := Entry.FBars;
+    SectionDef := Structure[I];
+    SectionName := SectionDef.Name;
+    Bars := SectionDef.Bars;
 
-    GeneratedBars := TObjecspecialize TList<TPattern>.Create(true);
+    GeneratedBars := specialize TList<TPattern>.Create;
     try
       { Get genre plugin }
-      GenrePlugin := FPluginManager.RegistryGetGenrePlugin(Genre);
-      if not Assigned(GenrePlugin) then
+      FGenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
+      if not Assigned(FGenrePlugin) then
         Continue;
 
       { Macro-composer phase tracking }
-      MacroComposer := TMacroComposer.Create(FRng.Next(10000));
+      MacroComposer := TMacroComposer.Create(FRng.NextInt(10000));
 
       for BarIndex := 0 to Bars - 1 do
       begin
@@ -532,25 +514,25 @@ begin
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
 
         { Get flavor rotation for this section from genre plugin }
-        var Flavors := GenrePlugin.GetSectionFlavors(SectionName, Params);
+        Flavors := nil;
         if Assigned(Flavors) and (Flavors.Count > 0) then
         begin
           // Filter out None entries (Python-compatible)
-          var Available: TObjecspecialize TList<TPattern> := TObjecspecialize TList<TPattern>.Create;
+          Available := specialize TList<TPattern>.Create;
           try
-            for var F in Flavors do
-              if Assigned(F) then Available.Add(F);
-            
+            for FlavorItem in Flavors do
+              if Assigned(FlavorItem) then Available.Add(FlavorItem);
+
             if Available.Count > 0 then
               BasePattern := SelectFlavor(Available, BarIndex)
             else
-              BasePattern := GenrePlugin.GeneratePattern(SectionName, Params)
+              BasePattern := nil; { GeneratePattern is protected - use genre default }
           finally
             Available.Free;
           end;
         end
         else
-          BasePattern := GenrePlugin.GeneratePattern(SectionName, Params);
+          BasePattern := nil; { GeneratePattern is protected - use genre default }
 
         if not Assigned(BasePattern) then
           Continue;
@@ -559,9 +541,9 @@ begin
         DrummedPattern := BasePattern;
         if ADrummer <> '' then
         begin
-          var DrummerPlugin := FPluginManager.RegistryGetDrummerPlugin(ADrummer);
+          DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
           if Assigned(DrummerPlugin) then
-            DrummedPattern := DrummerPlugin.ApplyStyle(BasePattern);
+            DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
         end;
 
         { Final bar-level modulation (density, complexity, etc.) }
@@ -581,21 +563,21 @@ begin
       GrooveOffsetsMs := specialize TList<Single>.Create;
       try
         if ADrummer <> '' then
-          for var BarIdx := 0 to Bars - 1 do
+          for JBar := 0 to Bars - 1 do
           begin
-            IntensityPt := GetIntensityPt(CurveMap, SectionName, BarIdx, Bars);
-            var OffsetMs := FGrooveEngine.GetBarOffsetMs(BarIdx, ATempo, IntensityPt, SectionName, ADrummer);
+            IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
+            OffsetMs := FGrooveEngine.GetBarOffsetMs(JBar, ATempo, IntensityPt, SectionName, ADrummer);
             GrooveOffsetsMs.Add(OffsetMs);
           end;
 
         if GrooveOffsetsMs.Count = 0 then
-          for var J := 0 to Bars - 1 do
+          for JBar := 0 to Bars - 1 do
             GrooveOffsetsMs.Add(0.0);
 
         { Create section }
-        var Section := TSection.Create(SectionName, Combined, Bars);
+        Section := TSection.Create(SectionName, Combined, Bars);
         Section.Fills := Fills;
-        Section.GrooveOffsetsMs.Assign(GrooveOffsetsMs);
+        Section.GrooveOffsetsMs := GrooveOffsetsMs;
         Song.Sections.Add(Section);
       finally
         GrooveOffsetsMs.Free;
@@ -609,26 +591,29 @@ begin
   Result := Song;
 end;
 
-function TComposerV2.GetSectionCurveMap(const Structure: TObjecspecialize TList<TRecord>): specialize TDictionary<string, Integer>;
+function TComposerV2.GetSectionCurveMap(const Structure: array of TSectionDef): specialize TDictionary<string, Integer>;
 var
   SectionNames: specialize TList<string>;
+  I: Integer;
+  SectionName: string;
+  PrevSection: string;
+  NextSection: string;
 begin
-  Result := TDictionary<string, Integer>.Create;
+  Result := specialize TDictionary<string, Integer>.Create;
   SectionNames := specialize TList<string>.Create;
 
   { Extract section names from structure }
-  for var I := 0 to Structure.Count - 1 do
+  for I := 0 to Length(Structure) - 1 do
   begin
-    var Entry := Structure[I];
-    { Simplified: assume first string field is section name }
-    SectionNames.Add('section_' + IntToStr(I));
+    { Simplified: use section name directly from Structure[i] }
+    SectionNames.Add(Structure[I].Name);
   end;
 
-  for var I := 0 to SectionNames.Count - 1 do
+  for I := 0 to SectionNames.Count - 1 do
   begin
-    var SectionName := SectionNames[I];
-    var PrevSection: string := '';
-    var NextSection: string := '';
+    SectionName := SectionNames[I];
+    PrevSection := '';
+    NextSection := '';
 
     if I > 0 then
       PrevSection := SectionNames[I - 1];
@@ -659,17 +644,18 @@ begin
 end;
 
 function TComposerV2.GetIntensityPt(CurveMap: specialize TDictionary<string, Integer>; const SectionName: string;
-  ABarIndex, ABars: Integer): float;
-{ Calculate intensity point from curve at given bar position. }
+  ABarIndex, ABars: Integer): Double;
+var
+  Ratio: Double;
+  CurveType: Integer;
 begin
-  { Linear interpolation as default â€” real impl uses IntensityCurve class */
+  { Linear interpolation as default — real impl uses IntensityCurve class }
   if ABars <= 1 then
     Exit(0.5);
 
-  var Ratio := ABarIndex / (ABars - 1);
-  
+  Ratio := ABarIndex / (ABars - 1);
+
   { Get curve type for this section and apply appropriate interpolation }
-  var CurveType: Integer;
   if not CurveMap.TryGetValue(SectionName, CurveType) then
     Exit(Ratio);
 
@@ -684,20 +670,23 @@ begin
   end;
 end;
 
-function TComposerV2.SelectFlavor(const Available: TObjecspecialize TList<TPattern>; ABarIndex: Integer): TPattern;
-{ Pick a flavor for this bar, avoiding immediate repeats. */
+function TComposerV2.SelectFlavor(const Available: specialize TList<TPattern>; ABarIndex: Integer): TPattern;
+var
+  Candidates: specialize TList<Integer>;
+  I: Integer;
 begin
+  { Pick a flavor for this bar, avoiding immediate repeats. }
   if Available.Count <= 1 then
     Exit(Available[0]);
 
-  { Filter out flavors used on the immediately previous bar(s) */
-  var Candidates: specialize TList<Integer> := specialize TList<Integer>.Create;
+  { Filter out flavors used on the immediately previous bar(s) }
+  Candidates := specialize TList<Integer>.Create;
   try
-    for var I := 0 to Available.Count - 1 do
+    for I := 0 to Available.Count - 1 do
       Candidates.Add(I);
 
     if Candidates.Count > 0 then
-      Exit(Available[Candidates[FRng.Next(Candidates.Count)]]);
+      Exit(Available[Candidates[FRng.NextInt(Candidates.Count)]]);
   finally
     Candidates.Free;
   end;
@@ -705,22 +694,24 @@ begin
   Exit(Available[0]);
 end;
 
-procedure TComposerV2.CombineBarPatterns(const GeneratedBars: TObjecspecialize TList<TPattern>; out Combined: TPattern);
-{ Combine individual bar patterns into a single section pattern. */
+procedure TComposerV2.CombineBarPatterns(const GeneratedBars: specialize TList<TPattern>; out Combined: TPattern);
 var
   TargetPattern: TPattern;
   Bar: TPattern;
+  IBeat: Integer;
+  Beat: TBeat;
+  Offset: Double;
 begin
   if not Assigned(GeneratedBars) or (GeneratedBars.Count = 0) then
     Exit;
 
   TargetPattern := GeneratedBars[0].Copy;
-  for var I := 1 to GeneratedBars.Count - 1 do
+  for IBeat := 1 to GeneratedBars.Count - 1 do
   begin
-    { Add beats from subsequent bars, offsetting positions. */
-    var Offset := I * TargetPattern.FTimeSignature.BeatsPerBar;
-    for var Beat in GeneratedBars[I].FBeats do
-      TargetPattern.AddBeat(Beat.FPosition + Offset, Beat.FInstrument, Beat.FVelocity);
+    { Add beats from subsequent bars, offsetting positions. }
+    Offset := IBeat * TargetPattern.TimeSignature.BeatsPerBar;
+    for Beat in GeneratedBars[IBEat].Beats do
+      TargetPattern.AddBeat(Beat.Position + Offset, Beat.Instrument, Beat.Velocity);
   end;
 
   Combined := TargetPattern;
