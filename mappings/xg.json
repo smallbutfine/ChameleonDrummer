@@ -1,0 +1,102 @@
+{
+    "name": "Yamaha XG — Drum Key",
+    "version": "1.0",
+    "description": "Complete Yamaha XG percussion map (notes 35–81). Standard XGM drum set mapping.",
+    "source": "Yamaha XGM Sound Expansion Documentation",
+    "instruments": {
+        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_mute": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_slow_bright_accent": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_no_accent": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_short_2": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_brushes_only_sweep_short_1": {"midi_note": null, "description": "Not in XG standard"},
+
+        "kick": {"midi_note": 36, "description": "Acoustic Bass Drum (XGM note 36)"},
+
+        "snare_rimshot_open_hit": {"midi_note": 39, "description": "Acoustic Snare (XGM note 39)"},
+        "snare_open_hit_open_lateral_hit": {"midi_note": 38, "description": "Side Stick / Snap Wood Stick (XGM note 38)"},
+        "snare_rimshot_dbl_closed_hit": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_open_hit_dbl_closed_lateral_hit": {"midi_note": 40, "description": "Hand Clap (XGM note 40)"},
+        "snare_shallow_rimshot_open_shallow_hit": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_side_stick": {"midi_note": 37, "description": "Side Stick (XGM note 37)"},
+        "snare_shallow_hit_closed_shallow_hit": {"midi_note": null, "description": "Not in XG standard"},
+        "snare_rimclick_sweep_short_1_dbl": {"midi_note": null, "description": "Not in XG standard"},
+
+        "ride_1_tip_dbl_hit_softer_dbl": {"midi_note": null, "description": "Not in XG standard"},
+        "cymbal_1_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+
+        "flexi_1_hit_a": {"midi_note": null, "description": "Not in XG standard"},
+        "hihat_pedal_closed": {"midi_note": 43, "description": "Closed Hi-Hat (XGM note 43)"},
+        "hihat_closed_1_tip_closed_1_hit": {"midi_note": null, "description": "Not in XG standard"},
+        "hihat_closed_1_shaft_closed_1_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+
+        "hihat_closed_2_tip_closed_2_hit": {"midi_note": null, "description": "Not in XG standard"},
+        "hihat_closed_2_shaft_closed_2_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+
+        "hihat_closed_bell": {"midi_note": null, "description": "Not in XG standard"},
+
+        "hihat_open_a": {"midi_note": 46, "description": "Open Hi-Hat (XGM note 46)"},
+        "hihat_open_b": {"midi_note": null, "description": "Not in XG standard"},
+        "hihat_open_c": {"midi_note": null, "description": "Not in XG standard"},
+        "hihat_open_d": {"midi_note": null, "description": "Not in XG standard"},
+
+        "hihat_open_bell": {"midi_note": null, "description": "Not in XG standard"},
+        "hihat_pedal_open": {"midi_note": 45, "description": "Pedal Hi-Hat / Closed Hi-Hat (XGM note 45)"},
+
+        "ride_1_tip_hit_softer": {"midi_note": 48, "description": "Ride Cymbal 1 (XGM note 48)"},
+        "ride_1_bell": {"midi_note": 50, "description": "Ride Bell (XGM note 50)"},
+        "ride_1_shaft_hit_stronger": {"midi_note": null, "description": "Not in XG standard"},
+        "ride_1_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "tom_4_open_hit": {"midi_note": 42, "description": "Low Floor Tom (XGM note 42)"},
+        "tom_4_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+        "tom_3_open_hit": {"midi_note": 45, "description": "Low Mid Tom (XGM note 45)"},
+        "tom_3_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+        "tom_2_open_hit": {"midi_note": null, "description": "Not in XG standard"},
+        "tom_2_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+        "tom_1_open_hit": {"midi_note": 46, "description": "High Tom (XGM note 46) — shared with Open HH in strict XGM"},
+        "tom_1_rimshot_open_hit_dbl": {"midi_note": null, "description": "Not in XG standard"},
+
+        "flexi_1_hit_b": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_1_hit_c": {"midi_note": null, "description": "Not in XG standard"},
+
+        "snare_sticks": {"midi_note": null, "description": "Not in XG standard"},
+
+        "flexi_1_hit_d": {"midi_note": null, "description": "Not in XG standard"},
+
+        "cymbal_1_hit": {"midi_note": 47, "description": "Crash Cymbal 1 (XGM note 47)"},
+        "cymbal_1_choke": {"midi_note": null, "description": "Not in XG standard"},
+        "cymbal_2_hit": {"midi_note": 54, "description": "Crash Cymbal 2 (XGM note 54)"},
+        "cymbal_2_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "cymbal_3_hit": {"midi_note": 59, "description": "Ride Triangle (XGM note 59) — extended zone mapping"},
+        "cymbal_3_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "ride_2_tip_hit_softer": {"midi_note": null, "description": "Not in XG standard"},
+        "ride_2_bell": {"midi_note": 50, "description": "Ride Bell (XGM note 50) — shared with ride_1_bell"},
+        "ride_2_shaft_hit_stronger": {"midi_note": null, "description": "Not in XG standard"},
+        "ride_2_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "cymbal_4_hit": {"midi_note": 60, "description": "Mute Cuica (XGM note 60) — extended zone mapping"},
+        "cymbal_4_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "cymbal_5_hit": {"midi_note": 49, "description": "Chinese Cymbal (XGM note 49)"},
+        "cymbal_5_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "cymbal_6_hit": {"midi_note": 52, "description": "Splash Cymbal (XGM note 52)"},
+        "cymbal_6_choke": {"midi_note": null, "description": "Not in XG standard"},
+
+        "flexi_2_hit_a": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_2_hit_b": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_2_hit_c": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_2_hit_d": {"midi_note": null, "description": "Not in XG standard"},
+
+        "flexi_3_hit_a": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_3_hit_b": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_3_hit_c": {"midi_note": null, "description": "Not in XG standard"},
+        "flexi_3_hit_d": {"midi_note": null, "description": "Not in XG standard"}
+    }
+}

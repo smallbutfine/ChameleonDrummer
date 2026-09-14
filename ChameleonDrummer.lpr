@@ -13,6 +13,7 @@ program ChameleonDrummer;
 
 uses
   SysUtils, Classes,
+  jsonparser,
   CLIInterface, Kit, PluginRegistry;
 
 var
