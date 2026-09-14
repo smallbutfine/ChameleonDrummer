@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TRichPlugin = class(TDrummerPlugin)
-  private
-    FSpeedPrecision: TSpeedPrecision;
-    FHeavyAccents: THeavyAccents;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor TRichPlugin.Create;
 begin
   inherited Create;
-  FSpeedPrecision := TSpeedPrecision.Create(0.96);
-  FHeavyAccents := THeavyAccents.Create(18);
 end;
 
 destructor TRichPlugin.Destroy;
 begin
-  FSpeedPrecision.Free;
-  FHeavyAccents.Free;
   inherited Destroy;
 end;
 
-function TRichPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TRichPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_rich';
-
-  // Virtuosic speed and precision (Buddy Rich signature)
-  Styled := FSpeedPrecision.Apply(Styled, 0.96);
-
-  // Dramatic dynamic contrast
-  Styled := FHeavyAccents.Apply(Styled, 0.9);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_rich');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.8);
 end;
 
 function TRichPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('rich_virtuoso_fill', 'Buddy Rich virtuoso fill') do
-  begin
-    Pattern := TTombFill.Create('ascending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('rich_virtuoso_fill', 'Buddy Rich virtuoso fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,12 +59,11 @@ begin
   Result := 'rich';
 end;
 
-function TRichPlugin.GetCompatibleGenres: TStringList;
+function TRichPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('jazz');
-  Result.Add('rock');
-  Result.Add('swing');
+  SetLength(Result, 2);
+  Result[0] := 'jazz';
+  Result[1] := 'rock';
 end;
 
 end.

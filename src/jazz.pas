@@ -6,9 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  patterns_templates, generation_builders_pattern_builder,
-  plugins_interfaces_genre_plugin;
+  Pattern, Song,
+  patterns_templates,
+  Kit,
+  generation_parameters,
+  GenrePlugin;
 
 type
   TJazzContext = record
@@ -39,8 +41,8 @@ type
     procedure SetIntensity(AValue: Double);
 
     function GetSectionGrooves: specialize TList<TPattern>;
-    function GetCommonFills: specialize TList<TFill>;
-    function GetHighEnergyTimekeeper: String; override;
+ function GetCommonFills: specialize TList<TFill>;
+    function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -123,12 +125,12 @@ begin
     'fusion':
       begin
         // Electric jazz fusion energy
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'latin':
       begin
         // Latin jazz clave patterns
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'ballad':
       begin
@@ -172,11 +174,12 @@ begin
       end;
     'fusion':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'latin':
       begin
-        Composer.Add(TBasicGroove.Create);
+        // Latin jazz fusion chorus
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'ballad':
       begin
@@ -209,7 +212,7 @@ begin
   case FStyle of
     'swing':
       begin
-        // Bridge â€” switch to ride bell or hi-hat
+        // Bridge — switch to ride bell or hi-hat
         if (BarIndex mod 2 = 0) then
           Composer.Add(TSteadyRide.Create)
         else
@@ -221,11 +224,12 @@ begin
       end;
     'fusion':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'latin':
       begin
-        Composer.Add(TBasicGroove.Create);
+        // Latin jazz bridge fusion
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'ballad':
       begin
@@ -284,22 +288,21 @@ end;
 function TJazzGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  var LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
 
-  with TFill.Create('jazz_tom_roll', 'Jazz tom roll') do
-  begin
-    Pattern := TTombFill.Create('ascending');
-    FillList.Add(Self);
-  end;
+  LFill := TFill.Create('jazz_tom_fill', 'Jazz tom fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
 
   Result := FillList;
 end;
 
-function TJazzGenrePlugin.GetHighEnergyTimekeeper: String;
+function TJazzGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   // Jazz uses ride bell for energy
-  Result := 'ride_1_bell';
+  Result := TInstrumentRegistry.Register('ride_1_bell', 'Ride bell');
 end;
 
 end.

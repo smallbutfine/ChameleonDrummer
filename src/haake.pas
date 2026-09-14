@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   THaakePlugin = class(TDrummerPlugin)
-  private
-    FMechPrecision: TMechanicalPrecision;
-    FLinearCoord: TLinearCoordination;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor THaakePlugin.Create;
 begin
   inherited Create;
-  FMechPrecision := TMechanicalPrecision.Create(0.98);
-  FLinearCoord := TLinearCoordination.Create(0.7);
 end;
 
 destructor THaakePlugin.Destroy;
 begin
-  FMechPrecision.Free;
-  FLinearCoord.Free;
   inherited Destroy;
 end;
 
-function THaakePlugin.ApplyStyle(APattern: TPattern): TPattern;
+function THaakePlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_haake';
-
-  // Mechanical precision (Meshuggah signature)
-  Styled := FMechPrecision.Apply(Styled, 0.98);
-
-  // Linear coordination for polyrhythmic feel
-  Styled := FLinearCoord.Apply(Styled, 0.7);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_haake');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.9);
 end;
 
 function THaakePlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('haake_polyrhythm_fill', 'Haake polyrhythmic fill') do
-  begin
-    Pattern := TBlastBeat.Create('hammer', 0.9);
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('haake_polyrhythm_fill', 'Fabio Haake polyrhythm fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,12 +59,11 @@ begin
   Result := 'haake';
 end;
 
-function THaakePlugin.GetCompatibleGenres: TStringList;
+function THaakePlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('metal');
-  Result.Add('progressive');
-  Result.Add('thrash');
+  SetLength(Result, 2);
+  Result[0] := 'metal';
+  Result[1] := 'progressive';
 end;
 
 end.

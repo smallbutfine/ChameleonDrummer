@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TDeePlugin = class(TDrummerPlugin)
-  private
-    FSpeedPrecision: TSpeedPrecision;
-    FTwistedAccents: TTwistedAccents;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor TDeePlugin.Create;
 begin
   inherited Create;
-  FSpeedPrecision := TSpeedPrecision.Create(0.95);
-  FTwistedAccents := TTwistedAccents.Create(12);
 end;
 
 destructor TDeePlugin.Destroy;
 begin
-  FSpeedPrecision.Free;
-  FTwistedAccents.Free;
   inherited Destroy;
 end;
 
-function TDeePlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TDeePlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_dee';
-
-  // Speed and precision (Mikkey Dee signature)
-  Styled := FSpeedPrecision.Apply(Styled, 0.95);
-
-  // Twisted/displaced accents
-  Styled := FTwistedAccents.Apply(Styled, 0.7);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_dee');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.8);
 end;
 
 function TDeePlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('dee_power_fill', 'Mikkey Dee power fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('dee_power_fill', 'Mikkey Dee power fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,12 +59,11 @@ begin
   Result := 'dee';
 end;
 
-function TDeePlugin.GetCompatibleGenres: TStringList;
+function TDeePlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('metal');
-  Result.Add('rock');
-  Result.Add('hard');
+  SetLength(Result, 2);
+  Result[0] := 'metal';
+  Result[1] := 'rock';
 end;
 
 end.

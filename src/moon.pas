@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TMoonPlugin = class(TDrummerPlugin)
-  private
-    FMinimalCreativity: TMinimalCreativity;
-    FBehindBeat: TBehindBeatTiming;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor TMoonPlugin.Create;
 begin
   inherited Create;
-  FMinimalCreativity := TMinimalCreativity.Create;
-  FBehindBeat := TBehindBeatTiming.Create(20.0);
 end;
 
 destructor TMoonPlugin.Destroy;
 begin
-  FMinimalCreativity.Free;
-  FBehindBeat.Free;
   inherited Destroy;
 end;
 
-function TMoonPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TMoonPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_moon';
-
-  // Minimal creativity (atmospheric approach)
-  Styled := FMinimalCreativity.Apply(Styled, 0.7);
-
-  // Behind-beat timing
-  Styled := FBehindBeat.Apply(Styled, 0.6);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_moon');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.5);
 end;
 
 function TMoonPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('moon_atmospheric_fill', 'Moon atmospheric fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('moon_fill', 'Moon signature fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,12 +59,11 @@ begin
   Result := 'moon';
 end;
 
-function TMoonPlugin.GetCompatibleGenres: TStringList;
+function TMoonPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('metal');
-  Result.Add('doom');
-  Result.Add('sludge');
+  SetLength(Result, 2);
+  Result[0] := 'rock';
+  Result[1] := 'funk';
 end;
 
 end.

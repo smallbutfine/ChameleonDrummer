@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   THoglanPlugin = class(TDrummerPlugin)
-  private
-    FMechPrecision: TMechanicalPrecision;
-    FBlastBeats: TBlastBeatApplication;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor THoglanPlugin.Create;
 begin
   inherited Create;
-  FMechPrecision := TMechanicalPrecision.Create(0.97);
-  FBlastBeats := TBlastBeatApplication.Create(0.8);
 end;
 
 destructor THoglanPlugin.Destroy;
 begin
-  FMechPrecision.Free;
-  FBlastBeats.Free;
   inherited Destroy;
 end;
 
-function THoglanPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function THoglanPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_hoglan';
-
-  // Mechanical precision (Gene Hoglan signature)
-  Styled := FMechPrecision.Apply(Styled, 0.97);
-
-  // Blast beat application for metal
-  Styled := FBlastBeats.Apply(Styled, 0.8);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_hoglan');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.9);
 end;
 
 function THoglanPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('hoglan_blast_fill', 'Gene Hoglan blast beat fill') do
-  begin
-    Pattern := TBlastBeat.Create('traditional', 0.95);
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('hoglan_blast_fill', 'Gene Hoglan blast fill');
+  LFill.Pattern := TPattern.Create('blast_beat');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,13 +59,11 @@ begin
   Result := 'hoglan';
 end;
 
-function THoglanPlugin.GetCompatibleGenres: TStringList;
+function THoglanPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('metal');
-  Result.Add('death');
-  Result.Add('thrash');
-  Result.Add('progressive');
+  SetLength(Result, 2);
+  Result[0] := 'metal';
+  Result[1] := 'progressive';
 end;
 
 end.

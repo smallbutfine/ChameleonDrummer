@@ -10,7 +10,7 @@ interface
 
 uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
-  TimeSignature, GenerationParameters, GenrePlugin,
+  time_signature, generation_parameters, GenrePlugin,
   DrummerPlugin, PluginRegistry, ComposerTypes;
 
 type
@@ -457,9 +457,9 @@ begin
         if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
         begin
           // Check if genre matches any preferred genre
-          for J := 0 to Length((DrummerPlugin as TDrummerPlugin).PreferredGenres) - 1 do
+          for J := 0 to Length((DrummerPlugin as TDrummerPlugin).GetPreferredGenres) - 1 do
           begin
-            if SameText(Genre, (DrummerPlugin as TDrummerPlugin).PreferredGenres[J]) then
+            if SameText(Genre, (DrummerPlugin as TDrummerPlugin).GetPreferredGenres[J]) then
             begin
               PreferredForGenre.Add(AllDrummers[I]);
               Break;

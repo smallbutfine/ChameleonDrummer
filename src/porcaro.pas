@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TPorcaroPlugin = class(TDrummerPlugin)
-  private
-    FShuffleFeel: TShuffleFeelApplication;
-    FGhostNotes: TGhostNoteLayer;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor TPorcaroPlugin.Create;
 begin
   inherited Create;
-  FShuffleFeel := TShuffleFeelApplication.Create(0.5);
-  FGhostNotes := TGhostNoteLayer.Create(0.6);
 end;
 
 destructor TPorcaroPlugin.Destroy;
 begin
-  FShuffleFeel.Free;
-  FGhostNotes.Free;
   inherited Destroy;
 end;
 
-function TPorcaroPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TPorcaroPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_porcaro';
-
-  // Half-time shuffle feel (Jeff Porcaro signature)
-  Styled := FShuffleFeel.Apply(Styled, 0.5);
-
-  // Ghost notes for studio precision
-  Styled := FGhostNotes.Apply(Styled, 0.6);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_porcaro');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.6);
 end;
 
 function TPorcaroPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('porcaro_shuffle_fill', 'Jeff Porcaro shuffle fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('porcaro_shuffle_fill', 'Jeff Porcaro shuffle fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,12 +59,12 @@ begin
   Result := 'porcaro';
 end;
 
-function TPorcaroPlugin.GetCompatibleGenres: TStringList;
+function TPorcaroPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('rock');
-  Result.Add('funk');
-  Result.Add('pop');
+  SetLength(Result, 3);
+  Result[0] := 'rock';
+  Result[1] := 'funk';
+  Result[2] := 'pop';
 end;
 
 end.

@@ -188,7 +188,7 @@
         <Paths>
           <UnitOutputPath Value="bin"/>
           <PpuOutputPath Value="bin"/>
-          <Other Value="api;generation;generation/engines;generation/builders;patterns;plugins/interfaces;plugins/registry;plugins/genres;plugins/drummers;modifications;humanization;validation;utils;ai;config;export/midi;export/reaper;export/ardour;core/models;core/value_objects;mappings"/>
+          <Other Value="src;.;api;generation;generation/engines;generation/builders;patterns;plugins/interfaces;plugins/registry;plugins/genres;plugins/drummers;modifications;humanization;validation;utils;ai;config;export/midi;export/reaper;export/ardour;core/models;core/value_objects;mappings"/>
         </Paths>
         <CodeGeneration>
           <Optimize Value="1"/>

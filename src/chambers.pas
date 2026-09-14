@@ -6,24 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TChambersPlugin = class(TDrummerPlugin)
-  private
-    FGhostNotes: TGhostNoteLayer;
-    FPocketStretch: TPocketStretching;
-    FFastChops: TFastChopsTriplets;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -31,50 +26,31 @@ implementation
 constructor TChambersPlugin.Create;
 begin
   inherited Create;
-  FGhostNotes := TGhostNoteLayer.Create(0.5);
-  FPocketStretch := TPocketStretching.Create;
-  FFastChops := TFastChopsTriplets.Create(0.4);
 end;
 
 destructor TChambersPlugin.Destroy;
 begin
-  FGhostNotes.Free;
-  FPocketStretch.Free;
-  FFastChops.Free;
   inherited Destroy;
 end;
 
-function TChambersPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TChambersPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_chambers';
-
-  // Heavy ghost notes (Dennis Chambers signature)
-  Styled := FGhostNotes.Apply(Styled, 0.5);
-
-  // Pocket stretching for funk grooves
-  Styled := FPocketStretch.Apply(Styled, 0.7);
-
-  // Fast chops triplets for fills
-  Styled := FFastChops.Apply(Styled, 0.4);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_chambers');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.7);
 end;
 
 function TChambersPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('chambers_funk_fill', 'Dennis Chambers funk fill') do
-  begin
-    Pattern := TTombFill.Create('ascending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('chambers_funk_fill', 'Dennis Chambers funk fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -83,12 +59,12 @@ begin
   Result := 'chambers';
 end;
 
-function TChambersPlugin.GetCompatibleGenres: TStringList;
+function TChambersPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('funk');
-  Result.Add('fusion');
-  Result.Add('rock');
+  SetLength(Result, 3);
+  Result[0] := 'funk';
+  Result[1] := 'jazz';
+  Result[2] := 'rock';
 end;
 
 end.

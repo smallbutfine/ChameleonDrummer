@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TSmithPlugin = class(TDrummerPlugin)
-  private
-    FPocketGroove: TPocketStretching;
-    FBehindBeat: TBehindBeatTiming;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,59 +26,44 @@ implementation
 constructor TSmithPlugin.Create;
 begin
   inherited Create;
-  FPocketGroove := TPocketStretching.Create;
-  FBehindBeat := TBehindBeatTiming.Create(22.0);
 end;
 
 destructor TSmithPlugin.Destroy;
 begin
-  FPocketGroove.Free;
-  FBehindBeat.Free;
   inherited Destroy;
 end;
 
-function TSmithPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TSmithPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_smith';
-
-  // Pocket groove (RHCP signature)
-  Styled := FPocketGroove.Apply(Styled, 0.7);
-
-  // Slight behind-beat feel
-  Styled := FBehindBeat.Apply(Styled, 0.6);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_smith');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.6);
 end;
 
 function TSmithPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('smith_pocket_fill', 'Chad Smith pocket fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('smith_pocket_fill', 'Chad Smith pocket fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
 function TSmithPlugin.GetDrummerName: String;
 begin
-  Result := 'smith';
+  Result := 'chadsmith';
 end;
 
-function TSmithPlugin.GetCompatibleGenres: TStringList;
+function TSmithPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('rock');
-  Result.Add('funk');
-  Result.Add('alternative');
+  SetLength(Result, 2);
+  Result[0] := 'rock';
+  Result[1] := 'funk';
 end;
 
 end.

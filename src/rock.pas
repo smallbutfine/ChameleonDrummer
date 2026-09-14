@@ -6,9 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  patterns_templates, generation_builders_pattern_builder,
-  plugins_interfaces_genre_plugin;
+  Pattern, Song,
+  patterns_templates,
+  Kit,
+  generation_parameters,
+  GenrePlugin;
 
 type
   TRockContext = record
@@ -40,7 +42,7 @@ type
 
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>;
-    function GetHighEnergyTimekeeper: String; override;
+    function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -113,46 +115,46 @@ begin
     'classic':
       begin
         // Led Zeppelin/Deep Purple style
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TTomFill.Create('descending'));
       end;
     'blues':
       begin
         // Blues rock with shuffle feel
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'alternative':
       begin
         // 90s alternative syncopation
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 3 = 0) then
           Composer.Add(TTomFill.Create('descending'));
       end;
     'progressive':
       begin
         // Complex progressive rock
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'punk':
       begin
         // Fast aggressive punk
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'hard':
       begin
         // Hard rock heavy emphasis
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TCrashAccents.Create);
       end;
     'pop':
       begin
         // Clean pop rock
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
   else
-    Composer.Add(TBasicGroove.Create);
+    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
   end;
 
   Result := Composer.Build(2, FComplexity);
@@ -168,38 +170,38 @@ begin
   case FStyle of
     'classic':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TCrashAccents.Create);
       end;
     'blues':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'alternative':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TCrashAccents.Create);
       end;
     'progressive':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'punk':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'hard':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TCrashAccents.Create);
       end;
     'pop':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
   else
-    Composer.Add(TBasicGroove.Create);
+    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
   end;
 
   Result := Composer.Build(2, FComplexity);
@@ -215,28 +217,28 @@ begin
   case FStyle of
     'classic':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TTomFill.Create('descending'));
       end;
     'blues':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'alternative':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'progressive':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'punk':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'hard':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TCrashAccents.Create);
       end;
     'pop':
@@ -244,7 +246,7 @@ begin
         Composer.Add(TSteadyRide.Create);
       end;
   else
-    Composer.Add(TBasicGroove.Create);
+    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
   end;
 
   Result := Composer.Build(2, FComplexity);
@@ -295,22 +297,21 @@ end;
 function TRockGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  var LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
 
-  with TFill.Create('rock_tom_downfill', 'Rock tom cascade') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
+  LFill := TFill.Create('rock_tom_downfill', 'Rock tom cascade');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
 
   Result := FillList;
 end;
 
-function TRockGenrePlugin.GetHighEnergyTimekeeper: String;
+function TRockGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   // Rock uses standard ride, no china override
-  Result := GetRideTimekeeper;
+  Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
 end;
 
 end.

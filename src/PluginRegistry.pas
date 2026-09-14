@@ -12,23 +12,25 @@ uses
   generation_parameters;
 
 type
+  TStringArray = array of string;
+
   TGenreStyleInfo = record
     GenreName: string;
-    Styles: TArray<string>;
-    PreferredDrummers: TArray<string>;
+    Styles: TStringArray;
+    PreferredDrummers: TStringArray;
   end;
 
   TDrummerPrefInfo = record
     DrummerName: string;
-    PreferredGenres: TArray<string>;
+    PreferredGenres: TStringArray;
   end;
 
 TPluginRegistry = class(TObject)
 private
   FGenrePlugins: specialize TDictionary<string, TObject>;
   FDrummerPlugins: specialize TDictionary<string, TObject>;
-  FGenreStyles: TArray<TGenreStyleInfo>;
-  FDrummerPrefs: TArray<TDrummerPrefInfo>;
+  FGenreStyles: array of TGenreStyleInfo;
+  FDrummerPrefs: array of TDrummerPrefInfo;
 
   function FindGenreIdx(const GenreName: string): Integer;
   function FindDrummerIdx(const DrummerName: string): Integer;
@@ -39,17 +41,17 @@ public
   constructor Create;
   destructor Destroy; override;
 
-  procedure RegisterGenrePlugin(const AName: string; APugin: TObject; ASupportedStyles: TArray<string> = nil;
-                                APrefDrummers: TArray<string> = nil);
-  procedure RegisterDrummerPlugin(const AName: string; APugin: TObject; APrefGenres: TArray<string> = nil);
+  procedure RegisterGenrePlugin(const AName: string; APugin: TObject; ASupportedStyles: array of string;
+                                APrefDrummers: array of string);
+  procedure RegisterDrummerPlugin(const AName: string; APugin: TObject; APrefGenres: array of string);
 
   function GetGenrePlugin(const Genre: string): TObject;
   function GetDrummerPlugin(const Drummer: string): TObject;
 
-  function GetAvailableGenres: TArray<string>;
-  function GetAvailableDrummers: TArray<string>;
-  function GetStylesForGenre(const Genre: string): TArray<string>;
-  function GetPreferredDrummersForGenre(const Genre: string): TArray<string>;
+  function GetAvailableGenres: TStringArray;
+  function GetAvailableDrummers: TStringArray;
+  function GetStylesForGenre(const Genre: string): TStringArray;
+  function GetPreferredDrummersForGenre(const Genre: string): TStringArray;
 end;
 
 TPluginDiscovery = class(TObject)
@@ -57,7 +59,7 @@ private
   FRegistry: TPluginRegistry;
 public
   constructor Create(ARegistry: TPluginRegistry);
-  procedure Discover(APuginDirs: TArray<string> = nil);
+  procedure Discover(APuginDirs: TStringArray);
   procedure LoadPluginsFromDirectory(const APuginDir: string);
 end;
 
@@ -66,7 +68,7 @@ public
   Registry: TPluginRegistry;
   constructor Create;
   destructor Destroy; override;
-  procedure DiscoverPlugins(APuginDirs: TArray<string> = nil);
+  procedure DiscoverPlugins(APuginDirs: TStringArray);
   procedure LoadPluginsFromDirectory(const APuginDir: string);
 end;
 
@@ -79,13 +81,13 @@ implementation
 constructor TPluginRegistry.Create;
 begin
   inherited Create;
-  FGenrePlugins := TDictionary<string, TObject>.Create;
-  FDrummerPlugins := TDictionary<string, TObject>.Create;
+  FGenrePlugins := specialize TDictionary<string, TObject>.Create;
+  FDrummerPlugins := specialize TDictionary<string, TObject>.Create;
 end;
 
 destructor TPluginRegistry.Destroy;
 var
-  Item: TPair<string, TObject>;
+  Item: specialize TPair<string, TObject>;
 begin
   for Item in FGenrePlugins do
     if Assigned(Item.Value) then Item.Value.Free;
@@ -148,11 +150,13 @@ begin
   SetLength(FDrummerPrefs, 0);
 end;
 
-procedure TPluginRegistry.RegisterGenrePlugin(const AName: string; APugin: TObject; ASupportedStyles: TArray<string>;
-                                              APrefDrummers: TArray<string>);
+procedure TPluginRegistry.RegisterGenrePlugin(const AName: string; APugin: TObject; ASupportedStyles: array of string;
+                                              APrefDrummers: array of string);
 var
   GenreKey: string;
   ExistingIdx: Integer;
+  NewIdx: Integer;
+  OldPlugin: TObject;
 begin
   if not Assigned(APugin) then Exit;
 
@@ -161,7 +165,6 @@ begin
   // Remove old plugin if key already exists
   if FGenrePlugins.ContainsKey(GenreKey) then
   begin
-    var OldPlugin := FGenrePlugins[GenreKey];
     if Assigned(OldPlugin) then OldPlugin.Free;
     FGenrePlugins.Remove(GenreKey);
   end;
@@ -185,7 +188,7 @@ begin
   begin
     // Append new record
     SetLength(FGenreStyles, Length(FGenreStyles) + 1);
-    var NewIdx := High(FGenreStyles);
+    NewIdx := High(FGenreStyles);
     FGenreStyles[NewIdx].GenreName := GenreKey;
 
     SetLength(FGenreStyles[NewIdx].Styles, Length(ASupportedStyles));
@@ -198,10 +201,12 @@ begin
   end;
 end;
 
-procedure TPluginRegistry.RegisterDrummerPlugin(const AName: string; APugin: TObject; APrefGenres: TArray<string>);
+procedure TPluginRegistry.RegisterDrummerPlugin(const AName: string; APugin: TObject; APrefGenres: array of string);
 var
   DrummerKey: string;
   ExistingIdx: Integer;
+  OldPlugin: TObject;
+  NewIdx: Integer;
 begin
   if not Assigned(APugin) then Exit;
 
@@ -210,7 +215,7 @@ begin
   // Remove old plugin if key already exists
   if FDrummerPlugins.ContainsKey(DrummerKey) then
   begin
-    var OldPlugin := FDrummerPlugins[DrummerKey];
+    OldPlugin := FDrummerPlugins[DrummerKey];
     if Assigned(OldPlugin) then OldPlugin.Free;
     FDrummerPlugins.Remove(DrummerKey);
   end;
@@ -228,7 +233,7 @@ begin
   else
   begin
     SetLength(FDrummerPrefs, Length(FDrummerPrefs) + 1);
-    var NewIdx := High(FDrummerPrefs);
+    NewIdx := High(FDrummerPrefs);
     FDrummerPrefs[NewIdx].DrummerName := DrummerKey;
 
     SetLength(FDrummerPrefs[NewIdx].PreferredGenres, Length(APrefGenres));
@@ -240,6 +245,7 @@ end;
 function TPluginRegistry.GetGenrePlugin(const Genre: string): TObject;
 var
   Key: string;
+  Pair: specialize TPair<string, TObject>;
 begin
   if not Assigned(FGenrePlugins) then Exit(nil);
 
@@ -247,7 +253,15 @@ begin
   if FGenrePlugins.TryGetValue(Key, Result) then Exit;
 
   // Case-insensitive fallback scan
-  for var Pair in FGenrePlugins do
+  for Pair in FGenrePlugins do
+    if SameText(Pair.Key, Key) then
+    begin
+      Result := Pair.Value;
+      Exit;
+    end;
+
+  // Case-insensitive fallback scan
+  for Pair in FGenrePlugins do
     if SameText(Pair.Key, Key) then
     begin
       Result := Pair.Value;
@@ -260,6 +274,7 @@ end;
 function TPluginRegistry.GetDrummerPlugin(const Drummer: string): TObject;
 var
   Key: string;
+  Pair: specialize TPair<string, TObject>;
 begin
   if not Assigned(FDrummerPlugins) then Exit(nil);
 
@@ -267,7 +282,7 @@ begin
   if FDrummerPlugins.TryGetValue(Key, Result) then Exit;
 
   // Case-insensitive fallback scan
-  for var Pair in FDrummerPlugins do
+  for Pair in FDrummerPlugins do
     if SameText(Pair.Key, Key) then
     begin
       Result := Pair.Value;
@@ -277,9 +292,10 @@ begin
   Result := nil;
 end;
 
-function TPluginRegistry.GetAvailableGenres: TArray<string>;
+function TPluginRegistry.GetAvailableGenres: TStringArray;
 var
-  I: Integer;
+  I, Count: Integer;
+  Key: string;
 begin
   if not Assigned(FGenrePlugins) or (FGenrePlugins.Count = 0) then
   begin
@@ -289,16 +305,17 @@ begin
 
   SetLength(Result, FGenrePlugins.Count);
   I := 0;
-  for var Key in FGenrePlugins.Keys do
+  for Key in FGenrePlugins.Keys do
   begin
     Result[I] := Key;
     Inc(I);
   end;
 end;
 
-function TPluginRegistry.GetAvailableDrummers: TArray<string>;
+function TPluginRegistry.GetAvailableDrummers: TStringArray;
 var
   I: Integer;
+  Key: string;
 begin
   if not Assigned(FDrummerPlugins) or (FDrummerPlugins.Count = 0) then
   begin
@@ -308,14 +325,14 @@ begin
 
   SetLength(Result, FDrummerPlugins.Count);
   I := 0;
-  for var Key in FDrummerPlugins.Keys do
+  for Key in FDrummerPlugins.Keys do
   begin
     Result[I] := Key;
     Inc(I);
   end;
 end;
 
-function TPluginRegistry.GetStylesForGenre(const Genre: string): TArray<string>;
+function TPluginRegistry.GetStylesForGenre(const Genre: string): TStringArray;
 var
   GenreKey, Idx: Integer;
 begin
@@ -328,7 +345,7 @@ begin
   SetLength(Result, 0);
 end;
 
-function TPluginRegistry.GetPreferredDrummersForGenre(const Genre: string): TArray<string>;
+function TPluginRegistry.GetPreferredDrummersForGenre(const Genre: string): TStringArray;
 var
   I, J: Integer;
 begin
@@ -336,11 +353,13 @@ begin
 
   if not Assigned(FDrummerPrefs) then Exit;
 
+  SetLength(Result, 0);
   for I := Low(FDrummerPrefs) to High(FDrummerPrefs) do
     for J := Low(FDrummerPrefs[I].PreferredGenres) to High(FDrummerPrefs[I].PreferredGenres) do
       if SameText(FDrummerPrefs[I].PreferredGenres[J], Genre) then
       begin
-        Result := Result + [FDrummerPrefs[I].DrummerName];
+        SetLength(Result, Length(Result) + 1);
+        Result[High(Result)] := FDrummerPrefs[I].DrummerName;
         Break;
       end;
 end;
@@ -355,7 +374,7 @@ begin
   FRegistry := ARegistry;
 end;
 
-procedure TPluginDiscovery.Discover(APuginDirs: TArray<string>);
+procedure TPluginDiscovery.Discover(APuginDirs: TStringArray);
 var
   Dir: string;
 begin
@@ -398,7 +417,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TPluginManager.DiscoverPlugins(APuginDirs: TArray<string>);
+procedure TPluginManager.DiscoverPlugins(APuginDirs: TStringArray);
 var
   Discovery: TPluginDiscovery;
 begin

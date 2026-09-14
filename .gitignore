@@ -1,0 +1,10 @@
+build_out.txt
+check_indent.ps1
+fix_comments.ps1
+fix_generics.ps1
+run_build.ps1
+src/fix_dg3.py
+src/fix_dg4.py
+src/fix_drumgenerator.py
+src/fix_drumgenerator2.py
+src/fix_pattern.py

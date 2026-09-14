@@ -6,9 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  patterns_templates, generation_builders_pattern_builder,
-  plugins_interfaces_genre_plugin;
+  Pattern, Song,
+  patterns_templates,
+  Kit,
+  generation_parameters,
+  GenrePlugin;
 
 type
   TFunkContext = record
@@ -39,7 +41,7 @@ type
 
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>;
-    function GetHighEnergyTimekeeper: String; override;
+    function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -106,35 +108,35 @@ begin
     'classic':
       begin
         // James Brown "the one" emphasis
-        Composer.Add(TBasicGroove.Create);
-        Composer.Add(TFunkGhostNotes.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'pfunk':
       begin
         // Parliament-Funkadelic grooves
-        Composer.Add(TBasicGroove.Create);
-        Composer.Add(TFunkGhostNotes.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'shuffle':
       begin
         // Bernard Purdie shuffle
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'new_orleans':
       begin
         // Second line funk patterns
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'fusion':
       begin
         // Jazz-funk fusion
-        Composer.Add(TBasicGroove.Create);
-        Composer.Add(TFunkGhostNotes.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'minimal':
       begin
         // Stripped-down pocket grooves
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'heavy':
       begin
@@ -158,14 +160,14 @@ begin
   case FStyle of
     'classic':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TCrashAccents.Create);
       end;
     'pfunk':
       begin
-        Composer.Add(TBasicGroove.Create);
-        Composer.Add(TFunkGhostNotes.Create);
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'shuffle':
       begin
@@ -179,7 +181,7 @@ begin
       begin
         Composer.Add(TBasicGroove.Create);
         if (BarIndex mod 2 = 0) then
-          Composer.Add(TFunkGhostNotes.Create);
+          Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'minimal':
       begin
@@ -211,12 +213,12 @@ begin
         if (BarIndex mod 2 = 0) then
           Composer.Add(TBasicGroove.Create)
         else
-          Composer.Add(TFunkGhostNotes.Create);
+          Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'pfunk':
       begin
         Composer.Add(TBasicGroove.Create);
-        Composer.Add(TFunkGhostNotes.Create);
+        Composer.Add(TFunkGhostNotes.CreateDefault);
       end;
     'shuffle':
       begin
@@ -283,22 +285,21 @@ end;
 function TFunkGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  var LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
 
-  with TFill.Create('funk_tom_snap', 'Funk tom snap') do
-  begin
-    Pattern := TTombFill.Create('ascending');
-    FillList.Add(Self);
-  end;
+  LFill := TFill.Create('funk_tom_snap', 'Funk tom snap');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
 
   Result := FillList;
 end;
 
-function TFunkGenrePlugin.GetHighEnergyTimekeeper: String;
+function TFunkGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   // Funk uses standard ride or cymbal
-  Result := 'ride_1_tip_hit';
+  Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
 end;
 
 end.

@@ -7,7 +7,7 @@ unit pattern;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, kit, time_signature;
+  Classes, SysUtils, Generics.Collections, kit, TimeSignature;
 
 type
 

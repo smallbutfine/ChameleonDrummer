@@ -4,27 +4,19 @@
 
 { DrumKit - drum kit configuration and instrument mapping.
   All MIDI note mappings are loaded dynamically from JSON keymap files in midi_drums/mappings/.
-  No MIDI notes or instrument names are hardcoded anywhere. All instruments come from the master template. }
+  No MIDI notes or instrument names are hardcoded anywhere. }
 
 interface
 
 uses
-  Classes, SysUtils, fpjson, Generics.Collections;
+  Classes, SysUtils, fpjson, Generics.Collections, Math;
 
 type
-  { Type aliases for FPC 3.2.x compatibility }
   TStrDict = specialize TDictionary<string, string>;
   TStrBoolDict = specialize TDictionary<string, boolean>;
-  TJVal = fpjson.TJSONData;
-  TJObj = fpjson.TJSONObject;
-
-{ KeymapStore - stores loaded keymaps (TJSONObject per stem name) }
-TKeymapStore = specialize TDictionary<string, TJVal>;
 
 
-{ DrumInstrument - dynamic drum instrument identity.
-  All instruments are registered at runtime from the master template keymap.
-  MIDI note mappings live in separate JSON keymap files. }
+{ DrumInstrument - dynamic drum instrument identity. }
 TDrumInstrument = class(TObject)
 private
   FName: string;
@@ -37,20 +29,17 @@ public
   constructor Create(const AName, ADescription: string; const AMetadata: TStrDict = nil); overload;
   destructor Destroy; override;
 
-  { Properties }
   property Name: string read FName write SetName;
   property Description: string read FDescription write SetDescription;
   property Metadata: TStrDict read FMetadata;
 
-  { Equality }
   function Equals(Other: TDrumInstrument): boolean;
 end;
 
 type
   TDrumInstrumentArray = array of TDrumInstrument;
 
-{ InstrumentRegistry - manages all registered drum instruments.
-  Initialized from the master template at startup. }
+{ InstrumentRegistry - manages all registered drum instruments. }
 TInstrumentRegistry = class(TObject)
 private
   class var Finstruments: specialize TDictionary<string, TDrumInstrument>;
@@ -69,13 +58,13 @@ public
   class destructor Destroy;
 end;
 
-{ KeymapLoader - loads and manages keymap JSON files from the mappings directory. }
+{ KeymapLoader - loads and manages keymap JSON files. }
 TKeymapLoader = class(TObject)
 private
-  FLoadedKeymaps: TKeymapStore;
+  class var FLoadedKeymaps: specialize TDictionary<string, TJSONData>;
 public
-  class function LoadAll: specialize TArray<TJVal>; static;
-  class function GetKeymap(const AName: string): TJVal; static;
+  class function LoadAll: specialize TArray<TJSONData>; static;
+  class function GetKeymap(const AName: string): TJSONData; static;
   class function GetMidiNote(const InstrumentName, KeymapName: string): Integer; static;
   class function GetAllInstruments: TStrBoolDict; static;
   class function GetUnmappedInstruments(const KeymapName: string): TStrBoolDict; static;
@@ -99,7 +88,7 @@ public
   property DefaultVelocity: Integer read FDefaultVelocity;
 end;
 
-{ DrumKit - the main class that uses dynamic instrument resolution }
+{ DrumKit - the main class that uses dynamic instrument resolution. }
 TDrumKit = class(TObject)
 private
   FVelocityRanges: specialize TDictionary<string, TVelocityRange>;
@@ -111,42 +100,23 @@ public
   constructor Create(const AName: string; AChannel: Integer);
   destructor Destroy; override;
 
-  { Get MIDI note for an instrument by name.
-    Resolution order:
-      1. custom_mappings if present
-      2. Keymap file for the given preset
-      3. -1 (nil) if not found }
   function GetMidiNote(const InstrumentName, KeymapName: string): Integer;
-
-  { Get velocity range for an instrument type. }
   function GetVelocityRange(const InstrumentType: string): TVelocityRange;
-
-  { Randomize velocity within the instrument's range. }
   function RandomizeVelocity(const InstrumentType: string; BaseVelocity: Integer = -1): Integer;
 
-  { Create a DrumKit from a keymap file by name. }
   class function FromKeymapName(const KeymapName: string): TDrumKit; static;
-
-  { List all available keymaps as presets. }
   class function ListPresets: specialize TDictionary<string, string>; static;
-
-  { Create a DrumKit from a mapping file name (exact file stem). }
   class function FromPreset(const PresetName: string): TDrumKit; static;
-
-  { Create a DrumKit from a custom mapping JSON file. }
   class function FromJson(const Path: string): TDrumKit; static;
 end;
 
-{ Module Initialization }
 procedure Initialize;
+function FileToStr(const AFilename: string): string;
 
 implementation
 
-{ Forward declarations }
-function FileToStr(const AFilename: string): string;
 
-{
-  { ── DrumInstrument implementation ──────────────────────────────────────── }
+{ ── DrumInstrument ─────────────────────────────────────── }
 
 constructor TDrumInstrument.Create(const AName, ADescription: string; const AMetadata: TStrDict = nil);
 begin
@@ -177,12 +147,12 @@ end;
 
 function TDrumInstrument.Equals(Other: TDrumInstrument): boolean;
 begin
-  if not Assigned(Other) then
-    Exit(false);
+  if not Assigned(Other) then Exit(false);
   Result := FName = Other.FName;
 end;
 
-{ ── InstrumentRegistry implementation ──────────────────────────────────── }
+
+{ ── InstrumentRegistry ─────────────────────────────────── }
 
 class constructor TInstrumentRegistry.Create;
 begin
@@ -206,13 +176,11 @@ begin
   ClearInternal;
 end;
 
-class function TInstrumentRegistry.Register(const AName: string; const ADescription: string = ''; const AMetadata: TStrDict = nil): TDrumInstrument;
+class function TInstrumentRegistry.Register(const AName: string; const ADescription: string = ''; const AMetadata: specialize TDictionary<string, string> = nil): TDrumInstrument;
 var
   Inst: TDrumInstrument;
 begin
-  if Finstruments.TryGetValue(AName, Result) then
-    Exit;
-
+  if Finstruments.TryGetValue(AName, Result) then Exit;
   Inst := TDrumInstrument.Create(AName, ADescription, AMetadata);
   Finstruments.Add(AName, Inst);
   Result := Inst;
@@ -220,8 +188,7 @@ end;
 
 class function TInstrumentRegistry.Get(const AName: string): TDrumInstrument;
 begin
-  if Finstruments.TryGetValue(AName, Result) then
-    Exit;
+  if Finstruments.TryGetValue(AName, Result) then Exit;
   Result := nil;
 end;
 
@@ -240,7 +207,7 @@ begin
   end;
 end;
 
-class function TInstrumentRegistry.GetAllNames: TStrBoolDict;
+class function TInstrumentRegistry.GetAllNames: specialize TDictionary<string, boolean>;
 var
   Item: specialize TPair<string, TDrumInstrument>;
 begin
@@ -251,71 +218,44 @@ end;
 
 class procedure TInstrumentRegistry.LoadFromTemplate(const ATemplatePath: string);
 var
-  TemplatePath, InstName, InstDesc, SourceStr: string;
-  JsonValue, Instruments: TJVal;
-  InstObj: TJVal;
+  TemplatePath, InstName, InstDesc: string;
+  JsonValue: TJSONData;
+  Instruments, InstObj: TJSONObject;
   Inst: TDrumInstrument;
   Metadata: TStrDict;
+  SourceVal: TJSONData;
   I: Integer;
-  ElemCount: Integer;
 begin
-  if FInitialized then
-    Exit;
+  if FInitialized then Exit;
 
   if ATemplatePath = '' then
-  begin
-    TemplatePath := ExtractFilePath(ParamStr(0)) + 'mappings' + DirectorySeparator + 'template.json';
-  end
+    TemplatePath := ExtractFilePath(ParamStr(0)) + 'mappings' + DirectorySeparator + 'template.json'
   else
     TemplatePath := ATemplatePath;
 
   if not FileExists(TemplatePath) then
     raise Exception.Create('Template not found at ' + TemplatePath);
 
-  { Read entire template file }
-  JsonValue := GetJSON(FileToStr(TemplatePath), true);
+  JsonValue := GetJSON(FileToStr(TemplatePath));
   try
     if not Assigned(JsonValue) or (JsonValue.JsonType <> jtObject) then
       raise Exception.Create('Invalid template JSON: expected object');
-    Instruments := TJObj(JsonValue);
+    Instruments := (JsonValue as TJSONObject);
 
-    { Iterate over all instrument entries in the 'instruments' sub-object }
-    ElemCount := Instruments.Count;
-    for I := 0 to ElemCount - 1 do
+    InstName := '';
+    for I := 0 to Instruments.Count - 1 do
     begin
-      InstName := Instruments.Name[I];
-      InstObj := Instruments[I][I];
-      
-      if not Assigned(InstObj) or (InstObj.JsonType <> jtObject) then
-        Continue;
-
-      { Extract description field }
+      InstName := Instruments.Names[I];
+      InstObj := (Instruments.Elements[InstName] as TJSONObject);
       InstDesc := '';
-      if InstObj.Count > 0 then
-      begin
-        for I := 0 to InstObj.Count - 1 do
-        begin
-          if SameText(InstObj.Name[I], 'description') then
-          begin
-            InstDesc := InstObj[I][I].AsString;
-            Break;
-          end;
-        end;
-      end;
+      if Assigned(InstObj) then
+        InstDesc := (InstObj.Find('description') as TJSONString).Value;
 
-      { Source metadata }
       Metadata := TStrDict.Create;
       try
-        for I := 0 to Instruments.Count - 1 do
-        begin
-          if SameText(Instruments.Name[I], 'source') then
-          begin
-            SourceStr := Instruments[I][I].AsString;
-            if Length(SourceStr) > 0 then
-              Metadata.Add('source', SourceStr);
-            Break;
-          end;
-        end;
+        SourceVal := Instruments.Find('source');
+        if Assigned(SourceVal) and (SourceVal.JsonType <> jtNull) then
+          Metadata.Add('source', SourceVal.AsString);
 
         Inst := Register(InstName, InstDesc, Metadata);
       finally
@@ -331,28 +271,26 @@ end;
 
 class procedure TInstrumentRegistry.EnsureLoaded;
 begin
-  if not FInitialized then
-    LoadFromTemplate;
+  if not FInitialized then LoadFromTemplate;
 end;
 
-{ ── KeymapLoader implementation ────────────────────────────────────────── }
+
+{ ── KeymapLoader ──────────────────────────────────────── }
 
 class constructor TKeymapLoader.Create;
 begin
-  FLoadedKeymaps := specialize TKeymapStore.Create;
+  FLoadedKeymaps := specialize TDictionary<string, TJSONData>.Create;
 end;
 
 class destructor TKeymapLoader.Destroy;
 var
-  Item: specialize TPair<string, TJVal>;
+  Item: specialize TPair<string, TJSONData>;
 begin
   for Item in FLoadedKeymaps do
-    if Assigned(Item.Value) then
-      Item.Value.Free;
+    if Assigned(Item.Value) then Item.Value.Free;
   FLoadedKeymaps.Free;
 end;
 
-{ Read a file to string }
 function FileToStr(const AFilename: string): string;
 var
   F: TStream;
@@ -367,13 +305,13 @@ begin
   end;
 end;
 
-class function TKeymapLoader.LoadAll: specialize TArray<TJVal>;
+class function TKeymapLoader.LoadAll: specialize TArray<TJSONData>;
 var
   DirHandle: TSearchRec;
   FilePath, MappingsDir, FileName, FileStem: string;
-  JsonValue: TJVal;
+  JsonValue: TJSONData;
   I, Count: Integer;
-  Item: specialize TPair<string, TJVal>;
+  Item: specialize TPair<string, TJSONData>;
 begin
   FLoadedKeymaps.Clear;
 
@@ -393,7 +331,7 @@ begin
         FileName := ExtractFileName(DirHandle.Name);
         FileStem := ChangeFileExt(FileName, '');
 
-        JsonValue := GetJSON(FileToStr(FilePath), true);
+        JsonValue := GetJSON(FileToStr(FilePath));
         if Assigned(JsonValue) then
           FLoadedKeymaps.Add(FileStem, JsonValue);
       end;
@@ -407,83 +345,78 @@ begin
   I := 0;
   for Item in FLoadedKeymaps do
   begin
-    Result[I] := TJVal(Item.Value);
+    Result[I] := Item.Value;
     Inc(I);
   end;
 end;
 
-class function TKeymapLoader.GetKeymap(const AName: string): TJVal;
+class function TKeymapLoader.GetKeymap(const AName: string): TJSONData;
 var
-  Found: boolean;
+  Item: specialize TPair<string, TJSONData>;
 begin
-  if FLoadedKeymaps.TryGetValue(AName, Result) then
-    Exit;
+  if FLoadedKeymaps.TryGetValue(AName, Result) then Exit;
 
-  { Case-insensitive fallback }
-  for Found in FLoadedKeymaps do
-  begin
-    if SameText(Found.Key, AName) then
+  for Item in FLoadedKeymaps do
+    if SameText(Item.Key, AName) then
     begin
-      Result := TJVal(Found.Value);
+      Result := Item.Value;
       Exit;
     end;
-  end;
 
   Result := nil;
 end;
 
 class function TKeymapLoader.GetMidiNote(const InstrumentName, KeymapName: string): Integer;
 var
-  Keymap, InstrumentData, MidiNoteVal: TJVal;
-  Instruments: TJObj;
+  Keymap: TJSONData;
+  Instruments, InstrumentData: TJSONObject;
+  MidiNoteVal: TJSONData;
 begin
   if FLoadedKeymaps.Count = 0 then
     LoadAll;
 
   Keymap := GetKeymap(KeymapName);
-  if not Assigned(Keymap) or (Keymap.JsonType <> jtObject) then
+  if not Assigned(Keymap) then
     Exit(-1);
 
-  Instruments := TJObj(Keymap);
-  InstrumentData := Instruments.FindElement(InstrumentName);
-  if not Assigned(InstrumentData) or (InstrumentData.JsonType <> jtObject) then
+  Instruments := (Keymap as TJSONObject);
+  if not Assigned(Instruments) then
     Exit(-1);
 
-  { Get midi_note value }
-  MidiNoteVal := InstrumentData.FindElement('midi_note');
-  if not Assigned(MidiNoteVal) or (MidiNoteVal.JsonType = jtNull) then
+  InstrumentData := Instruments.Objects[InstrumentName];
+  if not Assigned(InstrumentData) then
     Exit(-1);
 
-  Result := StrToIntDef(MidiNoteVal.AsString, -1);
+  MidiNoteVal := InstrumentData.Find('midi_note');
+  if (MidiNoteVal = nil) or (MidiNoteVal.JsonType = jtNull) then
+    Exit(-1);
+
+  Result := MidiNoteVal.AsInteger;
 end;
 
 class function TKeymapLoader.GetAllInstruments: TStrBoolDict;
 var
-  Item: specialize TPair<string, TJVal>;
-  Instruments: TJObj;
+  Item: specialize TPair<string, TJSONData>;
   KeymapName: string;
   I: Integer;
+  Instruments: TJSONObject;
 begin
   Result := specialize TDictionary<string, boolean>.Create;
-  for Item in FLoadedKeymaps do
+  for Item in (FLoadedKeymaps as specialize TDictionary<string, TJSONData>) do
   begin
-    if Assigned(Item.Value) and (Item.Value.JsonType = jtObject) then
-    begin
-      Instruments := TJObj(Item.Value);
+    Instruments := (Item.Value as TJSONObject);
+    if Assigned(Instruments) then
       for I := 0 to Instruments.Count - 1 do
-      begin
-        KeymapName := Instruments.Name[I];
-        Result.Add(KeymapName, true);
-      end;
-    end;
+        Result.Add(Instruments.Names[I], true);
   end;
 end;
 
 class function TKeymapLoader.GetUnmappedInstruments(const KeymapName: string): TStrBoolDict;
 var
   AllInstruments: TStrBoolDict;
-  Keymap, InstrumentData, MidiNoteVal: TJVal;
-  Instruments: TJObj;
+  Keymap: TJSONData;
+  Instruments, InstrumentData: TJSONObject;
+  MidiNoteVal: TJSONData;
   MappedName: string;
   I: Integer;
 begin
@@ -496,111 +429,74 @@ begin
     Exit;
   end;
 
-  if Keymap.JsonType <> jtObject then
-  begin
-    Result := AllInstruments;
-    Exit;
-  end;
-
-  Instruments := TJObj(Keymap);
+  Instruments := (Keymap as TJSONObject);
   Result := specialize TDictionary<string, boolean>.Create;
-  
-  for MappedName in GetAllInstruments do
+  for I := 0 to Instruments.Count - 1 do
   begin
-    InstrumentData := Instruments.FindElement(MappedName);
-    if Assigned(InstrumentData) and (InstrumentData.JsonType = jtObject) then
+    MappedName := Instruments.Names[I];
+    InstrumentData := Instruments.Objects[MappedName];
+    if Assigned(InstrumentData) then
     begin
-      MidiNoteVal := InstrumentData.FindElement('midi_note');
-      if not Assigned(MidiNoteVal) or (MidiNoteVal.JsonType = jtNull) then
-        Continue;
-      { Mapped - remove from result }
-      AllInstruments.Remove(MappedName);
+      MidiNoteVal := InstrumentData.Find('midi_note');
+      if (MidiNoteVal <> nil) and (MidiNoteVal.JsonType <> jtNull) then
+        AllInstruments.Remove(MappedName);
     end;
   end;
 
-  Result := specialize TDictionary<string, boolean>.Create;
-  for MappedName in AllInstruments do
-    Result.Add(MappedName, true);
+  Result := AllInstruments;
 end;
 
 class procedure TKeymapLoader.GenerateUserKeymap(const TargetPath: string);
 var
-  Template, Instruments: TJVal;
-  Output, InstrumentsObj, InstObj: TJObj;
-  InstName, DescStr: string;
-  I, J: Integer;
-  DescVal: TJVal;
+  Template, Output: TJSONData;
+  InstrumentsObj: TJSONObject;
+  Instruments, InstObj: TJSONObject;
+  VersionVal, DescVal: TJSONData;
+  I, FS: Integer;
+  InstName: string;
 begin
   Template := GetKeymap('template');
-  if not Assigned(Template) or (Template.JsonType <> jtObject) then
+  if not Assigned(Template) then
     raise Exception.Create('No template keymap found in mappings directory.');
 
-  Instruments := TJObj(Template);
-  Output := TJObj.Create;
+  Instruments := (Template as TJSONObject);
+  Output := TJSONObject.Create;
   try
-    { Set metadata fields }
-    TJObj(Output).Count := 0;
-    { Name }
-    J := TJObj(Output).Count;
-    TJObj(Output).Elements[J] := TJObj.Create;
-    TJObj(TJObj(Output).Elements[J]).Name[0] := 'name';
-    TJObj(TJObj(Output).Elements[J])[I][0] := CreateJSONString('User Custom Kit');
-    
-    { Version }
-    DescVal := Instruments.FindElement('version');
-    if Assigned(DescVal) and (DescVal.JsonType = jtString) then
-    begin
-      J := TJObj(Output).Count;
-      TJObj(Output).Elements[J] := TJObj.Create;
-      TJObj(TJObj(Output).Elements[J]).Name[0] := 'version';
-      TJObj(TJObj(Output).Elements[J])[I][0] := CreateJSONString(DescVal.AsString);
-    end;
+    (Output as TJSONObject).Strings['name'] := 'User Custom Kit';
+    VersionVal := Instruments.Find('version');
+    if Assigned(VersionVal) then
+      (Output as TJSONObject).Strings['version'] := VersionVal.AsString;
+    (Output as TJSONObject).Strings['description'] := 'Custom keymap - fill in midi_note values.';
+    (Output as TJSONObject).Strings['source'] := 'User generated from template';
 
-    { Description }
-    J := TJObj(Output).Count;
-    TJObj(Output).Elements[J] := TJObj.Create;
-    TJObj(TJObj(Output).Elements[J]).Name[0] := 'description';
-    TJObj(TJObj(Output).Elements[J])[I][0] := CreateJSONString('Custom keymap - fill in midi_note values. Leave as null for unavailable articulations.');
-
-    { Source }
-    J := TJObj(Output).Count;
-    TJObj(Output).Elements[J] := TJObj.Create;
-    TJObj(TJObj(Output).Elements[J]).Name[0] := 'source';
-    TJObj(TJObj(Output).Elements[J])[I][0] := CreateJSONString('User generated from template');
-
-    { Instruments sub-object }
-    InstrumentsObj := TJObj.Create;
+    InstrumentsObj := TJSONObject.Create;
     for I := 0 to Instruments.Count - 1 do
     begin
-      InstName := Instruments.Name[I];
-      InstObj := TJObj.Create;
-      
-      { midi_note is omitted (effectively null) for user to fill in }
-      DescVal := GetJsonValue(TJObj(Instruments.FindElement(InstName)), 'description');
-      if Assigned(DescVal) and (DescVal.JsonType = jtString) then
-      begin
-        J := TJObj(InstObj).Count;
-        TJObj(InstObj).Elements[J] := TJObj.Create;
-        TJObj(TJObj(InstObj).Elements[J]).Name[0] := 'description';
-        TJObj(TJObj(InstObj).Elements[J])[I][0] := CreateJSONString(DescVal.AsString);
-      end;
-      
-      TJObj(InstrumentsObj).AddObject(InstName, InstObj);
+      InstName := Instruments.Names[I];
+      InstObj := TJSONObject.Create;
+      InstObj.Add('midi_note', TJSONData(nil));
+      DescVal := Instruments.Objects[InstName].Find('description');
+      if Assigned(DescVal) then
+        InstObj.Strings['description'] := DescVal.AsString;
+      InstrumentsObj.Objects[Instruments.Names[I]] := InstObj;
     end;
-    
-    J := TJObj(Output).Count;
-    TJObj(Output).Elements[J] := TJObj.Create;
-    TJObj(TJObj(Output).Elements[J]).Name[0] := 'instruments';
-    TJObj(TJObj(Output).Elements[J])[I][0] := InstrumentsObj;
 
-    { Write JSON to file }
-    TFile.WriteAllText(TargetPath, Output.AsJSON);
+    (Output as TJSONObject).Objects['instruments'] := InstrumentsObj;
+
+    FS := FileCreate(TargetPath);
+    try
+      FileWrite(FS, (Output as TJSONObject).AsJSON[1], Length((Output as TJSONObject).AsJSON));
+    finally
+      FileClose(FS);
+    end;
   finally
+    InstrumentsObj.Free;
     Output.Free;
   end;
 end;
 
-{ ── VelocityRange implementation ──────────────────────────────────────── }
+
+{ ── VelocityRange ─────────────────────────────────────── }
 
 constructor TVelocityRange.Create(AMin, AMax, ADefault: Integer);
 begin
@@ -618,15 +514,15 @@ begin
   VelArray[1] := MaxVelocity;
   VelArray[2] := DefaultVelocity;
   for I := Low(VelArray) to High(VelArray) do
-  begin
     if (VelArray[I] < 1) or (VelArray[I] > 127) then
       raise Exception.CreateFmt('Velocity must be 1-127, got %d', [VelArray[I]]);
-  end;
+
   if MinVelocity > MaxVelocity then
     raise Exception.Create('Min velocity cannot be greater than max velocity');
 end;
 
-{ ── DrumKit implementation ───────────────────────────────────────────── }
+
+{ ── DrumKit ───────────────────────────────────────────── }
 
 constructor TDrumKit.Create(const AName: string; AChannel: Integer);
 begin
@@ -636,7 +532,6 @@ begin
   FVelocityRanges := specialize TDictionary<string, TVelocityRange>.Create;
   FCustomMappings := specialize TDictionary<string, Integer>.Create;
 
-  { Default velocity ranges }
   FVelocityRanges.Add('kick', TVelocityRange.Create(95, 120, 110));
   FVelocityRanges.Add('snare', TVelocityRange.Create(90, 127, 115));
   FVelocityRanges.Add('hihat', TVelocityRange.Create(60, 100, 80));
@@ -656,18 +551,13 @@ function TDrumKit.GetMidiNote(const InstrumentName, KeymapName: string): Integer
 var
   Note: Integer;
 begin
-  { Check custom mappings first }
-  if FCustomMappings.TryGetValue(InstrumentName, Note) then
-    Exit(Note);
-
-  { Fall back to keymap lookup }
+  if FCustomMappings.TryGetValue(InstrumentName, Note) then Exit(Note);
   Result := TKeymapLoader.GetMidiNote(InstrumentName, KeymapName);
 end;
 
 function TDrumKit.GetVelocityRange(const InstrumentType: string): TVelocityRange;
 begin
-  if FVelocityRanges.TryGetValue(InstrumentType, Result) then
-    Exit;
+  if FVelocityRanges.TryGetValue(InstrumentType, Result) then Exit;
   Result := TVelocityRange.Create(1, 127, 100);
 end;
 
@@ -694,11 +584,12 @@ end;
 
 class function TDrumKit.FromKeymapName(const KeymapName: string): TDrumKit;
 var
-  Keymap, InstrumentData, MidiNoteVal: TJVal;
-  Instruments: TJObj;
+  Keymap: TJSONData;
+  Instruments, InstrumentData: TJSONObject;
+  MidiNoteVal: TJSONData;
+  CustomMappings: specialize TDictionary<string, Integer>;
   InstName: string;
   I: Integer;
-  CustomMappings: specialize TDictionary<string, Integer>;
 begin
   TInstrumentRegistry.EnsureLoaded;
 
@@ -706,22 +597,23 @@ begin
   if not Assigned(Keymap) or (Keymap.JsonType <> jtObject) then
     raise Exception.Create('Keymap not found: ' + KeymapName);
 
-  Instruments := TJObj(Keymap);
+  Instruments := (Keymap as TJSONObject);
   CustomMappings := specialize TDictionary<string, Integer>.Create;
   try
     for I := 0 to Instruments.Count - 1 do
     begin
-      InstName := Instruments.Name[I];
-      InstrumentData := Instruments.FindElement(InstName);
-      if Assigned(InstrumentData) and (InstrumentData.JsonType = jtObject) then
+      InstName := Instruments.Names[I];
+      InstrumentData := Instruments.Objects[InstName];
+      if Assigned(InstrumentData) then
       begin
-        MidiNoteVal := InstrumentData.FindElement('midi_note');
-        if Assigned(MidiNoteVal) and (MidiNoteVal.JsonType <> jtNull) then
-          CustomMappings.Add(InstName, StrToIntDef(MidiNoteVal.AsString, -1));
+        MidiNoteVal := InstrumentData.Find('midi_note');
+      if (MidiNoteVal <> nil) and (MidiNoteVal.JsonType <> jtNull) then
+        CustomMappings.Add(InstName, Integer(MidiNoteVal.AsInteger));
       end;
     end;
 
-    Result := TDrumKit.Create(Keymap.FindElement('name').AsString, 9);
+    Result := TDrumKit.Create('', 9);
+    Result.Name := Instruments.Strings['name'];
     Result.FCustomMappings := CustomMappings;
   except
     CustomMappings.Free;
@@ -729,64 +621,73 @@ begin
   end;
 end;
 
+function _GetJsonValueString(AJsonVal: TJSONData; const AKey: string): string;
+var
+  Data: TJSONData;
+begin
+  Result := '';
+  if not Assigned(AJsonVal) or (AJsonVal.JsonType <> jtObject) then Exit;
+  Data := (AJsonVal as TJSONObject).Objects[AKey];
+  if Assigned(Data) and (Data.JsonType = jtString) then
+    Result := Data.AsString;
+end;
+
 class function TDrumKit.ListPresets: specialize TDictionary<string, string>;
 var
-  Item: specialize TPair<string, TJVal>;
+  Item: specialize TPair<string, TJSONData>;
 begin
   if TKeymapLoader.FLoadedKeymaps.Count = 0 then
     TKeymapLoader.LoadAll;
 
   Result := specialize TDictionary<string, string>.Create;
   for Item in TKeymapLoader.FLoadedKeymaps do
-  begin
-    if Item.Key <> 'template' and Assigned(Item.Value) and (Item.Value.JsonType = jtObject) then
-      Result.Add(Item.Key, GetJsonValueString(TJObj(Item.Value), 'description'));
-  end;
+    if (Item.Key <> 'template') and Assigned(Item.Value) and (Item.Value.JsonType = jtObject) then
+      Result.Add(Item.Key, _GetJsonValueString(Item.Value, 'description'));
 end;
 
 class function TDrumKit.FromPreset(const PresetName: string): TDrumKit;
 var
-  Keymap: TJVal;
+  Keymap: TJSONData;
 begin
   Keymap := TKeymapLoader.GetKeymap(PresetName);
   if not Assigned(Keymap) then
     raise Exception.Create('Unknown mapping ' + PresetName + '. Must be a JSON file stem in mappings/ (e.g. template, gm, ad2, ezd3, xg).');
-
   Result := FromKeymapName(PresetName);
 end;
 
 class function TDrumKit.FromJson(const Path: string): TDrumKit;
 var
-  JsonValue, InstrumentsObj, InstsObj, NameVal, NoteVal: TJVal;
-  Instruments, InstObj: TJObj;
+  JsonValue, InstrumentsObj, InstsObj, NameVal, NoteVal: TJSONData;
+  Instruments, InstObj: TJSONObject;
   InstName: string;
   I: Integer;
 begin
   if Path = '' then
     raise Exception.Create('Cannot create DrumKit from None path');
 
-  JsonValue := GetJSON(FileToStr(Path), true);
+  JsonValue := GetJSON(FileToStr(Path));
   try
     if not Assigned(JsonValue) or (JsonValue.JsonType <> jtObject) then
       raise Exception.Create('Invalid JSON: expected object at ' + Path);
-    Instruments := TJObj(JsonValue);
 
+    Instruments := (JsonValue as TJSONObject);
     Result := TDrumKit.Create('', 9);
-    NameVal := GetJsonValue(Instruments, 'name');
+
+    NameVal := Instruments.Find('name');
     if Assigned(NameVal) and (NameVal.JsonType = jtString) then
       Result.Name := NameVal.AsString;
 
-    InstsObj := GetJsonValue(Instruments, 'instruments');
+    InstsObj := Instruments.Find('instruments');
     if Assigned(InstsObj) and (InstsObj.JsonType = jtObject) then
     begin
-      for I := 0 to TJObj(InstsObj).Count - 1 do
+      for I := 0 to (InstsObj as TJSONObject).Count - 1 do
       begin
-        InstName := TJObj(InstsObj).Name[I];
-        InstObj := TJObj(GetJsonValue(TJObj(InstsObj), InstName));
+        InstName := (InstsObj as TJSONObject).Names[I];
+        InstObj := TJSONObject((InstsObj as TJSONObject)[InstName]);
         if not Assigned(InstObj) then Continue;
-        
-        NoteVal := GetJsonValue(InstObj, 'midi_note');
-        if Assigned(NoteVal) and (NoteVal.JsonType <> jtNull) then
+
+        NoteVal := InstObj.Find('midi_note');
+        if Assigned(NoteVal) and (NoteVal <> nil) and (NoteVal.JsonType <> jtNull) then
           Result.FCustomMappings.Add(InstName, StrToIntDef(NoteVal.AsString, -1));
       end;
     end;
@@ -795,40 +696,9 @@ begin
   end;
 end;
 
-{ ── Helper functions ─────────────────────────────────────────────────── }
 
-function GetJsonValue(Obj: TJVal; const AKey: string): TJVal;
-var
-  I: Integer;
-begin
-  Result := nil;
-  if not Assigned(Obj) then Exit;
-  if Obj.JsonType <> jtObject then Exit;
-  for I := 0 to TJObj(Obj).Count - 1 do
-    if SameText(TJObj(Obj).Name[I], AKey) then
-    begin
-      Result := TJObj(Obj)[I][I];
-      Exit;
-    end;
-end;
+{ ── Module Initialization ─────────────────────────────── }
 
-function GetJsonValueString(AJsonVal: TJVal; const AKey: string): string;
-var
-  Data: TJVal;
-begin
-  Result := '';
-  if not Assigned(AJsonVal) or (AJsonVal.JsonType <> jtObject) then Exit;
-  Data := GetJsonValue(AJsonVal, AKey);
-  if Assigned(Data) and (Data.JsonType = jtString) then
-    Result := Data.AsString;
-end;
-
-function IsJsonValueNull(Data: TJVal): boolean;
-begin
-  Result := not Assigned(Data) or (Assigned(Data) and (Data.JsonType = jtNull));
-end;
-
-{ Module Initialization }
 procedure Initialize;
 begin
   TInstrumentRegistry.EnsureLoaded;
@@ -836,8 +706,6 @@ begin
 end;
 
 initialization
-
-{ Initialize at import time so instruments are ready immediately }
 Initialize;
 
 end.

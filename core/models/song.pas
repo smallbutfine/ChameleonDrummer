@@ -7,7 +7,7 @@ unit song;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, pattern, time_signature, generation_parameters;
+  Classes, SysUtils, Generics.Collections, pattern, TimeSignature, GenerationParameters;
 
 type
 

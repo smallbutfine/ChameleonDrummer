@@ -17,14 +17,15 @@ type
 TFill = class(TObject)
 private
   FPattern: TPattern;
-  FTriggerProbability: float;
+  FTriggerProbability: Double;
   FSectionPosition: string;
 public
   constructor Create(APattern: TPattern);
+  constructor Create(AName, ADescription: string); overload;
   destructor Destroy; override;
 
   property Pattern: TPattern read FPattern write FPattern;
-  property TriggerProbability: float read FTriggerProbability write FTriggerProbability;
+  property TriggerProbability: Double read FTriggerProbability write FTriggerProbability;
   property SectionPosition: string read FSectionPosition write FSectionPosition;
 end;
 
@@ -34,15 +35,22 @@ end;
 TPatternVariation = class(TObject)
 private
   FPattern: TPattern;
-  FProbability: float;
-  FBars: TObjecspecialize TList<Integer>;
+  FProbability: Double;
+  FBars: specialize TList<Integer>;
 public
   constructor Create(APattern: TPattern);
   destructor Destroy; override;
 
   property Pattern: TPattern read FPattern write FPattern;
-  property Probability: float read FProbability write FProbability;
-  property Bars: TObjecspecialize TList<Integer> read FBars; { nil = any bar }
+  property Probability: Double read FProbability write FProbability;
+  property Bars: specialize TList<Integer> read FBars; { nil = any bar }
+end;
+
+{ BarSpec — tempo/time-signature-homogeneous slice spec. }
+TSongBarSpec = record
+  Bars: Integer;
+  Tempo: Integer;
+  TimeSignature: TTimeSignature;
 end;
 
 { â”€â”€ SongSegment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
@@ -69,15 +77,15 @@ end;
 { Song section (verse, chorus, etc.) with pattern and variations. }
 TSection = class(TObject)
 private
-  FBeats: TObjecspecialize TList<Integer>; { local bar indices for fills }
+  FBeats: specialize TList<Integer>; { local bar indices for fills }
 public
   Name: string;
   Pattern: TPattern;
   Bars: Integer;
-  Variations: TObjecspecialize TList<TPatternVariation>;
-  Fills: TObjecspecialize TList<TFill>;
+  Variations: specialize TList<TPatternVariation>;
+  Fills: specialize TList<TFill>;
   SectionParameters: specialize TDictionary<string, string>;
-  Segments: TObjecspecialize TList<TSongSegment>;
+  Segments: specialize TList<TSongSegment>;
   GrooveOffsetsMs: specialize TList<Single>;
 
   constructor Create(const AName: string; APattern: TPattern; ABars: Integer = 4);
@@ -88,10 +96,10 @@ public
   function SegmentForBar(ABarNumber: Integer): TSongSegment;
   function EffectiveTempo(ABarNumber, ASongTempo: Integer): Integer;
   function EffectiveTimeSignature(ABarNumber: Integer; ASongTimeSignature: TTimeSignature): TTimeSignature;
-  function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): TObjecspecialize TList<TRecord>; { tuple of (bars, tempo, time_signature) }
+  function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): specialize TList<TSongBarSpec>; { tuple of (bars, tempo, time_signature) }
 
   function GetEffectivePattern(ABarNumber: Integer): TPattern;
-  function ShouldAddFill(ABarNumber: Integer; AFillFrequency: float): TFill;
+  function ShouldAddFill(ABarNumber: Integer; AFillFrequency: Double): TFill;
 end;
 
 { â”€â”€ Song â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
@@ -102,7 +110,7 @@ public
   Name: string;
   Tempo: Integer;
   TimeSignature: TTimeSignature;
-  Sections: TObjecspecialize TList<TSection>;
+  Sections: specialize TList<TSection>;
   GlobalParameters: TGenerationParameters;
   Metadata: specialize TDictionary<string, string>;
 
@@ -111,12 +119,12 @@ public
 
   function AddSection(ASection: TSection): TSong;
   function TotalBars: Integer;
-  function TotalDurationSeconds: float;
+  function TotalDurationSeconds: Double;
   function SectionStartTimes: specialize TList<Single>;
   function GetSectionByName(const AName: string): TSection;
-  function GetSectionsByName(const AName: string): TObjecspecialize TList<TSection>;
+  function GetSectionsByName(const AName: string): specialize TList<TSection>;
 
-  class function CreateSimpleStructure(const AName: string; ATempo: Integer = 120; const AGenre, AStyle: string): TSong; static;
+  class function CreateSimpleStructure(const AName: string; ATempo: Integer = 120; const AGenre: string = 'metal'; const AStyle: string = 'heavy'): TSong; static;
 end;
 
 implementation
@@ -129,6 +137,14 @@ begin
   FPattern := APattern;
   FTriggerProbability := 1.0;
   FSectionPosition := 'end';
+end;
+
+constructor TFill.Create(AName, ADescription: string); overload;
+begin
+  inherited Create;
+  FPattern := nil;
+  FTriggerProbability := 1.0;
+  FSectionPosition := AName;
 end;
 
 destructor TFill.Destroy;
@@ -178,10 +194,10 @@ begin
   Name := AName;
   Pattern := APattern;
   Bars := ABars;
-  Variations := TObjecspecialize TList<TPatternVariation>.Create(true);
-  Fills := TObjecspecialize TList<TFill>.Create(true);
-  SectionParameters := TDictionary<string, string>.Create;
-  Segments := TObjecspecialize TList<TSongSegment>.Create(true);
+  Variations := specialize TList<TPatternVariation>.Create;
+  Fills := specialize TList<TFill>.Create;
+  SectionParameters := specialize TDictionary<string, string>.Create;
+  Segments := specialize TList<TSongSegment>.Create;
   GrooveOffsetsMs := specialize TList<Single>.Create;
   ValidateSegments;
 end;
@@ -208,7 +224,7 @@ begin
       SegmentBars := SegmentBars + Segment.FBars;
 
     if SegmentBars <> Bars then
-      raise Exception.CreateFmt("Section '%s' segments sum to %d bars but Section.bars is %d", [Name, SegmentBars, Bars]);
+      raise Exception.CreateFmt('Section %s segments sum to %d bars but Section.bars is %d', [Name, SegmentBars, Bars]);
   end;
 end;
 
@@ -249,26 +265,26 @@ begin
     Result := Segment.FTimeSignature;
 end;
 
-function TSection.ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): TObjecspecialize TList<TRecord>;
-{ Returns list of (bars, tempo, time_signature) triples }
+function TSection.ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): specialize TList<TSongBarSpec>;
+var
+  Segment: TSongSegment;
+  Spec: TSongBarSpec;
 begin
-  Result := TObjecspecialize TList<TRecord>.Create(true);
+  Result := specialize TList<TSongBarSpec>.Create;
   if Segments.Count > 0 then
-    for var Segment in Segments do
+    for Segment in Segments do
     begin
-      { Note: In real FPC, we'd use a proper record type or class for this tuple.
-        For now, using TDictionary as a makeshift tuple structure. }
-      var Spec := TDictionary<string, Integer>.Create;
-      Spec.Add('bars', Segment.FBars);
-      Spec.Add('tempo', Segment.FTempo);
-      Result.Add(Spec); { Simplified - real impl needs proper record type }
+      Spec.Bars := Segment.FBars;
+      Spec.Tempo := Segment.FTempo;
+      Spec.TimeSignature := TTimeSignature.Create(ASongTimeSignature.Numerator, ASongTimeSignature.Denominator);
+      Result.Add(Spec);
     end
   else
   begin
-    var SingleSpec := TDictionary<string, Integer>.Create;
-    SingleSpec.Add('bars', Bars);
-    SingleSpec.Add('tempo', ASongTempo);
-    Result.Add(SingleSpec);
+    Spec.Bars := Bars;
+    Spec.Tempo := ASongTempo;
+    Spec.TimeSignature := TTimeSignature.Create(ASongTimeSignature.Numerator, ASongTimeSignature.Denominator);
+    Result.Add(Spec);
   end;
 end;
 
@@ -287,10 +303,11 @@ begin
   Result := Pattern;
 end;
 
-function TSection.ShouldAddFill(ABarNumber: Integer; AFillFrequency: float): TFill;
+function TSection.ShouldAddFill(ABarNumber: Integer; AFillFrequency: Double): TFill;
 var
-  TotalProb: float;
-  RandVal, CurrentSum: float;
+  TotalProb: Double;
+  RandVal, CurrentSum: Double;
+  Fill: TFill;
 begin
   Result := nil;
   if Random >= AFillFrequency then
@@ -300,14 +317,14 @@ begin
     Exit;
 
   TotalProb := 0;
-  for var Fill in Fills do
+  for Fill in Fills do
     TotalProb := TotalProb + Fill.FTriggerProbability;
 
   if TotalProb > 0 then
   begin
     RandVal := Random * TotalProb;
     CurrentSum := 0;
-    for var Fill in Fills do
+    for Fill in Fills do
     begin
       CurrentSum := CurrentSum + Fill.FTriggerProbability;
       if RandVal <= CurrentSum then
@@ -324,9 +341,9 @@ begin
   Name := AName;
   Tempo := ATempo;
   TimeSignature := TTimeSignature.Create(4, 4);
-  Sections := TObjecspecialize TList<TSection>.Create(true);
+  Sections := specialize TList<TSection>.Create;
   GlobalParameters := nil;
-  Metadata := TDictionary<string, string>.Create;
+  Metadata := specialize TDictionary<string, string>.Create;
 
   { Validate }
   if (Tempo < 60) or (Tempo > 300) then
@@ -355,31 +372,36 @@ begin
     Result := Result + Section.Bars;
 end;
 
-function TSong.TotalDurationSeconds: float;
+function TSong.TotalDurationSeconds: Double;
 var
   Section: TSection;
-  BarSpecs: TObjecspecialize TList<TRecord>;
-  Bars, Tempo: Integer;
-  TimeSig: TTimeSignature;
+  Spec: TSongBarSpec;
+  BarSpecs: specialize TList<TSongBarSpec>;
 begin
   Result := 0.0;
   for Section in Sections do
-    for Bars, Tempo, TimeSig in Section.ResolvedBarSpecs(Tempo, TimeSignature) do
-      Result := Result + (Bars * TimeSig.BeatsPerBar) / (Tempo / 60.0);
+  begin
+    BarSpecs := Section.ResolvedBarSpecs(Tempo, TimeSignature);
+    for Spec in BarSpecs do
+      Result := Result + (Spec.Bars * Spec.TimeSignature.BeatsPerBar) / (Spec.Tempo / 60.0);
+  end;
 end;
 
 function TSong.SectionStartTimes: specialize TList<Single>;
 var
   Elapsed: Single;
   Section: TSection;
+  BarSpecs: specialize TList<TSongBarSpec>;
+  Spec: TSongBarSpec;
 begin
   Result := specialize TList<Single>.Create;
   Elapsed := 0.0;
   for Section in Sections do
   begin
     Result.Add(Elapsed);
-    for var Bars, Tempo, TimeSig in Section.ResolvedBarSpecs(Tempo, TimeSignature) do
-      Elapsed := Elapsed + (Bars * TimeSig.BeatsPerBar) / (Tempo / 60.0);
+    BarSpecs := Section.ResolvedBarSpecs(Tempo, TimeSignature);
+    for Spec in BarSpecs do
+      Elapsed := Elapsed + (Spec.Bars * Spec.TimeSignature.BeatsPerBar) / (Spec.Tempo / 60.0);
   end;
 end;
 
@@ -395,27 +417,28 @@ begin
   Result := nil;
 end;
 
-function TSong.GetSectionsByName(const AName: string): TObjecspecialize TList<TSection>;
+function TSong.GetSectionsByName(const AName: string): specialize TList<TSection>;
 var
   Section: TSection;
 begin
-  Result := TObjecspecialize TList<TSection>.Create(true);
+  Result := specialize TList<TSection>.Create;
   for Section in Sections do
     if Section.Name = AName then
       Result.Add(Section);
 end;
 
-class function TSong.CreateSimpleStructure(const AName: string; ATempo: Integer = 120; const AGenre, AStyle: string): TSong;
+class function TSong.CreateSimpleStructure(const AName: string; ATempo: Integer = 120; const AGenre: string = 'metal'; const AStyle: string = 'heavy'): TSong;
 var
   VersePattern, ChorusPattern: TPattern;
   Song: TSong;
+  Params: TGenerationParameters;
 begin
   { Create placeholder patterns (will be generated by plugins) }
   VersePattern := TPattern.Create(AGenre + '_' + AStyle + '_verse');
   ChorusPattern := TPattern.Create(AGenre + '_' + AStyle + '_chorus');
 
   Song := TSong.Create(AName, ATempo);
-  var Params := TGenerationParameters.Create(AGenre, AStyle);
+  Params := TGenerationParameters.Create(AGenre, AStyle);
   Song.GlobalParameters := Params;
 
   { Standard pop/rock structure }

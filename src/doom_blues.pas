@@ -1,4 +1,4 @@
-﻿unit DoomBlues;
+﻿unit DOOM_BLUES;
 
 {$mode objfpc}{$H+}
 
@@ -6,90 +6,65 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
-  TCompositeDoomBluesPlugin = class(TDrummerPlugin)
-  private
-    FMinimalCreativity: TMinimalCreativity;
-    FShuffleFeel: TShuffleFeelApplication;
-    FPocketStretch: TPocketStretching;
+  TDoomBluesPlugin = class(TDrummerPlugin)
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
 
-constructor TCompositeDoomBluesPlugin.Create;
+constructor TDoomBluesPlugin.Create;
 begin
   inherited Create;
-  FMinimalCreativity := TMinimalCreativity.Create;
-  FShuffleFeel := TShuffleFeelApplication.Create(0.4);
-  FPocketStretch := TPocketStretching.Create;
 end;
 
-destructor TCompositeDoomBluesPlugin.Destroy;
+destructor TDoomBluesPlugin.Destroy;
 begin
-  FMinimalCreativity.Free;
-  FShuffleFeel.Free;
-  FPocketStretch.Free;
   inherited Destroy;
 end;
 
-function TCompositeDoomBluesPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TDoomBluesPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_doomblues';
-
-  // Layer Roeder's minimal creativity
-  Styled := FMinimalCreativity.Apply(Styled, 0.7);
-
-  // Layer Porcaro's shuffle feel
-  Styled := FShuffleFeel.Apply(Styled, 0.4);
-
-  // Layer Chambers' pocket stretching
-  Styled := FPocketStretch.Apply(Styled, 0.6);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_doomblues');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.7);
 end;
 
-function TCompositeDoomBluesPlugin.GetSignatureFills: specialize TList<TFill>;
+function TDoomBluesPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('doomblues_composite_fill', 'DoomBlues composite fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('doomblues_fill', 'Doom Blues composite fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
-function TCompositeDoomBluesPlugin.GetDrummerName: String;
+function TDoomBluesPlugin.GetDrummerName: String;
 begin
-  Result := 'doomblues';
+  Result := 'doom_blues';
 end;
 
-function TCompositeDoomBluesPlugin.GetCompatibleGenres: TStringList;
+function TDoomBluesPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('metal');
-  Result.Add('doom');
-  Result.Add('rock');
-  Result.Add('blues');
+  SetLength(Result, 3);
+  Result[0] := 'metal';
+  Result[1] := 'rock';
+  Result[2] := 'blues';
 end;
 
 end.

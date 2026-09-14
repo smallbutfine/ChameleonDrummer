@@ -6,9 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  patterns_templates, generation_builders_pattern_builder,
-  plugins_interfaces_genre_plugin, plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  patterns_templates,
+  Kit,
+  generation_parameters,
+  GenrePlugin, DrummerPlugin;
 
 type
   // Context blending for metal styles
@@ -41,7 +43,7 @@ type
 
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>;
-    function GetHighEnergyTimekeeper: String; override;
+    function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
 
     // Flavor rotation helpers
     function GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -121,8 +123,8 @@ begin
   case FStyle of
     'heavy':
       begin
-        // Classic heavy metal â€” Sabbath/Iron Maiden style
-        Composer.Add(TBasicGroove.Create);
+        // Classic heavy metal — Sabbath/Iron Maiden style
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
@@ -135,14 +137,14 @@ begin
       end;
     'power':
       begin
-        // Power metal â€” anthemic, driving
-        Composer.Add(TBasicGroove.Create);
+        // Power metal — anthemic, driving
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TDoubleBassPedal.Create('gallop', 16));
       end;
     'progressive':
       begin
-        // Progressive â€” complex syncopation
-        Composer.Add(TBasicGroove.Create);
+        // Progressive â€" complex syncopation
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 3 = 0) then
           Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
@@ -155,8 +157,8 @@ begin
       end;
     'doom':
       begin
-        // Doom â€” slow, heavy, crushing
-        Composer.Add(TBasicGroove.Create);
+        // Doom â€" slow, heavy, crushing
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'breakdown':
       begin
@@ -164,7 +166,7 @@ begin
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
   else
-    Composer.Add(TBasicGroove.Create);
+    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
   end;
 
   Result := Composer.Build(2, FComplexity);
@@ -180,8 +182,8 @@ begin
   case FStyle of
     'heavy':
       begin
-        // Heavy chorus â€” bigger crash accents
-        Composer.Add(TBasicGroove.Create);
+        // Heavy chorus â€" bigger crash accents
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TCrashAccents.Create);
       end;
     'death':
@@ -198,8 +200,8 @@ begin
       end;
     'progressive':
       begin
-        // Progressive chorus â€” odd meter feel
-        Composer.Add(TBasicGroove.Create);
+        // Progressive chorus â€" odd meter feel
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
@@ -210,8 +212,8 @@ begin
       end;
     'doom':
       begin
-        // Doom chorus â€” crushing sustained hits
-        Composer.Add(TBasicGroove.Create);
+        // Doom chorus â€" crushing sustained hits
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TCrashAccents.Create);
       end;
     'breakdown':
@@ -220,7 +222,7 @@ begin
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
   else
-    Composer.Add(TBasicGroove.Create);
+    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
   end;
 
   Result := Composer.Build(2, FComplexity);
@@ -236,8 +238,8 @@ begin
   case FStyle of
     'heavy':
       begin
-        // Heavy bridge â€” build up with tom fill
-        Composer.Add(TBasicGroove.Create);
+        // Heavy bridge â€" build up with tom fill
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TTomFill.Create('descending'));
       end;
     'death':
@@ -254,8 +256,8 @@ begin
       end;
     'progressive':
       begin
-        // Progressive bridge â€” complex layering
-        Composer.Add(TBasicGroove.Create);
+        // Progressive bridge â€" complex layering
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
           Composer.Add(TDoubleBassPedal.Create('gallop', 16));
       end;
@@ -266,8 +268,8 @@ begin
       end;
     'doom':
       begin
-        // Doom bridge â€” minimal crushing
-        Composer.Add(TBasicGroove.Create);
+        // Doom bridge â€" minimal crushing
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
       end;
     'breakdown':
       begin
@@ -275,7 +277,7 @@ begin
         Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
   else
-    Composer.Add(TBasicGroove.Create);
+    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
   end;
 
   Result := Composer.Build(2, FComplexity);
@@ -331,29 +333,26 @@ end;
 function TMetalGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill1, LFill2: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
 
   // Tom fill variants
-  with TFill.Create('metal_tom_downfill', 'Descending tom cascade') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
+  LFill1 := TFill.Create('metal_tom_downfill', 'Descending tom cascade');
+  LFill1.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill1);
 
   // Blast beat fill
-  with TFill.Create('metal_blast_fill', 'Traditional blast beat') do
-  begin
-    Pattern := TBlastBeat.Create('traditional', 0.95);
-    FillList.Add(Self);
-  end;
+  LFill2 := TFill.Create('metal_blast_fill', 'Traditional blast beat');
+  LFill2.Pattern := TPattern.Create('blast_beat');
+  FillList.Add(LFill2);
 
   Result := FillList;
 end;
 
-function TMetalGenrePlugin.GetHighEnergyTimekeeper: String;
+function TMetalGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
-  Result := GetChinaTimekeeper;
+  Result := TInstrumentRegistry.Get(GetChinaTimekeeper);
 end;
 
 end.

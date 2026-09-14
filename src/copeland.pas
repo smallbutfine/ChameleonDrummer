@@ -6,23 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TCopelandPlugin = class(TDrummerPlugin)
-  private
-    FBehindBeat: TBehindBeatTiming;
-    FGhostNotes: TGhostNoteLayer;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -30,45 +26,31 @@ implementation
 constructor TCopelandPlugin.Create;
 begin
   inherited Create;
-  FBehindBeat := TBehindBeatTiming.Create(20.0);
-  FGhostNotes := TGhostNoteLayer.Create(0.4);
 end;
 
 destructor TCopelandPlugin.Destroy;
 begin
-  FBehindBeat.Free;
-  FGhostNotes.Free;
   inherited Destroy;
 end;
 
-function TCopelandPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TCopelandPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_copeland';
-
-  // Slight behind-beat feel (reggae/ska influence)
-  Styled := FBehindBeat.Apply(Styled, 0.6);
-
-  // Ghost notes for off-beat emphasis
-  Styled := FGhostNotes.Apply(Styled, 0.4);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_copeland');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.5);
 end;
 
 function TCopelandPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('copeland_reggae_fill', 'Copeland reggae/ska fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('copeland_offbeat_fill', 'Stewart Copeland offbeat fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -77,12 +59,11 @@ begin
   Result := 'copeland';
 end;
 
-function TCopelandPlugin.GetCompatibleGenres: TStringList;
+function TCopelandPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('rock');
-  Result.Add('funk');
-  Result.Add('alternative');
+  SetLength(Result, 2);
+  Result[0] := 'rock';
+  Result[1] := 'funk';
 end;
 
 end.

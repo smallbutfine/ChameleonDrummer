@@ -13,13 +13,13 @@ program ChameleonDrummer;
 
 uses
   SysUtils, Classes,
-  APICli, Kit, PluginRegistry;
+  CLIInterface, Kit, PluginRegistry;
 
 var
   CLI: TCLIInterface;
   ExitCode: Integer;
   ArgCount: Integer;
-  Args: TArray<String>;
+  Args: specialize TArray<String>;
   I: Integer;
 
 begin

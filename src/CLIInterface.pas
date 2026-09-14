@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Generics.Collections,
   Pattern, Song,
   DrumGenerator, ComposerV2,
-  PluginRegistry, Kit, MIDIEngine;
+  PluginRegistry, Kit, midi_engine;
 
 // ============================================================================
 // TCLIInterface â€” command-line interface for MIDI Drums Generator
@@ -33,9 +33,9 @@ type
 type
   TCLIInterface = class
   private
-    FGenerator: TD rumGenerator;
+    FGenerator: TDrumGenerator;
     FPluginRegistry: TPluginRegistry;
-    function ParseArgs: TCLIArgs;
+    function ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
     procedure HandleGenerate(const Args: TCLIArgs);
     procedure HandlePattern(const Args: TCLIArgs);
     procedure HandleList(const Args: TCLIArgs);
@@ -45,14 +45,105 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    function Run(Argc: Integer; const Argv: TArray<String>): Integer;
+    function Run(Argc: Integer; const Argv: specialize TArray<String>): Integer;
   end;
 
 implementation
 
+function TCLIInterface.ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
+var
+  I: Integer;begin
+  FillChar(Result, SizeOf(Result), 0);
+  Result.Tempo := 120;
+  Result.Complexity := 0.5;
+  Result.Humanization := 0.3;
+  Result.Mapping := 'gm';
+
+  I := 1;
+  while (I <= Length(Args)) do
+  begin
+    if (Args[I] = '--genre') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.Genre := LowerCase(Args[I]);
+    end
+    else if (Args[I] = '--style') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.Style := LowerCase(Args[I]);
+    end
+    else if (Args[I] = '--tempo') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Val(Args[I], Result.Tempo);
+    end
+    else if (Args[I] = '--complexity') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Val(Args[I], Result.Complexity);
+    end
+    else if (Args[I] = '--humanization') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Val(Args[I], Result.Humanization);
+    end
+    else if (Args[I] = '--drummer') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.Drummer := LowerCase(Args[I]);
+    end
+    else if (Args[I] = '--output') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.OutputFile := Args[I];
+    end
+    else if (Args[I] = '--mapping') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.Mapping := LowerCase(Args[I]);
+    end
+    else if (Args[I] = '--sidecar') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.SidecarFile := Args[I];
+    end
+    else if (Args[I] = '--song-map') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.SongMapFile := Args[I];
+    end
+    else if (Args[I] = '--write-timeline') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.WriteTimeline := Args[I];
+    end
+    else if (Args[I] = '--list') then
+    begin
+      Inc(I);
+      if (I <= Length(Args)) then Result.ListType := LowerCase(Args[I]);
+      Result.Command := 'list';
+    end
+    else if (Args[I] = '--help') or (Args[I] = '-h') then
+    begin
+      ShowUsage;
+      Halt(0);
+    end
+    else if (Args[I] = 'generate') or (Args[I] = 'pattern') then
+    begin
+      Result.Command := Args[I];
+    end
+    else if (Args[I] = 'info') then
+    begin
+      Result.Command := 'info';
+    end;
+
+    Inc(I);
+  end;
+end;
+
 constructor TCLIInterface.Create;
 begin
-  FGenerator := TD rumGenerator.Create;
+  FGenerator := TDrumGenerator.Create;
   FPluginRegistry := TPluginRegistry.Create;
 end;
 
@@ -61,101 +152,6 @@ begin
   FPluginRegistry.Free;
   FGenerator.Free;
   inherited Destroy;
-end;
-
-function TCLIInterface.ParseArgs: TCLIArgs;
-var
-  I: Integer;
-  Args: TCLIArgs;
-begin
-  FillChar(Args, SizeOf(Args), 0);
-  Args.Tempo := 120;
-  Args.Complexity := 0.5;
-  Args.Humanization := 0.3;
-  Args.Mapping := 'gm'; // Default to GM mapping
-
-  I := 1;
-  while (I <= Length(Argv)) do
-  begin
-    if (Argv[I] = '--genre') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.Genre := LowerCase(Argv[I]);
-    end
-    else if (Argv[I] = '--style') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.Style := LowerCase(Argv[I]);
-    end
-    else if (Argv[I] = '--tempo') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Val(Argv[I], Args.Tempo);
-    end
-    else if (Argv[I] = '--complexity') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Val(Argv[I], Args.Complexity);
-    end
-    else if (Argv[I] = '--humanization') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Val(Argv[I], Args.Humanization);
-    end
-    else if (Argv[I] = '--drummer') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.Drummer := LowerCase(Argv[I]);
-    end
-    else if (Argv[I] = '--output') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.OutputFile := Argv[I];
-    end
-    else if (Argv[I] = '--mapping') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.Mapping := LowerCase(Argv[I]);
-    end
-    else if (Argv[I] = '--sidecar') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.SidecarFile := Argv[I];
-    end
-    else if (Argv[I] = '--song-map') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.SongMapFile := Argv[I];
-    end
-    else if (Argv[I] = '--write-timeline') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.WriteTimeline := Argv[I];
-    end
-    else if (Argv[I] = '--list') then
-    begin
-      Inc(I);
-      if (I <= Length(Argv)) then Args.ListType := LowerCase(Argv[I]);
-      Args.Command := 'list';
-    end
-    else if (Argv[I] in ['--help', '-h']) then
-    begin
-      ShowUsage;
-      Halt(0);
-    end
-    else if ((Argv[I] = 'generate') or (Argv[I] = 'pattern')) then
-    begin
-      Args.Command := Argv[I];
-    end
-    else if (Argv[I] = 'info') then
-    begin
-      Args.Command := 'info';
-    end;
-
-    Inc(I);
-  end;
-
-  Result := Args;
 end;
 
 procedure TCLIInterface.ShowUsage;
@@ -195,6 +191,7 @@ procedure TCLIInterface.HandleGenerate(const Args: TCLIArgs);
 var
   Song: TSong;
   DrumKit: TDrumKit;
+  OutputFile: string;
 begin
   if (Args.Genre = '') then
   begin
@@ -215,16 +212,19 @@ begin
 
   // Save MIDI output
   if (Args.OutputFile = '') then
-    Args.OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping]);
+    OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping])
+  else
+    OutputFile := Args.OutputFile;
 
-  FGenerator.ExportMIDI(Song, Args.OutputFile);
-  Writeln(Format('Song generated: %s (mapping: %s)', [Args.OutputFile, Args.Mapping]));
+  FGenerator.SaveSongMidi(Song, OutputFile);
+  Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
 end;
 
 procedure TCLIInterface.HandlePattern(const Args: TCLIArgs);
 var
   Pattern: TPattern;
   DrumKit: TDrumKit;
+  OutputFile: string;
 begin
   if (Args.Genre = '') then
   begin
@@ -235,18 +235,20 @@ begin
   // Load keymap from JSON files dynamically via factory method
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
 
-  Pattern := FGenerator.GeneratePattern(Args.Genre, Args.Style, DrumKit);
+  Pattern := FGenerator.GeneratePattern(Args.Genre, 'verse', DrumKit);
 
   if (Args.OutputFile = '') then
-    Args.OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style]);
+    OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])
+  else
+    OutputFile := Args.OutputFile;
 
-  FGenerator.ExportPatternMIDI(Pattern, Args.OutputFile, Args.Tempo);
-  Writeln(Format('Pattern generated: %s', [Args.OutputFile]));
+  FGenerator.SavePatternMidi(Pattern, OutputFile, Args.Tempo);
+  Writeln(Format('Pattern generated: %s', [OutputFile]));
 end;
 
 procedure TCLIInterface.HandleList(const Args: TCLIArgs);
 var
-  Genres, Styles, Drummers: TArray<String>;
+  Genres, Styles, Drummers: specialize TArray<String>;
   I: Integer;
 begin
   case Args.ListType of
@@ -290,14 +292,14 @@ begin
   Writeln('Keymap directory: midi_drums/mappings/');
 end;
 
-function TCLIInterface.Run(Argc: Integer; const Argv: TArray<String>): Integer;
+function TCLIInterface.Run(Argc: Integer; const Argv: specialize TArray<String>): Integer;
 var
   Args: TCLIArgs;
 begin
   FillChar(Args, SizeOf(Args), 0);
 
   try
-    Args := ParseArgs;
+    Args := ParseArgs(Argv);
 
     if (Args.Command = '') then
     begin

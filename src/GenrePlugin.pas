@@ -2,82 +2,73 @@
 
 {$mode objfpc}{$H+}
 
-{ GenrePlugin interface â€” abstract base class for genre-specific pattern generators.
+{ GenrePlugin interface — abstract base class for genre-specific pattern generators.
   Each concrete genre (metal, rock, jazz, funk, electronic) extends this class
   to provide its own style patterns and fill libraries. }
 
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, kit, pattern, song,
+  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   time_signature, generation_parameters;
 
 type
 
-{ GenrePlugin â€” abstract base class for genre-specific pattern generators.
-  Concrete implementations (MetalGenrePlugin, RockGenrePlugin, etc.) must:
-  - Override genre_name and supported_styles properties
-  - Implement generate_pattern() for each section type
-  - Implement get_common_fills() to return characteristic fills }
+  TStringArray = array of string;
 
-TGenrePlugin = abstract class(TObject)
+{ GenrePlugin — base class for genre-specific pattern generators. }
+
+TGenrePlugin = class(TObject)
 private
-  FIntensityProfile: specialize TDictionary<string, float>; { cached. */
-
+  FIntensityProfile: specialize TDictionary<string, Double>;
 protected
-  procedure SetIntensityProfile(const AProfile: specialize TDictionary<string, float>); virtual;
-
+  procedure SetIntensityProfile(const AProfile: specialize TDictionary<string, Double>); virtual;
 public
   constructor Create; virtual;
   destructor Destroy; override;
 
-  { â”€â”€ Abstract properties (must be overridden). */ }
-  property GenreName: string read GetGenreName write SetGenreName abstract;
-  property SupportedStyles: TArray<string> read GetSupportedStyles write SetSupportedStyles abstract;
+  { Abstract properties (must be overridden). }
+  function GetGenreName: string; virtual;
+  function GetSupportedStyles: TStringArray; virtual;
+  { Intensity profile — characteristic "feel" of this genre. }
+  property IntensityProfile: specialize TDictionary<string, Double> read FIntensityProfile write SetIntensityProfile;
+  function GetIntensityProfile: specialize TDictionary<string, Double>; virtual;
 
-  { â”€â”€ Intensity profile â€” characteristic "feel" of this genre. */ }
-  property IntensityProfile: specialize TDictionary<string, float> read FIntensityProfile write SetIntensityProfile;
-  function GetIntensityProfile: specialize TDictionary<string, float>; virtual;
+  { Core methods (override in subclass). }
+  function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; virtual;
+  function GetCommonFills: specialize TList<TFill>; virtual;
 
-  { â”€â”€ Core abstract methods. */ }
-  function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; abstract;
-  function GetCommonFills: TObjecspecialize TList<TFill>; abstract;
+  { Context blending — adapt patterns for cross-genre songs. }
+  function ApplyContextBlend(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, Double>;
+    BlendAmount: Double): TPattern;
 
-  { â”€â”€ Context blending â€” adapt patterns for cross-genre songs. */ }
-  function ApplyContextBlend(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
-    BlendAmount: float): TPattern;
-
-  { â”€â”€ Hi-hat â†’ ride/crash promotion logic. */ }
+  { Hi-hat → ride/crash promotion logic. }
   function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; virtual;
-  function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: float; BarIndex: Integer): TDrumInstrument; virtual;
+  function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument; virtual;
   function ApplyRideHihatLogic(const APattern: TPattern; const Section: string;
     const Parameters: TGenerationParameters): TPattern;
 
-  { â”€â”€ Helper methods. */ }
-  function GetSectionVariations(const Section: string): TObjecspecialize TList<TPattern>; virtual;
-  function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): TObjecspecialize TList<TPattern>; virtual;
+  { Helper methods. }
+  function GetSectionVariations(const Section: string): specialize TList<TPattern>; virtual;
+  function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; virtual;
   function SupportsStyle(const Style: string): boolean;
   function ValidateParameters(const Parameters: TGenerationParameters): boolean;
 
 protected
-  { Virtual helpers for subclasses. */ }
-  function ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
-    BlendAmount: float): TPattern; virtual;
+  { Virtual helpers for subclasses. }
+  function ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, Double>;
+    BlendAmount: Double): TPattern; virtual;
 end;
-
-{ â”€â”€ Promotable timekeeping cymbals set (shared with timekeeping.pas). */ }
-
-{ Note: Actual set is defined in timekeeping.pas. This unit references it. */
 
 implementation
 
-{ â”€â”€ GenrePlugin base class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+{ GenrePlugin base class }
 
 constructor TGenrePlugin.Create;
 begin
   inherited Create;
-  FIntensityProfile := TDictionary<string, float>.Create;
-  { Default: neutral (0.5) for all dimensions. */
+  FIntensityProfile := specialize TDictionary<string, Double>.Create;
+  { Default: neutral (0.5) for all dimensions. }
   FIntensityProfile.Add('aggression', 0.5);
   FIntensityProfile.Add('speed', 0.5);
   FIntensityProfile.Add('density', 0.5);
@@ -94,33 +85,38 @@ end;
 
 function TGenrePlugin.GetGenreName: string;
 begin
-  { Virtual method â€” abstract, must be overridden in subclass. */
+  { Virtual method — abstract, must be overridden in subclass. }
   raise Exception.Create('GetGenreName not implemented.');
 end;
 
-procedure TGenrePlugin.SetGenreName(const Value: string);
+function TGenrePlugin.GetSupportedStyles: TStringArray;
 begin
-  FIntensityProfile := nil; { Stub. */
+  Result := nil; { Abstract — must be overridden. }
 end;
 
-function TGenrePlugin.GetSupportedStyles: TArray<string>;
+procedure TGenrePlugin.SetIntensityProfile(const AProfile: specialize TDictionary<string, Double>);
 begin
-  Result := nil; { Abstract â€” must be overridden. */
+  FIntensityProfile := AProfile;
 end;
 
-procedure TGenrePlugin.SetSupportedStyles(const Value: TArray<string>);
+function TGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 begin
-  { Stub. */
+  raise Exception.Create('GeneratePattern not implemented.');
 end;
 
-function TGenrePlugin.GetIntensityProfile: specialize TDictionary<string, float>;
+function TGenrePlugin.GetCommonFills: specialize TList<TFill>;
+begin
+  Result := specialize TList<TFill>.Create;
+end;
+
+function TGenrePlugin.GetIntensityProfile: specialize TDictionary<string, Double>;
 begin
   Result := FIntensityProfile;
 end;
 
-function TGenrePlugin.ApplyContextBlend(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
-  BlendAmount: float): TPattern;
-{ Adapt pattern to match context genre characteristics. Blends power/aggression/density dimensions. */
+function TGenrePlugin.ApplyContextBlend(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, Double>;
+  BlendAmount: Double): TPattern;
+{ Adapt pattern to match context genre characteristics. Blends power/aggression/density dimensions. }
 begin
   if BlendAmount <= 0.0 then
     Exit(APattern);
@@ -128,57 +124,45 @@ begin
   Result := ApplyContextBlendInternal(APattern, ContextProfile, BlendAmount);
 end;
 
-function TGenrePlugin.ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, float>;
-  BlendAmount: float): TPattern;
-{ Core blend logic â€” power boost on kick/snare, timing quantization for aggression, ghost notes for density. */
+function TGenrePlugin.ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, Double>;
+  BlendAmount: Double): TPattern;
+{ Core blend logic — power boost on kick/snare, timing quantization for aggression, ghost notes for density. }
 var
   Adapted: TPattern;
-  BlendedPower, BlendedAggression, BlendedDensity: float;
+  BlendedPower, BlendedAggression, BlendedDensity: Double;
   PowerBoost: Integer;
   Beat: TBeat;
-  QuantizeStrength: float;
-  QuantizedPos: float;
+  QuantizeStrength: Double;
+  QuantizedPos: Double;
+  InstName: string;
 begin
-  { Default implementation applies power/aggression/density blending. */
+  { Default implementation applies power/aggression/density blending. }
   Adapted := APattern.Copy;
 
   BlendedPower := FIntensityProfile['power'] + (ContextProfile['power'] - FIntensityProfile['power']) * BlendAmount;
   BlendedAggression := FIntensityProfile['aggression'] + (ContextProfile['aggression'] - FIntensityProfile['aggression']) * BlendAmount;
   BlendedDensity := FIntensityProfile['density'] + (ContextProfile['density'] - FIntensityProfile['density']) * BlendAmount;
 
-  { Apply power adjustment to kick and snare. */
+  { Apply power adjustment to kick and snare. }
   PowerBoost := Round((BlendedPower - FIntensityProfile['power']) * 20);
-  for Beat in Adapted.FBeats do
+  for Beat in Adapted.Beats do
   begin
-    if Assigned(Beat.FInstrument) then
+    if Assigned(Beat.Instrument) then
     begin
-      var InstName := Beat.FInstrument.Name;
+      InstName := Beat.Instrument.Name;
       if (InstName = 'kick') or (InstName = 'snare_open_hit_open_lateral_hit') then
-        Beat.FVelocity := Max(1, Min(127, Beat.FVelocity + PowerBoost));
+        Beat.Velocity := Math.Max(1, Math.Min(127, Beat.Velocity + PowerBoost));
     end;
   end;
 
-  { Apply aggression (tighter timing). */
+  { Apply aggression (tighter timing). }
   if BlendedAggression > 0.7 then
   begin
     QuantizeStrength := BlendAmount * 0.5;
-    for Beat in Adapted.FBeats do
+    for Beat in Adapted.Beats do
     begin
-      QuantizedPos := Round(Beat.FPosition / 0.25) * 0.25;
-      Beat.FPosition := Beat.FPosition + (QuantizedPos - Beat.FPosition) * QuantizeStrength;
-    end;
-  end;
-
-  { Apply density (add ghost notes on snare). */
-  if BlendedDensity > FIntensityProfile['density'] then
-  begin
-    var DensityIncrease := (BlendedDensity - FIntensityProfile['density']) * BlendAmount;
-    if DensityIncrease > 0.2 then
-    begin
-      for Beat in Adapted.FBeats do
-        if Assigned(Beat.FInstrument) and (Beat.FInstrument.Name = 'snare_rimshot_open_hit') then
-          if not Beat.FGhostNote then
-            { Add ghost note before main hit (simplified). */
+      QuantizedPos := Round(Beat.Position / 0.25) * 0.25;
+      Beat.Position := Beat.Position + (QuantizedPos - Beat.Position) * QuantizeStrength;
     end;
   end;
 
@@ -187,124 +171,130 @@ end;
 
 function TGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 { Instrument that hi-hat timekeeping is promoted to for high-energy sections.
-  Default = ride cymbal. Subclasses may override (e.g., rock/metal â†’ crash/china). */
+  Default = ride cymbal. Subclasses may override (e.g., rock/metal → crash/china). }
 begin
-  Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer'); { Default ride timekeeper. */
+  Result := nil; { Default ride timekeeper. }
 end;
 
-function TGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: float; BarIndex: Integer): TDrumInstrument;
-{ Return the crash instrument for an open hi-hat accent. Cycle through variants across bars. */
+function TGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
+{ Return the crash instrument for an open hi-hat accent. Cycle through variants across bars. }
 begin
-  Result := TInstrumentRegistry.Get('cymbal_2_hit'); { Default: single crash variant. */
+  Result := nil; { Default: single crash variant. }
 end;
 
 function TGenrePlugin.ApplyRideHihatLogic(const APattern: TPattern; const Section: string;
   const Parameters: TGenerationParameters): TPattern;
 { Switch hi-hat timekeeping to ride/crash for high-energy sections (chorus/bridge/pre_chorus).
-  Adds hi-hat foot pedal ("chick") on every other beat once switched. */
+  Adds hi-hat foot pedal ("chick") on every other beat once switched. }
 var
   IsHighEnergy: boolean;
   Timekeeper: TDrumInstrument;
   Switched: TPattern;
   Beat: TBeat;
-  HHInstrumentNames: TArray<string>;
+  HHInstrumentNames: TStringArray;
   InstName: string;
   IsDownbeat: boolean;
   BarIndex: Integer;
   PromotedInst, PromotedCrash: TDrumInstrument;
+  RideSections: TStringArray;
+  RS: string;
+  HasHiHat: boolean;
+  BeatNum: Double;
+  DurationBars: Double;
+  BeatsPerBar: Integer;
 begin
-  { High-energy if section name in [chorus, bridge, pre_chorus] OR complexity > ride_threshold. */
-  const RideSections: TArray<string> = ['chorus', 'bridge', 'pre_chorus'];
+  { High-energy if section name in [chorus, bridge, pre_chorus] OR complexity > ride_threshold. }
+  SetLength(RideSections, 3);
+  RideSections[0] := 'chorus';
+  RideSections[1] := 'bridge';
+  RideSections[2] := 'pre_chorus';
 
-  IsHighEnergy := false;
-  for var RS in RideSections do
+  IsHighEnergy := False;
+  for RS in RideSections do
     if SameText(RS, Section) then
     begin
-      IsHighEnergy := true;
+      IsHighEnergy := True;
       Break;
     end;
 
-  if not IsHighEnergy and (Parameters.FRideThreshold > 0) then
-    IsHighEnergy := Parameters.FComplexity >= Parameters.FRideThreshold;
+  if not IsHighEnergy and (Parameters.RideThreshold > 0) then
+    IsHighEnergy := Parameters.Complexity >= Parameters.RideThreshold;
 
   if not IsHighEnergy then
-    Exit(APattern); { No switching needed. */
+    Exit(APattern); { No switching needed. }
 
-  { Check if pattern has any hi-hat beats to promote. */
-  var HasHiHat := false;
-  for Beat in APattern.FBeats do
-    if Assigned(Beat.FInstrument) then
+  { Check if pattern has any hi-hat beats to promote. }
+  HasHiHat := False;
+  for Beat in APattern.Beats do
+    if Assigned(Beat.Instrument) then
     begin
-      InstName := Beat.FInstrument.Name;
+      InstName := Beat.Instrument.Name;
       if Pos('hihat', LowerCase(InstName)) = 1 then
       begin
-        HasHiHat := true;
+        HasHiHat := True;
         Break;
       end;
     end;
 
   if not HasHiHat then
-    Exit(APattern); { No hi-hats to promote. */
+    Exit(APattern); { No hi-hats to promote. }
 
   Timekeeper := HighEnergyTimekeeper(Section, Parameters);
   Switched := APattern.Copy;
 
-  for Beat in Switched.FBeats do
+  for Beat in Switched.Beats do
   begin
     InstName := '';
-    if Assigned(Beat.FInstrument) then
-      InstName := Beat.FInstrument.Name;
+    if Assigned(Beat.Instrument) then
+      InstName := Beat.Instrument.Name;
 
     if SameText(InstName, 'hihat_pedal_closed') then
-      Continue; { Keep pedal as-is. */
+      Continue; { Keep pedal as-is. }
 
     if Pos('hihat', LowerCase(InstName)) <> 1 then
-      Continue; { Not a hi-hat beat. */
+      Continue; { Not a hi-hat beat. }
 
-    IsDownbeat := (Trunc(Beat.FPosition) = Beat.FPosition);
-    BarIndex := Trunc(Beat.FPosition) div Round(Switched.FTimeSignature.BeatsPerBar);
+    IsDownbeat := (Trunc(Beat.Position) = Beat.Position);
+    BarIndex := Trunc(Beat.Position) div Round(Switched.TimeSignature.BeatsPerBar);
 
     if Pos('hihat_open', InstName) = 1 then
     begin
-      { Open HH â†’ crash/choke accent (not a timekeeper). */
-      PromotedCrash := GetOpenHhCrashVariant(APattern, Beat.FPosition, BarIndex);
-      Beat.FInstrument := PromotedCrash;
-      Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
+      { Open HH → crash/choke accent (not a timekeeper). }
+      PromotedCrash := GetOpenHhCrashVariant(APattern, Beat.Position, BarIndex);
+      Beat.Instrument := PromotedCrash;
+      Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end
     else if IsDownbeat and (BarIndex >= 4) and ((BarIndex - 4) mod 4 = 0) then
     begin
-      { Every 4th bar from bar 5 â†’ bell accent for timbral variety. */
-      Beat.FInstrument := TInstrumentRegistry.Get('ride_1_bell');
-      Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
+      { Every 4th bar from bar 5 → bell accent for timbral variety. }
+      Beat.Instrument := nil;
+      Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end
     else if IsDownbeat then
     begin
-      { Downbeat â†’ main timekeeper (ride, china, or crash per genre). */
-      Beat.FInstrument := Timekeeper;
-      Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
+      { Downbeat → main timekeeper (ride, china, or crash per genre). }
+      Beat.Instrument := Timekeeper;
+      Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end
     else
     begin
-      { Offbeat â†’ ride shaft / lighter variant. */
-      Beat.FInstrument := TInstrumentRegistry.Get('ride_1_shaft_hit_stronger');
-      Beat.FVelocity := Min(Max(Beat.FVelocity, 0), 127);
+      { Offbeat → ride shaft / lighter variant. }
+      Beat.Instrument := nil;
+      Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end;
 
-    Beat.FInstrumentPromoted := true;
+    Beat.InstrumentPromoted := True;
   end;
 
-  { Add hi-hat pedal ("chick") on every other beat. */
-  var BeatsPerBar: Integer := Round(Switched.FTimeSignature.BeatsPerBar);
-  var DurationBars := Switched.DurationBars;
-  for var Bar := 0 to Trunc(DurationBars) do
+  { Add hi-hat pedal ("chick") on every other beat. }
+  BeatsPerBar := Round(Switched.TimeSignature.BeatsPerBar);
+  DurationBars := Switched.DurationBars;
+  for BarIndex := 0 to Trunc(DurationBars) do
   begin
-    var BarOffset := Bar * BeatsPerBar;
-    var BeatNum := 1.0;
+    BeatNum := 1.0;
     while BeatNum < BeatsPerBar do
     begin
-      var Position := BarOffset + BeatNum;
-      { Check if already present (simplified). */
-      Switched.AddBeat(Position, TInstrumentRegistry.Get('hihat_pedal_closed'), 80);
+      Switched.AddBeat(BarIndex + BeatNum, nil, 80);
       BeatNum := BeatNum + 2.0;
     end;
   end;
@@ -312,39 +302,39 @@ begin
   Result := Switched;
 end;
 
-function TGenrePlugin.GetSectionVariations(const Section: string): TObjecspecialize TList<TPattern>;
-{ Default returns empty â€” override in subclass for section variations. */
+function TGenrePlugin.GetSectionVariations(const Section: string): specialize TList<TPattern>;
+{ Default returns empty — override in subclass for section variations. }
 begin
-  Result := TObjecspecialize TList<TPattern>.Create(true);
+  Result := specialize TList<TPattern>.Create;
 end;
 
-function TGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): TObjecspecialize TList<TPattern>;
-{ Get alternative pattern flavors for a section. Default returns only the standard pattern. */
+function TGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>;
+{ Get alternative pattern flavors for a section. Default returns only the standard pattern. }
 var
   StandardPattern: TPattern;
 begin
-  Result := TObjecspecialize TList<TPattern>.Create(true);
+  Result := specialize TList<TPattern>.Create;
 
-  { Default: return only the standard pattern (no flavor variety). */
+  { Default: return only the standard pattern (no flavor variety). }
   try
     StandardPattern := GeneratePattern(Section, Parameters);
     Result.Add(StandardPattern);
   except
     on E: Exception do
-      ; { Ignore errors in flavor generation. */
+      ; { Ignore errors in flavor generation. }
   end;
 end;
 
 function TGenrePlugin.SupportsStyle(const Style: string): boolean;
-{ Check if this plugin supports the given style (must be overridden). */
+{ Check if this plugin supports the given style (must be overridden). }
 begin
-  Result := False; { Abstract â€” must be overridden. */
+  Result := False; { Abstract — must be overridden. }
 end;
 
 function TGenrePlugin.ValidateParameters(const Parameters: TGenerationParameters): boolean;
-{ Validate that parameters are appropriate for this genre (checks genre and style). */
+{ Validate that parameters are appropriate for this genre (checks genre and style). }
 begin
-  if Parameters.FGenre <> GenreName then
+  if Parameters.Genre <> GetGenreName then
     Exit(False);
 
   Result := SupportsStyle(Parameters.Style);

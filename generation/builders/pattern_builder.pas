@@ -7,7 +7,7 @@ unit pattern_builder;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, kit, pattern, time_signature;
+  Classes, SysUtils, Generics.Collections, kit, pattern, TimeSignature;
 
 type
 

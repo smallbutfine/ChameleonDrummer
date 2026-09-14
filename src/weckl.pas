@@ -6,24 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TWecklPlugin = class(TDrummerPlugin)
-  private
-    FLinearCoord: TLinearCoordination;
-    FGhostNotes: TGhostNoteLayer;
-    FTripeltVocab: TTripeltVocabulary;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -31,50 +26,31 @@ implementation
 constructor TWecklPlugin.Create;
 begin
   inherited Create;
-  FLinearCoord := TLinearCoordination.Create(0.8);
-  FGhostNotes := TGhostNoteLayer.Create(0.5);
-  FTripeltVocab := TTripeltVocabulary.Create(0.3);
 end;
 
 destructor TWecklPlugin.Destroy;
 begin
-  FLinearCoord.Free;
-  FGhostNotes.Free;
-  FTripeltVocab.Free;
   inherited Destroy;
 end;
 
-function TWecklPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TWecklPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_weckl';
-
-  // Linear coordination (Dave Weckl signature)
-  Styled := FLinearCoord.Apply(Styled, 0.8);
-
-  // Ghost notes for fusion precision
-  Styled := FGhostNotes.Apply(Styled, 0.5);
-
-  // Triplet vocabulary for fills
-  Styled := FTripeltVocab.Apply(Styled, 0.3);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_weckl');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.6);
 end;
 
 function TWecklPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('weckl_linear_fill', 'Dave Weckl linear fill') do
-  begin
-    Pattern := TTombFill.Create('ascending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('weckl_linear_fill', 'Dave Weckl linear fill');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
@@ -83,12 +59,12 @@ begin
   Result := 'weckl';
 end;
 
-function TWecklPlugin.GetCompatibleGenres: TStringList;
+function TWecklPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('jazz');
-  Result.Add('fusion');
-  Result.Add('rock');
+  SetLength(Result, 3);
+  Result[0] := 'jazz';
+  Result[1] := 'fusion';
+  Result[2] := 'rock';
 end;
 
 end.

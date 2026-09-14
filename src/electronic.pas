@@ -6,9 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  patterns_templates, generation_builders_pattern_builder,
-  plugins_interfaces_genre_plugin;
+  Pattern, Song,
+  patterns_templates,
+  Kit,
+  generation_parameters,
+  GenrePlugin;
 
 type
   TElectronicContext = record
@@ -39,7 +41,7 @@ type
 
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>;
-    function GetHighEnergyTimekeeper: String; override;
+    function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -89,11 +91,10 @@ end;
 function TElectronicGenrePlugin.GetOpenHHCrashVariant(BarIndex: Integer): String;
 begin
   case (BarIndex mod 3) of
-    0: Result := 'cymbal_1_hit';
-    1: Result := 'cymbal_4_hit';
-    2: Result := 'cymbal_6_hit';
+    0: Result := 'cymbal_4_hit';
+    1: Result := 'cymbal_2_hit';
   else
-    Result := 'ride_1_bell';
+    Result := 'cymbal_6_hit';
   end;
 end;
 
@@ -102,32 +103,26 @@ var
   Composer: TTemplateComposer;
 begin
   Composer := TTemplateComposer.Create('electronic_' + FStyle + '_verse_b' + IntToStr(BarIndex));
-
   case FStyle of
     'house':
       begin
-        // Four on the floor kick pattern
         Composer.Add(TBasicGroove.Create);
       end;
     'techno':
       begin
-        // Driving electronic beat
         Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'drum_and_bass':
       begin
-        // Fast breakbeat pattern
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
     'dubstep':
       begin
-        // Heavy half-time feel
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
   else
     Composer.Add(TBasicGroove.Create);
   end;
-
   Result := Composer.Build(2, FComplexity);
   Composer.Free;
 end;
@@ -137,13 +132,11 @@ var
   Composer: TTemplateComposer;
 begin
   Composer := TTemplateComposer.Create('electronic_' + FStyle + '_chorus_b' + IntToStr(BarIndex));
-
   case FStyle of
     'house':
       begin
         Composer.Add(TBasicGroove.Create);
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
+        Composer.Add(TCrashAccents.Create);
       end;
     'techno':
       begin
@@ -151,20 +144,15 @@ begin
       end;
     'drum_and_bass':
       begin
-        Composer.Add(TBasicGroove.Create);
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TTomFill.Create('descending'));
+        Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
     'dubstep':
       begin
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
+        Composer.Add(TBasicGroove.Create);
       end;
   else
     Composer.Add(TBasicGroove.Create);
   end;
-
   Result := Composer.Build(2, FComplexity);
   Composer.Free;
 end;
@@ -174,34 +162,26 @@ var
   Composer: TTemplateComposer;
 begin
   Composer := TTemplateComposer.Create('electronic_' + FStyle + '_bridge_b' + IntToStr(BarIndex));
-
   case FStyle of
     'house':
       begin
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TBasicGroove.Create)
-        else
-          Composer.Add(TSteadyRide.Create);
+        Composer.Add(TBasicGroove.Create);
       end;
     'techno':
       begin
-        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
+        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
       end;
     'drum_and_bass':
       begin
-        Composer.Add(TBasicGroove.Create);
+        Composer.Add(TDoubleBassPedal.Create('burst', 16));
       end;
     'dubstep':
       begin
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('burst', 16))
-        else
-          Composer.Add(TSteadyRide.Create);
+        Composer.Add(TBasicGroove.Create);
       end;
   else
     Composer.Add(TBasicGroove.Create);
   end;
-
   Result := Composer.Build(2, FComplexity);
   Composer.Free;
 end;
@@ -227,38 +207,37 @@ var
   BarIdx: Integer;
 begin
   GrooveList := specialize TList<TPattern>.Create;
-
-  for BarIdx := 0 to 3 do
+  for BarIdx := 0 to 2 do
     GrooveList.Add(GetFlavorVerse(BarIdx));
-
-  for BarIdx := 0 to 1 do
-    GrooveList.Add(GetFlavorChorus(BarIdx));
-
+  case FStyle of
+    'house', 'techno':
+      begin
+        GrooveList.Add(GetFlavorChorus(0));
+        GrooveList.Add(GetFlavorChorus(1));
+      end;
+  else
+    GrooveList.Add(GetFlavorChorus(0));
+  end;
   for BarIdx := 0 to 1 do
     GrooveList.Add(GetFlavorBridge(BarIdx));
-
   Result := GrooveList;
 end;
 
 function TElectronicGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
-
-  with TFill.Create('electronic_tom_drop', 'Electronic tom drop') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
-
+  LFill := TFill.Create('electronic_tom_drop', 'Electronic tom drop');
+  LFill.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill);
   Result := FillList;
 end;
 
-function TElectronicGenrePlugin.GetHighEnergyTimekeeper: String;
+function TElectronicGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
-  // Electronic uses ride or cymbal for energy
-  Result := 'ride_1_tip_hit';
+  Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
 end;
 
 end.

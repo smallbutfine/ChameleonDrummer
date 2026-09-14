@@ -1,50 +1,45 @@
-﻿unit MIDIEngine;
+﻿unit midi_engine;
 
 {$mode objfpc}{$H+}
 
-{ TMIDIEngine â€” Raw SMF Format 0 writer (zero external dependencies).
+{ TMIDIEngine — Raw SMF Format 0 writer (zero external dependencies).
   Generates standard .mid files by writing binary MIDI events directly.
   Compatible with all DAWs and drum VSTs without midiutil/mido. }
 
 interface
 
 uses
-  Classes, SysUtils, Math, Windows,
-  core_models_pattern, core_models_song,
-  config_constants, core_models_kit;
+  Classes, SysUtils, Math, Windows, Generics.Collections,
+  pattern, song,
+  config_constants, kit;
 
 type
+  TByteDynArray = array of Byte;
+  TBytes = array of Byte;
+
   TMIDIEvent = record
-    DeltaTicks: Integer; // delta time in ticks
-    Data: TArray<Byte>;
+    DeltaTicks: Integer;
+    Data: TByteDynArray;
   end;
 
-  { â”€â”€ Helper functions (standalone) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
-function IntToBinBE(Value, Bytes: Integer): TByteArray;
-procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
-
-  TMIDIEngine = class
+TMIDIEngine = class
   private
     FTicksPerBeat: Integer;
-    FHeaderData: TArray<Byte>;
+    FHeaderData: TByteDynArray;
     FEvents: specialize TList<TMIDIEvent>;
     FDrumKit: TDrumKit;
 
-    function EncodeVLQ(Value: Integer): TArray<Byte>;
-    procedure AddEvent(DeltaBeats: Double; const Data: TArray<Byte>);
+    function EncodeVLQ(Value: Integer): TByteDynArray;
+    procedure AddEvent(DeltaBeats: Double; const Data: TByteDynArray);
     procedure WriteTempoMicroSec(MicroSecPerBeat: Cardinal);
-    function SerializeTrack(DataSize: Integer): TBytes;
+    function SerializeTrack(DataSize: Integer): TByteDynArray;
     function CalculateDataSize: Integer;
 
-    { Dynamic MIDI note resolution using drum kit/keymap (CRITICAL!) }
     function ResolveNote(AInstrument: TObject): Integer;
-
-    { Beat deduplication â€” keeps loudest when same instrument at same position }
-    procedure DedupeBeats(Beats: TObjecspecialize TList<TBeat>; out DedupedBeats: TObjecspecialize TList<TBeat>);
+    procedure DedupeBeats(Beats: specialize TList<TBeat>; out DedupedBeats: specialize TList<TBeat>);
 
   public
-    constructor Create(ATicksPerBeat: Integer = Defaults.MIDI_RESOLUTION; ADrumKit: TDrumKit = nil);
+    constructor Create(ATicksPerBeat: Integer = 480; ADrumKit: TDrumKit = nil);
     destructor Destroy; override;
 
     function PatternToBytes(APattern: TPattern; ADrumKit: TDrumKit): TBytes;
@@ -57,9 +52,7 @@ procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
 
 implementation
 
-{ â”€â”€ Helper Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
-function IntToBinBE(Value, Bytes: Integer): TByteArray;
+function IntToBinBE(Value, Bytes: Integer): TByteDynArray;
 var I: Integer;
 begin
   SetLength(Result, Bytes);
@@ -67,7 +60,7 @@ begin
     Result[I] := (Value shr (I * 8)) and $FF;
 end;
 
-procedure VarLengthToVLQ(Value: Integer; out Output: TByteArray);
+procedure VarLengthToVLQ(Value: Integer; out Output: TByteDynArray);
 var Temp, I, Count: Integer;
 begin
   SetLength(Output, 4);
@@ -97,42 +90,32 @@ begin
   SetLength(Output, Count);
 end;
 
-{ â”€â”€ Constructor/Destructor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
 constructor TMIDIEngine.Create(ATicksPerBeat: Integer; ADrumKit: TDrumKit);
 begin
   FTicksPerBeat := ATicksPerBeat;
   FEvents := specialize TList<TMIDIEvent>.Create;
   FDrumKit := ADrumKit;
 
-  // SMF Format 0 header: MThd <length name="6"> <format name="0"> <ntrks name="1"> <division>
   SetLength(FHeaderData, 14);
-  FHeaderData[0]  := $4D; FHeaderData[1]  := $54; FHeaderData[2]  := $68; FHeaderData[3]  := $64; // "MThd"
-  FHeaderData[4]  := $00; FHeaderData[5]  := $00; FHeaderData[6]  := $00; FHeaderData[7]  := $06; // Length = 6
-  FHeaderData[8]  := $00; FHeaderData[9]  := $00; // Format 0
-  FHeaderData[10] := $00; FHeaderData[11] := $01; // 1 track
-  FHeaderData[12] := HighByte(FTicksPerBeat);
-  FHeaderData[13] := LowByte(FTicksPerBeat);
+  FHeaderData[0]  := $4D; FHeaderData[1]  := $54; FHeaderData[2]  := $68; FHeaderData[3]  := $64;
+  FHeaderData[4]  := $00; FHeaderData[5]  := $00; FHeaderData[6]  := $00; FHeaderData[7]  := $06;
+  FHeaderData[8]  := $00; FHeaderData[9]  := $00;
+  FHeaderData[10] := $00; FHeaderData[11] := $01;
+  FHeaderData[12] := Byte(FTicksPerBeat shr 8);
+  FHeaderData[13] := Byte(FTicksPerBeat and $FF);
 end;
 
 destructor TMIDIEngine.Destroy;
-var I: Integer;
 begin
-  for I := 0 to FEvents.Count - 1 do
-    SetLength(FEvents[I].Data, 0);
-  FEvents.Free;
   inherited Destroy;
 end;
 
-{ â”€â”€ Internal Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
-function TMIDIEngine.EncodeVLQ(Value: Integer): TArray<Byte>;
-var TempBytes: specialize TList<Byte>; Temp: Integer;
+function TMIDIEngine.EncodeVLQ(Value: Integer): TByteDynArray;
+var TempBytes: specialize TList<Integer>; Temp, I: Integer;
 begin
-  TempBytes := specialize TList<Byte>.Create;
+  TempBytes := specialize TList<Integer>.Create;
   try
     if Value < 0 then Value := Abs(Value);
-
     repeat
       Temp := Value and $7F;
       Value := Value shr 7;
@@ -140,17 +123,14 @@ begin
     until Value = 0;
 
     SetLength(Result, TempBytes.Count);
-    for I := 0 to TempBytes.Count - 2 do
-      Result[I] := TempBytes[TempBytes.Count - 1 - I] or $80; // continuation bit
-
-    if TempBytes.Count > 0 then
-      Result[TempBytes.Count - 1] := TempBytes[0]; // no continuation bit on last byte
+    for I := TempBytes.Count - 1 downto 0 do
+      Result[TempBytes.Count - 1 - I] := Byte(TempBytes[I]);
   finally
     TempBytes.Free;
   end;
 end;
 
-procedure TMIDIEngine.AddEvent(DeltaBeats: Double; const Data: TArray<Byte>);
+procedure TMIDIEngine.AddEvent(DeltaBeats: Double; const Data: TByteDynArray);
 var Event: TMIDIEvent;
 begin
   Event.DeltaTicks := Round(Abs(DeltaBeats) * FTicksPerBeat);
@@ -164,11 +144,9 @@ end;
 procedure TMIDIEngine.WriteTempoMicroSec(MicroSecPerBeat: Cardinal);
 var Bytes: Array[0..4] of Byte;
 begin
-  // MIDI tempo meta event: FF 51 03 [byte0 byte1 byte2]
-  // Microseconds per quarter note (e.g., 500000 = 120 BPM)
-  Bytes[0] := $FF;   // Meta event
-  Bytes[1] := $51;   // Tempo
-  Bytes[2] := $03;   // Length = 3 bytes
+  Bytes[0] := $FF;
+  Bytes[1] := $51;
+  Bytes[2] := $03;
   Bytes[3] := Byte(MicroSecPerBeat shr 16);
   Bytes[4] := Byte(MicroSecPerBeat shr 8);
 
@@ -181,252 +159,225 @@ begin
   Result := 0;
   for I := 0 to FEvents.Count - 1 do
   begin
-    Inc(Result, Length(EncodeVLQ(FEvents[I].DeltaTicks))); // delta time VLQ
-    Inc(Result, Length(FEvents[I].Data));                  // event data
+    Inc(Result, Length(EncodeVLQ(FEvents[I].DeltaTicks)));
+    Inc(Result, Length(FEvents[I].Data));
   end;
 end;
 
-function TMIDIEngine.SerializeTrack(DataSize: Integer): TBytes;
-var I, VLQLen: Integer; VLQBuf: TArray<Byte>;
+function TMIDIEngine.SerializeTrack(DataSize: Integer): TByteDynArray;
+var I, VLQLen, Offset: Integer; VLQBuf: TByteDynArray;
 begin
   SetLength(Result, DataSize);
+  Offset := 0;
 
   for I := 0 to FEvents.Count - 1 do
   begin
-    // Write delta time as VLQ
     VLQBuf := EncodeVLQ(FEvents[I].DeltaTicks);
     VLQLen := Length(VLQBuf);
-    Move(VLQBuf[0], Result[0], VLQLen);
-    Inc(Result, VLQLen);
+    Move(VLQBuf[0], Result[Offset], VLQLen);
+    Inc(Offset, VLQLen);
 
-    // Write event data
     if Length(FEvents[I].Data) > 0 then
     begin
-      Move(FEvents[I].Data[0], Result[0], Length(FEvents[I].Data));
-      Inc(Result, Length(FEvents[I].Data));
+      Move(FEvents[I].Data[0], Result[Offset], Length(FEvents[I].Data));
+      Inc(Offset, Length(FEvents[I].Data));
     end;
   end;
 end;
 
-{ â”€â”€ CRITICAL PRODUCTION CODE: Dynamic Note Resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
 function TMIDIEngine.ResolveNote(AInstrument: TObject): Integer;
-var InstName: string; Note: Integer;
+var InstName: string; Note: Integer; KeymapName: string;
 begin
-  // If it's already an integer, return as-is.
-  if AInstrument is Integer then
-    Exit(Integer(AInstrument));
+  Result := -1;
 
-  // Get the instrument name string for lookup.
-  if Assigned(AInstrument) and (AInstrument is TDrumInstrument) then
+  if Assigned(AInstrument) and (AInstrument.ClassType = TDrumInstrument) then
     InstName := TDrumInstrument(AInstrument).Name
   else
     InstName := 'unknown';
 
-  // Try custom mappings first.
-  if FDrumKit <> nil and Assigned(FDrumKit.FCustomMappings) and FDrumKit.FCustomMappings.TryGetValue(InstName, Note) then
-    Exit(Note);
+  KeymapName := '';
+  if FDrumKit <> nil then
+    KeymapName := FDrumKit.Name;
 
-  // Fall back to keymap lookup.
   if FDrumKit <> nil then
   begin
-    Note := FDrumKit.GetMIDINote(InstName);
+    Note := FDrumKit.GetMidiNote(InstName, KeymapName);
     Result := Note;
-  end
-  else
-    Result := -1; { No drum kit available }
+  end;
 end;
 
-{ â”€â”€ CRITICAL PRODUCTION CODE: Beat Deduplication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
-procedure TMIDIEngine.DedupeBeats(Beats: TObjecspecialize TList<TBeat>; out DedupedBeats: TObjecspecialize TList<TBeat>);
-var KeyDict: specialize TDictionary<string, TBeat>; Beat: TBeat; InstName: string; KeyStr: string; Existing: TBeat;
+procedure TMIDIEngine.DedupeBeats(Beats: specialize TList<TBeat>; out DedupedBeats: specialize TList<TBeat>);
+var KeyDict: specialize TDictionary<string, TBeat>; Beat: TBeat; InstName: string; KeyStr: string; Existing: TBeat; Item: specialize TPair<string, TBeat>;
 begin
-  DedupedBeats := TObjecspecialize TList<TBeat>.Create(true);
-  KeyDict := TDictionary<string, TBeat>.Create;
+  DedupedBeats := specialize TList<TBeat>.Create;
+  KeyDict := specialize TDictionary<string, TBeat>.Create;
 
   try
     for Beat in Beats do
     begin
-      if Assigned(Beat.FInstrument) then
-        InstName := Beat.FInstrument.Name
+      if Assigned(Beat.Instrument) then
+        InstName := Beat.Instrument.Name
       else
         InstName := 'unknown';
 
-      KeyStr := Format('%s|%.6f', [InstName, Beat.FPosition]);
+      KeyStr := Format('%s|%.6f', [InstName, Beat.Position]);
 
       if KeyDict.TryGetValue(KeyStr, Existing) then
       begin
-        if Beat.FVelocity > Existing.FVelocity then
-          KeyDict[KeyStr] := Beat { Replace with louder one }
+        if Beat.Velocity > Existing.Velocity then
+          KeyDict[KeyStr] := Beat
       end
       else
         KeyDict.Add(KeyStr, Beat);
     end;
 
-    // Add all unique beats to output.
-    for var Item in KeyDict do
+    for Item in KeyDict do
       DedupedBeats.Add(Item.Value);
   finally
     KeyDict.Free;
   end;
 end;
 
-{ â”€â”€ Pattern â†’ bytes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
-
 function TMIDIEngine.PatternToBytes(APattern: TPattern; ADrumKit: TDrumKit): TBytes;
-var I, J, MIDINote, Velocity: Integer; NoteOnEvent, NoteOffEvent: TArray<Byte>; EndOfTrack: TArray<Byte>;
+var I, MIDINote, Vel: Integer;
+    LNoteOn: TByteDynArray; LNoteOff: TByteDynArray; LEndTrack: TByteDynArray;
+    LDataSize: Integer; LTrackBytes: TBytes;
+    LHeader: array[0..6] of Byte; LB: Byte;
 begin
   Result := nil;
-
   FEvents.Clear;
 
-  // Write start tempo (120 BPM = 500000 microseconds per quarter note)
   WriteTempoMicroSec(500000);
 
   if Assigned(APattern) and Assigned(APattern.Beats) then
   begin
-    for I := 0 to APattern.BarsCount - 1 do
+    for I := 0 to APattern.Beats.Count - 1 do
     begin
-      if (I >= APattern.Beats.Count) then Break;
+      MIDINote := ADrumKit.GetMIDINote(APattern.Beats[I].Instrument.Name, '');
 
-      for J := 0 to APattern.Beats[I].Count - 1 do
-      begin
-        MIDINote := ADrumKit.GetMIDINote(APattern.Beats[I][J].Instrument);
+      if (MIDINote < 0) or (MIDINote > 127) then Continue;
 
-        // Skip unmapped instruments
-        if (MIDINote < 0) or (MIDINote > 127) then Continue;
+      Vel := Min(Max(APattern.Beats[I].Velocity, 1), 127);
 
-        Velocity := Clamp(APattern.Beats[I][J].Velocity, 1, 127);
+      SetLength(LNoteOn, 3);
+      LNoteOn[0] := $9A;
+      LNoteOn[1] := Byte(MIDINote);
+      LNoteOn[2] := Byte(Vel);
 
-        // Note On event: Channel 10 (drums) = $9A
-        SetLength(NoteOnEvent, 3);
-        NoteOnEvent[0] := $9A;
-        NoteOnEvent[1] := Byte(MIDINote);
-        NoteOnEvent[2] := Byte(Velocity);
+      AddEvent(APattern.Beats[I].Position, LNoteOn);
 
-        AddEvent(APattern.Beats[I][J].Time, NoteOnEvent);
+      SetLength(LNoteOff, 3);
+      LNoteOff[0] := $8A;
+      LNoteOff[1] := Byte(MIDINote);
+      LNoteOff[2] := $00;
 
-        // Note Off event (default 0.2 beat duration)
-        SetLength(NoteOffEvent, 3);
-        NoteOffEvent[0] := $8A;
-        NoteOffEvent[1] := Byte(MIDINote);
-        NoteOffEvent[2] := $00;
-
-        AddEvent(0.2, NoteOffEvent);
-      end;
+      AddEvent(0.2, LNoteOff);
     end;
   end;
 
-  // End of track marker: FF 2F 00
-  SetLength(EndOfTrack, 3);
-  EndOfTrack[0] := $FF;
-  EndOfTrack[1] := $2F;
-  EndOfTrack[2] := $00;
-  AddEvent(0.0, EndOfTrack);
+  SetLength(LEndTrack, 3);
+  LEndTrack[0] := $FF;
+  LEndTrack[1] := $2F;
+  LEndTrack[2] := $00;
+  AddEvent(0.0, LEndTrack);
 
-  // Build final binary
-  var DataSize := CalculateDataSize();
-  SetLength(Result, 4 + DataSize);
+  LDataSize := CalculateDataSize();
+  SetLength(Result, 4 + LDataSize);
 
-  Move($4D, Result[0], 4); // "MTrk"
-  Move(Byte(DataSize shr 16), Result[4], 1);
-  Move(Byte(DataSize shr 8), Result[5], 1);
-  Move(Byte(DataSize), Result[6], 1);
+  LHeader[0] := $4D; LHeader[1] := $54; LHeader[2] := $72; LHeader[3] := $6B;
+  Move(LHeader[0], Result[0], 4);
 
-  var TrackBytes := SerializeTrack(DataSize);
-  if Length(TrackBytes) > 0 then
-    Move(TrackBytes[0], Result[7], Length(TrackBytes));
+  LB := Byte(LDataSize shr 16); Move(LB, Result[4], 1);
+  LB := Byte(LDataSize shr 8);  Move(LB, Result[5], 1);
+  LB := Byte(LDataSize);        Move(LB, Result[6], 1);
+
+  LTrackBytes := SerializeTrack(LDataSize);
+  if Length(LTrackBytes) > 0 then
+    Move(LTrackBytes[0], Result[7], Length(LTrackBytes));
 end;
 
-{ â”€â”€ Song â†’ bytes (FIXED: now reads actual patterns instead of hardcoded notes) â”€ }
-
 function TMIDIEngine.SongToBytes(ASong: TSong; ADrumKit: TDrumKit): TBytes;
-var I, J: Integer; SectionBars: Integer; MIDINote, Velocity: Integer;
-  NoteOnEvent, NoteOffEvent: TArray<Byte>; EndOfTrack: TArray<Byte>; CumulativeTime: Double;
-  Pattern: TPattern; DedupedBeats: TObjecspecialize TList<TBeat>; Beat: TBeat;
+var I, J, SectionBars, MIDINote, Vel: Integer;
+    LNoteOn: TByteDynArray; LNoteOff: TByteDynArray; LEndTrack: TByteDynArray;
+    LCumTime: Double; LTempoUSec: Cardinal;
+    LPat: TPattern; LDeduped: specialize TList<TBeat>; LB: TBeat;
+    LDataSize: Integer; LTrackBytes: TBytes;
+    LHeader: array[0..6] of Byte; LByteVal: Byte;
 begin
   Result := nil;
-  CumulativeTime := 0.0;
+  LCumTime := 0.0;
 
   FEvents.Clear;
 
-  // Write tempo meta event from actual song tempo
-  var TempoMicroSec: Cardinal := 500000; { Default 120 BPM }
+  LTempoUSec := 500000;
   if (ASong <> nil) and (ASong.Tempo > 0) then
-    TempoMicroSec := Round(60000000.0 / ASong.Tempo);
-  WriteTempoMicroSec(TempoMicroSec);
+    LTempoUSec := Round(60000000.0 / ASong.Tempo);
+  WriteTempoMicroSec(LTempoUSec);
 
   if not Assigned(ADrumKit) then ADrumKit := FDrumKit;
   if not Assigned(ASong) or not Assigned(ASong.Sections) then Exit;
 
   for I := 0 to ASong.Sections.Count - 1 do
   begin
-    SectionBars := ASong.Sections[I].BarsCount;
+    SectionBars := ASong.Sections[I].Bars;
 
-    // Get pattern for this section (handle multi-bar tiling)
-    Pattern := ASong.Sections[I].Pattern;
-    if not Assigned(Pattern) or not Assigned(Pattern.Beats) then Continue;
+    LPat := ASong.Sections[I].Pattern;
+    if not Assigned(LPat) or not Assigned(LPat.Beats) then Continue;
 
-    // Deduplicate beats first
-    DedupedBeats := TObjecspecialize TList<TBeat>.Create(true);
-    DedupeBeats(Pattern.Beats, DedupedBeats);
+    LDeduped := specialize TList<TBeat>.Create;
+    DedupeBeats(LPat.Beats, LDeduped);
 
     for J := 0 to SectionBars - 1 do
     begin
-      for Beat in DedupedBeats do
+      for LB in LDeduped do
       begin
-        MIDINote := ADrumKit.GetMIDINote(Beat.Instrument);
+        if not Assigned(LB.Instrument) then Continue;
+        MIDINote := ADrumKit.GetMIDINote(LB.Instrument.Name, '');
 
-        // Skip unmapped instruments
         if (MIDINote < 0) or (MIDINote > 127) then Continue;
 
-        Velocity := Clamp(Beat.Velocity, 1, 127);
+        Vel := Min(Max(LB.Velocity, 1), 127);
 
-        // Note On event: Channel 10 (drums) = $9A
-        SetLength(NoteOnEvent, 3);
-        NoteOnEvent[0] := $9A;
-        NoteOnEvent[1] := Byte(MIDINote);
-        NoteOnEvent[2] := Byte(Velocity);
+        SetLength(LNoteOn, 3);
+        LNoteOn[0] := $9A;
+        LNoteOn[1] := Byte(MIDINote);
+        LNoteOn[2] := Byte(Vel);
 
-        AddEvent(CumulativeTime + J + Beat.Time, NoteOnEvent);
+        AddEvent(LCumTime + J + LB.Position, LNoteOn);
 
-        // Note Off event (default 0.2 beat duration)
-        SetLength(NoteOffEvent, 3);
-        NoteOffEvent[0] := $8A;
-        NoteOffEvent[1] := Byte(MIDINote);
-        NoteOffEvent[2] := $00;
+        SetLength(LNoteOff, 3);
+        LNoteOff[0] := $8A;
+        LNoteOff[1] := Byte(MIDINote);
+        LNoteOff[2] := $00;
 
-        AddEvent(0.2, NoteOffEvent);
+        AddEvent(Trunc(Round(0.2 * FTicksPerBeat)), LNoteOff);
       end;
     end;
 
-    CumulativeTime := CumulativeTime + SectionBars;
-    DedupedBeats.Free;
+    LCumTime := LCumTime + SectionBars;
+    LDeduped.Free;
   end;
 
-  // End of track marker
-  SetLength(EndOfTrack, 3);
-  EndOfTrack[0] := $FF;
-  EndOfTrack[1] := $2F;
-  EndOfTrack[2] := $00;
-  AddEvent(0.0, EndOfTrack);
+  SetLength(LEndTrack, 3);
+  LEndTrack[0] := $FF;
+  LEndTrack[1] := $2F;
+  LEndTrack[2] := $00;
+  AddEvent(0.0, LEndTrack);
 
-  // Build final binary
-  var DataSize := CalculateDataSize();
-  SetLength(Result, 4 + DataSize);
+  LDataSize := CalculateDataSize();
+  SetLength(Result, 4 + LDataSize);
 
-  Move($4D, Result[0], 4); // "MTrk"
-  Move(Byte(DataSize shr 16), Result[4], 1);
-  Move(Byte(DataSize shr 8), Result[5], 1);
-  Move(Byte(DataSize), Result[6], 1);
+  LHeader[0] := $4D; LHeader[1] := $54; LHeader[2] := $72; LHeader[3] := $6B;
+  Move(LHeader[0], Result[0], 4);
 
-  var TrackBytes := SerializeTrack(DataSize);
-  if Length(TrackBytes) > 0 then
-    Move(TrackBytes[0], Result[7], Length(TrackBytes));
+  LByteVal := Byte(LDataSize shr 16); Move(LByteVal, Result[4], 1);
+  LByteVal := Byte(LDataSize shr 8);  Move(LByteVal, Result[5], 1);
+  LByteVal := Byte(LDataSize);        Move(LByteVal, Result[6], 1);
+
+  LTrackBytes := SerializeTrack(LDataSize);
+  if Length(LTrackBytes) > 0 then
+    Move(LTrackBytes[0], Result[7], Length(LTrackBytes));
 end;
-
-{ â”€â”€ File Write Convenience â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
 procedure TMIDIEngine.SavePattern(APattern: TPattern; const AFileName: String; ADrumKit: TDrumKit);
 var LData: TBytes; FStream: TFileStream;
@@ -434,7 +385,6 @@ begin
   LData := PatternToBytes(APattern, ADrumKit);
   if Length(LData) = 0 then Exit;
 
-  // Write binary directly to file
   FStream := TFileStream.Create(AFileName, fmCreate);
   try
     FStream.WriteBuffer(LData[0], Length(LData));
@@ -449,7 +399,6 @@ begin
   LData := SongToBytes(ASong, ADrumKit);
   if Length(LData) = 0 then Exit;
 
-  // Write binary directly to file
   FStream := TFileStream.Create(AFileName, fmCreate);
   try
     FStream.WriteBuffer(LData[0], Length(LData));

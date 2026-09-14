@@ -6,24 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  core_models_pattern, core_models_song,
-  modifications_drummer_mods,
-  plugins_interfaces_drummer_plugin;
+  Pattern, Song,
+  DrummerPlugin, patterns_templates;
 
 type
   TBonhamPlugin = class(TDrummerPlugin)
-  private
-    FBehindBeat: TBehindBeatTiming;
-    FTripletVocab: TTripeltVocabulary;
-    FHeavyAccents: THeavyAccents;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function ApplyStyle(APattern: TPattern): TPattern; override;
-    function GetSignatureFills: specialize TList<TFill>;
+    function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
-    function GetCompatibleGenres: TStringList; override;
+    function GetPreferredGenres: TStringArray; override;
   end;
 
 implementation
@@ -31,55 +26,36 @@ implementation
 constructor TBonhamPlugin.Create;
 begin
   inherited Create;
-  FBehindBeat := TBehindBeatTiming.Create(25.0);
-  FTripletVocab := TTripeltVocabulary.Create(0.4);
-  FHeavyAccents := THeavyAccents.Create(15);
 end;
 
 destructor TBonhamPlugin.Destroy;
 begin
-  FBehindBeat.Free;
-  FTripletVocab.Free;
-  FHeavyAccents.Free;
   inherited Destroy;
 end;
 
-function TBonhamPlugin.ApplyStyle(APattern: TPattern): TPattern;
+function TBonhamPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Styled: TPattern;
+  Composer: TTemplateComposer;
 begin
-  Styled := APattern.Copy;
-  Styled.Name := APattern.Name + '_bonham';
-
-  // Apply behind-beat timing (Bonham signature)
-  Styled := FBehindBeat.Apply(Styled, 0.7);
-
-  // Add triplet vocabulary
-  Styled := FTripletVocab.Apply(Styled, 0.8);
-
-  // Heavy accents for rock/metal power
-  Styled := FHeavyAccents.Apply(Styled, 0.9);
-
-  Result := Styled;
+  Composer := TTemplateComposer.Create(APattern.Name + '_bonham');
+  Composer.Add(TBasicGroove.Create);
+  Result := Composer.Build(2, 0.7);
 end;
 
 function TBonhamPlugin.GetSignatureFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
+  LFill1, LFill2: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
 
-  with TFill.Create('bonham_moby_dick_fill', 'Moby Dick solo fill') do
-  begin
-    Pattern := TTombFill.Create('descending');
-    FillList.Add(Self);
-  end;
+  LFill1 := TFill.Create('bonham_moby_dick_fill', 'Moby Dick solo fill');
+  LFill1.Pattern := TPattern.Create('tom_fill');
+  FillList.Add(LFill1);
 
-  with TFill.Create('bonham_triplet_fill', 'Bonham triplet fill') do
-  begin
-    Pattern := TBlastBeat.Create('traditional', 0.8);
-    FillList.Add(Self);
-  end;
+  LFill2 := TFill.Create('bonham_triplet_fill', 'Bonham triplet fill');
+  LFill2.Pattern := TPattern.Create('blast_beat');
+  FillList.Add(LFill2);
 
   Result := FillList;
 end;
@@ -89,12 +65,12 @@ begin
   Result := 'bonham';
 end;
 
-function TBonhamPlugin.GetCompatibleGenres: TStringList;
+function TBonhamPlugin.GetPreferredGenres: TStringArray;
 begin
-  Result := TStringList.Create;
-  Result.Add('rock');
-  Result.Add('metal');
-  Result.Add('blues');
+  SetLength(Result, 3);
+  Result[0] := 'rock';
+  Result[1] := 'metal';
+  Result[2] := 'blues';
 end;
 
 end.

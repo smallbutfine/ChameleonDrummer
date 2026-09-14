@@ -10,64 +10,25 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, Kit, Pattern, Song,
-  TimeSignature, GenerationParameters, ComposerV2, MIDIEngine,
-  PluginRegistry; { forward declarations for genres / drummers loaded at runtime */
+  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
+  time_signature, generation_parameters, ComposerV2, midi_engine,
+  PluginRegistry, GenrePlugin, Metal, Rock, Jazz, Funk, Electronic, { genre plugins }
+    Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
+    Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, doom_blues;{ drummer plugins }
+{ forward declarations for genres / drummers loaded at runtime }
 
-{ â”€â”€ Genre archetypes â€” default song structures per genre. */ }
+{ â”€â”€ Genre archetypes â€” default song structures per genre. }
 
 type
-  TStructureEntry = record Name: string; Bars: Integer; end;
+  { Use ComposerV2's TSectionDef everywhere for compatibility }
+  TStructureEntry = ComposerV2.TSectionDef;
+  TSongStructureArray = array of TSectionDef;
+  TArchetype = record Genre: string; Structure: TSongStructureArray; end;
 
-const
-  GENRE_ARCHETYPES: array[0..4] of record
-    Genre: string;
-    Structure: array[0..7] of TStructureEntry;
-  end = (
-    (Genre: 'metal'; Structure: (
-      (Name: 'intro'; Bars: 8); (Name: 'verse'; Bars: 8);
-      (Name: 'chorus'; Bars: 8); (Name: 'verse'; Bars: 8);
-      (Name: 'breakdown'; Bars: 8); (Name: 'chorus'; Bars: 8);
-      (Name: 'bridge'; Bars: 4);  (Name: 'solo'; Bars: 8)
-    )), { outro omitted â€” metal archetypes use implicit 4-bar outro */
+var
+  GENRE_ARCHETYPES: array of TArchetype;
 
-    (Genre: 'rock'; Structure: (
-      (Name: 'intro'; Bars: 4); (Name: 'verse'; Bars: 8);
-      (Name: 'chorus'; Bars: 8); (Name: 'verse'; Bars: 8);
-      (Name: 'chorus'; Bars: 8); (Name: 'bridge'; Bars: 4);
-      (Name: 'solo'; Bars: 8);  (Name: 'outro'; Bars: 4)
-    )),
-
-    (Genre: 'jazz'; Structure: (
-      (Name: 'intro'; Bars: 8); (Name: 'verse'; Bars: 16);
-      (Name: 'chorus'; Bars: 16); (Name: 'bridge'; Bars: 8);
-      (Name: 'chorus'; Bars: 16); (Name: 'outro'; Bars: 8)
-    )), { only 6 entries â€” jazz has no verse/verse repeat. */
-
-    (Genre: 'funk'; Structure: (
-      (Name: 'intro'; Bars: 4); (Name: 'verse'; Bars: 8);
-      (Name: 'chorus'; Bars: 8); (Name: 'verse'; Bars: 8);
-      (Name: 'breakdown'; Bars: 8); (Name: 'bridge'; Bars: 4);
-      (Name: 'outro'; Bars: 8)
-    )), { only 7 entries. */
-
-    (Genre: 'electronic'; Structure: (
-      (Name: 'intro'; Bars: 8); (Name: 'verse'; Bars: 16);
-      (Name: 'chorus'; Bars: 16); (Name: 'breakdown'; Bars: 8);
-      (Name: 'chorus'; Bars: 16); (Name: 'outro'; Bars: 8)
-    )) { only 6 entries. */
-  );
-
-{ â”€â”€ Genre-aware BPM defaults. */ }
-
-function GetDefaultBpm(const Genre, Style: string): Integer;
-
-{ â”€â”€ Groove restraints â€” per-genre velocity adjustments. */ }
-
-procedure ApplyGrooveRestraints(Song: TSong);
-
-{ â”€â”€ DrumGenerator â€” main entry point for drum MIDI generation. */ }
-
+type
 TDrumGenerator = class(TObject)
 private
   FPluginManager: TPluginManager;
@@ -76,33 +37,35 @@ private
   FComposerEngine: string;
 
   procedure LoadPlugins;
-  function GetGenreDefaultStructure(const Genre: string): TArray<TStructureEntry>;
+  function GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
 
-  { â”€â”€ Private helpers for V1 engine. */
-  function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit = nil): TPattern;
+  { --- Private helpers for V1 engine. --- }
   procedure _GenerateVariations(const APattern: TPattern; out AResult: specialize TList<TPatternVariation>; const AParams: TGenerationParameters);
   procedure _GenerateFills(const Genre: string; out AResult: specialize TList<TFill>; const AParams: TGenerationParameters);
 
 public
-  constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar). */
+  constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar). }
   destructor Destroy; override;
 
-  { â”€â”€ Public API. */ }
+  { â”€â”€ Public API. }
 
-  { Create a complete song with bar-by-bar pattern evolution (V2 engine). */
+  { Create a complete song with bar-by-bar pattern evolution (V2 engine). }
   function CreateSongV2(const Genre, Style: string; ATempo: Integer = 120;
-    const AStructure: TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil): TSong;
+    const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil): TSong;
 
-  { Create a complete song â€” selects engine (V1 static or V2 evolution). */
+  { Create a complete song â€” selects engine (V1 static or V2 evolution). }
   function CreateSong(const Genre, Style: string; ATempo: Integer = 120;
-    const AStructure: TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
+    const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
     AEngineOverride: string = ''): TSong;
 
-  { Export a Song to a MIDI file. */
+  { Export a Song to a MIDI file. }
   procedure SaveSongMidi(const ASong: TSong; const AOutputPath: string);
 
-  { Export a single Pattern to a MIDI file. */
+  { Export a single Pattern to a MIDI file. }
   procedure SavePatternMidi(const APattern: TPattern; const AOutputPath: string; ATempo: Integer = 120);
+
+  { Generate a single pattern for a genre/section. }
+  function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit): TPattern;
 
   property PluginManager: TPluginManager read FPluginManager;
   property DrumKit: TDrumKit read FDrumKit write FDrumKit;
@@ -110,22 +73,25 @@ public
   property ComposerEngine: string read FComposerEngine write FComposerEngine;
 end;
 
+{ â”€â”€ Genre-aware BPM defaults. }
+
+function GetDefaultBpm(const Genre, Style: string): Integer;
+
+procedure ApplyGrooveRestraints(Song: TSong);
+{ Groove restraints - per-genre velocity adjustments. }
+
 implementation
 
-uses
-  Metal, Rock, Jazz, Funk, Electronic, { genre plugins }
-  Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
-  Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues; { drummer plugins }
 
-{ â”€â”€ GetDefaultBpm â€” genre/style-aware default BPM. */ }
+{ â”€â”€ GetDefaultBpm â€” genre/style-aware default BPM. }
 
 function GetDefaultBpm(const Genre, Style: string): Integer;
 var
-  DefaultTempoMaps: record { Simplified â€” real impl uses bpm_ranges module. */
+  DefaultTempoMaps: record { Simplified â€” real impl uses bpm_ranges module. }
     metal: array[0..6] of record Style: string; Tempo: Integer; end;
   end;
 begin
-  { Simplified defaults from the bpm_ranges config. */
+  { Simplified defaults from the bpm_ranges config. }
   case LowerCase(Genre) of
     'metal':
       case LowerCase(Style) of
@@ -179,51 +145,58 @@ begin
         'dubstep':   Result := 140;
       else Result := 130;
       end;
-  else Result := 120; { default. */
+  else Result := 120; { default. }
   end;
 end;
 
-{ â”€â”€ ApplyGrooveRestraints â€” per-genre velocity adjustments for musicality. */ }
+{ â”€â”€ ApplyGrooveRestraints â€” per-genre velocity adjustments for musicality. }
 
 procedure ApplyGrooveRestraints(Song: TSong);
 var
   Genre: string;
   Section: TSection;
   Beat: TBeat;
+  InstrumentName: string;
 begin
-  if not Assigned(Song.FGlobalParameters) then Genre := 'rock' else Genre := Song.FGlobalParameters.FGenre;
+  if not Assigned(Song.GlobalParameters) then
+    Genre := 'rock'
+  else
+    Genre := Song.GlobalParameters.Genre;
 
   for Section in Song.Sections do
   begin
-    for Beat in Section.FBeats do
+    if Assigned(Section.Pattern) then
     begin
-      var Name := '';
-      if Assigned(Beat.FInstrument) then
-        Name := Beat.FInstrument.Name;
-
-      { Jazz: attenuate snares and cymbals. */
-      if SameText(Genre, 'jazz') then
+      for Beat in Section.Pattern.Beats do
       begin
-        if SameText(Name, 'snare_rimshot_open_hit') and not Beat.FGhostNote then
-          Beat.FVelocity := Min(Beat.FVelocity, 85) { SNARE_LIGHT. */
+        InstrumentName := '';
+        if Assigned(Beat.Instrument) then
+          InstrumentName := Beat.Instrument.Name;
 
-        if (Pos('cymbal', LowerCase(Name)) > 0) or
-           (Pos('crash', LowerCase(Name)) > 0) or
-           (Pos('ride', LowerCase(Name)) > 0) then
-          Beat.FVelocity := Min(Beat.FVelocity, 75) { CRASH_LIGHT. */
+        { Jazz: attenuate snares and cymbals. }
+        if SameText(Genre, 'jazz') then
+        begin
+          if SameText(InstrumentName, 'snare_rimshot_open_hit') and not Beat.GhostNote then
+            Beat.Velocity := Min(Beat.Velocity, 85);
+
+          if (Pos('cymbal', LowerCase(InstrumentName)) > 0) or
+             (Pos('crash', LowerCase(InstrumentName)) > 0) or
+             (Pos('ride', LowerCase(InstrumentName)) > 0) then
+            Beat.Velocity := Min(Beat.Velocity, 75);
+        end;
+
+        { Funk: tighten snare backbeat. }
+        if SameText(Genre, 'funk') and SameText(InstrumentName, 'snare_rimshot_open_hit') then
+          if not Beat.GhostNote then
+            Beat.Velocity := Max(Min(Beat.Velocity, 108), 95);
+
+        { Metal: ensure snares stay punchy. }
+        if SameText(Genre, 'metal') and SameText(InstrumentName, 'snare_rimshot_open_hit') then
+          if Beat.Velocity < 100 then
+            Beat.Velocity := Min(Beat.Velocity + 25, 127);
       end;
-
-      { Funk: tighten snare backbeat. */
-      if SameText(Genre, 'funk') and SameText(Name, 'snare_rimshot_open_hit') then
-        if not Beat.FGhostNote then
-          Beat.FVelocity := Max(Min(Beat.FVelocity, 108), 95); { SNARE_NORMAL..SNARE_ACCENT */
-
-      { Metal: ensure snares stay punchy. */
-      if SameText(Genre, 'metal') and SameText(Name, 'snare_rimshot_open_hit') then
-        if Beat.FVelocity < 100 then
-          Beat.FVelocity := Min(Beat.FVelocity + 25, 127);
-    end; { for Beat. */
-  end; { for Section. */
+    end;
+  end;
 end;
 
 { â”€â”€ TDrumGenerator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
@@ -233,8 +206,8 @@ begin
   inherited Create;
   FComposerEngine := AComposerEngine;
   FPluginManager := TPluginManager.Create;
-  FDrumKit := TDrumKit.FromKeymapName('gm'); { Default GM keymap. */
-  FMidiEngine := TMIDIEngine.Create(FDrumKit);
+  FDrumKit := TDrumKit.FromKeymapName('gm'); { Default GM keymap. }
+  FMidiEngine := TMIDIEngine.Create(480, FDrumKit);
 
   LoadPlugins;
 end;
@@ -248,9 +221,9 @@ end;
 
 procedure TDrumGenerator.LoadPlugins;
 var
-  GS: TArray<string>; { Genre Styles }
-  PD: TArray<string>; { Pref Drummers }
-  DG: TArray<string>; { Drummer Genres }
+  GS: specialize TArray<string>; { Genre Styles }
+  PD: specialize TArray<string>; { Pref Drummers }
+  DG: specialize TArray<string>; { Drummer Genres }
 begin
   { â”€â”€ Register genre plugins â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€}
 
@@ -357,70 +330,77 @@ begin
 
   { doomblues â€” metal }
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
-  FPluginManager.Registry.RegisterDrummerPlugin('doomblues', TCompositeDoomBluesPlugin.Create, DG);
+  FPluginManager.Registry.RegisterDrummerPlugin('doomblues', TDoomBluesPlugin.Create, DG);
 end;
 
-function TDrumGenerator.GetGenreDefaultStructure(const Genre: string): TArray<TStructureEntry>;
+function TDrumGenerator.GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
 var
-  I: Integer;
+  I, J: Integer;
 begin
   for I := Low(GENRE_ARCHETYPES) to High(GENRE_ARCHETYPES) do
     if SameText(GENRE_ARCHETYPES[I].Genre, LowerCase(Genre)) then
     begin
-      { Copy the array of TStructureEntry into result. */
-      { In Pascal this requires explicit copy since arrays aren't assignable. */
+      { Copy the array of TStructureEntry into result. }
+      { In Pascal this requires explicit copy since arrays aren't assignable. }
       SetLength(Result, Length(GENRE_ARCHETYPES[I].Structure));
-      for var J := 0 to Length(GENRE_ARCHETYPES[I].Structure) - 1 do
+      for J := 0 to Length(GENRE_ARCHETYPES[I].Structure) - 1 do
       begin
         Result[J] := GENRE_ARCHETYPES[I].Structure[J];
       end;
       Exit;
     end;
 
-  { Default: verse-chorus pop structure. */
+  { Default: verse-chorus pop structure. }
   SetLength(Result, 7);
-  Result[0] := (Name: 'intro'; Bars: 4);
-  Result[1] := (Name: 'verse'; Bars: 8);
-  Result[2] := (Name: 'chorus'; Bars: 8);
-  Result[3] := (Name: 'verse'; Bars: 8);
-  Result[4] := (Name: 'chorus'; Bars: 8);
-  Result[5] := (Name: 'bridge'; Bars: 4);
-  Result[6] := (Name: 'outro'; Bars: 8);
+  Result[0].Name := 'intro';
+  Result[0].Bars := 4;
+  Result[1].Name := 'verse';
+  Result[1].Bars := 8;
+  Result[2].Name := 'chorus';
+  Result[2].Bars := 8;
+  Result[3].Name := 'verse';
+  Result[3].Bars := 8;
+  Result[4].Name := 'chorus';
+  Result[4].Bars := 8;
+  Result[5].Name := 'bridge';
+  Result[5].Bars := 4;
+  Result[6].Name := 'outro';
+  Result[6].Bars := 8;
 end;
 
 function TDrumGenerator.CreateSongV2(const Genre, Style: string; ATempo: Integer = 120;
-  const AStructure: TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil): TSong;
-{ Bar-by-bar pattern evolution (Engine V2). */
+  const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil): TSong;
+{ Bar-by-bar pattern evolution (Engine V2). }
 var
   Tempo: Integer;
-  Structure: TArray<TStructureEntry>;
+  Structure: specialize TArray<TStructureEntry>;
   Composer: TComposerV2;
 begin
-  { Resolve tempo. */
+  { Resolve tempo. }
   if ATempo = 0 then
     Tempo := GetDefaultBpm(Genre, Style)
   else
     Tempo := ATempo;
 
-  { Update drum kit / MIDI engine if new kit provided. */
+  { Update drum kit / MIDI engine if new kit provided. }
   if Assigned(ADrumKit) then
   begin
     FDrumKit := ADrumKit;
-    FMidiEngine := TMIDIEngine.Create(FDrumKit);
+    FMidiEngine := TMIDIEngine.Create(480, FDrumKit);
   end;
 
-  { Use default structure if none provided. */
+  { Use default structure if none provided. }
   if (AStructure = nil) or (Length(AStructure) = 0) then
     Structure := GetGenreDefaultStructure(Genre)
   else
     Structure := AStructure;
 
-  { Compose with V2 engine. */
+  { Compose with V2 engine. }
   Composer := TComposerV2.Create(FPluginManager, Random(MaxInt));
   try
     Result := Composer.CreateSong(Genre, Style, Tempo, Structure);
 
-    { Apply genre-aware groove restraints (snare/velocity). */
+    { Apply genre-aware groove restraints (snare/velocity). }
     ApplyGrooveRestraints(Result);
   finally
     Composer.Free;
@@ -428,40 +408,41 @@ begin
 end;
 
 function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer = 120;
-  const AStructure: TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
+  const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   AEngineOverride: string = ''): TSong;
-{ Public entry â€” selects V1 (static) or V2 (bar-by-bar). */
+{ Public entry â€” selects V1 (static) or V2 (bar-by-bar). }
 var
   Engine: string;
   Tempo: Integer;
-  Structure: TArray<TStructureEntry>;
+  Structure: specialize TArray<TStructureEntry>;
   Params: TGenerationParameters;
   SongName: String;
   SectionName: String;
   Bars: Integer;
   Pattern: TPattern;
   Section: TSection;
+  SecIdx: Integer;
   Variations: specialize TList<TPatternVariation>;
   Fills: specialize TList<TFill>;
 begin
-  { Resolve engine. */
+  { Resolve engine. }
   Engine := AEngineOverride;
   if Engine = '' then
     Engine := FComposerEngine;
 
-  { Resolve tempo â€” use genre-aware default when zero. */
+  { Resolve tempo â€” use genre-aware default when zero. }
   Tempo := ATempo;
   if Tempo = 0 then
     Tempo := GetDefaultBpm(Genre, Style);
 
-  { Update drum kit / MIDI engine if new kit provided. */
+  { Update drum kit / MIDI engine if new kit provided. }
   if Assigned(ADrumKit) then
   begin
     FDrumKit := ADrumKit;
-    FMidiEngine := TMIDIEngine.Create(FDrumKit);
+    FMidiEngine := TMIDIEngine.Create(480, FDrumKit);
   end;
 
-  { V2: bar-by-bar evolution (recommended). */
+  { V2: bar-by-bar evolution (recommended). }
   if Engine = 'v2' then
     Exit(CreateSongV2(Genre, Style, Tempo, AStructure, ADrumKit));
 
@@ -469,58 +450,58 @@ begin
   Params := TGenerationParameters.Create(Genre, Style);
   SongName := Genre + '_' + Style + '_song';
   Result := TSong.Create(SongName, Tempo);
-  Result.FGlobalParameters := Params;
+  Result.GlobalParameters := Params;
 
-  { Use default structure if none provided. */
+  { Use default structure if none provided. }
   if (AStructure = nil) or (Length(AStructure) = 0) then
     Structure := GetGenreDefaultStructure(Genre)
   else
     Structure := AStructure;
 
-  for var SecIdx := Low(Structure) to High(Structure) do
+  for SecIdx := Low(Structure) to High(Structure) do
   begin
     SectionName := Structure[SecIdx].Name;
     Bars := Structure[SecIdx].Bars;
 
-    { Generate pattern for this section. */
-    Pattern := GeneratePattern(Genre, SectionName, TDrumKit.Create);
+    { Generate pattern for this section. }
+    Pattern := GeneratePattern(Genre, SectionName, TDrumKit.Create('gm', 10));
     try
       if Assigned(Pattern) then
       begin
         Section := TSection.Create(SectionName, Pattern, Bars);
         Result.Sections.Add(Section);
 
-        { Add variations for high complexity. */
-        if Params.FComplexity > 0.5 then
+        { Add variations for high complexity. }
+        if Params.Complexity > 0.5 then
         begin
           Variations := specialize TList<TPatternVariation>.Create;
           try
             _GenerateVariations(Pattern, Variations, Params);
-            Section.FVariations.AddRange(Variations);
+            Section.Variations.AddRange(Variations);
           finally
             Variations.Free;
           end;
         end;
 
-        { Add fills for this section. */
+        { Add fills for this section. }
         Fills := specialize TList<TFill>.Create;
         try
           _GenerateFills(Genre, Fills, Params);
-          Section.FFills.AddRange(Fills);
+          Section.Fills.AddRange(Fills);
         finally
           Fills.Free;
         end;
       end
       else
       begin
-        { Pattern generation failed â€” create empty section. */
+        { Pattern generation failed â€” create empty section. }
         Section := TSection.Create(SectionName, TPattern.Create(''), Bars);
         Result.Sections.Add(Section);
       end;
     except
       on E: Exception do
         Writeln('[Warning] Failed to generate section "' + SectionName + '": ', E.Message);
-        { Continue with next section. */
+        { Continue with next section. }
     end;
   end;
 end;
@@ -549,11 +530,11 @@ begin
   try
     if not Assigned(FPluginManager) then Exit;
 
-    { Query genre plugin by name. */
+    { Query genre plugin by name. }
     GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
     if not Assigned(GenrePlugin) then Exit;
 
-    { Delegate to genre plugin's pattern generator. */
+    { Delegate to genre plugin's pattern generator. }
     Params := TGenerationParameters.Create(Genre, 'default');
     try
       Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
@@ -567,29 +548,32 @@ begin
 end;
 
 procedure TDrumGenerator._GenerateVariations(const APattern: TPattern; out AResult: specialize TList<TPatternVariation>; const AParams: TGenerationParameters);
+var
+  VarName: string;
 begin
-  { V1 variations â€” simple pattern copy. */
+  { V1 variations â€” simple pattern copy. }
   AResult := specialize TList<TPatternVariation>.Create;
-  
+
   if not Assigned(APattern) then Exit;
-  
-  var VarName := APattern.Name + '_variation';
-  AResult.Add(TPatternVariation.Create('variation', VarName, 1.0));
+
+  VarName := APattern.Name + '_variation';
+  AResult.Add(TPatternVariation.Create(APattern));
 end;
 
 procedure TDrumGenerator._GenerateFills(const Genre: string; out AResult: specialize TList<TFill>; const AParams: TGenerationParameters);
 var
   GenrePlugin: TObject;
+  CommonFills: specialize TList<TFill>;
 begin
-  { V1 fills â€” get common fills from genre plugin. */
+  { V1 fills â€” get common fills from genre plugin. }
   AResult := specialize TList<TFill>.Create;
-  
+
   try
     GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
     if not Assigned(GenrePlugin) then Exit;
-    
-    { Get common fills from genre plugin. */
-    var CommonFills := (GenrePlugin as TGenrePlugin).GetCommonFills;
+
+    { Get common fills from genre plugin. }
+    CommonFills := (GenrePlugin as TGenrePlugin).GetCommonFills;
     if Assigned(CommonFills) and (CommonFills.Count > 0) then
       AResult.AddRange(CommonFills);
   except
@@ -597,5 +581,94 @@ begin
       Writeln('[Warning] _GenerateFills failed: ', E.Message);
   end;
 end;
+
+initialization
+  SetLength(GENRE_ARCHETYPES, 5);
+  GENRE_ARCHETYPES[0].Genre := 'metal';
+  SetLength(GENRE_ARCHETYPES[0].Structure, 8);
+  GENRE_ARCHETYPES[0].Structure[0].Name := 'intro';
+  GENRE_ARCHETYPES[0].Structure[0].Bars := 4;
+  GENRE_ARCHETYPES[0].Structure[1].Name := 'verse';
+  GENRE_ARCHETYPES[0].Structure[1].Bars := 8;
+  GENRE_ARCHETYPES[0].Structure[2].Name := 'chorus';
+  GENRE_ARCHETYPES[0].Structure[2].Bars := 8;
+  GENRE_ARCHETYPES[0].Structure[3].Name := 'verse';
+  GENRE_ARCHETYPES[0].Structure[3].Bars := 8;
+  GENRE_ARCHETYPES[0].Structure[4].Name := 'chorus';
+  GENRE_ARCHETYPES[0].Structure[4].Bars := 8;
+  GENRE_ARCHETYPES[0].Structure[5].Name := 'bridge';
+  GENRE_ARCHETYPES[0].Structure[5].Bars := 4;
+  GENRE_ARCHETYPES[0].Structure[6].Name := 'chorus';
+  GENRE_ARCHETYPES[0].Structure[6].Bars := 8;
+  GENRE_ARCHETYPES[0].Structure[7].Name := 'outro';
+  GENRE_ARCHETYPES[0].Structure[7].Bars := 4;
+
+  GENRE_ARCHETYPES[1].Genre := 'rock';
+  SetLength(GENRE_ARCHETYPES[1].Structure, 8);
+  GENRE_ARCHETYPES[1].Structure[0].Name := 'intro';
+  GENRE_ARCHETYPES[1].Structure[0].Bars := 4;
+  GENRE_ARCHETYPES[1].Structure[1].Name := 'verse';
+  GENRE_ARCHETYPES[1].Structure[1].Bars := 8;
+  GENRE_ARCHETYPES[1].Structure[2].Name := 'chorus';
+  GENRE_ARCHETYPES[1].Structure[2].Bars := 8;
+  GENRE_ARCHETYPES[1].Structure[3].Name := 'verse';
+  GENRE_ARCHETYPES[1].Structure[3].Bars := 8;
+  GENRE_ARCHETYPES[1].Structure[4].Name := 'chorus';
+  GENRE_ARCHETYPES[1].Structure[4].Bars := 8;
+  GENRE_ARCHETYPES[1].Structure[5].Name := 'bridge';
+  GENRE_ARCHETYPES[1].Structure[5].Bars := 4;
+  GENRE_ARCHETYPES[1].Structure[6].Name := 'chorus';
+  GENRE_ARCHETYPES[1].Structure[6].Bars := 8;
+  GENRE_ARCHETYPES[1].Structure[7].Name := 'outro';
+  GENRE_ARCHETYPES[1].Structure[7].Bars := 4;
+
+  GENRE_ARCHETYPES[2].Genre := 'jazz';
+  SetLength(GENRE_ARCHETYPES[2].Structure, 6);
+  GENRE_ARCHETYPES[2].Structure[0].Name := 'intro';
+  GENRE_ARCHETYPES[2].Structure[0].Bars := 4;
+  GENRE_ARCHETYPES[2].Structure[1].Name := 'verse';
+  GENRE_ARCHETYPES[2].Structure[1].Bars := 8;
+  GENRE_ARCHETYPES[2].Structure[2].Name := 'chorus';
+  GENRE_ARCHETYPES[2].Structure[2].Bars := 8;
+  GENRE_ARCHETYPES[2].Structure[3].Name := 'verse';
+  GENRE_ARCHETYPES[2].Structure[3].Bars := 8;
+  GENRE_ARCHETYPES[2].Structure[4].Name := 'chorus';
+  GENRE_ARCHETYPES[2].Structure[4].Bars := 8;
+  GENRE_ARCHETYPES[2].Structure[5].Name := 'outro';
+  GENRE_ARCHETYPES[2].Structure[5].Bars := 4;
+
+  GENRE_ARCHETYPES[3].Genre := 'funk';
+  SetLength(GENRE_ARCHETYPES[3].Structure, 8);
+  GENRE_ARCHETYPES[3].Structure[0].Name := 'intro';
+  GENRE_ARCHETYPES[3].Structure[0].Bars := 4;
+  GENRE_ARCHETYPES[3].Structure[1].Name := 'verse';
+  GENRE_ARCHETYPES[3].Structure[1].Bars := 8;
+  GENRE_ARCHETYPES[3].Structure[2].Name := 'chorus';
+  GENRE_ARCHETYPES[3].Structure[2].Bars := 8;
+  GENRE_ARCHETYPES[3].Structure[3].Name := 'verse';
+  GENRE_ARCHETYPES[3].Structure[3].Bars := 8;
+  GENRE_ARCHETYPES[3].Structure[4].Name := 'chorus';
+  GENRE_ARCHETYPES[3].Structure[4].Bars := 8;
+  GENRE_ARCHETYPES[3].Structure[5].Name := 'bridge';
+  GENRE_ARCHETYPES[3].Structure[5].Bars := 4;
+  GENRE_ARCHETYPES[3].Structure[6].Name := 'chorus';
+  GENRE_ARCHETYPES[3].Structure[6].Bars := 8;
+  GENRE_ARCHETYPES[3].Structure[7].Name := 'outro';
+  GENRE_ARCHETYPES[3].Structure[7].Bars := 4;
+
+  GENRE_ARCHETYPES[4].Genre := 'electronic';
+  SetLength(GENRE_ARCHETYPES[4].Structure, 6);
+  GENRE_ARCHETYPES[4].Structure[0].Name := 'intro';
+  GENRE_ARCHETYPES[4].Structure[0].Bars := 8;
+  GENRE_ARCHETYPES[4].Structure[1].Name := 'verse';
+  GENRE_ARCHETYPES[4].Structure[1].Bars := 8;
+  GENRE_ARCHETYPES[4].Structure[2].Name := 'chorus';
+  GENRE_ARCHETYPES[4].Structure[2].Bars := 8;
+  GENRE_ARCHETYPES[4].Structure[3].Name := 'verse';
+  GENRE_ARCHETYPES[4].Structure[3].Bars := 8;
+  GENRE_ARCHETYPES[4].Structure[4].Name := 'chorus';
+  GENRE_ARCHETYPES[4].Structure[4].Bars := 8;
+  GENRE_ARCHETYPES[4].Structure[5].Name := 'outro';
+  GENRE_ARCHETYPES[4].Structure[5].Bars := 8;
 
 end.
