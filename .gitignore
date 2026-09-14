@@ -8,3 +8,13 @@ src/fix_dg4.py
 src/fix_drumgenerator.py
 src/fix_drumgenerator2.py
 src/fix_pattern.py
+
+# FPC build artifacts
+*.o
+*.ppu
+*.exe
+*.a
+*.so
+*.dylib
+*.dll
+*.lib
