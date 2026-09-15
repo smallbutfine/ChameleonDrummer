@@ -213,13 +213,14 @@ var
 begin
   Result := specialize TDictionary<string, boolean>.Create;
   for Item in Finstruments do
-    Result.Add(Item.Key, true);
+    if not Result.ContainsKey(Item.Key) then
+      Result.Add(Item.Key, true);
 end;
 
 class procedure TInstrumentRegistry.LoadFromTemplate(const ATemplatePath: string);
 var
   TemplatePath, InstName, InstDesc: string;
-  JsonValue, InstrumentsObj: TJSONData;
+  JsonValue, InstrumentsObj, DescVal: TJSONData;
   Instruments, InstObj: TJSONObject;
   Inst: TDrumInstrument;
   Metadata: TStrDict;
@@ -255,12 +256,14 @@ begin
     for I := 0 to Instruments.Count - 1 do
     begin
       InstName := Instruments.Names[I];
-      InstObj := TJSONObject(Instruments.Objects[InstName]);
-      if not Assigned(InstObj) then Continue;  
+      InstObj := Instruments.Objects[InstName];
+      if not Assigned(InstObj) or (InstObj.JsonType <> jtObject) then Continue;
+      InstObj := TJSONObject(InstObj);
       
       InstDesc := '';
-      if Assigned(InstObj) then
-        InstDesc := (InstObj.Find('description') as TJSONString).Value;
+      DescVal := InstObj.Find('description');
+      if Assigned(DescVal) and (DescVal.JsonType = jtString) then
+        InstDesc := DescVal.AsString;
 
       Metadata := TStrDict.Create;
       try
@@ -347,7 +350,12 @@ begin
         try
           JsonValue := GetJSON(FileToStr(FilePath));
           if Assigned(JsonValue) then
-            FLoadedKeymaps.Add(FileStem, JsonValue);
+            try
+              FLoadedKeymaps.Add(FileStem, JsonValue);
+            except
+              on E: Exception do
+                WriteLn('[Warning] Failed to add keymap ' + FileStem + ': ' + E.Message);
+            end;
         except
           on E: Exception do
             WriteLn('[Warning] Failed to load ' + FilePath + ': ' + E.Message);
@@ -648,9 +656,9 @@ begin
     begin
       InstName := Instruments.Names[I];
       InstrumentData := Instruments.Objects[InstName];
-      if Assigned(InstrumentData) then
+      if Assigned(InstrumentData) and (InstrumentData.JsonType = jtObject) then
       begin
-        MidiNoteVal := InstrumentData.Find('midi_note');
+        MidiNoteVal := TJSONObject(InstrumentData).Find('midi_note');
         if (MidiNoteVal <> nil) and (MidiNoteVal.JsonType <> jtNull) then
           CustomMappings.Add(InstName, Integer(MidiNoteVal.AsInteger));
       end;

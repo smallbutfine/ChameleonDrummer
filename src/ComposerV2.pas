@@ -354,9 +354,6 @@ end;
 
 function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
   ARng: TThreadedRandom): TPattern;
-var
-  GrooveCount: Integer;
-  Index: Integer;
 begin
   { Return nil - groove library selection not implemented in this translation. }
   Result := nil;
@@ -414,7 +411,6 @@ var
   SectionName: string;
   Bars: Integer;
   GeneratedBars: specialize TList<TPattern>;
-  GenrePlugin: TGenrePlugin;
   MacroComposer: TMacroComposer;
   BarIndex: Integer;
   IntensityPt: Double;
@@ -437,7 +433,6 @@ var
   OffsetMs: Single;
   JBar: Integer;
   Section: TSection;
-  Offset: Double;
 begin
   { Create generation parameters }
   Params := TGenerationParameters.Create(Genre, Style);
@@ -622,22 +617,22 @@ begin
 
     { Assign curves based on musical context }
     if Pos('intro', SectionName) = 1 then
-      Result.Add(SectionName, Ord(icAscending))
+      Result.AddOrSetValue(SectionName, Ord(icAscending))
     else if (Pos('verse', SectionName) = 1) and (Pos('chorus', PrevSection) = 1) then
-      Result.Add(SectionName, Ord(icDipRise))
+      Result.AddOrSetValue(SectionName, Ord(icDipRise))
     else if Pos('chorus', SectionName) = 1 then
-      Result.Add(SectionName, Ord(icPlateau))
+      Result.AddOrSetValue(SectionName, Ord(icPlateau))
     else if Pos('bridge', SectionName) = 1 then
       if Pos('chorus', NextSection) = 1 then
-        Result.Add(SectionName, Ord(icDipRise))
+        Result.AddOrSetValue(SectionName, Ord(icDipRise))
       else
-        Result.Add(SectionName, Ord(icDescending))
+        Result.AddOrSetValue(SectionName, Ord(icDescending))
     else if Pos('breakdown', SectionName) = 1 then
-      Result.Add(SectionName, Ord(icDipRise))
+      Result.AddOrSetValue(SectionName, Ord(icDipRise))
     else if Pos('outro', SectionName) = 1 then
-      Result.Add(SectionName, Ord(icDescending))
+      Result.AddOrSetValue(SectionName, Ord(icDescending))
     else
-      Result.Add(SectionName, Ord(icPlateau)); { default }
+      Result.AddOrSetValue(SectionName, Ord(icPlateau)); { default }
   end;
 
   SectionNames.Free;

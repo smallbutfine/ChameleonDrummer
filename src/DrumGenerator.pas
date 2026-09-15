@@ -86,10 +86,6 @@ implementation
 { â”€â”€ GetDefaultBpm â€” genre/style-aware default BPM. }
 
 function GetDefaultBpm(const Genre, Style: string): Integer;
-var
-  DefaultTempoMaps: record { Simplified â€” real impl uses bpm_ranges module. }
-    metal: array[0..6] of record Style: string; Tempo: Integer; end;
-  end;
 begin
   { Simplified defaults from the bpm_ranges config. }
   case LowerCase(Genre) of

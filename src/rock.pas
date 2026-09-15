@@ -41,7 +41,7 @@ type
     procedure SetIntensity(AValue: Double);
 
     function GetSectionGrooves: specialize TList<TPattern>;
-    function GetCommonFills: specialize TList<TFill>;
+    function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;

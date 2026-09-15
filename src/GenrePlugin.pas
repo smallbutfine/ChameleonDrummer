@@ -86,12 +86,14 @@ end;
 function TGenrePlugin.GetGenreName: string;
 begin
   { Virtual method — abstract, must be overridden in subclass. }
+  Result := '';
   raise Exception.Create('GetGenreName not implemented.');
 end;
 
 function TGenrePlugin.GetSupportedStyles: TStringArray;
 begin
   Result := nil; { Abstract — must be overridden. }
+  raise Exception.Create('GetSupportedStyles not implemented.');
 end;
 
 procedure TGenrePlugin.SetIntensityProfile(const AProfile: specialize TDictionary<string, Double>);

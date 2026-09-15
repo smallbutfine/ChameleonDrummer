@@ -77,6 +77,7 @@ end;
 
 function TDrummerPlugin.GetDrummerName: string;
 begin
+  Result := '';
   raise Exception.Create('GetDrummerName not implemented.');
 end;
 
