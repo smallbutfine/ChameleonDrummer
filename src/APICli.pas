@@ -162,7 +162,7 @@ procedure TCLIInterface.ShowUsage;
 begin
   Writeln('MIDI Drums Generator - Dynamic MIDI Drum Pattern System');
   Writeln;
-  Writeln('Usage: pascal_midi_drums <command> [options]');
+  Writeln('Usage: chameleondrummer <command> [options]');
   Writeln;
   Writeln('Commands:');
   Writeln('  generate  Generate a complete song (multi-bar pattern)');
@@ -185,10 +185,10 @@ begin
   Writeln('  --list <type>        List: genres, styles, drummers');
   Writeln;
   Writeln('Examples:');
-  Writeln('  pascal_midi_drums generate --genre metal --style doom --tempo 75');
-  Writeln('  pascal_midi_drums generate --genre rock --style classic --drummer bonham --output rock.mid');
-  Writeln('  pascal_midi_drums list genres');
-  Writeln('  pascal_midi_drums list drummers');
+  Writeln('  chameleondrummer generate --genre metal --style doom --tempo 75');
+  Writeln('  chameleondrummer generate --genre rock --style classic --drummer bonham --output rock.mid');
+  Writeln('  chameleondrummer list genres');
+  Writeln('  chameleondrummer list drummers');
 end;
 
 procedure TCLIInterface.HandleGenerate(const Args: TCLIArgs);
@@ -283,7 +283,7 @@ end;
 
 procedure TCLIInterface.HandleInfo;
 begin
-  Writeln('MIDI Drums Generator - Pascal Translation');
+  Writeln('ChameleonDrummer');
   Writeln('========================================');
   Writeln(Format('Available genres: %d', [Length(FPluginRegistry.GetAvailableGenres)]));
   Writeln(Format('Available drummers: %d', [Length(FPluginRegistry.GetAvailableDrummers)]));
