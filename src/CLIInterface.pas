@@ -23,7 +23,7 @@ type
     Humanization: Double;
     Drummer: String;
     OutputFile: String;
-    Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc.)
+    Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc)
     SidecarFile: String;
     SongMapFile: String;
     WriteTimeline: String;
@@ -34,8 +34,8 @@ type
   TCLIInterface = class
   private
     FGenerator: TDrumGenerator;
-    FPluginRegistry: TPluginRegistry;
-    function ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
+    function GetPluginRegistry: PluginRegistry.TPluginRegistry;
+    function ParseArgs(const Args: specialize TArray<string>): TCLIArgs;
     procedure HandleGenerate(const Args: TCLIArgs);
     procedure HandlePattern(const Args: TCLIArgs);
     procedure HandleList(const Args: TCLIArgs);
@@ -49,6 +49,11 @@ type
   end;
 
 implementation
+
+function TCLIInterface.GetPluginRegistry: PluginRegistry.TPluginRegistry;
+begin
+  Result := FGenerator.PluginManager.Registry;
+end;
 
 function TCLIInterface.ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
 var
@@ -135,6 +140,14 @@ var
     else if (Args[I] = 'info') then
     begin
       Result.Command := 'info';
+    end
+    else if (Args[I] = 'list') then
+    begin
+      Result.Command := 'list';
+      { Check for list type as next arg }  
+      Inc(I);
+      if (I <= Length(Args)) then
+        Result.ListType := LowerCase(Args[I]);
     end;
 
     Inc(I);
@@ -144,12 +157,10 @@ end;
 constructor TCLIInterface.Create;
 begin
   FGenerator := TDrumGenerator.Create;
-  FPluginRegistry := TPluginRegistry.Create;
 end;
 
 destructor TCLIInterface.Destroy;
 begin
-  FPluginRegistry.Free;
   FGenerator.Free;
   inherited Destroy;
 end;
@@ -255,7 +266,7 @@ begin
     'genres':
       begin
         Writeln('Available genres:');
-        Genres := FPluginRegistry.GetAvailableGenres;
+        Genres := GetPluginRegistry.GetAvailableGenres;
         for I := 0 to Length(Genres) - 1 do
           Writeln(Format('  - %s', [Genres[I]]));
       end;
@@ -266,7 +277,7 @@ begin
           Writeln('[Error] --genre is required for styles list');
           Exit;
         end;
-        Styles := FPluginRegistry.GetStylesForGenre(Args.Genre);
+        Styles := GetPluginRegistry.GetStylesForGenre(Args.Genre);
         Writeln(Format('Styles for genre "%s":', [Args.Genre]));
         for I := 0 to Length(Styles) - 1 do
           Writeln(Format('  - %s', [Styles[I]]));
@@ -274,7 +285,7 @@ begin
     'drummers':
       begin
         Writeln('Available drummers:');
-        Drummers := FPluginRegistry.GetAvailableDrummers;
+        Drummers := GetPluginRegistry.GetAvailableDrummers;
         for I := 0 to Length(Drummers) - 1 do
           Writeln(Format('  - %s', [Drummers[I]]));
       end;
@@ -287,8 +298,8 @@ procedure TCLIInterface.HandleInfo;
 begin
   Writeln('MIDI Drums Generator - Pascal Translation');
   Writeln('========================================');
-  Writeln(Format('Available genres: %d', [Length(FPluginRegistry.GetAvailableGenres)]));
-  Writeln(Format('Available drummers: %d', [Length(FPluginRegistry.GetAvailableDrummers)]));
+  Writeln(Format('Available genres: %d', [Length(GetPluginRegistry.GetAvailableGenres)]));
+  Writeln(Format('Available drummers: %d', [Length(GetPluginRegistry.GetAvailableDrummers)]));
   Writeln('Keymap directory: midi_drums/mappings/');
 end;
 
