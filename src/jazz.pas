@@ -10,7 +10,8 @@ uses
   patterns_templates,
   Kit,
   generation_parameters,
-  GenrePlugin;
+  GenrePlugin,
+  config_constants;
 
 type
   TJazzContext = record
@@ -41,8 +42,9 @@ type
     procedure SetIntensity(AValue: Double);
 
     function GetSectionGrooves: specialize TList<TPattern>;
- function GetCommonFills: specialize TList<TFill>; override;
+    function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -303,6 +305,30 @@ function TJazzGenrePlugin.HighEnergyTimekeeper(const Section: string; const Para
 begin
   // Jazz uses ride bell for energy
   Result := TInstrumentRegistry.Register('ride_1_bell', 'Ride bell');
+end;
+
+function TJazzGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
+var
+  Composer: TTemplateComposer;
+begin
+  { Generate default jazz pattern using ride swing } 
+  Composer := TTemplateComposer.Create(Section + '_jazz');
+  try
+    if SameText(FStyle, 'swing') or SameText(FStyle, 'bebop') then
+      begin
+        Composer.Add(TSteadyRide.Create);
+        Composer.Add(TJazzRidePattern.Create('swing'));
+      end
+    else if SameText(FStyle, 'fusion') or SameText(FStyle, 'latin') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.7));
+      end
+    else
+      Composer.Add(TSteadyRide.Create);
+    Result := Composer.Build(2, FComplexity);
+  finally
+    Composer.Free;
+  end;
 end;
 
 end.

@@ -10,7 +10,8 @@ uses
   patterns_templates,
   Kit,
   generation_parameters,
-  GenrePlugin;
+  GenrePlugin,
+  config_constants;
 
 type
   TFunkContext = record
@@ -42,6 +43,7 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -298,8 +300,32 @@ end;
 
 function TFunkGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
-  // Funk uses standard ride or cymbal
+  // Funk uses standard ride or crash for high energy
   Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
+end;
+
+function TFunkGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
+var
+  Composer: TTemplateComposer;
+begin
+  { Generate default funk pattern } 
+  Composer := TTemplateComposer.Create(Section + '_funk');
+  try
+    if SameText(FStyle, 'classic') or SameText(FStyle, 'pfunk') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.6));
+        Composer.Add(TFunkGhostNotes.Create('standard'));
+      end
+    else if SameText(FStyle, 'shuffle') or SameText(FStyle, 'new_orleans') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+      end
+    else
+      Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+    Result := Composer.Build(2, FComplexity);
+  finally
+    Composer.Free;
+  end;
 end;
 
 end.

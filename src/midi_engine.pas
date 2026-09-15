@@ -253,7 +253,7 @@ begin
   begin
     for I := 0 to APattern.Beats.Count - 1 do
     begin
-      MIDINote := ADrumKit.GetMIDINote(APattern.Beats[I].Instrument.Name, '');
+      MIDINote := ADrumKit.GetMIDINote(APattern.Beats[I].Instrument.Name, ADrumKit.Name);
 
       if (MIDINote < 0) or (MIDINote > 127) then Continue;
 
@@ -332,7 +332,7 @@ begin
       for LB in LDeduped do
       begin
         if not Assigned(LB.Instrument) then Continue;
-        MIDINote := ADrumKit.GetMIDINote(LB.Instrument.Name, '');
+        MIDINote := ADrumKit.GetMIDINote(LB.Instrument.Name, ADrumKit.Name);
 
         if (MIDINote < 0) or (MIDINote > 127) then Continue;
 

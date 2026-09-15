@@ -10,7 +10,8 @@ uses
   patterns_templates,
   Kit,
   generation_parameters,
-  GenrePlugin;
+  GenrePlugin,
+  config_constants;
 
 type
   TRockContext = record
@@ -43,6 +44,7 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -312,6 +314,29 @@ function TRockGenrePlugin.HighEnergyTimekeeper(const Section: string; const Para
 begin
   // Rock uses standard ride, no china override
   Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
+end;
+
+function TRockGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
+var
+  Builder: TPatternBuilder;
+  I: Integer;
+begin
+  { Generate default rock pattern for the given section } 
+  Builder := TPatternBuilder.Create(Section + '_rock');
+  try
+    { Classic rock basic groove } 
+    for I := 0 to 3 do
+    begin
+      Builder.Kick(I * 1.0, KICK_NORMAL);     // Kick on 1 and 3
+      Builder.Snare(I * 1.0 + 0.5, SNARE_NORMAL); // Snare on 2 and 4
+    end;
+    { Hi-hat eighth notes } 
+    for I := 0 to 7 do
+      Builder.HiHat(I * 0.5, HIHAT_NORMAL);
+    Result := Builder.Build();
+  finally
+    Builder.Free;
+  end;
 end;
 
 end.

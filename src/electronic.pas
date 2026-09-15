@@ -10,7 +10,8 @@ uses
   patterns_templates,
   Kit,
   generation_parameters,
-  GenrePlugin;
+  GenrePlugin,
+  config_constants;
 
 type
   TElectronicContext = record
@@ -42,6 +43,7 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -237,7 +239,30 @@ end;
 
 function TElectronicGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
-  Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
+  Result := TInstrumentRegistry.Register('crash_1_hit', 'Crash 1');
+end;
+
+function TElectronicGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
+var
+  Composer: TTemplateComposer;
+begin
+  { Generate default electronic pattern } 
+  Composer := TTemplateComposer.Create(Section + '_electronic');
+  try
+    if SameText(FStyle, 'house') or SameText(FStyle, 'techno') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.8));
+      end
+    else if SameText(FStyle, 'drum_and_bass') or SameText(FStyle, 'dubstep') then
+      begin
+        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+      end
+    else
+      Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+    Result := Composer.Build(2, FComplexity);
+  finally
+    Composer.Free;
+  end;
 end;
 
 end.

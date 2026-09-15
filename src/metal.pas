@@ -10,7 +10,8 @@ uses
   patterns_templates,
   Kit,
   generation_parameters,
-  GenrePlugin, DrummerPlugin;
+  GenrePlugin, DrummerPlugin,
+  config_constants;
 
 type
   // Context blending for metal styles
@@ -43,7 +44,9 @@ type
 
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
+    function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
     // Flavor rotation helpers
     function GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -330,6 +333,37 @@ begin
   Result := GrooveList;
 end;
 
+function TMetalGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>;
+var
+  GrooveList: specialize TList<TPattern>;
+  BarIdx: Integer;
+begin
+  GrooveList := specialize TList<TPattern>.Create;
+  
+  // Verse grooves (3 per style)
+  for BarIdx := 0 to 2 do
+    GrooveList.Add(GetFlavorVerse(BarIdx));
+
+  // Chorus grooves (2-3 per style)
+  case FStyle of
+    'heavy', 'power', 'doom':
+      begin
+        GrooveList.Add(GetFlavorChorus(0));
+        GrooveList.Add(GetFlavorChorus(1));
+        GrooveList.Add(GetFlavorChorus(2));
+      end;
+  else
+    GrooveList.Add(GetFlavorChorus(0));
+    GrooveList.Add(GetFlavorChorus(1));
+  end;
+
+  // Bridge grooves (2 per style)
+  for BarIdx := 0 to 1 do
+    GrooveList.Add(GetFlavorBridge(BarIdx));
+
+  Result := GrooveList;
+end;
+
 function TMetalGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
@@ -353,6 +387,46 @@ end;
 function TMetalGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   Result := TInstrumentRegistry.Get(GetChinaTimekeeper);
+end;
+
+function TMetalGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
+var
+  Composer: TTemplateComposer;
+  Style: String;
+begin
+  // Read style from parameters (FStyle is set once in constructor, but params override it)
+  if Parameters <> nil then
+    Style := LowerCase(Parameters.Style)
+  else
+    Style := FStyle;
+  
+  { Generate default metal pattern using template system } 
+  Composer := TTemplateComposer.Create(Section + '_metal_' + Style);
+  try
+    if SameText(Style, 'heavy') or SameText(Style, 'power') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+      end
+    else if SameText(Style, 'death') or SameText(Style, 'thrash') then
+      begin
+        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+        Composer.Add(TBlastBeat.Create('traditional', 0.9));
+      end
+    else if SameText(Style, 'doom') then
+      begin
+        // Doom: slow half-time groove with heavy kick on beat 1
+        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+      end
+    else
+      begin
+        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+        Composer.Add(TCrashAccents.Create);
+      end;
+    Result := Composer.Build(2, FComplexity);
+  finally
+    Composer.Free;
+  end;
 end;
 
 end.
