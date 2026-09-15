@@ -1,9 +1,0 @@
-=== TJSONVALUE CLASS (ancestor of TJSONObject) ===
-
-=== TJSONOBJECT CLASS ===
-
-=== INDEXED/DEFAULT PROPERTY in TJSONObject ===
-
-=== Elements/Values KEY ACCESS in TJSONObject ===
-
-=== DONE ===

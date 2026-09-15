@@ -4,7 +4,6 @@
     "description": "Complete AD2 vendor keymap (XLN Audio, June 2021). Source of truth for all drum instruments and articulations.",
     "source": "Addictive Drums 2 Keymap PDF — XLN Audio",
     "instruments": {
-        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": 35, "description": "Snare (brushes only) Closed Soft Tap"},
         "snare_brushes_only_sweep_mute": {"midi_note": 34, "description": "Snare (brushes only) Sweep Mute"},
         "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": 33, "description": "Snare (brushes only) Sweep: Slow Dark Accent"},
         "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": 32, "description": "Snare (brushes only) Sweep: Fast Dark Accent"},

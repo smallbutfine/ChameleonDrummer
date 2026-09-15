@@ -4,7 +4,6 @@
     "description": "Complete EZD3 keymap. All zones mapped from Toontrack's standard mapping documentation.",
     "source": "EZDrummer 3 User Guide / MIDI Mapping Reference — Toontrack",
     "instruments": {
-        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
         "snare_brushes_only_sweep_mute": {"midi_note": null, "description": "Not in EZD3 core kit"},
         "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},
         "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": null, "description": "Not in EZD3 core kit"},

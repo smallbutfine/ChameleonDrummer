@@ -219,7 +219,7 @@ end;
 class procedure TInstrumentRegistry.LoadFromTemplate(const ATemplatePath: string);
 var
   TemplatePath, InstName, InstDesc: string;
-  JsonValue: TJSONData;
+  JsonValue, InstrumentsObj: TJSONData;
   Instruments, InstObj: TJSONObject;
   Inst: TDrumInstrument;
   Metadata: TStrDict;
@@ -240,20 +240,30 @@ begin
   try
     if not Assigned(JsonValue) or (JsonValue.JsonType <> jtObject) then
       raise Exception.Create('Invalid template JSON: expected object');
-    Instruments := (JsonValue as TJSONObject);
+    Instruments := TJSONObject(JsonValue);
+
+    { Get the instruments object }
+    InstrumentsObj := Instruments.Find('instruments');
+    if not Assigned(InstrumentsObj) or (InstrumentsObj.JsonType <> jtObject) then
+      raise Exception.Create('Template must have an "instruments" object');
+    Instruments := TJSONObject(InstrumentsObj);
+
+    { Get the source field }  
+    SourceVal := Instruments.Find('source');
 
     InstName := '';
     for I := 0 to Instruments.Count - 1 do
     begin
       InstName := Instruments.Names[I];
-      InstObj := (Instruments.Elements[InstName] as TJSONObject);
+      InstObj := TJSONObject(Instruments.Objects[InstName]);
+      if not Assigned(InstObj) then Continue;  
+      
       InstDesc := '';
       if Assigned(InstObj) then
         InstDesc := (InstObj.Find('description') as TJSONString).Value;
 
       Metadata := TStrDict.Create;
       try
-        SourceVal := Instruments.Find('source');
         if Assigned(SourceVal) and (SourceVal.JsonType <> jtNull) then
           Metadata.Add('source', SourceVal.AsString);
 
@@ -330,10 +340,18 @@ begin
         FilePath := MappingsDir + DirHandle.Name;
         FileName := ExtractFileName(DirHandle.Name);
         FileStem := ChangeFileExt(FileName, '');
+        
+        if FLoadedKeymaps.ContainsKey(FileStem) then
+          Continue; { Skip duplicate keymap names }    
 
-        JsonValue := GetJSON(FileToStr(FilePath));
-        if Assigned(JsonValue) then
-          FLoadedKeymaps.Add(FileStem, JsonValue);
+        try
+          JsonValue := GetJSON(FileToStr(FilePath));
+          if Assigned(JsonValue) then
+            FLoadedKeymaps.Add(FileStem, JsonValue);
+        except
+          on E: Exception do
+            WriteLn('[Warning] Failed to load ' + FilePath + ': ' + E.Message);
+        end;
       end;
     until FindNext(DirHandle) <> 0;
   finally
@@ -584,20 +602,46 @@ end;
 
 class function TDrumKit.FromKeymapName(const KeymapName: string): TDrumKit;
 var
-  Keymap: TJSONData;
-  Instruments, InstrumentData: TJSONObject;
+  Keymap, InstrumentsObj, NameVal: TJSONData;
+  RootObj, Instruments, InstrumentData: TJSONObject;
   MidiNoteVal: TJSONData;
   CustomMappings: specialize TDictionary<string, Integer>;
   InstName: string;
   I: Integer;
 begin
-  TInstrumentRegistry.EnsureLoaded;
+  try
+    TInstrumentRegistry.EnsureLoaded;
+  except
+    on E: Exception do
+    begin
+      Write('[DrumKit] EnsureLoaded error: ' + E.Message + #13#10);
+      raise;
+    end;
+  end;
 
   Keymap := TKeymapLoader.GetKeymap(KeymapName);
-  if not Assigned(Keymap) or (Keymap.JsonType <> jtObject) then
+  if not Assigned(Keymap) then
     raise Exception.Create('Keymap not found: ' + KeymapName);
 
-  Instruments := (Keymap as TJSONObject);
+  if Keymap.JsonType <> jtObject then
+    raise Exception.CreateFmt('Expected object for keymap %s, got type %d', [KeymapName, Ord(Keymap.JsonType)]);
+
+  try
+    RootObj := TJSONObject(Keymap);
+  except
+    on E: Exception do
+      raise Exception.CreateFmt('Cannot cast keymap to TJSONObject: %s (type=%d)', [E.Message, Ord(Keymap.JsonType)]);
+  end;
+  
+  { Get the instruments object }
+  InstrumentsObj := RootObj.Find('instruments');
+  if not Assigned(InstrumentsObj) or (InstrumentsObj.JsonType <> jtObject) then
+    raise Exception.CreateFmt('Keymap %s must have an "instruments" object', [KeymapName]);
+  Instruments := TJSONObject(InstrumentsObj);
+  
+  { Get the name from root object }  
+  NameVal := RootObj.Find('name');
+  
   CustomMappings := specialize TDictionary<string, Integer>.Create;
   try
     for I := 0 to Instruments.Count - 1 do
@@ -607,17 +651,18 @@ begin
       if Assigned(InstrumentData) then
       begin
         MidiNoteVal := InstrumentData.Find('midi_note');
-      if (MidiNoteVal <> nil) and (MidiNoteVal.JsonType <> jtNull) then
-        CustomMappings.Add(InstName, Integer(MidiNoteVal.AsInteger));
+        if (MidiNoteVal <> nil) and (MidiNoteVal.JsonType <> jtNull) then
+          CustomMappings.Add(InstName, Integer(MidiNoteVal.AsInteger));
       end;
     end;
 
     Result := TDrumKit.Create('', 9);
-    Result.Name := Instruments.Strings['name'];
+    if Assigned(NameVal) and (NameVal.JsonType = jtString) then
+      Result.Name := NameVal.AsString;
     Result.FCustomMappings := CustomMappings;
   except
-    CustomMappings.Free;
-    raise;
+    on E: Exception do
+      raise Exception.CreateFmt('Error in keymap processing (%s): %s', [KeymapName, E.Message]);
   end;
 end;
 
@@ -706,6 +751,6 @@ begin
 end;
 
 initialization
-Initialize;
-
+  TInstrumentRegistry.EnsureLoaded;
+  TKeymapLoader.LoadAll;
 end.
