@@ -5,7 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
   DrummerPlugin, patterns_templates;
 
@@ -35,11 +35,24 @@ end;
 
 function TDeePlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Composer: TTemplateComposer;
+  Beat: TBeat;
+  InstName: string;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_dee');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.8);
+  // Dee style: speed/precision, powerful accents, twisted backbeats
+  Result := APattern.Copy;
+  for Beat in Result.Beats do
+  begin
+    if Assigned(Beat.Instrument) then
+    begin
+      InstName := LowerCase(Beat.Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Beat.Velocity := Min(127, Beat.Velocity + 10)
+      else if Pos('snare', InstName) = 1 then
+        Beat.Velocity := Min(127, Max(85, Beat.Velocity + 12))
+      else if Pos('hihat', InstName) = 1 then
+        Beat.Velocity := Min(95, Beat.Velocity + 3);
+    end;
+  end;
 end;
 
 function TDeePlugin.GetSignatureFills: specialize TList<TFill>;

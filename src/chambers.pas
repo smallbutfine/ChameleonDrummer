@@ -5,7 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
   DrummerPlugin, patterns_templates;
 
@@ -35,11 +35,29 @@ end;
 
 function TChambersPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Composer: TTemplateComposer;
+  Beat: TBeat;
+  InstName: string;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_chambers');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.7);
+  // Chambers style: funk mastery, ghost notes on snare, deep kick pocket
+  Result := APattern.Copy;
+  for Beat in Result.Beats do
+  begin
+    if Assigned(Beat.Instrument) then
+    begin
+      InstName := LowerCase(Beat.Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Beat.Velocity := Min(127, Max(80, Beat.Velocity + 5))
+      else if Pos('snare', InstName) = 1 then
+      begin
+        if Random < 0.35 then
+          Beat.Velocity := Max(35, Beat.Velocity - 30) // Ghost notes
+        else
+          Beat.Velocity := Min(127, Beat.Velocity + 5);
+      end
+      else if Pos('hihat', InstName) = 1 then
+        Beat.Velocity := Min(88, Beat.Velocity - 3); // Pocket-focused HH
+    end;
+  end;
 end;
 
 function TChambersPlugin.GetSignatureFills: specialize TList<TFill>;

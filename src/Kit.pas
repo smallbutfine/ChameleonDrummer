@@ -93,6 +93,7 @@ TDrumKit = class(TObject)
 private
   FVelocityRanges: specialize TDictionary<string, TVelocityRange>;
   FCustomMappings: specialize TDictionary<string, Integer>;
+  FKeymapName: string; // original keymap filename stem used for loading
 public
   Name: string;
   Channel: Integer;
@@ -578,7 +579,8 @@ var
   Note: Integer;
 begin
   if FCustomMappings.TryGetValue(InstrumentName, Note) then Exit(Note);
-  Result := TKeymapLoader.GetMidiNote(InstrumentName, KeymapName);
+  // Use stored keymap name for lookup (not the display Name which comes from JSON)
+  Result := TKeymapLoader.GetMidiNote(InstrumentName, FKeymapName);
 end;
 
 function TDrumKit.GetVelocityRange(const InstrumentType: string): TVelocityRange;
@@ -667,6 +669,8 @@ begin
     Result := TDrumKit.Create('', 9);
     if Assigned(NameVal) and (NameVal.JsonType = jtString) then
       Result.Name := NameVal.AsString;
+    // Store the original keymap filename for MIDI lookups
+    Result.FKeymapName := KeymapName;
     Result.FCustomMappings := CustomMappings;
   except
     on E: Exception do

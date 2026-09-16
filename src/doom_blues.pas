@@ -5,7 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
   DrummerPlugin, patterns_templates;
 
@@ -35,11 +35,29 @@ end;
 
 function TDoomBluesPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Composer: TTemplateComposer;
+  Beat: TBeat;
+  InstName: string;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_doomblues');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.7);
+  // DoomBlues composite: layered Roeder + Porcaro + Chambers techniques
+  Result := APattern.Copy;
+  for Beat in Result.Beats do
+  begin
+    if Assigned(Beat.Instrument) then
+    begin
+      InstName := LowerCase(Beat.Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Beat.Velocity := Min(127, Max(80, Beat.Velocity + 8))
+      else if Pos('snare', InstName) = 1 then
+      begin
+        if Random < 0.3 then
+          Beat.Velocity := Max(45, Beat.Velocity - 20) // Ghost notes
+        else
+          Beat.Velocity := Min(127, Max(75, Beat.Velocity + 8));
+      end
+      else if Pos('hihat', InstName) = 1 then
+        Beat.Velocity := Min(85, Max(50, Beat.Velocity - 5));
+    end;
+  end;
 end;
 
 function TDoomBluesPlugin.GetSignatureFills: specialize TList<TFill>;

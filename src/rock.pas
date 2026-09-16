@@ -299,7 +299,7 @@ end;
 function TRockGenrePlugin.GetCommonFills: specialize TList<TFill>;
 var
   FillList: specialize TList<TFill>;
-  var LFill: TFill;
+  LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
 

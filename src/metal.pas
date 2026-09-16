@@ -30,6 +30,9 @@ type
     FIntensity: Double;
     function GetChinaTimekeeper: String;
     function GetOpenHHCrashVariant(BarIndex: Integer): String;
+    function GetFlavorVerseInternal(BarIndex: Integer; const Style: String): TPattern;
+    function GetFlavorChorusInternal(BarIndex: Integer; const Style: String): TPattern;
+    function GetFlavorBridgeInternal(BarIndex: Integer; const Style: String): TPattern;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -116,14 +119,20 @@ begin
 end;
 
 function TMetalGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
+begin
+  Result := GetFlavorVerseInternal(BarIndex, FStyle);
+end;
+
+function TMetalGenrePlugin.GetFlavorVerseInternal(BarIndex: Integer; const Style: String): TPattern;
 var
   Composer: TTemplateComposer;
   IntensityFactor: Double;
 begin
   IntensityFactor := FIntensity * (0.8 + FComplexity * 0.2);
-  Composer := TTemplateComposer.Create('metal_' + FStyle + '_verse_b' + IntToStr(BarIndex));
+  Composer := TTemplateComposer.Create('metal_' + Style + '_verse_b' + IntToStr(BarIndex));
+  WriteLn('[Metal.GetFlavorVerse] style=' + Style + ', BarIndex=' + IntToStr(BarIndex));
 
-  case FStyle of
+  case Style of
     'heavy':
       begin
         // Classic heavy metal — Sabbath/Iron Maiden style
@@ -173,16 +182,22 @@ begin
   end;
 
   Result := Composer.Build(2, FComplexity);
+  WriteLn('[Metal.GetFlavorVerse] result_beats=' + IntToStr(Result.Beats.Count));
   Composer.Free;
 end;
 
 function TMetalGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
+begin
+  Result := GetFlavorChorusInternal(BarIndex, FStyle);
+end;
+
+function TMetalGenrePlugin.GetFlavorChorusInternal(BarIndex: Integer; const Style: String): TPattern;
 var
   Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('metal_' + FStyle + '_chorus_b' + IntToStr(BarIndex));
+  Composer := TTemplateComposer.Create('metal_' + Style + '_chorus_b' + IntToStr(BarIndex));
 
-  case FStyle of
+  case Style of
     'heavy':
       begin
         // Heavy chorus â€" bigger crash accents
@@ -233,12 +248,17 @@ begin
 end;
 
 function TMetalGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
+begin
+  Result := GetFlavorBridgeInternal(BarIndex, FStyle);
+end;
+
+function TMetalGenrePlugin.GetFlavorBridgeInternal(BarIndex: Integer; const Style: String): TPattern;
 var
   Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('metal_' + FStyle + '_bridge_b' + IntToStr(BarIndex));
+  Composer := TTemplateComposer.Create('metal_' + Style + '_bridge_b' + IntToStr(BarIndex));
 
-  case FStyle of
+  case Style of
     'heavy':
       begin
         // Heavy bridge â€" build up with tom fill
@@ -337,15 +357,22 @@ function TMetalGenrePlugin.GetSectionFlavors(const Section: string; const Parame
 var
   GrooveList: specialize TList<TPattern>;
   BarIdx: Integer;
+  StyleForVerse: String;
 begin
   GrooveList := specialize TList<TPattern>.Create;
   
-  // Verse grooves (3 per style)
+  // Use Parameters.Style when available, otherwise fall back to FStyle
+  if (Parameters <> nil) and (Parameters.Style <> '') then
+    StyleForVerse := LowerCase(Parameters.Style)
+  else
+    StyleForVerse := FStyle;
+
+  // Verse grooves (3 per style) - now uses Parameters.Style
   for BarIdx := 0 to 2 do
-    GrooveList.Add(GetFlavorVerse(BarIdx));
+    GrooveList.Add(GetFlavorVerseInternal(BarIdx, StyleForVerse));
 
   // Chorus grooves (2-3 per style)
-  case FStyle of
+  case StyleForVerse of
     'heavy', 'power', 'doom':
       begin
         GrooveList.Add(GetFlavorChorus(0));

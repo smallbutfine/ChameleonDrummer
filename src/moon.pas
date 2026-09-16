@@ -5,7 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
   DrummerPlugin, patterns_templates;
 
@@ -35,11 +35,24 @@ end;
 
 function TMoonPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Composer: TTemplateComposer;
+  Beat: TBeat;
+  InstName: string;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_moon');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.5);
+  // Moon style: tool-influenced minimal power, spacious grooves
+  Result := APattern.Copy;
+  for Beat in Result.Beats do
+  begin
+    if Assigned(Beat.Instrument) then
+    begin
+      InstName := LowerCase(Beat.Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Beat.Velocity := Min(127, Max(70, Beat.Velocity - 5))
+      else if Pos('snare', InstName) = 1 then
+        Beat.Velocity := Min(110, Max(60, Beat.Velocity + 3))
+      else if Pos('hihat', InstName) = 1 then
+        Beat.Velocity := Min(85, Beat.Velocity - 5); // Minimal touch
+    end;
+  end;
 end;
 
 function TMoonPlugin.GetSignatureFills: specialize TList<TFill>;

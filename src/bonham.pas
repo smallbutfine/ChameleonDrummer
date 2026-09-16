@@ -5,7 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
   DrummerPlugin, patterns_templates;
 
@@ -35,11 +35,28 @@ end;
 
 function TBonhamPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Composer: TTemplateComposer;
+  Beat: TBeat;
+  InstName: string;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_bonham');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.7);
+  // Bonham style: behind-the-beat feel, powerful accents on kick/snare,
+  // slightly reduced hi-hat for "drunk" groove feel
+  Result := APattern.Copy;
+  for Beat in Result.Beats do
+  begin
+    if Assigned(Beat.Instrument) then
+    begin
+      InstName := LowerCase(Beat.Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Beat.Velocity := Min(127, Beat.Velocity + 8)
+      else if (InstName = 'snare') or (InstName = 'snare_sticks') or (InstName = 'snare_open_hit_open_lateral_hit') then
+      begin
+        if Random < 0.4 then
+          Beat.Velocity := Max(50, Beat.Velocity - 15);
+      end
+      else if Pos('hihat', InstName) = 1 then
+        Beat.Velocity := Min(95, Beat.Velocity + 5);
+    end;
+  end;
 end;
 
 function TBonhamPlugin.GetSignatureFills: specialize TList<TFill>;

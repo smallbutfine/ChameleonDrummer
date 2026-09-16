@@ -5,7 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
   DrummerPlugin, patterns_templates;
 
@@ -35,11 +35,24 @@ end;
 
 function TCopelandPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var
-  Composer: TTemplateComposer;
+  Beat: TBeat;
+  InstName: string;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_copeland');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.5);
+  // Copeland style: reggae/ska off-beat, cross-stick snare feel, light touch
+  Result := APattern.Copy;
+  for Beat in Result.Beats do
+  begin
+    if Assigned(Beat.Instrument) then
+    begin
+      InstName := LowerCase(Beat.Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Beat.Velocity := Min(127, Max(60, Beat.Velocity - 10))
+      else if Pos('snare', InstName) = 1 then
+        Beat.Velocity := Min(85, Max(45, Beat.Velocity - 20)) // Cross-stick feel
+      else if Pos('hihat', InstName) = 1 then
+        Beat.Velocity := Min(90, Max(60, Beat.Velocity + 5));
+    end;
+  end;
 end;
 
 function TCopelandPlugin.GetSignatureFills: specialize TList<TFill>;
