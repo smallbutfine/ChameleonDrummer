@@ -37,6 +37,7 @@ TMIDIEngine = class
 
     function ResolveNote(AInstrument: TObject): Integer;
     procedure DedupeBeats(Beats: specialize TList<TBeat>; out DedupedBeats: specialize TList<TBeat>);
+    procedure SortEvents;
 
   public
     constructor Create(ATicksPerBeat: Integer = 480; ADrumKit: TDrumKit = nil);
@@ -51,6 +52,14 @@ TMIDIEngine = class
   end;
 
 implementation
+
+{ Compare function for sorting MIDI events by delta time. }
+function MidiEventCompare(const Left, Right: TMIDIEvent): Integer;
+begin
+  if Left.DeltaTicks < Right.DeltaTicks then Exit(-1);
+  if Left.DeltaTicks > Right.DeltaTicks then Exit(1);
+  Exit(0);
+end;
 
 function IntToBinBE(Value, Bytes: Integer): TByteDynArray;
 var I: Integer;
@@ -139,6 +148,21 @@ begin
     Move(Data[0], Event.Data[0], Length(Data));
 
   FEvents.Add(Event);
+end;
+
+{ Sort all events by delta time (MIDI spec requirement). }
+procedure TMIDIEngine.SortEvents;
+var I, J: Integer;
+  TempEvent: TMIDIEvent;
+begin
+  for I := 0 to FEvents.Count - 2 do
+    for J := I + 1 to FEvents.Count - 1 do
+      if MidiEventCompare(FEvents[I], FEvents[J]) > 0 then
+      begin
+        TempEvent := FEvents[I];
+        FEvents[I] := FEvents[J];
+        FEvents[J] := TempEvent;
+      end;
 end;
 
 procedure TMIDIEngine.WriteTempoMicroSec(MicroSecPerBeat: Cardinal);
@@ -271,7 +295,7 @@ begin
       LNoteOff[1] := Byte(MIDINote);
       LNoteOff[2] := $00;
 
-      AddEvent(0.2, LNoteOff);
+      AddEvent(APattern.Beats[I].Position + 0.2, LNoteOff);
     end;
   end;
 
@@ -281,11 +305,20 @@ begin
   LEndTrack[2] := $00;
   AddEvent(0.0, LEndTrack);
 
-  LDataSize := CalculateDataSize();
-  SetLength(Result, 4 + LDataSize);
+  // Sort events by delta time (MIDI spec requires sorted order)
+  SortEvents;
 
+  LDataSize := CalculateDataSize();
+  // Total = MThd(14) + MTrkHeader(8) + TrackData
+  SetLength(Result, 14 + 4 + LDataSize);
+
+  // Write MThd header (Format 0, 1 track, ticksPerBeat)
+  Result[0] := $4D; Result[1] := $54; Result[2] := $68; Result[3] := $64;  // "MThd"
+  Move(FHeaderData[0], Result[4], 14);  // copy standard header fields
+
+  // Write MTrk header and track data after the MThd
   LHeader[0] := $4D; LHeader[1] := $54; LHeader[2] := $72; LHeader[3] := $6B;
-  Move(LHeader[0], Result[0], 4);
+  Move(LHeader[0], Result[18], 4);
 
   LB := Byte(LDataSize shr 16); Move(LB, Result[4], 1);
   LB := Byte(LDataSize shr 8);  Move(LB, Result[5], 1);
@@ -388,19 +421,27 @@ begin
   LEndTrack[2] := $00;
   AddEvent(0.0, LEndTrack);
 
+  // Sort events by delta time (MIDI spec requires sorted order)
+  SortEvents;
+
   LDataSize := CalculateDataSize();
-  SetLength(Result, 4 + LDataSize);
+  // Total = MThd(14) + MTrkHeader(8) + TrackData
+  SetLength(Result, 22 + LDataSize);
 
+  // Write MThd header (Format 0, 1 track, ticksPerBeat)
+  Result[0] := $4D; Result[1] := $54; Result[2] := $68; Result[3] := $64;
+  Move(FHeaderData[4], Result[4], 10);
+
+  // Write MTrk header and track data after the MThd (at offset 14)
   LHeader[0] := $4D; LHeader[1] := $54; LHeader[2] := $72; LHeader[3] := $6B;
-  Move(LHeader[0], Result[0], 4);
-
-  LByteVal := Byte(LDataSize shr 16); Move(LByteVal, Result[4], 1);
-  LByteVal := Byte(LDataSize shr 8);  Move(LByteVal, Result[5], 1);
-  LByteVal := Byte(LDataSize);        Move(LByteVal, Result[6], 1);
+  Move(LHeader[0], Result[14], 4);
+  LByteVal := Byte(LDataSize shr 16); Move(LByteVal, Result[18], 1);
+  LByteVal := Byte(LDataSize shr 8);  Move(LByteVal, Result[19], 1);
+  LByteVal := Byte(LDataSize);        Move(LByteVal, Result[20], 1);
 
   LTrackBytes := SerializeTrack(LDataSize);
   if Length(LTrackBytes) > 0 then
-    Move(LTrackBytes[0], Result[7], Length(LTrackBytes));
+    Move(LTrackBytes[0], Result[22], Length(LTrackBytes));
 
 //   CloseFile(DebugF);
 end;
