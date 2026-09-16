@@ -101,7 +101,7 @@ public
   constructor Create(const AName: string; AChannel: Integer);
   destructor Destroy; override;
 
-  function GetMidiNote(const InstrumentName, KeymapName: string): Integer;
+  function GetMidiNote(const InstrumentName: string): Integer;
   function GetVelocityRange(const InstrumentType: string): TVelocityRange;
   function RandomizeVelocity(const InstrumentType: string; BaseVelocity: Integer = -1): Integer;
 
@@ -574,12 +574,12 @@ begin
   inherited Destroy;
 end;
 
-function TDrumKit.GetMidiNote(const InstrumentName, KeymapName: string): Integer;
+function TDrumKit.GetMidiNote(const InstrumentName: string): Integer;
 var
   Note: Integer;
 begin
   if FCustomMappings.TryGetValue(InstrumentName, Note) then Exit(Note);
-  // Use stored keymap name for lookup (not the display Name which comes from JSON)
+  // Always use stored keymap filename, never the display Name from JSON
   Result := TKeymapLoader.GetMidiNote(InstrumentName, FKeymapName);
 end;
 

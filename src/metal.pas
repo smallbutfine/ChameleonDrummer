@@ -130,7 +130,6 @@ var
 begin
   IntensityFactor := FIntensity * (0.8 + FComplexity * 0.2);
   Composer := TTemplateComposer.Create('metal_' + Style + '_verse_b' + IntToStr(BarIndex));
-  WriteLn('[Metal.GetFlavorVerse] style=' + Style + ', BarIndex=' + IntToStr(BarIndex));
 
   case Style of
     'heavy':
@@ -182,7 +181,6 @@ begin
   end;
 
   Result := Composer.Build(2, FComplexity);
-  WriteLn('[Metal.GetFlavorVerse] result_beats=' + IntToStr(Result.Beats.Count));
   Composer.Free;
 end;
 

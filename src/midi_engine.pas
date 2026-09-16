@@ -178,28 +178,36 @@ begin
 end;
 
 function TMIDIEngine.CalculateDataSize: Integer;
-var I: Integer;
+var I, DeltaTicks: Integer; PrevPos: Integer;
 begin
   Result := 0;
+  PrevPos := 0;
   for I := 0 to FEvents.Count - 1 do
   begin
-    Inc(Result, Length(EncodeVLQ(FEvents[I].DeltaTicks)));
+    DeltaTicks := FEvents[I].DeltaTicks - PrevPos;
+    if DeltaTicks < 0 then DeltaTicks := 0;
+    Inc(Result, Length(EncodeVLQ(DeltaTicks)));
     Inc(Result, Length(FEvents[I].Data));
+    PrevPos := FEvents[I].DeltaTicks;
   end;
 end;
 
 function TMIDIEngine.SerializeTrack(DataSize: Integer): TByteDynArray;
-var I, VLQLen, Offset: Integer; VLQBuf: TByteDynArray;
+var I, DeltaTicks, VLQLen, Offset: Integer; VLQBuf: TByteDynArray; PrevPos: Integer;
 begin
   SetLength(Result, DataSize);
   Offset := 0;
+  PrevPos := 0;
 
   for I := 0 to FEvents.Count - 1 do
   begin
-    VLQBuf := EncodeVLQ(FEvents[I].DeltaTicks);
+    DeltaTicks := FEvents[I].DeltaTicks - PrevPos;
+    if DeltaTicks < 0 then DeltaTicks := 0;
+    VLQBuf := EncodeVLQ(DeltaTicks);
     VLQLen := Length(VLQBuf);
     Move(VLQBuf[0], Result[Offset], VLQLen);
     Inc(Offset, VLQLen);
+    PrevPos := FEvents[I].DeltaTicks;
 
     if Length(FEvents[I].Data) > 0 then
     begin
@@ -225,7 +233,7 @@ begin
 
   if FDrumKit <> nil then
   begin
-    Note := FDrumKit.GetMidiNote(InstName, KeymapName);
+    Note := FDrumKit.GetMidiNote(InstName);
     Result := Note;
   end;
 end;
@@ -277,21 +285,21 @@ begin
   begin
     for I := 0 to APattern.Beats.Count - 1 do
     begin
-      MIDINote := ADrumKit.GetMIDINote(APattern.Beats[I].Instrument.Name, ADrumKit.Name);
+      MIDINote := ADrumKit.GetMidiNote(APattern.Beats[I].Instrument.Name);
 
       if (MIDINote < 0) or (MIDINote > 127) then Continue;
 
       Vel := Min(Max(APattern.Beats[I].Velocity, 1), 127);
 
       SetLength(LNoteOn, 3);
-      LNoteOn[0] := $9A;
+      LNoteOn[0] := $99; // note-on, MIDI channel 10 (GM drum channel)
       LNoteOn[1] := Byte(MIDINote);
       LNoteOn[2] := Byte(Vel);
 
       AddEvent(APattern.Beats[I].Position, LNoteOn);
 
       SetLength(LNoteOff, 3);
-      LNoteOff[0] := $8A;
+      LNoteOff[0] := $89; // note-off, MIDI channel 10
       LNoteOff[1] := Byte(MIDINote);
       LNoteOff[2] := $00;
 
@@ -316,17 +324,17 @@ begin
   Result[0] := $4D; Result[1] := $54; Result[2] := $68; Result[3] := $64;  // "MThd"
   Move(FHeaderData[0], Result[4], 14);  // copy standard header fields
 
-  // Write MTrk header and track data after the MThd
+  // Write MTrk header and track data after the MThd (at offset 14)
   LHeader[0] := $4D; LHeader[1] := $54; LHeader[2] := $72; LHeader[3] := $6B;
-  Move(LHeader[0], Result[18], 4);
-
-  LB := Byte(LDataSize shr 16); Move(LB, Result[4], 1);
-  LB := Byte(LDataSize shr 8);  Move(LB, Result[5], 1);
-  LB := Byte(LDataSize);        Move(LB, Result[6], 1);
+  Move(LHeader[0], Result[14], 4);
+  LB := Byte(LDataSize shr 24); Move(LB, Result[18], 1);
+  LB := Byte(LDataSize shr 16); Move(LB, Result[19], 1);
+  LB := Byte(LDataSize shr 8);  Move(LB, Result[20], 1);
+  LB := Byte(LDataSize);        Move(LB, Result[21], 1);
 
   LTrackBytes := SerializeTrack(LDataSize);
   if Length(LTrackBytes) > 0 then
-    Move(LTrackBytes[0], Result[7], Length(LTrackBytes));
+    Move(LTrackBytes[0], Result[22], Length(LTrackBytes));
 end;
 
 function TMIDIEngine.SongToBytes(ASong: TSong; ADrumKit: TDrumKit): TBytes;
@@ -375,7 +383,7 @@ begin
       begin
         if Assigned(LPat.Beats[debugJ].Instrument) then
     //       WriteLn(DebugF, '   beat[' + IntToStr(debugJ) + '] name=' + LPat.Beats[debugJ].Instrument.Name +
-    //               ' => midi=' + IntToStr(ADrumKit.GetMidiNote(LPat.Beats[debugJ].Instrument.Name, ADrumKit.Name)))
+    //               ' => midi=' + IntToStr(ADrumKit.GetMidiNote(LPat.Beats[debugJ].Instrument.Name)))
         else
     //       WriteLn(DebugF, '   beat[' + IntToStr(debugJ) + '] instrument is NIL');
       end;
@@ -389,25 +397,25 @@ begin
       for LB in LDeduped do
       begin
         if not Assigned(LB.Instrument) then Continue;
-        MIDINote := ADrumKit.GetMIDINote(LB.Instrument.Name, ADrumKit.Name);
+        MIDINote := ADrumKit.GetMidiNote(LB.Instrument.Name);
 
         if (MIDINote < 0) or (MIDINote > 127) then Continue;
 
         Vel := Min(Max(LB.Velocity, 1), 127);
 
         SetLength(LNoteOn, 3);
-        LNoteOn[0] := $9A;
+        LNoteOn[0] := $99; // note-on, MIDI channel 10 (GM drum channel)
         LNoteOn[1] := Byte(MIDINote);
         LNoteOn[2] := Byte(Vel);
 
         AddEvent(LCumTime + J + LB.Position, LNoteOn);
 
         SetLength(LNoteOff, 3);
-        LNoteOff[0] := $8A;
+        LNoteOff[0] := $89; // note-off, MIDI channel 10
         LNoteOff[1] := Byte(MIDINote);
         LNoteOff[2] := $00;
 
-        AddEvent(Trunc(Round(0.2 * FTicksPerBeat)), LNoteOff);
+        AddEvent(LCumTime + J + LB.Position + 0.2, LNoteOff);
       end;
     end;
 
@@ -435,9 +443,10 @@ begin
   // Write MTrk header and track data after the MThd (at offset 14)
   LHeader[0] := $4D; LHeader[1] := $54; LHeader[2] := $72; LHeader[3] := $6B;
   Move(LHeader[0], Result[14], 4);
-  LByteVal := Byte(LDataSize shr 16); Move(LByteVal, Result[18], 1);
-  LByteVal := Byte(LDataSize shr 8);  Move(LByteVal, Result[19], 1);
-  LByteVal := Byte(LDataSize);        Move(LByteVal, Result[20], 1);
+  LByteVal := Byte(LDataSize shr 24); Move(LByteVal, Result[18], 1);
+  LByteVal := Byte(LDataSize shr 16); Move(LByteVal, Result[19], 1);
+  LByteVal := Byte(LDataSize shr 8);  Move(LByteVal, Result[20], 1);
+  LByteVal := Byte(LDataSize);        Move(LByteVal, Result[21], 1);
 
   LTrackBytes := SerializeTrack(LDataSize);
   if Length(LTrackBytes) > 0 then
