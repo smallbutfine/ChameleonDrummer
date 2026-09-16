@@ -298,7 +298,7 @@ end;
 
 function TMIDIEngine.SongToBytes(ASong: TSong; ADrumKit: TDrumKit): TBytes;
 var I, J, SectionBars, MIDINote, Vel, debugJ: Integer;
-    DebugF: TextFile;
+//      DebugF: TextFile;
     LNoteOn: TByteDynArray; LNoteOff: TByteDynArray; LEndTrack: TByteDynArray;
     LCumTime: Double; LTempoUSec: Cardinal;
     LPat: TPattern; LDeduped: specialize TList<TBeat>; LB: TBeat;
@@ -319,10 +319,10 @@ begin
   if not Assigned(ASong) or not Assigned(ASong.Sections) then Exit;
 
   // Debug output for diagnosis (write to file since console may not work)
-  AssignFile(DebugF, 'midi_debug.txt');
-  Rewrite(DebugF);
-  WriteLn(DebugF, '[MIDI] SongToBytes: sections=' + IntToStr(ASong.Sections.Count));
-  WriteLn(DebugF, '[MIDI] SongToBytes: drumkit.name=' + ADrumKit.Name);
+  // AssignFile(DebugF, 'midi_debug.txt');
+  // Rewrite(DebugF);
+  // WriteLn(DebugF, '[MIDI] SongToBytes: sections=' + IntToStr(ASong.Sections.Count));
+  // WriteLn(DebugF, '[MIDI] SongToBytes: drumkit.name=' + ADrumKit.Name);
 
   for I := 0 to ASong.Sections.Count - 1 do
   begin
@@ -331,20 +331,20 @@ begin
     LPat := ASong.Sections[I].Pattern;
     if not Assigned(LPat) or not Assigned(LPat.Beats) then
     begin
-      WriteLn(DebugF, '[MIDI] Section ' + IntToStr(I) + ': pattern is nil');
+    //   WriteLn(DebugF, '[MIDI] Section ' + IntToStr(I) + ': pattern is nil');
       Continue;
     end;
 
     // Debug: print first 3 beat instrument names and MIDI notes for this section
-    WriteLn(DebugF, '[MIDI] Section ' + IntToStr(I) + ' (' + IntToStr(SectionBars) + ' bars): beats=' + IntToStr(LPat.Beats.Count));
+    // WriteLn(DebugF, '[MIDI] Section ' + IntToStr(I) + ' (' + IntToStr(SectionBars) + ' bars): beats=' + IntToStr(LPat.Beats.Count));
     begin
       for debugJ := 0 to Min(2, LPat.Beats.Count - 1) do
       begin
         if Assigned(LPat.Beats[debugJ].Instrument) then
-          WriteLn(DebugF, '   beat[' + IntToStr(debugJ) + '] name=' + LPat.Beats[debugJ].Instrument.Name + 
-                  ' => midi=' + IntToStr(ADrumKit.GetMidiNote(LPat.Beats[debugJ].Instrument.Name, ADrumKit.Name)))
+    //       WriteLn(DebugF, '   beat[' + IntToStr(debugJ) + '] name=' + LPat.Beats[debugJ].Instrument.Name +
+    //               ' => midi=' + IntToStr(ADrumKit.GetMidiNote(LPat.Beats[debugJ].Instrument.Name, ADrumKit.Name)))
         else
-          WriteLn(DebugF, '   beat[' + IntToStr(debugJ) + '] instrument is NIL');
+    //       WriteLn(DebugF, '   beat[' + IntToStr(debugJ) + '] instrument is NIL');
       end;
     end;
 
@@ -401,8 +401,8 @@ begin
   LTrackBytes := SerializeTrack(LDataSize);
   if Length(LTrackBytes) > 0 then
     Move(LTrackBytes[0], Result[7], Length(LTrackBytes));
-  
-  CloseFile(DebugF);
+
+//   CloseFile(DebugF);
 end;
 
 procedure TMIDIEngine.SavePattern(APattern: TPattern; const AFileName: String; ADrumKit: TDrumKit);

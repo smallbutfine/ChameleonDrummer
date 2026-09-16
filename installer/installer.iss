@@ -24,7 +24,7 @@ WizardStyle=modern
 [Files]
 ; ANPASSUNG: Alle Source-Pfade holen sich die Dateien aus den neuen Unterordnern (..\)
 Source: "..\{#MyExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\mappings\*.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\mappings\*.json"; DestDir: "{app}"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\Readme.txt"; Description: "View Readme (How to use in DAW)"; Flags: postinstall shellexec skipifsilent unchecked

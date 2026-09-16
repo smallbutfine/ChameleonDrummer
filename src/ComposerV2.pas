@@ -735,50 +735,50 @@ var
   Beat: TBeat;
   Offset: Double;
   InstName: string;
-  DebugF: TextFile;
+//  DebugF: TextFile;
 begin
   // Debug output for diagnosis
-  AssignFile(DebugF, 'combine_debug.txt');
-  Rewrite(DebugF);
-  WriteLn(DebugF, '[CombineBarPatterns] input_bars=' + IntToStr(GeneratedBars.Count));
+  //AssignFile(DebugF, 'combine_debug.txt');
+  //Rewrite(DebugF);
+  //WriteLn(DebugF, '[CombineBarPatterns] input_bars=' + IntToStr(GeneratedBars.Count));
   if not Assigned(GeneratedBars) or (GeneratedBars.Count = 0) then
     Exit;
 
   TargetPattern := GeneratedBars[0].Copy;
-  WriteLn(DebugF, '  bar0 beats:');
+  //WriteLn(DebugF, '  bar0 beats:');
   for Beat in GeneratedBars[0].Beats do
   begin
     if Assigned(Beat.Instrument) then
       InstName := Beat.Instrument.Name
     else
       InstName := '(nil)';
-    WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position) + '] name=' + InstName);
+  //  WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position) + '] name=' + InstName);
   end;
 
   for IBeat := 1 to GeneratedBars.Count - 1 do
   begin
     { Add beats from subsequent bars, offsetting positions. }
     Offset := IBeat * TargetPattern.TimeSignature.BeatsPerBar;
-    WriteLn(DebugF, '  bar' + IntToStr(IBeat) + ' beats:');
+  //  WriteLn(DebugF, '  bar' + IntToStr(IBeat) + ' beats:');
     for Beat in GeneratedBars[IBEat].Beats do
     begin
       if Assigned(Beat.Instrument) then
         InstName := Beat.Instrument.Name
       else
         InstName := '(nil)';
-      WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position + Offset) + '] name=' + InstName);
+   //   WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position + Offset) + '] name=' + InstName);
       TargetPattern.AddBeat(Beat.Position + Offset, Beat.Instrument, Beat.Velocity);
     end;
   end;
 
-  WriteLn(DebugF, '  combined beats:');
+//  WriteLn(DebugF, '  combined beats:');
   for Beat in TargetPattern.Beats do
   begin
     if Assigned(Beat.Instrument) then
       InstName := Beat.Instrument.Name
     else
       InstName := '(nil)';
-    WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position) + '] name=' + InstName);
+ //   WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position) + '] name=' + InstName);
   end;
 
   Combined := TargetPattern;

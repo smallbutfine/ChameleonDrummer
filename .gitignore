@@ -22,3 +22,6 @@ src_flat/
 apply_all_composerv2_fixes.py
 check_braces.ps1
 fix_api_mismatches.py
+run_test.bat
+test_song.mid
+src/debug_midi.pas
