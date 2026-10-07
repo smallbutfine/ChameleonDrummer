@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Generics.Collections,
   Pattern, Song,
-  DrumGenerator, MIDIEngine,
+  DrumGenerator, DrumMidiLoader,
   PluginRegistry, Kit;
 
 // ============================================================================

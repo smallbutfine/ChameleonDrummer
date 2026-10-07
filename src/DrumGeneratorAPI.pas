@@ -7,8 +7,8 @@ interface
 uses
   Classes, SysUtils, Generics.Collections,
   Pattern, Song,
-  DrumGenerator, ComposerV2,
-  PluginRegistry, Kit, MIDIEngine;
+  DrumGenerator, ComposerV2, DrumMidiLoader,
+  PluginRegistry, Kit;
 
 // ============================================================================
 // TDrumGeneratorAPI â€” high-level API for MIDI Drums Generator
@@ -16,9 +16,10 @@ uses
 type
   TDrumGeneratorAPI = class
   private
-    FGenerator: TD rumGenerator;
+    FGenerator: TDrumGenerator;
     FPluginRegistry: TPluginRegistry;
-    FMIDIEngine: TMIDIEngine;
+    // FMIDIEngine replaced by DrumMidiLoader (SaveSongToMIDI / SavePatternToMIDI)
+    FKeymapName: string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -51,18 +52,17 @@ type
     // Batch generation
     function BatchGenerate(const ASpecs: TArray<TRecord>; const AOutputDir: String): TArray<String>;
 
-    property Generator: TD rumGenerator read FGenerator;
+    property Generator: TDrumGenerator read FGenerator;
     property PluginRegistry: TPluginRegistry read FPluginRegistry;
-    property MIDIEngine: TMIDIEngine read FMIDIEngine;
   end;
 
 implementation
 
 constructor TDrumGeneratorAPI.Create;
 begin
-  FGenerator := TD rumGenerator.Create;
+  FGenerator := TDrumGenerator.Create;
   FPluginRegistry := TPluginRegistry.Create;
-  FMIDIEngine := TMIDIEngine.Create;
+  FKeymapName := 'gm';
 
   // Auto-discover and register all plugins/keymaps
   FPluginRegistry.AutoDiscoverPlugins;
@@ -70,7 +70,6 @@ end;
 
 destructor TDrumGeneratorAPI.Destroy;
 begin
-  FMIDIEngine.Free;
   FPluginRegistry.Free;
   FGenerator.Free;
   inherited Destroy;
@@ -96,13 +95,13 @@ end;
 
 procedure TDrumGeneratorAPI.SaveAsMIDI(ASong: TSong; const AFileName: String);
 begin
-  FGenerator.ExportMIDI(ASong, AFileName);
+  SaveSongToMIDI(ASong, AFileName, FKeymapName);
 end;
 
 procedure TDrumGeneratorAPI.SavePatternAsMIDI(APattern: TPattern; const AFileName: String;
   ATempo: Integer = 120);
 begin
-  FGenerator.ExportPatternMIDI(APattern, AFileName, ATempo);
+  SavePatternToMIDI(APattern, AFileName, FKeymapName, ATempo);
 end;
 
 function TDrumGeneratorAPI.GetAvailableMappings: TArray<String>;

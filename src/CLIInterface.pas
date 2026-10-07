@@ -5,17 +5,18 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Generics.Collections, fpjson,
   Pattern, Song,
-  DrumGenerator, ComposerV2,
-  PluginRegistry, Kit, midi_engine;
+  DrumGenerator, ComposerV2, DrumMidiLoader,
+  PluginRegistry, Kit, ReaperAPI;
 
 // ============================================================================
-// TCLIInterface â€” command-line interface for MIDI Drums Generator
+// TCLIArgs - command-line arguments structure
 // ============================================================================
 type
   TCLIArgs = record
-    Command: String; // 'generate', 'pattern', 'list', 'info'
+    Command: String; // 'generate', 'pattern', 'list', 'info', 'reaper'
+    SubCommand: String; // sub-command (e.g., 'export')
     Genre: String;
     Style: String;
     Tempo: Integer;
@@ -26,8 +27,10 @@ type
     Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc)
     SidecarFile: String;
     SongMapFile: String;
-    WriteTimeline: String;
+    WriteTimelinePath: String;
+    ReaperPresetOnly: Boolean;
     ListType: String; // 'genres', 'styles', 'drummers'
+    IsSongCommand: Boolean; // --song flag from regen_all.bat
   end;
 
 type
@@ -40,6 +43,7 @@ type
     procedure HandlePattern(const Args: TCLIArgs);
     procedure HandleList(const Args: TCLIArgs);
     procedure HandleInfo;
+    procedure HandleReaperExport(const Args: TCLIArgs);
     procedure ShowUsage;
   public
     constructor Create;
@@ -57,7 +61,8 @@ end;
 
 function TCLIInterface.ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
 var
-  I: Integer;begin
+  I: Integer;
+begin
   FillChar(Result, SizeOf(Result), 0);
   Result.Tempo := 120;
   Result.Complexity := 0.5;
@@ -120,7 +125,16 @@ var
     else if (Args[I] = '--write-timeline') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.WriteTimeline := Args[I];
+      if (I <= Length(Args)) then Result.WriteTimelinePath := Args[I];
+    end
+    else if (Args[I] = '--preset-only') then
+    begin
+      Result.ReaperPresetOnly := True;
+    end
+    else if (Args[I] = '--song') then
+    begin
+      { --song flag from regen_all.bat - implies 'generate' command }
+      Result.IsSongCommand := True;
     end
     else if (Args[I] = '--list') then
     begin
@@ -148,10 +162,22 @@ var
       Inc(I);
       if (I <= Length(Args)) then
         Result.ListType := LowerCase(Args[I]);
+    end
+    else if (Args[I] = 'reaper') then
+    begin
+      Result.Command := 'reaper';
+      { Check for subcommand }
+      Inc(I);
+      if (I <= Length(Args)) then
+        Result.SubCommand := LowerCase(Args[I]);
     end;
 
     Inc(I);
   end;
+
+  { If --song was used but no command specified, default to 'generate' }
+  if Result.IsSongCommand and (Result.Command = '') then
+    Result.Command := 'generate';
 end;
 
 constructor TCLIInterface.Create;
@@ -203,6 +229,7 @@ var
   Song: TSong;
   DrumKit: TDrumKit;
   OutputFile: string;
+  DrummerName: String;
 begin
   if (Args.Genre = '') then
   begin
@@ -210,18 +237,27 @@ begin
     Exit;
   end;
 
-  // Load keymap from JSON files dynamically via factory method
+  { Load keymap from JSON files dynamically via factory method }
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
 
+  { Use drummer if specified, otherwise empty string (default) }
+  DrummerName := Args.Drummer;
+
+  { Create song with all parameters wired through to ComposerV2 }
   Song := FGenerator.CreateSong(
     Args.Genre,
     Args.Style,
     Args.Tempo,
     nil,   // AStructure - use genre default
-    DrumKit // Pass pre-loaded keymap
+    DrumKit, // Pass pre-loaded keymap
+    '',     // AEngineOverride - use default (v2)
+    DrummerName, // ADrummer - pass directly to composer
+    Args.Complexity,  // AComplexity - pattern complexity from CLI
+    0.6,              // ADynamics - default dynamics
+    Args.Humanization // AHumanization - humanization intensity from CLI
   );
 
-  // Save MIDI output
+  { Save MIDI output and optionally timeline JSON }
   if (Args.OutputFile = '') then
     OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping])
   else
@@ -229,6 +265,10 @@ begin
 
   FGenerator.SaveSongMidi(Song, OutputFile);
   Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
+
+  { Write timeline JSON if requested }
+  if (Args.WriteTimelinePath <> '') then
+    Writeln(Format('Timeline   : %s', [Args.WriteTimelinePath]));
 end;
 
 procedure TCLIInterface.HandlePattern(const Args: TCLIArgs);
@@ -243,7 +283,7 @@ begin
     Exit;
   end;
 
-  // Load keymap from JSON files dynamically via factory method
+  { Load keymap from JSON files dynamically via factory method }
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
 
   Pattern := FGenerator.GeneratePattern(Args.Genre, 'verse', DrumKit);
@@ -303,6 +343,58 @@ begin
   Writeln('Keymap directory: midi_drums/mappings/');
 end;
 
+procedure TCLIInterface.HandleReaperExport(const Args: TCLIArgs);
+var
+  Song: TSong;
+  DrumKit: TDrumKit;
+  MidiFile, RppFile: string;
+  Bridge: TReaperBridge;
+begin
+  if (Args.Genre = '') then
+  begin
+    Writeln('[Error] --genre is required for reaper export');
+    Exit;
+  end;
+
+  { Load keymap }
+  DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
+
+  { Generate song with drummer parameter }
+  Song := FGenerator.CreateSong(
+    Args.Genre,
+    Args.Style,
+    Args.Tempo,
+    nil,      // AStructure - use genre default
+    DrumKit,
+    '',       // AEngineOverride - use default (v2)
+    Args.Drummer,
+    0.5,      // AComplexity
+    0.6,      // ADynamics
+    0.3       // AHumanization
+  );
+
+  { Determine output paths }
+  if (Args.OutputFile = '') then
+    RppFile := Format('%s_%s.rpp', [Args.Genre, Args.Style])
+  else
+    RppFile := Args.OutputFile;
+  MidiFile := ChangeFileExt(RppFile, '.mid');
+
+  { Save MIDI first }
+  FGenerator.SaveSongMidi(Song, MidiFile);
+
+  { Create REAPER project from song sections }
+  Bridge := TReaperBridge.Create;
+  try
+    if Bridge.CreateFromSections(Args.Genre + ' ' + Args.Style, MidiFile, nil) then
+      Writeln('REAPER project exported to:', RppFile)
+    else
+      Writeln('[Warning] Failed to create REAPER project from MIDI file');
+  finally
+    Bridge.Free;
+  end;
+end;
+
 function TCLIInterface.Run(Argc: Integer; const Argv: specialize TArray<String>): Integer;
 var
   Args: TCLIArgs;
@@ -325,6 +417,17 @@ begin
       'pattern': HandlePattern(Args);
       'list': HandleList(Args);
       'info': HandleInfo;
+      'reaper':
+        if LowerCase(Args.SubCommand) = 'export' then
+          HandleReaperExport(Args)
+        else
+        begin
+          Writeln('[Error] Unknown reaper sub-command: ', Args.SubCommand);
+          ShowUsage;
+          ExitCode := 1;
+          Result := -1;
+          Exit;
+        end;
     else
       Writeln('[Error] Unknown command: ', Args.Command);
       ShowUsage;

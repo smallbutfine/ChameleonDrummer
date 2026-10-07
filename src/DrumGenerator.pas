@@ -11,10 +11,11 @@ interface
 
 uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
-  time_signature, generation_parameters, ComposerV2, midi_engine,
+  time_signature, generation_parameters, ComposerV2, DrumMidiLoader,
   PluginRegistry, GenrePlugin, Metal, Rock, Jazz, Funk, Electronic, { genre plugins }
     Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
-    Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, doom_blues;{ drummer plugins }
+    Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, doom_blues, { drummer plugins }
+  MidiIO;
 { forward declarations for genres / drummers loaded at runtime }
 
 { â”€â”€ Genre archetypes â€” default song structures per genre. }
@@ -33,7 +34,7 @@ TDrumGenerator = class(TObject)
 private
   FPluginManager: TPluginManager;
   FDrumKit: TDrumKit;
-  FMidiEngine: TMIDIEngine;
+  // MIDIEngine replaced by DrumMidiLoader (MidiIO + MidiParser)
   FComposerEngine: string;
 
   procedure LoadPlugins;
@@ -44,19 +45,22 @@ private
   procedure _GenerateFills(const Genre: string; out AResult: specialize TList<TFill>; const AParams: TGenerationParameters);
 
 public
-  constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar). }
+  constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar, matches Python) }
   destructor Destroy; override;
 
   { â”€â”€ Public API. }
 
   { Create a complete song with bar-by-bar pattern evolution (V2 engine). }
   function CreateSongV2(const Genre, Style: string; ATempo: Integer = 120;
-    const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil): TSong;
+    const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
+    ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
+    AHumanization: Double = 0.5): TSong;
 
-  { Create a complete song â€” selects engine (V1 static or V2 evolution). }
+  { Create a complete song — selects engine (V1 static or V2 evolution). }
   function CreateSong(const Genre, Style: string; ATempo: Integer = 120;
     const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
-    AEngineOverride: string = ''): TSong;
+    AEngineOverride: string = ''; ADrummer: string = ''; AComplexity: Double = 0.5;
+    ADynamics: Double = 0.6; AHumanization: Double = 0.5): TSong;
 
   { Export a Song to a MIDI file. }
   procedure SaveSongMidi(const ASong: TSong; const AOutputPath: string);
@@ -69,7 +73,6 @@ public
 
   property PluginManager: TPluginManager read FPluginManager;
   property DrumKit: TDrumKit read FDrumKit write FDrumKit;
-  property MidiEngine: TMIDIEngine read FMidiEngine;
   property ComposerEngine: string read FComposerEngine write FComposerEngine;
 end;
 
@@ -201,9 +204,8 @@ constructor TDrumGenerator.Create(AComposerEngine: string = 'v2');
 begin
   inherited Create;
   FComposerEngine := AComposerEngine;
-  FPluginManager := TPluginManager.Create;
+  FPluginManager := TPluginManager.Create();
   FDrumKit := TDrumKit.FromKeymapName('gm'); { Default GM keymap. }
-  FMidiEngine := TMIDIEngine.Create(480, FDrumKit);
 
   LoadPlugins;
 end;
@@ -211,7 +213,6 @@ end;
 destructor TDrumGenerator.Destroy;
 begin
   FPluginManager.Free;
-  FMidiEngine.Free;
   inherited Destroy;
 end;
 
@@ -365,7 +366,9 @@ begin
 end;
 
 function TDrumGenerator.CreateSongV2(const Genre, Style: string; ATempo: Integer = 120;
-  const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil): TSong;
+  const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
+  ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
+  AHumanization: Double = 0.5): TSong;
 { Bar-by-bar pattern evolution (Engine V2). }
 var
   Tempo: Integer;
@@ -382,7 +385,6 @@ begin
   if Assigned(ADrumKit) then
   begin
     FDrumKit := ADrumKit;
-    FMidiEngine := TMIDIEngine.Create(480, FDrumKit);
   end;
 
   { Use default structure if none provided. }
@@ -394,7 +396,8 @@ begin
   { Compose with V2 engine. }
   Composer := TComposerV2.Create(FPluginManager, Random(MaxInt));
   try
-    Result := Composer.CreateSong(Genre, Style, Tempo, Structure);
+    Result := Composer.CreateSong(Genre, Style, Tempo, Structure, ADrummer,
+      AComplexity, ADynamics, AHumanization);
 
     { Apply genre-aware groove restraints (snare/velocity). }
     ApplyGrooveRestraints(Result);
@@ -405,7 +408,8 @@ end;
 
 function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer = 120;
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
-  AEngineOverride: string = ''): TSong;
+  AEngineOverride: string = ''; ADrummer: string = ''; AComplexity: Double = 0.5;
+  ADynamics: Double = 0.6; AHumanization: Double = 0.5): TSong;
 { Public entry â€” selects V1 (static) or V2 (bar-by-bar). }
 var
   Engine: string;
@@ -435,12 +439,12 @@ begin
   if Assigned(ADrumKit) then
   begin
     FDrumKit := ADrumKit;
-    FMidiEngine := TMIDIEngine.Create(480, FDrumKit);
   end;
 
-  { V2: bar-by-bar evolution (recommended). }
+  { V2: bar-by-bar evolution (recommended, matches Python default) }
   if Engine = 'v2' then
-    Exit(CreateSongV2(Genre, Style, Tempo, AStructure, ADrumKit));
+    Exit(CreateSongV2(Genre, Style, Tempo, AStructure, ADrumKit, ADrummer,
+      AComplexity, ADynamics, AHumanization));
 
   { â”€â”€ Engine V1: Static pattern reuse â€” per-section pattern generation. â”€â”€ }
   Params := TGenerationParameters.Create(Genre, Style);
@@ -503,15 +507,235 @@ begin
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
+var
+  Events: TMidiEventArray;
+  Section: TSection;
+  EffPattern: TPattern;
+  Beat: TBeat;
+  TickOffset, AbsTick: Int64;
+  PPQ, I: Integer;
+  PrevTempo, PrevTsNum, PrevTsDen: Integer;
+  EffTsNum, EffTsDen, EffTempo: Integer;
+  EffTs: TTimeSignature; { moved from inline var }  
+  EffTs2: TTimeSignature;
+  Fill: TFill;
+  FillStart: Double;
+  DupFound: Boolean;
+  J: Integer;
+  FillDurTicks, DurTicks: Integer;
+  MetaTick, MetaType: Integer;
+  MicroSecs: Cardinal;
+  FS: TFileStream;
+  ItrkPos, EndPos: Int64;
+  TrackSize: Cardinal;
+  I2, J2: Integer; { bubble sort helpers }  
+  TmpEvt: TMidiEvent;
+  PrevT: Int64; { delta-time accumulator }  
+  I3: Integer; { event iteration }
 begin
-  if not Assigned(FMidiEngine) then Exit;
-  FMidiEngine.SaveSong(ASong, AOutputPath, FDrumKit);
+  if ASong.Sections.Count = 0 then Exit;
+  
+  SetLength(Events, 0);
+  TickOffset := 0;
+  PrevTempo := ASong.Tempo;
+  PrevTsNum := ASong.TimeSignature.Numerator;
+  PrevTsDen := ASong.TimeSignature.Denominator;
+
+  for Section in ASong.Sections do
+  begin
+  EffTs := Section.EffectiveTimeSignature(0, ASong.TimeSignature);
+    EffTsNum := EffTs.Numerator;
+    
+    PPQ := 16; { default subdivision }
+    if Assigned(Section.Pattern) and (Section.Pattern.Beats.Count > 0) then
+      PPQ := Section.Pattern.Subdivision;
+      
+    for I := 0 to Section.Bars - 1 do
+    begin
+      EffTempo := Section.EffectiveTempo(I, ASong.Tempo);
+      
+      { Write tempo meta-event if changed }  
+      if EffTempo <> PrevTempo then
+      begin
+        SetLength(Events, Length(Events) + 1); { mark with special tick }
+        Events[High(Events)].DeltaTick := -$10000; { sentinel for tempo }  
+        Events[High(Events)].Status := $51; { set_tempo type }
+        Events[High(Events)].Note := Byte(EffTempo); { store BPM }  
+        Events[High(Events)].Velocity := 0;
+        PrevTempo := EffTempo;
+      end;
+      
+      { Write time signature meta-event if changed }  
+    EffTs2 := Section.EffectiveTimeSignature(I, ASong.TimeSignature);
+      EffTsDen := EffTs2.Denominator;
+      if (EffTsNum <> PrevTsNum) or (EffTsDen <> PrevTsDen) then
+      begin
+        SetLength(Events, Length(Events) + 1); { mark with special tick }  
+        Events[High(Events)].DeltaTick := -$20000; { sentinel for timeSig }
+        Events[High(Events)].Status := $58; { time_signature type }
+        Events[High(Events)].Note := Byte(EffTsNum); { numerator }  
+        Events[High(Events)].Velocity := Byte(Trunc(Log2(EffTsDen))); { denom exponent }
+        PrevTsNum := EffTsNum;
+        PrevTsDen := EffTsDen;
+      end;
+      
+      EffPattern := Section.GetEffectivePattern(I);
+      if not Assigned(EffPattern) or (EffPattern.Beats.Count = 0) then
+      begin
+        Inc(TickOffset, EffTsNum * PPQ);
+        Continue;
+      end;
+      
+      for Beat in EffPattern.Beats do
+      begin
+        AbsTick := TickOffset + Round(Beat.Position * PPQ);
+        
+        { Deduplicate: skip if same note already at this tick }  
+        DupFound := False;
+        for J := Low(Events) to High(Events) do
+          if (Events[J].DeltaTick = AbsTick) and 
+             not (Events[J].Status in [$51, $58]) then { skip meta-sentinels }
+          begin
+            DupFound := True;
+            Break;
+          end;
+        if DupFound then Continue;
+        
+        { Add note_on event with absolute tick }  
+        SetLength(Events, Length(Events) + 1);
+        with Events[High(Events)] do
+        begin
+          DeltaTick := AbsTick; { will be computed as delta later }
+          Status := $99; { channel 10 note-on }
+          Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+          Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
+        end;
+        
+        { Add note_off event with duration }  
+        DurTicks := Max(Round(Min(Beat.Duration, 0.2) * PPQ), 1);
+        SetLength(Events, Length(Events) + 1);
+        with Events[High(Events)] do
+        begin
+          DeltaTick := AbsTick + DurTicks;
+          Status := $89; { channel 10 note-off }  
+          Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+          Velocity := 0;
+        end;
+      end;
+      
+      { Check for fills at section end }
+      if Assigned(ASong.GlobalParameters) then
+      begin
+        Fill := Section.ShouldAddFill(I, ASong.GlobalParameters.FillFrequency);
+        if (Fill <> nil) and (I = Section.Bars - 1) and Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) then
+        begin
+          FillStart := TickOffset + (EffTsNum - 1.0) * PPQ;
+          for Beat in Fill.Pattern.Beats do
+          begin
+            AbsTick := Round(FillStart + Beat.Position * PPQ);
+            DupFound := False;
+            for J := Low(Events) to High(Events) do
+              if (Events[J].DeltaTick = AbsTick) and 
+                 not (Events[J].Status in [$51, $58]) then
+              begin
+                DupFound := True;
+                Break;
+              end;
+            if DupFound then Continue;
+            
+            SetLength(Events, Length(Events) + 1);
+            with Events[High(Events)] do
+            begin
+              DeltaTick := AbsTick;
+              Status := $99;
+              Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+              Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
+            end;
+            
+            FillDurTicks := Max(Round(Min(Beat.Duration, 0.2) * PPQ), 1);
+            SetLength(Events, Length(Events) + 1);
+            with Events[High(Events)] do
+            begin
+              DeltaTick := AbsTick + FillDurTicks;
+              Status := $89;
+              Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+              Velocity := 0;
+            end;
+          end;
+        end;
+      end;  { if GlobalParameters }
+      
+      Inc(TickOffset, EffTsNum * PPQ);
+    end;
+  end;
+  
+  { Sort events by absolute tick (bubble sort) }  
+  if Length(Events) > 1 then begin
+    for I2 := High(Events) downto Low(Events) do
+      for J2 := Low(Events) to I2 - 1 do
+        if Events[J2].DeltaTick > Events[J2 + 1].DeltaTick then begin
+          TmpEvt := Events[J2]; Events[J2] := Events[J2 + 1]; Events[J2 + 1] := TmpEvt;
+        end;
+  end;
+  
+  { Convert from absolute ticks to delta-times for MIDI format }  
+  PrevT := 0;
+  for I3 := Low(Events) to High(Events) do
+  begin
+    Events[I3].DeltaTick := Max(0, Events[I3].DeltaTick - PrevT);
+    PrevT := Events[I3].DeltaTick;
+  end;
+  
+  { Write MIDI using existing SaveMidi }  
+  TMidiIO.SaveMidi(AOutputPath, Events, PPQ, ASong.Tempo);
 end;
 
 procedure TDrumGenerator.SavePatternMidi(const APattern: TPattern; const AOutputPath: string; ATempo: Integer = 120);
+var
+  Events: TMidiEventArray;
+  Beat: TBeat;
+  Tick, AbsTick: Int64;
+i: Integer;
+DurTicks: Integer; { duration in ticks }
+PrevTick: Int64; { delta-time accumulator }
 begin
-  if not Assigned(FMidiEngine) then Exit;
-  FMidiEngine.SavePattern(APattern, AOutputPath, FDrumKit);
+  if not Assigned(APattern) then Exit;
+  SetLength(Events, 0);
+  for Beat in APattern.Beats do
+  begin
+    AbsTick := Round(Beat.Position * APattern.Subdivision);
+    
+    { Add note_on with absolute tick }  
+    SetLength(Events, Length(Events) + 1);
+    with Events[High(Events)] do
+    begin
+      DeltaTick := AbsTick;
+      Status := $99; { channel 10 note-on }
+      Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+      Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
+    end;
+    
+    { Add note_off with duration }  
+    DurTicks := Max(Round(Min(Beat.Duration, 0.2) * APattern.Subdivision), 1);
+    SetLength(Events, Length(Events) + 1);
+    with Events[High(Events)] do
+    begin
+      DeltaTick := AbsTick + DurTicks;
+      Status := $89; { channel 10 note-off }
+      Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+      Velocity := 0;
+    end;
+  end;
+  
+  { Convert from absolute ticks to delta-times for MIDI format }  
+  PrevTick := 0;
+  for i := Low(Events) to High(Events) do
+  begin
+    Events[i].DeltaTick := Max(0, Events[i].DeltaTick - PrevTick);
+    PrevTick := Events[i].DeltaTick;
+  end;
+  
+  TMidiIO.SaveMidi(AOutputPath, Events, APattern.Subdivision, ATempo);
 end;
 
 { â”€â”€ V1 helpers â€” pattern generation, variations, fills. â”€â”€ }

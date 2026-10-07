@@ -5,7 +5,7 @@ unit ReaperRPP;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections;
+  Classes, SysUtils, Generics.Collections, StrUtils;
 
 // ============================================================================
 // TReaperMarker â€” represents a single marker in an .rpp file
@@ -208,7 +208,7 @@ begin
 
     // Write file references
     Output.Add('[File]');
-    Output.Add(Format('f%s', [iLength(BaseName)] + BaseName));
+    Output.Add('f' + BaseName);
 
     // Write markers
     Output.Add('[Markers]');
