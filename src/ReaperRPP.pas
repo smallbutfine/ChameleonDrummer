@@ -233,6 +233,8 @@ begin
     Output.Add('[TempoMap]');
     Output.Add('0 0.000000 75.000000 4 4');
 
+    // Actually write the file
+    Output.SaveToFile(AFilePath);
     Result := True;
   finally
     Output.Free;

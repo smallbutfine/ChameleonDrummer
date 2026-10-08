@@ -419,6 +419,8 @@ begin
     Exit(-1);
 
   Result := MidiNoteVal.AsInteger;
+  if (Result < 0) or (Result > 127) then
+    Exit(-1);
 end;
 
 class function TKeymapLoader.GetAllInstruments: TStrBoolDict;

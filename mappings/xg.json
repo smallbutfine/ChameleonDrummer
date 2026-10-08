@@ -9,7 +9,6 @@
         "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_slow_bright_accent": {"midi_note": null, "description": "Not in XG standard"},
-        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_no_accent": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_short_2": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_short_1": {"midi_note": null, "description": "Not in XG standard"},

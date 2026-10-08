@@ -579,9 +579,8 @@ begin
             DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
         end;
 
-        { Final bar-level modulation (density, complexity, etc.) - DISABLED for Python-equivalent output }
-        { FinalPattern := FBarSelector.GenerateForBar(DrummedPattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars); }
-        FinalPattern := DrummedPattern;
+        { Final bar-level modulation (density, complexity, etc.) }         
+        FinalPattern := FBarSelector.GenerateForBar(DrummedPattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars);
         GeneratedBars.Add(FinalPattern);
       end;
 

@@ -22,6 +22,7 @@ type
     function Snare(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function HiHat(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Tom(AtPos: Double; ATomNum: string): TPatternBuilder; virtual;
+    function Ride(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Build: TPattern; virtual;
   end;
 
@@ -156,6 +157,15 @@ begin
   Key := 'tom_' + ATomNum + '_open_hit';
   Inst := TInstrumentRegistry.Get(Key);
   if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, 100));
+end;
+
+function TPatternBuilder.Ride(AtPos: Double; AVel: Integer): TPatternBuilder;
+var Inst: TDrumInstrument;
+begin
+  Result := Self;
+  // Use ride_1_tip_hit_softer as the standard ride instrument (exists in both GM and AD2)
+  Inst := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, AVel));
 end;
 
 function TPatternBuilder.Build: TPattern;
@@ -306,9 +316,9 @@ function TSteadyRide.Generate(Builder: TPatternBuilder; const Kwargs: specialize
 var I: Integer;
 begin
   Result := Builder;
-  // Steady ride pattern (for jazz/fusion metal bridge)
+  // Steady ride pattern (8th note on ride cymbal for jazz/fusion)
   for I := 0 to 7 do
-    Builder.Hihat(I * 0.5, Trunc(70));
+    Builder.Tom(I * 0.5, 'ride');
 end;
 
 constructor TJazzRidePattern.Create(APatternStyle: string);
@@ -318,9 +328,9 @@ function TJazzRidePattern.Generate(Builder: TPatternBuilder; const Kwargs: speci
 var I: Integer;
 begin
   Result := Builder;
-  // Jazz ride pattern - ride cymbal on quarters
+  // Jazz ride pattern - ride cymbal on quarters (spang-a-lang feel)
   for I := 0 to 3 do
-    Builder.Hihat(I * 1.0, Trunc(75));
+    Builder.Ride(I * 1.0, Trunc(75));
 end;
 
 constructor TFunkGhostNotes.Create(AStyle: string);
@@ -330,7 +340,7 @@ function TFunkGhostNotes.Generate(Builder: TPatternBuilder; const Kwargs: specia
 var I: Integer;
 begin
   Result := Builder;
-  // Funk ghost notes on snare
+  // Funk ghost notes on snare (low velocity eighth-note pattern)
   for I := 0 to 7 do
     Builder.Snare(I * 0.5, Trunc(50));
 end;

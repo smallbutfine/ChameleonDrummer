@@ -251,7 +251,9 @@ begin
   try
     if SameText(FStyle, 'house') or SameText(FStyle, 'techno') then
       begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.8));
+        // House/Techno: four-on-the-floor kick + standard backbeat + tight hihat
+        // Pass custom kick positions for all 4 beats (standard groove only has beats 1+3)
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.25)); { tighter 16th-note hihat }
       end
     else if SameText(FStyle, 'drum_and_bass') or SameText(FStyle, 'dubstep') then
       begin

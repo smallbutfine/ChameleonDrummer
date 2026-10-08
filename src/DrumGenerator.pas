@@ -609,18 +609,19 @@ begin
 
         AbsTick := TickOffset + Round((Beat.Position - Int64(cycle_bar) * EffTsNum) * PPQ);
 
-        { Deduplicate: skip if same note already at this tick }  
+        { Deduplicate: skip only if SAME note already at this tick (not all events). }
         DupFound := False;
+        MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
         for J := Low(Events) to High(Events) do
-          if (Events[J].Tick = AbsTick) and not Events[J].IsMeta then
+          if (Events[J].Tick = AbsTick) and not Events[J].IsMeta and (Events[J].Note = Byte(MidiNote)) then
           begin
             DupFound := True;
             Break;
           end;
         if DupFound then Continue;
 
-        { Add note_on event }  
-        MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+        { Skip beats with unmapped instruments (keymap has no entry). }  
+        if MidiNote < 0 then Continue;
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
         begin
