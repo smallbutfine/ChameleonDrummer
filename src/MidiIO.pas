@@ -5,7 +5,7 @@ unit MidiIO;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Math;
 
 type
   { Erweiterte Drum-Standards für präzises Remapping }
@@ -30,13 +30,12 @@ type
   end;
 
   TMidiIO = class
-  private
+  public
     class function Swap16(val: Word): Word;
     class function Swap32(val: Cardinal): Cardinal;
     class function ReadVLQ(Stream: TStream): Int64;
     class procedure WriteVLQ(Stream: TStream; Value: Int64);
     class procedure SortEvents(var Events: TMidiEventArray);
-  public
     class function LoadMidi(const FileName: string): TMidiLoadResult;
 class procedure SaveMidi(
   const FileName: string; 

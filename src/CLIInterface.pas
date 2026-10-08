@@ -383,13 +383,13 @@ begin
   { Save MIDI first }
   FGenerator.SaveSongMidi(Song, MidiFile);
 
-  { Create REAPER project from song sections }
+  { Create REAPER project from song sections — use CreateFromSong to pass actual data }
   Bridge := TReaperBridge.Create;
   try
-    if Bridge.CreateFromSections(Args.Genre + ' ' + Args.Style, MidiFile, nil) then
+    if Bridge.CreateFromSong(Song, MidiFile) then
       Writeln('REAPER project exported to:', RppFile)
     else
-      Writeln('[Warning] Failed to create REAPER project from MIDI file');
+      Writeln('[Warning] Failed to create REAPER project from song sections');
   finally
     Bridge.Free;
   end;

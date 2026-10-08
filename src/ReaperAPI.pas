@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, fpjson, jsonparser,
-  Song, ReaperRPP;
+  Song, ReaperRPP, time_signature;
 
 // ============================================================================
 // TReaperSection — section definition for REAPER marker/region creation
@@ -64,6 +64,9 @@ type
     // Write resolved timeline JSON for Ardour integration
     function ExportTimelineJSON(const ATimelinePoints: specialize TArray<TReaperTimelinePoint>;
       const AColorGroups: specialize TList<String>; const AOutputPath: String): Boolean;
+
+    // Create REAPER project from a TSong (converts sections internally)
+    function CreateFromSong(const ASong: TSong; const AMIDIFile: String): Boolean;
 
     property Markers: specialize TList<TReaperMarker> read FMarkers;
   end;
@@ -300,9 +303,43 @@ begin
 
     Output.SaveToFile(AOutputPath);
     Result := True;
-  finally
-    Output.Free;
-  end;
+finally
+  Output.Free;
+end;
+end;
+
+function TReaperBridge.CreateFromSong(const ASong: TSong; const AMIDIFile: String): Boolean;
+var
+Sects: specialize TArray<TReaperSection>;
+I: Integer;
+Sec: TSection;
+EffTempo, Num, Denom: Integer;
+EffTs: TTimeSignature;
+begin
+Result := False;
+if not Assigned(ASong) or (ASong.Sections.Count = 0) then Exit;
+
+SetLength(Sects, ASong.Sections.Count);
+for I := Low(Sects) to High(Sects) do
+begin
+  Sec := ASong.Sections[I];
+  Sects[I].Name := Sec.Name;
+  Sects[I].Bars := Sec.Bars;
+  // Get effective tempo (first bar)
+  EffTempo := Sec.EffectiveTempo(0, ASong.Tempo);
+  if EffTempo <= 0 then EffTempo := ASong.Tempo;
+  Sects[I].BPM := EffTempo;
+  // Get time signature
+  EffTs := Sec.EffectiveTimeSignature(0, ASong.TimeSignature);
+  Num := EffTs.Numerator;
+  Denom := EffTs.Denominator;
+  if (Num <= 0) then Num := 4;
+  if (Denom <= 0) then Denom := 4;
+  Sects[I].Num := Num;
+  Sects[I].Denom := Denom;
+end;
+
+Result := CreateFromSections(ASong.Name, AMIDIFile, Sects);
 end;
 
 end.

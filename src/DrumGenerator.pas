@@ -507,187 +507,291 @@ begin
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
+
+{ Internal event record }
+type
+  TSongEvent = packed record
+    Tick: Int64;
+    Note: Byte;
+    Velocity: Byte;
+    IsMeta: Boolean;   { True = tempo/time-sig change, False = note event }
+    TsNum: Byte;       { time signature numerator for meta events }
+    TsDenLog: Byte;    { log2 of denominator for meta events }
+  end;
+
 var
-  Events: TMidiEventArray;
+  EffTsNum, PPQ, _pbars, cycle_bar: Integer;
+  TickOffset, AbsTick, PrevTick: Int64;
+  I, J, I22, J22: Integer;
   Section: TSection;
   EffPattern: TPattern;
   Beat: TBeat;
-  TickOffset, AbsTick: Int64;
-  PPQ, I: Integer;
-  PrevTempo, PrevTsNum, PrevTsDen: Integer;
-  EffTsNum, EffTsDen, EffTempo: Integer;
-  EffTs: TTimeSignature; { moved from inline var }  
-  EffTs2: TTimeSignature;
   Fill: TFill;
-  FillStart: Double;
   DupFound: Boolean;
-  J: Integer;
-  FillDurTicks, DurTicks: Integer;
-  MetaTick, MetaType: Integer;
-  MicroSecs: Cardinal;
+  DurTicks, FillDurTicks: Integer;
+  _max_pos: Double;
+  Events: array of TSongEvent;
   FS: TFileStream;
-  ItrkPos, EndPos: Int64;
-  TrackSize: Cardinal;
-  I2, J2: Integer; { bubble sort helpers }  
-  TmpEvt: TMidiEvent;
-  PrevT: Int64; { delta-time accumulator }  
-  I3: Integer; { event iteration }
+  MicroSecs: Cardinal;
+  b1, b2, b3, TsNumByte, logDen: Byte;
+  MetaByte: Byte; { temp for literal byte writes }
+  TrackStart: Int64;
+  EffTs: TTimeSignature;
+  EffTempo: Integer;
+  MidiNote: Integer;
+  LastSecIdx: Integer;
+  LastSec: TSection;
+  HeaderSize, FormatWord, TrackCount, PPQWord, DummySize, FinalSize: Cardinal;
+  PrevBpm: Integer;
+  TmpEvtRec: TSongEvent;
 begin
-  if ASong.Sections.Count = 0 then Exit;
-  
+  if not Assigned(ASong) or (ASong.Sections.Count = 0) then Exit;
+
   SetLength(Events, 0);
   TickOffset := 0;
-  PrevTempo := ASong.Tempo;
-  PrevTsNum := ASong.TimeSignature.Numerator;
-  PrevTsDen := ASong.TimeSignature.Denominator;
+  PrevBpm := ASong.Tempo;
+
+  { Find last section for initial time signature }  
+  EffTs := ASong.TimeSignature; { default }
+  if ASong.Sections.Count > 0 then
+  begin
+    LastSecIdx := ASong.Sections.Count - 1;
+    LastSec := ASong.Sections[LastSecIdx];
+    EffTs := LastSec.EffectiveTimeSignature(LastSec.Bars - 1, ASong.TimeSignature);
+  end;
 
   for Section in ASong.Sections do
   begin
-  EffTs := Section.EffectiveTimeSignature(0, ASong.TimeSignature);
-    EffTsNum := EffTs.Numerator;
-    
+    EffTsNum := Section.EffectiveTimeSignature(0, ASong.TimeSignature).Numerator;
+    if (EffTsNum <= 0) then EffTsNum := 4;
+
     PPQ := 16; { default subdivision }
     if Assigned(Section.Pattern) and (Section.Pattern.Beats.Count > 0) then
       PPQ := Section.Pattern.Subdivision;
-      
+
     for I := 0 to Section.Bars - 1 do
     begin
+      { Write tempo change if needed }  
       EffTempo := Section.EffectiveTempo(I, ASong.Tempo);
-      
-      { Write tempo meta-event if changed }  
-      if EffTempo <> PrevTempo then
+      if (EffTempo <> PrevBpm) then
       begin
-        SetLength(Events, Length(Events) + 1); { mark with special tick }
-        Events[High(Events)].DeltaTick := -$10000; { sentinel for tempo }  
-        Events[High(Events)].Status := $51; { set_tempo type }
-        Events[High(Events)].Note := Byte(EffTempo); { store BPM }  
-        Events[High(Events)].Velocity := 0;
-        PrevTempo := EffTempo;
+        SetLength(Events, Length(Events) + 1);
+        with Events[High(Events)] do
+        begin
+          Tick := TickOffset;
+          IsMeta := True;
+          Velocity := Byte(EffTempo); { BPM stored in velocity field }
+          TsNum := 0;  
+          TsDenLog := 0;
+        end;
+        PrevBpm := EffTempo;
       end;
-      
-      { Write time signature meta-event if changed }  
-    EffTs2 := Section.EffectiveTimeSignature(I, ASong.TimeSignature);
-      EffTsDen := EffTs2.Denominator;
-      if (EffTsNum <> PrevTsNum) or (EffTsDen <> PrevTsDen) then
-      begin
-        SetLength(Events, Length(Events) + 1); { mark with special tick }  
-        Events[High(Events)].DeltaTick := -$20000; { sentinel for timeSig }
-        Events[High(Events)].Status := $58; { time_signature type }
-        Events[High(Events)].Note := Byte(EffTsNum); { numerator }  
-        Events[High(Events)].Velocity := Byte(Trunc(Log2(EffTsDen))); { denom exponent }
-        PrevTsNum := EffTsNum;
-        PrevTsDen := EffTsDen;
-      end;
-      
+
+      { Multi-bar pattern cycling — mirrors Python _song_to_bytes }  
       EffPattern := Section.GetEffectivePattern(I);
-      if not Assigned(EffPattern) or (EffPattern.Beats.Count = 0) then
+      if Assigned(EffPattern) and (EffPattern.Beats.Count > 0) then
       begin
-        Inc(TickOffset, EffTsNum * PPQ);
-        Continue;
+        _max_pos := -1.0;
+        for Beat in EffPattern.Beats do
+          if Beat.Position > _max_pos then _max_pos := Beat.Position;
+        _pbars := Max(1, Trunc((_max_pos + 1) / EffTsNum));
+      end
+      else begin
+        _pbars := 1;
       end;
-      
+
+      cycle_bar := I mod _pbars;
+
       for Beat in EffPattern.Beats do
       begin
-        AbsTick := TickOffset + Round(Beat.Position * PPQ);
-        
+        if (EffPattern <> nil) and (Trunc(Beat.Position / EffTsNum) <> cycle_bar) then
+          Continue;
+
+        AbsTick := TickOffset + Round((Beat.Position - Int64(cycle_bar) * EffTsNum) * PPQ);
+
         { Deduplicate: skip if same note already at this tick }  
         DupFound := False;
         for J := Low(Events) to High(Events) do
-          if (Events[J].DeltaTick = AbsTick) and 
-             not (Events[J].Status in [$51, $58]) then { skip meta-sentinels }
+          if (Events[J].Tick = AbsTick) and not Events[J].IsMeta then
           begin
             DupFound := True;
             Break;
           end;
         if DupFound then Continue;
-        
-        { Add note_on event with absolute tick }  
+
+        { Add note_on event }  
+        MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
         begin
-          DeltaTick := AbsTick; { will be computed as delta later }
-          Status := $99; { channel 10 note-on }
-          Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+          Tick := AbsTick;
+          Note := Byte(MidiNote);
           Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
+          IsMeta := False;
         end;
-        
-        { Add note_off event with duration }  
+
+        { Add note_off event }  
         DurTicks := Max(Round(Min(Beat.Duration, 0.2) * PPQ), 1);
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
         begin
-          DeltaTick := AbsTick + DurTicks;
-          Status := $89; { channel 10 note-off }  
-          Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
-          Velocity := 0;
+          Tick := AbsTick + DurTicks;
+          Note := Byte(MidiNote);
+          Velocity := 0; { note-off velocity }
+          IsMeta := False;
         end;
       end;
-      
-      { Check for fills at section end }
+
+      { Check for fills at section end }  
       if Assigned(ASong.GlobalParameters) then
       begin
         Fill := Section.ShouldAddFill(I, ASong.GlobalParameters.FillFrequency);
         if (Fill <> nil) and (I = Section.Bars - 1) and Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) then
         begin
-          FillStart := TickOffset + (EffTsNum - 1.0) * PPQ;
           for Beat in Fill.Pattern.Beats do
           begin
-            AbsTick := Round(FillStart + Beat.Position * PPQ);
+            AbsTick := TickOffset + Round((EffTsNum - 1.0 + Beat.Position) * PPQ);
             DupFound := False;
             for J := Low(Events) to High(Events) do
-              if (Events[J].DeltaTick = AbsTick) and 
-                 not (Events[J].Status in [$51, $58]) then
+              if (Events[J].Tick = AbsTick) and not Events[J].IsMeta then
               begin
                 DupFound := True;
                 Break;
               end;
             if DupFound then Continue;
-            
+
             SetLength(Events, Length(Events) + 1);
             with Events[High(Events)] do
             begin
-              DeltaTick := AbsTick;
-              Status := $99;
-              Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+              Tick := AbsTick;
+              Note := Byte(FDrumKit.GetMidiNote(Beat.Instrument.Name));
               Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
+              IsMeta := False;
             end;
-            
+
             FillDurTicks := Max(Round(Min(Beat.Duration, 0.2) * PPQ), 1);
             SetLength(Events, Length(Events) + 1);
             with Events[High(Events)] do
             begin
-              DeltaTick := AbsTick + FillDurTicks;
-              Status := $89;
-              Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+              Tick := AbsTick + FillDurTicks;
+              Note := Byte(FDrumKit.GetMidiNote(Beat.Instrument.Name));
               Velocity := 0;
+              IsMeta := False;
             end;
           end;
         end;
-      end;  { if GlobalParameters }
-      
-      Inc(TickOffset, EffTsNum * PPQ);
+      end; { if GlobalParameters }
+
+      Inc(TickOffset, Int64(EffTsNum) * PPQ);
     end;
   end;
-  
-  { Sort events by absolute tick (bubble sort) }  
-  if Length(Events) > 1 then begin
-    for I2 := High(Events) downto Low(Events) do
-      for J2 := Low(Events) to I2 - 1 do
-        if Events[J2].DeltaTick > Events[J2 + 1].DeltaTick then begin
-          TmpEvt := Events[J2]; Events[J2] := Events[J2 + 1]; Events[J2 + 1] := TmpEvt;
+
+  { Sort all events (notes + meta) by absolute tick }  
+  if Length(Events) > 1 then
+  begin
+    for I22 := High(Events) downto Low(Events) do
+      for J22 := Low(Events) to I22 - 1 do
+        if Events[J22].Tick > Events[J22 + 1].Tick then
+        begin
+          TmpEvtRec := Events[J22];
+          Events[J22] := Events[J22 + 1];
+          Events[J22 + 1] := TmpEvtRec;
         end;
   end;
-  
-  { Convert from absolute ticks to delta-times for MIDI format }  
-  PrevT := 0;
-  for I3 := Low(Events) to High(Events) do
-  begin
-    Events[I3].DeltaTick := Max(0, Events[I3].DeltaTick - PrevT);
-    PrevT := Events[I3].DeltaTick;
+
+  { Write MIDI file directly — proper binary format }  
+  FS := TFileStream.Create(AOutputPath, fmCreate);
+  try
+    { MIDI Header: MThd }  
+    FS.WriteBuffer('MThd', 4);  
+    HeaderSize := TMidiIO.Swap32(6);  
+    FS.WriteBuffer(HeaderSize, 4);  
+    FormatWord := TMidiIO.Swap16(0); { Format 0 }  
+    FS.WriteBuffer(FormatWord, 2);  
+    TrackCount := TMidiIO.Swap16(1); { 1 track }  
+    FS.WriteBuffer(TrackCount, 2);  
+    PPQWord := TMidiIO.Swap16(Word(PPQ));  
+    FS.WriteBuffer(PPQWord, 2);  
+
+    { Track Header: MTrk }  
+    FS.WriteBuffer('MTrk', 4);  
+    TrackStart := FS.Position;
+    DummySize := 0;
+    FS.WriteBuffer(DummySize, 4);
+
+    { Initial set_tempo meta-event at tick 0 }  
+    MicroSecs := 60000000 div ASong.Tempo;
+    b1 := Byte(MicroSecs shr 16);
+    b2 := Byte((MicroSecs shr 8) and $FF);
+    b3 := Byte(MicroSecs and $FF);
+    MetaByte := 0; FS.WriteBuffer(MetaByte, 1); { delta = 0 }  
+    MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
+    MetaByte := $51; FS.WriteBuffer(MetaByte, 1); { set_tempo }  
+    MetaByte := 3; FS.WriteBuffer(MetaByte, 1); { length }
+    FS.WriteBuffer(b1, 1); FS.WriteBuffer(b2, 1); FS.WriteBuffer(b3, 1);
+
+    { Initial time_signature meta-event at tick 0 }  
+    TsNumByte := Byte(EffTs.Numerator);
+    if TsNumByte = 0 then TsNumByte := 4;
+    case EffTs.Denominator of
+      4: logDen := $02;
+      8: logDen := $03;
+      16: logDen := $04;
+    else logDen := $02;
+    end;
+    MetaByte := 0; FS.WriteBuffer(MetaByte, 1); { delta = 0 }
+    MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
+    MetaByte := $58; FS.WriteBuffer(MetaByte, 1); { time_signature }  
+    MetaByte := 4; FS.WriteBuffer(MetaByte, 1); { length }  
+    FS.WriteBuffer(TsNumByte, 1);
+    FS.WriteBuffer(logDen, 1);  
+    MetaByte := 24; FS.WriteBuffer(MetaByte, 1); { clocks per metronome tick }
+    MetaByte := 8; FS.WriteBuffer(MetaByte, 1); { normalized 32nd notes per quarter }
+
+    { Write all sorted events with delta-time encoding }  
+    PrevTick := 0;
+    for I := Low(Events) to High(Events) do
+    begin
+      TMidiIO.WriteVLQ(FS, Events[I].Tick - PrevTick);
+      if Events[I].IsMeta then
+      begin
+        { Tempo change: FF 51 <3-byte microseconds-per-beat> }  
+        MicroSecs := 60000000 div Events[I].Velocity;
+        MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
+        MetaByte := $51; FS.WriteBuffer(MetaByte, 1); 
+        b1 := Byte(MicroSecs shr 16);
+        b2 := Byte((MicroSecs shr 8) and $FF);
+        b3 := Byte(MicroSecs and $FF);
+        MetaByte := 3; FS.WriteBuffer(MetaByte, 1);
+        FS.WriteBuffer(b1, 1); FS.WriteBuffer(b2, 1); FS.WriteBuffer(b3, 1);
+      end
+      else begin
+        { Note event: note-on ($99) or note-off ($89) channel 10 }  
+        if Events[I].Velocity = 0 then
+          MetaByte := $89
+        else
+          MetaByte := $99;
+        FS.WriteBuffer(MetaByte, 1);
+        FS.WriteBuffer(Events[I].Note, 1);
+        FS.WriteBuffer(Events[I].Velocity, 1);
+      end;
+      PrevTick := Events[I].Tick;
+    end;
+
+    { End of Track marker }  
+    MetaByte := 0; FS.WriteBuffer(MetaByte, 1);  
+    MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);  
+    MetaByte := $2F; FS.WriteBuffer(MetaByte, 1);  
+    MetaByte := 0; FS.WriteBuffer(MetaByte, 1);
+
+    { Write track size (we stored dummy above) }  
+    FinalSize := TMidiIO.Swap32(Cardinal(FS.Position - TrackStart - 4));
+    FS.Position := TrackStart;
+    FS.WriteBuffer(FinalSize, 4);
+
+  finally
+    FS.Free;
   end;
-  
-  { Write MIDI using existing SaveMidi }  
-  TMidiIO.SaveMidi(AOutputPath, Events, PPQ, ASong.Tempo);
 end;
 
 procedure TDrumGenerator.SavePatternMidi(const APattern: TPattern; const AOutputPath: string; ATempo: Integer = 120);

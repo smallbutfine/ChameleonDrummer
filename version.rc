@@ -1,6 +1,6 @@
 1 VERSIONINFO
-FILEVERSION 1,0,507,0
-PRODUCTVERSION 1,0,507,0
+FILEVERSION 1,0,509,0
+PRODUCTVERSION 1,0,509,0
 FILEFLAGSMASK 0x3fL
 FILEFLAGS 0x0L
 FILEOS 0x40004L
@@ -13,12 +13,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Martin Haverland\0"
             VALUE "FileDescription", "ChameleonDrummer\0"
-            VALUE "FileVersion", "1.0.507\0"
+            VALUE "FileVersion", "1.0.509\0"
             VALUE "InternalName", "ChameleonDrummer\0"
-            VALUE "LegalCopyright", "Copyright \251 20261006200320.928000+120 Martin Haverland\0"
+            VALUE "LegalCopyright", "Copyright \251 20261008074925.925000+120 Martin Haverland\0"
             VALUE "OriginalFilename", "ChameleonDrummer.exe\0"
             VALUE "ProductName", "ChameleonDrummer\0"
-            VALUE "ProductVersion", "1.0.507\0"
+            VALUE "ProductVersion", "1.0.509\0"
         END
     END
     BLOCK "VarFileInfo"
