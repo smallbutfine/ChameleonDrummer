@@ -149,6 +149,7 @@ end;
 
 destructor TFill.Destroy;
 begin
+  FPattern.Free;
   inherited Destroy;
 end;
 
