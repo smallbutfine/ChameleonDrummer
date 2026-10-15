@@ -27,3 +27,4 @@ test_song.mid
 src/debug_midi.pas
 reaper_test/
 nul
+regen_all_debug.bat
