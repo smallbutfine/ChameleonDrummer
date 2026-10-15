@@ -137,7 +137,7 @@ function TPatternBuilder.Snare(AtPos: Double; AVel: Integer): TPatternBuilder;
 var Inst: TDrumInstrument;
 begin
   Result := Self;
-  Inst := TInstrumentRegistry.Get('snare_sticks');
+  Inst := TInstrumentRegistry.Get('snare_open_hit_open_lateral_hit');
   if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, AVel));
 end;
 

@@ -440,7 +440,7 @@ begin
   except
     on E: Exception do
     begin
-      Writeln('[Error] ', E.Message);
+      Writeln('[Error] ', E.ClassName, ': ', E.Message);
       ExitCode := 2;
       Result := -2;
     end;
