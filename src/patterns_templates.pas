@@ -200,7 +200,7 @@ destructor TBasicGroove.Destroy;
 begin
   KickPositions.Free;
   SnarePositions.Free;
-  OpenHiHatPositions.Free;
+  if Assigned(OpenHiHatPositions) then OpenHiHatPositions.Free;
   inherited Destroy;
 end;
 
