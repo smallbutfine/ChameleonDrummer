@@ -674,7 +674,10 @@ begin
     Result.FCustomMappings := CustomMappings;
   except
     on E: Exception do
+    begin
+      CustomMappings.Free;
       raise Exception.CreateFmt('Error in keymap processing (%s): %s', [KeymapName, E.Message]);
+    end;
   end;
 end;
 
