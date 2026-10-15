@@ -11,14 +11,14 @@ interface
 
 uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
-  time_signature, generation_parameters, ComposerV2, DrumMidiLoader,
+  time_signature, generation_parameters, ComposerV2,
   PluginRegistry, GenrePlugin, Metal, Rock, Jazz, Funk, Electronic, { genre plugins }
     Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
     Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, doom_blues, { drummer plugins }
   MidiIO;
 { forward declarations for genres / drummers loaded at runtime }
 
-{ â”€â”€ Genre archetypes â€” default song structures per genre. }
+{  Genre archetypes default song structures per genre. }
 
 type
   { Use ComposerV2's TSectionDef everywhere for compatibility }
@@ -48,7 +48,7 @@ public
   constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar, matches Python) }
   destructor Destroy; override;
 
-  { â”€â”€ Public API. }
+  {  Public API. }
 
   { Create a complete song with bar-by-bar pattern evolution (V2 engine). }
   function CreateSongV2(const Genre, Style: string; ATempo: Integer = 120;
@@ -76,7 +76,7 @@ public
   property ComposerEngine: string read FComposerEngine write FComposerEngine;
 end;
 
-{ â”€â”€ Genre-aware BPM defaults. }
+{  Genre-aware BPM defaults. }
 
 function GetDefaultBpm(const Genre, Style: string): Integer;
 
@@ -86,7 +86,7 @@ procedure ApplyGrooveRestraints(Song: TSong);
 implementation
 
 
-{ â”€â”€ GetDefaultBpm â€” genre/style-aware default BPM. }
+{  GetDefaultBpm  genre/style-aware default BPM. }
 
 function GetDefaultBpm(const Genre, Style: string): Integer;
 begin
@@ -148,7 +148,7 @@ begin
   end;
 end;
 
-{ â”€â”€ ApplyGrooveRestraints â€” per-genre velocity adjustments for musicality. }
+{  ApplyGrooveRestraints per-genre velocity adjustments for musicality. }
 
 procedure ApplyGrooveRestraints(Song: TSong);
 var
@@ -198,7 +198,7 @@ begin
   end;
 end;
 
-{ â”€â”€ TDrumGenerator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
+{ TDrumGenerator }
 
 constructor TDrumGenerator.Create(AComposerEngine: string = 'v2');
 begin
@@ -222,16 +222,16 @@ var
   PD: specialize TArray<string>; { Pref Drummers }
   DG: specialize TArray<string>; { Drummer Genres }
 begin
-  { â”€â”€ Register genre plugins â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€}
+  {  Register genre plugins }
 
-  { Metal â€” 7 styles, drummers: hoglan, peart, dee, rich, haake }
+  { Metal  7 styles, drummers: hoglan, peart, dee, rich, haake }
   SetLength(GS, 7); GS[0] := 'heavy'; GS[1] := 'death'; GS[2] := 'power';
   GS[3] := 'progressive'; GS[4] := 'thrash'; GS[5] := 'doom'; GS[6] := 'breakdown';
   SetLength(PD, 5); PD[0] := 'hoglan'; PD[1] := 'peart'; PD[2] := 'dee';
   PD[3] := 'rich'; PD[4] := 'haake';
   FPluginManager.Registry.RegisterGenrePlugin('metal', TMetalGenrePlugin.Create, GS, PD);
 
-  { Rock â€” 7 styles, drummers: bonham, porcaro, copeland }
+  { Rock 7 styles, drummers: bonham, porcaro, copeland }
   SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'classic'; GS[1] := 'blues';
   GS[2] := 'alternative'; GS[3] := 'progressive'; GS[4] := 'punk';
   GS[5] := 'hard'; GS[6] := 'pop';
@@ -239,73 +239,73 @@ begin
   PD[1] := 'porcaro'; PD[2] := 'copeland';
   FPluginManager.Registry.RegisterGenrePlugin('rock', TRockGenrePlugin.Create, GS, PD);
 
-  { Jazz â€” 7 styles, drummers: weckl, halpern }
+  { Jazz  7 styles, drummers: weckl, halpern }
   SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'swing'; GS[1] := 'bebop';
   GS[2] := 'fusion'; GS[3] := 'latin'; GS[4] := 'ballad';
   GS[5] := 'hard_bop'; GS[6] := 'contemporary';
   SetLength(PD, 0); SetLength(PD, 2); PD[0] := 'weckl'; PD[1] := 'halpern';
   FPluginManager.Registry.RegisterGenrePlugin('jazz', TJazzGenrePlugin.Create, GS, PD);
 
-  { Funk â€” 7 styles, drummers: chambers, porcaro }
+  { Funk  7 styles, drummers: chambers, porcaro }
   SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'classic'; GS[1] := 'pfunk';
   GS[2] := 'shuffle'; GS[3] := 'new_orleans'; GS[4] := 'fusion';
   GS[5] := 'minimal'; GS[6] := 'heavy';
   SetLength(PD, 0); SetLength(PD, 2); PD[0] := 'chambers'; PD[1] := 'porcaro';
   FPluginManager.Registry.RegisterGenrePlugin('funk', TFunkGenrePlugin.Create, GS, PD);
 
-  { Electronic â€” 4 styles, no preferred drummers }
+  { Electronic  4 styles, no preferred drummers }
   SetLength(GS, 0); SetLength(GS, 4); GS[0] := 'house'; GS[1] := 'techno';
   GS[2] := 'drum_and_bass'; GS[3] := 'dubstep';
   FPluginManager.Registry.RegisterGenrePlugin('electronic', TElectronicGenrePlugin.Create, GS, []);
 
-  { â”€â”€ Register drummer plugins â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€}
+  {  Register drummer plugins }
   SetLength(DG, 0);
 
-  { bonham â€” rock, metal, blues }
+  { bonham  rock, metal, blues }
   SetLength(DG, 3); DG[0] := 'rock'; DG[1] := 'metal'; DG[2] := 'blues';
   FPluginManager.Registry.RegisterDrummerPlugin('bonham', TBonhamPlugin.Create, DG);
 
-  { porcaro â€” rock, funk }
+  { porcaro  rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
   FPluginManager.Registry.RegisterDrummerPlugin('porcaro', TPorcaroPlugin.Create, DG);
 
-  { weckl â€” jazz, funk }
+  { weckl  jazz, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'funk';
   FPluginManager.Registry.RegisterDrummerPlugin('weckl', TWecklPlugin.Create, DG);
 
-  { chambers â€” funk, rock }
+  { chambers  funk, rock }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'funk'; DG[1] := 'rock';
   FPluginManager.Registry.RegisterDrummerPlugin('chambers', TChambersPlugin.Create, DG);
 
-  { roeder â€” metal }
+  { roeder metal }
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('roeder', TRoederPlugin.Create, DG);
 
-  { dee â€” metal, rock }
+  { dee metal, rock }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'rock';
   FPluginManager.Registry.RegisterDrummerPlugin('dee', TDeePlugin.Create, DG);
 
-  { hoglan â€” metal }
+  { hoglan metal }
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('hoglan', THoglanPlugin.Create, DG);
 
-  { peart â€” metal, rock }
+  { peart  metal, rock }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'rock';
   FPluginManager.Registry.RegisterDrummerPlugin('peart', TPeartPlugin.Create, DG);
 
-  { rich â€” jazz, rock }
+  { rich  jazz, rock }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'rock';
   FPluginManager.Registry.RegisterDrummerPlugin('rich', TRichPlugin.Create, DG);
 
-  { copeland â€” rock, funk }
+  { copeland  rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
   FPluginManager.Registry.RegisterDrummerPlugin('copeland', TCopelandPlugin.Create, DG);
 
-  { carey â€” metal }
+  { carey  metal }
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('carey', TCareyPlugin.Create, DG);
 
-  { smith â€” rock, funk }
+  { smith  rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
   FPluginManager.Registry.RegisterDrummerPlugin('smith', TSmithPlugin.Create, DG);
 
@@ -313,19 +313,19 @@ begin
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('moon', TMoonPlugin.Create, DG);
 
-  { watts â€” rock, funk }
+  { watts  rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
   FPluginManager.Registry.RegisterDrummerPlugin('watts', TWattsPlugin.Create, DG);
 
-  { haake â€” metal }
+  { haake  metal }
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('haake', THaakePlugin.Create, DG);
 
-  { halpern â€” jazz, metal }
+  { halpern  jazz, metal }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('halpern', THalpernPlugin.Create, DG);
 
-  { doomblues â€” metal }
+  { doomblues  metal }
   SetLength(DG, 0); SetLength(DG, 1); DG[0] := 'metal';
   FPluginManager.Registry.RegisterDrummerPlugin('doomblues', TDoomBluesPlugin.Create, DG);
 end;
@@ -410,7 +410,7 @@ function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer =
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   AEngineOverride: string = ''; ADrummer: string = ''; AComplexity: Double = 0.5;
   ADynamics: Double = 0.6; AHumanization: Double = 0.5): TSong;
-{ Public entry â€” selects V1 (static) or V2 (bar-by-bar). }
+{ Public entry  selects V1 (static) or V2 (bar-by-bar). }
 var
   Engine: string;
   Tempo: Integer;
@@ -430,7 +430,7 @@ begin
   if Engine = '' then
     Engine := FComposerEngine;
 
-  { Resolve tempo â€” use genre-aware default when zero. }
+  { Resolve tempo  use genre-aware default when zero. }
   Tempo := ATempo;
   if Tempo = 0 then
     Tempo := GetDefaultBpm(Genre, Style);
@@ -446,7 +446,7 @@ begin
     Exit(CreateSongV2(Genre, Style, Tempo, AStructure, ADrumKit, ADrummer,
       AComplexity, ADynamics, AHumanization));
 
-  { â”€â”€ Engine V1: Static pattern reuse â€” per-section pattern generation. â”€â”€ }
+  {  Engine V1: Static pattern reuse  per-section pattern generation. â”€â”€ }
   Params := TGenerationParameters.Create(Genre, Style);
   SongName := Genre + '_' + Style + '_song';
   Result := TSong.Create(SongName, Tempo);
@@ -494,7 +494,7 @@ begin
       end
       else
       begin
-        { Pattern generation failed â€” create empty section. }
+        { Pattern generation failed  create empty section. }
         Section := TSection.Create(SectionName, TPattern.Create(''), Bars);
         Result.Sections.Add(Section);
       end;
@@ -551,7 +551,7 @@ begin
   TickOffset := 0;
   PrevBpm := ASong.Tempo;
 
-  { Find last section for initial time signature }  
+  { Find last section for initial time signature }
   EffTs := ASong.TimeSignature; { default }
   if ASong.Sections.Count > 0 then
   begin
@@ -571,7 +571,7 @@ begin
 
     for I := 0 to Section.Bars - 1 do
     begin
-      { Write tempo change if needed }  
+      { Write tempo change if needed }
       EffTempo := Section.EffectiveTempo(I, ASong.Tempo);
       if (EffTempo <> PrevBpm) then
       begin
@@ -581,13 +581,13 @@ begin
           Tick := TickOffset;
           IsMeta := True;
           Velocity := Byte(EffTempo); { BPM stored in velocity field }
-          TsNum := 0;  
+          TsNum := 0;
           TsDenLog := 0;
         end;
         PrevBpm := EffTempo;
       end;
 
-      { Multi-bar pattern cycling — mirrors Python _song_to_bytes }  
+      { Multi-bar pattern cycling — mirrors Python _song_to_bytes }
       EffPattern := Section.GetEffectivePattern(I);
       if Assigned(EffPattern) and (EffPattern.Beats.Count > 0) then
       begin
@@ -609,7 +609,7 @@ begin
 
         AbsTick := TickOffset + Round((Beat.Position - Int64(cycle_bar) * EffTsNum) * PPQ);
 
-        { Deduplicate: skip if same note already at this tick }  
+        { Deduplicate: skip if same note already at this tick }
         DupFound := False;
         for J := Low(Events) to High(Events) do
           if (Events[J].Tick = AbsTick) and not Events[J].IsMeta then
@@ -619,7 +619,7 @@ begin
           end;
         if DupFound then Continue;
 
-        { Add note_on event }  
+        { Add note_on event }
         MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
@@ -630,7 +630,7 @@ begin
           IsMeta := False;
         end;
 
-        { Add note_off event }  
+        { Add note_off event }
         DurTicks := Max(Round(Min(Beat.Duration, 0.2) * PPQ), 1);
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
@@ -642,7 +642,7 @@ begin
         end;
       end;
 
-      { Check for fills at section end }  
+      { Check for fills at section end }
       if Assigned(ASong.GlobalParameters) then
       begin
         Fill := Section.ShouldAddFill(I, ASong.GlobalParameters.FillFrequency);
@@ -686,7 +686,7 @@ begin
     end;
   end;
 
-  { Sort all events (notes + meta) by absolute tick }  
+  { Sort all events (notes + meta) by absolute tick }
   if Length(Events) > 1 then
   begin
     for I22 := High(Events) downto Low(Events) do
@@ -699,38 +699,38 @@ begin
         end;
   end;
 
-  { Write MIDI file directly — proper binary format }  
+  { Write MIDI file directly — proper binary format }
   FS := TFileStream.Create(AOutputPath, fmCreate);
   try
-    { MIDI Header: MThd }  
-    FS.WriteBuffer('MThd', 4);  
-    HeaderSize := TMidiIO.Swap32(6);  
-    FS.WriteBuffer(HeaderSize, 4);  
-    FormatWord := TMidiIO.Swap16(0); { Format 0 }  
-    FS.WriteBuffer(FormatWord, 2);  
-    TrackCount := TMidiIO.Swap16(1); { 1 track }  
-    FS.WriteBuffer(TrackCount, 2);  
-    PPQWord := TMidiIO.Swap16(Word(PPQ));  
-    FS.WriteBuffer(PPQWord, 2);  
+    { MIDI Header: MThd }
+    FS.WriteBuffer('MThd', 4);
+    HeaderSize := Swap32(6);
+    FS.WriteBuffer(HeaderSize, 4);
+    FormatWord := Swap16(0); { Format 0 }
+    FS.WriteBuffer(FormatWord, 2);
+    TrackCount := Swap16(1); { 1 track }
+    FS.WriteBuffer(TrackCount, 2);
+    PPQWord := Swap16(Word(PPQ));
+    FS.WriteBuffer(PPQWord, 2);
 
-    { Track Header: MTrk }  
-    FS.WriteBuffer('MTrk', 4);  
+    { Track Header: MTrk }
+    FS.WriteBuffer('MTrk', 4);
     TrackStart := FS.Position;
     DummySize := 0;
     FS.WriteBuffer(DummySize, 4);
 
-    { Initial set_tempo meta-event at tick 0 }  
+    { Initial set_tempo meta-event at tick 0 }
     MicroSecs := 60000000 div ASong.Tempo;
     b1 := Byte(MicroSecs shr 16);
     b2 := Byte((MicroSecs shr 8) and $FF);
     b3 := Byte(MicroSecs and $FF);
-    MetaByte := 0; FS.WriteBuffer(MetaByte, 1); { delta = 0 }  
+    MetaByte := 0; FS.WriteBuffer(MetaByte, 1); { delta = 0 }
     MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
-    MetaByte := $51; FS.WriteBuffer(MetaByte, 1); { set_tempo }  
+    MetaByte := $51; FS.WriteBuffer(MetaByte, 1); { set_tempo }
     MetaByte := 3; FS.WriteBuffer(MetaByte, 1); { length }
     FS.WriteBuffer(b1, 1); FS.WriteBuffer(b2, 1); FS.WriteBuffer(b3, 1);
 
-    { Initial time_signature meta-event at tick 0 }  
+    { Initial time_signature meta-event at tick 0 }
     TsNumByte := Byte(EffTs.Numerator);
     if TsNumByte = 0 then TsNumByte := 4;
     case EffTs.Denominator of
@@ -741,24 +741,24 @@ begin
     end;
     MetaByte := 0; FS.WriteBuffer(MetaByte, 1); { delta = 0 }
     MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
-    MetaByte := $58; FS.WriteBuffer(MetaByte, 1); { time_signature }  
-    MetaByte := 4; FS.WriteBuffer(MetaByte, 1); { length }  
+    MetaByte := $58; FS.WriteBuffer(MetaByte, 1); { time_signature }
+    MetaByte := 4; FS.WriteBuffer(MetaByte, 1); { length }
     FS.WriteBuffer(TsNumByte, 1);
-    FS.WriteBuffer(logDen, 1);  
+    FS.WriteBuffer(logDen, 1);
     MetaByte := 24; FS.WriteBuffer(MetaByte, 1); { clocks per metronome tick }
     MetaByte := 8; FS.WriteBuffer(MetaByte, 1); { normalized 32nd notes per quarter }
 
-    { Write all sorted events with delta-time encoding }  
+    { Write all sorted events with delta-time encoding }
     PrevTick := 0;
     for I := Low(Events) to High(Events) do
     begin
-      TMidiIO.WriteVLQ(FS, Events[I].Tick - PrevTick);
+     WriteVLQ(FS, Events[I].Tick - PrevTick);
       if Events[I].IsMeta then
       begin
-        { Tempo change: FF 51 <3-byte microseconds-per-beat> }  
+        { Tempo change: FF 51 <3-byte microseconds-per-beat> }
         MicroSecs := 60000000 div Events[I].Velocity;
         MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
-        MetaByte := $51; FS.WriteBuffer(MetaByte, 1); 
+        MetaByte := $51; FS.WriteBuffer(MetaByte, 1);
         b1 := Byte(MicroSecs shr 16);
         b2 := Byte((MicroSecs shr 8) and $FF);
         b3 := Byte(MicroSecs and $FF);
@@ -766,7 +766,7 @@ begin
         FS.WriteBuffer(b1, 1); FS.WriteBuffer(b2, 1); FS.WriteBuffer(b3, 1);
       end
       else begin
-        { Note event: note-on ($99) or note-off ($89) channel 10 }  
+        { Note event: note-on ($99) or note-off ($89) channel 10 }
         if Events[I].Velocity = 0 then
           MetaByte := $89
         else
@@ -778,14 +778,14 @@ begin
       PrevTick := Events[I].Tick;
     end;
 
-    { End of Track marker }  
-    MetaByte := 0; FS.WriteBuffer(MetaByte, 1);  
-    MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);  
-    MetaByte := $2F; FS.WriteBuffer(MetaByte, 1);  
+    { End of Track marker }
+    MetaByte := 0; FS.WriteBuffer(MetaByte, 1);
+    MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
+    MetaByte := $2F; FS.WriteBuffer(MetaByte, 1);
     MetaByte := 0; FS.WriteBuffer(MetaByte, 1);
 
-    { Write track size (we stored dummy above) }  
-    FinalSize := TMidiIO.Swap32(Cardinal(FS.Position - TrackStart - 4));
+    { Write track size (we stored dummy above) }
+    FinalSize := Swap32(Cardinal(FS.Position - TrackStart - 4));
     FS.Position := TrackStart;
     FS.WriteBuffer(FinalSize, 4);
 
@@ -808,8 +808,8 @@ begin
   for Beat in APattern.Beats do
   begin
     AbsTick := Round(Beat.Position * APattern.Subdivision);
-    
-    { Add note_on with absolute tick }  
+
+    { Add note_on with absolute tick }
     SetLength(Events, Length(Events) + 1);
     with Events[High(Events)] do
     begin
@@ -818,8 +818,8 @@ begin
       Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
       Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
     end;
-    
-    { Add note_off with duration }  
+
+    { Add note_off with duration }
     DurTicks := Max(Round(Min(Beat.Duration, 0.2) * APattern.Subdivision), 1);
     SetLength(Events, Length(Events) + 1);
     with Events[High(Events)] do
@@ -830,19 +830,19 @@ begin
       Velocity := 0;
     end;
   end;
-  
-  { Convert from absolute ticks to delta-times for MIDI format }  
+
+  { Convert from absolute ticks to delta-times for MIDI format }
   PrevTick := 0;
   for i := Low(Events) to High(Events) do
   begin
     Events[i].DeltaTick := Max(0, Events[i].DeltaTick - PrevTick);
     PrevTick := Events[i].DeltaTick;
   end;
-  
-  TMidiIO.SaveMidi(AOutputPath, Events, APattern.Subdivision, ATempo);
+
+  SaveMidi(AOutputPath, Events, APattern.Subdivision, ATempo);
 end;
 
-{ â”€â”€ V1 helpers â€” pattern generation, variations, fills. â”€â”€ }
+{  V1 helpers  pattern generation, variations, fills. â”€â”€ }
 
 function TDrumGenerator.GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit): TPattern;
 var
@@ -875,7 +875,7 @@ procedure TDrumGenerator._GenerateVariations(const APattern: TPattern; out AResu
 var
   VarName: string;
 begin
-  { V1 variations â€” simple pattern copy. }
+  { V1 variations  simple pattern copy. }
   AResult := specialize TList<TPatternVariation>.Create;
 
   if not Assigned(APattern) then Exit;
@@ -889,7 +889,7 @@ var
   GenrePlugin: TObject;
   CommonFills: specialize TList<TFill>;
 begin
-  { V1 fills â€” get common fills from genre plugin. }
+  { V1 fills  get common fills from genre plugin. }
   AResult := specialize TList<TFill>.Create;
 
   try

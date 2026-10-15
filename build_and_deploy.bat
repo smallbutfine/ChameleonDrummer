@@ -188,7 +188,7 @@ set /a BUILD_NUM=%PREV_NUM% + 1
 echo %BUILD_NUM% > _build_counter.txt
 
 :: Komplett-Backup aller Quellen als ZIP-Archiv im Parent-Verzeichnis
-tar -z -c -f "..\\CameleonDrummer%BUILD_NUM%.tgz" --exclude="*.log" --exclude="*.tar.gz" --exclude="__pycache__" --exclude="ardour-source" .
+tar -z -c -f "..\\CameleonDrummer!DETECTED_VERSION!.tgz" --exclude="*.log" --exclude="*.tar.gz" --exclude="__pycache__" --exclude="ardour-source" .
 
 if errorlevel 1 (
     echo [FEHLER] Die Archivierung ist fehlgeschlagen!

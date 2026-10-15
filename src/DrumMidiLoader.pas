@@ -1,5 +1,7 @@
 unit DrumMidiLoader;
+
 {$mode objfpc}{$H+}
+
 
 interface
 

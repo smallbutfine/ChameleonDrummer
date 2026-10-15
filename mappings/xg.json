@@ -4,7 +4,6 @@
     "description": "Complete Yamaha XG percussion map (notes 35–81). Standard XGM drum set mapping.",
     "source": "Yamaha XGM Sound Expansion Documentation",
     "instruments": {
-        "snare_brushes_only_sweep_fast_bright_accent": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_mute": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_slow_dark_accent": {"midi_note": null, "description": "Not in XG standard"},
         "snare_brushes_only_sweep_fast_dark_accent": {"midi_note": null, "description": "Not in XG standard"},

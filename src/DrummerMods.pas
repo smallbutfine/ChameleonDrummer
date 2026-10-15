@@ -5,8 +5,7 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, Math,
-  Pattern;
+  Classes, SysUtils, Generics.Collections, Math, Kit, Pattern;
 
 // ============================================================================
 // BehindBeatTiming â€” delays hits slightly behind the beat (Bonham signature)
@@ -160,6 +159,22 @@ type
 
 implementation
 
+{ Helper: check if a string starts with any of the given prefixes }
+function HasPrefix(const S, Prefix: String): Boolean;
+begin
+  Result := Pos(LowerCase(Prefix), LowerCase(S)) = 1;
+end;
+
+function HasAnyPrefix(const S: String; const Prefixes: specialize TArray<String>): Boolean;
+var
+  I: Integer;
+begin
+  for I := Low(Prefixes) to High(Prefixes) do
+    if Pos(LowerCase(Prefixes[I]), LowerCase(S)) > 0 then
+      Exit(True);
+  Exit(False);
+end;
+
 { TBehindBeatTiming }
 constructor TBehindBeatTiming.Create(A_MAX_DELAY_MS: Double);
 begin
@@ -168,29 +183,21 @@ end;
 
 function TBehindBeatTiming.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
-  DelayedBeat: TBeat;
-  MaxBar: Integer;
+  BIdx: Integer;
+  Beat: TBeat;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
 
-  MaxBar := Result.BarsCount - 1;
-  for BarIdx := 0 to MaxBar do
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
+    Beat := Result.Beats[BIdx];
+    if Random < Intensity * 0.3 then
     begin
-      if (Random < Intensity * 0.3) then
-      begin
-        DelayedBeat := TBeat.Create(
-          Result.Beats[BarIdx][BeatIdx].Instrument,
-          Result.Beats[BarIdx][BeatIdx].Time + FMaxDelayMs / 1000.0 * Intensity,
-          Round(Result.Beats[BarIdx][BeatIdx].Velocity * 0.95)
-        );
-        DelayedBeat.IsGhost := True;
-        Result.Beats[BarIdx].Insert(BeatIdx, DelayedBeat);
-      end;
+      // Add delayed copy of this beat (behind-the-beat feel)
+      Beat.Position := Beat.Position + FMaxDelayMs / 1000.0 * Intensity;
+      Beat.GhostNote := True;
+      Beat.Velocity := Trunc(Beat.Velocity * 0.95);
     end;
   end;
 end;
@@ -203,22 +210,15 @@ end;
 
 function TTripeltVocabulary.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx: Integer;
-  BeatIdx: Integer;
+  I: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FTripProbability <= 0) then Exit;
 
-  for BarIdx := 1 to Result.BarsCount - 1 do
-  begin
-    if (Random < FTripProbability * Intensity * 0.2) then
-    begin
-      // Add triplet accent at bar start
-      BeatIdx := Result.Beats[BarIdx].Add(0.5, 'snare_1_hit', 90);
-      if (BeatIdx >= 0) then
-        Result.Beats[BarIdx][BeatIdx].Velocity := Round(90 * Intensity);
-    end;
-  end;
+  // Add triplet accent every bar
+  for I := 0 to Trunc(Result.DurationBars) - 1 do
+    if Random < FTripProbability * Intensity * 0.2 then
+      Result.AddBeat(0.5, TInstrumentRegistry.Get('snare_1_hit'), Round(90 * Intensity));
 end;
 
 { THeavyAccents }
@@ -229,24 +229,20 @@ end;
 
 function THeavyAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
+  BIdx: Integer;
   BoostedVel: Integer;
+  InstName: String;
 begin
   Result := APattern.Copy;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
+    InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
+    // Boost snare and kick accents
+    if ((HasAnyPrefix(InstName, ['snare', 'kick'])) and (Intensity > 0.5)) then
     begin
-      // Boost snare and kick accents
-      if ((Result.Beats[BarIdx][BeatIdx].Instrument = 'snare_1_hit') or
-          (Result.Beats[BarIdx][BeatIdx].Instrument = 'kick_hit')) and
-         (Intensity > 0.5) then
-      begin
-        BoostedVel := Min(127, Result.Beats[BarIdx][BeatIdx].Velocity + FAccentBoost);
-        Result.Beats[BarIdx][BeatIdx].Velocity := Round(BoostedVel * Intensity);
-      end;
+      BoostedVel := Min(127, Result.Beats[BIdx].Velocity + FAccentBoost);
+      Result.Beats[BIdx].Velocity := Trunc(BoostedVel * Intensity);
     end;
   end;
 end;
@@ -259,27 +255,58 @@ end;
 
 function TGhostNoteLayer.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
-  GhostBeat: TBeat;
+  BIdx, GhostCount, MaxGhostsPerBar: Integer;
+  EffectiveDensity, ScaleFactor: Double;
+  BarStart: Double;
+  InstName: String;
+  SnarePrefixes: specialize TArray<String>;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FGhostDensity <= 0) then Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  SetLength(SnarePrefixes, 4);
+  SnarePrefixes[0] := 'snare';
+  SnarePrefixes[1] := 'snare_sticks';
+  SnarePrefixes[2] := 'snare_1_hit';
+  SnarePrefixes[3] := 'rimshot';
+
+  // Scale density inversely to input beat count (matches Python)
+  EffectiveDensity := FGhostDensity * Intensity;
+  if EffectiveDensity >= 0.99 then
+    ScaleFactor := 1.0
+  else if Result.Beats.Count <= 6 then
+    ScaleFactor := 1.0
+  else if Result.Beats.Count <= 14 then
+    ScaleFactor := 0.6
+  else
+    ScaleFactor := 0.3;
+
+  EffectiveDensity := EffectiveDensity * ScaleFactor;
+  MaxGhostsPerBar := Max(2, Trunc((16 - Result.Beats.Count) * EffectiveDensity));
+
+  // Iterate beats in order by bar
+  GhostCount := 0;
+  BarStart := -1.0;
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
+    // Detect new bar boundary and reset ghost count
+    if Trunc(Result.Beats[BIdx].Position) > Trunc(BarStart) then
     begin
-      if (Random < FGhostDensity * Intensity * 0.4) and
-         (Result.Beats[BarIdx][BeatIdx].Instrument = 'snare_1_hit') then
-      begin
-        GhostBeat := TBeat.Create('snare_1_hit',
-          Result.Beats[BarIdx][BeatIdx].Time + 0.25,
-          Round(40 * Intensity));
-        GhostBeat.IsGhost := True;
-        Result.Beats[BarIdx].Add(GhostBeat);
-      end;
+      GhostCount := 0;
+      BarStart := Result.Beats[BIdx].Position;
     end;
+
+    // Stop adding ghosts for this bar if budget exceeded
+    if GhostCount >= MaxGhostsPerBar then Continue;
+
+    // Check if this is a snare beat (by instrument name)
+    InstName := Result.Beats[BIdx].Instrument.Name;
+    if not HasAnyPrefix(InstName, SnarePrefixes) then Continue;
+
+    // Add ghost note slightly offset from original
+    GhostCount := GhostCount + 1;
+    Result.Beats.Add(TBeat.Create(Result.Beats[BIdx].Position + 0.25,
+      TInstrumentRegistry.Get('snare_1_hit'), Max(40, Trunc(40 * Intensity))));
   end;
 end;
 
@@ -291,33 +318,24 @@ end;
 
 function TLinearCoordination.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx, I: Integer;
+  I, J: Integer;
   TimeDiff: Double;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FLinearProbability <= 0) then Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    // Find and shift simultaneous hits on different instruments
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 2 do
+  // Check all pairs for simultaneous hits on different instruments
+  for I := 0 to Result.Beats.Count - 2 do
+    for J := I + 1 to Result.Beats.Count - 1 do
     begin
-      for I := BeatIdx + 1 to Result.Beats[BarIdx].Count - 1 do
+      TimeDiff := Abs(Result.Beats[I].Position - Result.Beats[J].Position);
+      if (TimeDiff < 0.01) and
+         (Result.Beats[I].Instrument <> Result.Beats[J].Instrument) then
       begin
-        TimeDiff := Abs(Result.Beats[BarIdx][BeatIdx].Time - Result.Beats[BarIdx][I].Time);
-        if (TimeDiff < 0.01) and
-           (Result.Beats[BarIdx][BeatIdx].Instrument <> Result.Beats[BarIdx][I].Instrument) then
-        begin
-          if (Random < FLinearProbability * Intensity) then
-          begin
-            // Shift the second hit slightly to avoid simultaneity
-            Result.Beats[BarIdx][I].Time := Result.Beats[BarIdx][I].Time + 0.0625;
-          end;
-        end;
+        if Random < FLinearProbability * Intensity then
+          Result.Beats[J].Position := Result.Beats[J].Position + 0.0625;
       end;
     end;
-  end;
 end;
 
 { TShuffleFeelApplication }
@@ -328,29 +346,21 @@ end;
 
 function TShuffleFeelApplication.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
-  ShuffleOffset: Double;
+  BIdx: Integer;
+  BeatWithinQuarter, ShuffleOffset: Double;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FShuffleAmount <= 0) then Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  ShuffleOffset := FShuffleAmount * Intensity * 0.25; // triplet-based swing amount
+
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    ShuffleOffset := FShuffleAmount * Intensity * 0.125; // 1/16th note shuffle
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      // Apply triplet-based offset to hi-hat and ride hits
-      if (Result.Beats[BarIdx][BeatIdx].Instrument = 'hh_closed_1_tip_hit') or
-         (Result.Beats[BarIdx][BeatIdx].Instrument = 'ride_1_tip_hit') then
-      begin
-        // Odd beats get delayed, even beats get early
-        if (BeatIdx mod 2 = 1) then
-          Result.Beats[BarIdx][BeatIdx].Time := Result.Beats[BarIdx][BeatIdx].Time + ShuffleOffset
-        else
-          Result.Beats[BarIdx][BeatIdx].Time := Result.Beats[BarIdx][BeatIdx].Time - (ShuffleOffset * 0.5);
-      end;
-    end;
+    BeatWithinQuarter := Result.Beats[BIdx].Position mod 1.0;
+
+    // Apply shuffle to offbeat 16ths (positions .25, .75 within quarter note)
+    if (Abs(BeatWithinQuarter - 0.25) < 0.01) or (Abs(BeatWithinQuarter - 0.75) < 0.01) then
+      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + ShuffleOffset;
   end;
 end;
 
@@ -362,68 +372,49 @@ end;
 
 function TFastChopsTriplets.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx: Integer;
-  BeatIdx: Integer;
+  BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FChopProbability <= 0) then Exit;
 
-  for BarIdx := 1 to Result.BarsCount - 1 do
-  begin
-    if (Random < FChopProbability * Intensity * 0.3) then
-    begin
-      // Add tom chop at bar boundary
-      BeatIdx := Result.Beats[BarIdx].Add(0.0, 'tom_2_open_hit', Round(100 * Intensity));
-      if (BeatIdx >= 0) then
-        Result.Beats[BarIdx][BeatIdx].IsGhost := False;
-    end;
-  end;
+  // Add tom chop every bar at the bar start position
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    if Random < FChopProbability * Intensity * 0.2 then
+      Result.AddBeat(Trunc(Result.Beats[BIdx].Position), TInstrumentRegistry.Get('tom_2_open_hit'), Round(100 * Intensity));
 end;
 
 { TPocketStretching }
 function TPocketStretching.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
+  BIdx: Integer;
   MicroDelay: Double;
+  InstName: String;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  // Subtle micro-timing variations for pocket feel on kick/snare beats
+  MicroDelay := (Random(100) / 100.0 - 0.5) * 0.02 * Intensity;
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    // Subtle micro-timing variations for pocket feel
-    MicroDelay := (Random(100) / 100.0 - 0.5) * 0.02 * Intensity;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      if ((Result.Beats[BarIdx][BeatIdx].Instrument = 'kick_hit') or
-          (Result.Beats[BarIdx][BeatIdx].Instrument = 'snare_1_hit')) then
-      begin
-        Result.Beats[BarIdx][BeatIdx].Time := Result.Beats[BarIdx][BeatIdx].Time + MicroDelay;
-      end;
-    end;
+    InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
+    if (HasAnyPrefix(InstName, ['kick', 'snare'])) then
+      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + MicroDelay;
   end;
 end;
 
 { TMinimalCreativity }
 function TMinimalCreativity.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
+  BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
 
   // Remove some beats for sparse atmosphere
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    if (Random < Intensity * 0.4) and (Result.Beats[BarIdx].Count > 2) then
-    begin
-      // Randomly remove a non-essential beat
-      BeatIdx := Random(Result.Beats[BarIdx].Count - 1);
-      Result.Beats[BarIdx].Delete(BeatIdx);
-    end;
-  end;
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    if (Random < Intensity * 0.4) and (Result.Beats.Count > 2) then
+      Result.Beats.Delete(Random(Result.Beats.Count - 1));
 end;
 
 { TSpeedPrecision }
@@ -434,22 +425,18 @@ end;
 
 function TSpeedPrecision.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
+  BIdx: Integer;
   AvgVel: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
 
   // Normalize velocities toward precision
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      AvgVel := Round(Result.Beats[BarIdx][BeatIdx].Velocity * FVelocityTolerance +
-                      100 * (1.0 - FVelocityTolerance));
-      Result.Beats[BarIdx][BeatIdx].Velocity := Clamp(AvgVel, 40, 127);
-    end;
+    AvgVel := Round(Result.Beats[BIdx].Velocity * FVelocityTolerance +
+                    100 * (1.0 - FVelocityTolerance));
+    Result.Beats[BIdx].Velocity := Max(40, Min(127, AvgVel));
   end;
 end;
 
@@ -461,27 +448,15 @@ end;
 
 function TTwistedAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
-  DisplacedTime: Double;
+  BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      if (Random < Intensity * 0.3) and
-         (Result.Beats[BarIdx][BeatIdx].Instrument = 'snare_1_hit') then
-      begin
-        // Displace accent by a fraction of a beat
-        DisplacedTime := Result.Beats[BarIdx][BeatIdx].Time +
-                         (FAccentDisplacement / 480.0); // ~32nd note at 4/4
-        Result.Beats[BarIdx][BeatIdx].Time := DisplacedTime;
-      end;
-    end;
-  end;
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    if (Random < Intensity * 0.3) and
+       HasAnyPrefix(LowerCase(Result.Beats[BIdx].Instrument.Name), ['snare']) then
+      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + (FAccentDisplacement / 480.0);
 end;
 
 { TMechanicalPrecision }
@@ -492,24 +467,19 @@ end;
 
 function TMechanicalPrecision.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
+  BIdx: Integer;
   QuantTime: Double;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
 
   // Quantize all notes to strict grid with strength factor
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      // Quantize to nearest sixteenth note
-      QuantTime := Round(Result.Beats[BarIdx][BeatIdx].Time * 16) / 16.0;
-      Result.Beats[BarIdx][BeatIdx].Time :=
-        Result.Beats[BarIdx][BeatIdx].Time * (1.0 - FQuantizationStrength) +
-        QuantTime * FQuantizationStrength;
-    end;
+    QuantTime := Round(Result.Beats[BIdx].Position * 16) / 16.0;
+    Result.Beats[BIdx].Position :=
+      Result.Beats[BIdx].Position * (1.0 - FQuantizationStrength) +
+      QuantTime * FQuantizationStrength;
   end;
 end;
 
@@ -521,23 +491,20 @@ end;
 
 function TBlastBeatApplication.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var
-  BarIdx: Integer;
+  I: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FBlastDensity <= 0) then Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    if (Random < FBlastDensity * Intensity * 0.25) then
+  // Add blast beat hits at the start of each bar
+  for I := 0 to Trunc(Result.DurationBars) - 1 do
+    if Random < FBlastDensity * Intensity * 0.25 then
     begin
-      // Add rapid snare/kick pattern for blast beat feel
-      Result.Beats[BarIdx].Add(0.0, 'snare_1_hit', Round(110 * Intensity));
-      Result.Beats[BarIdx].Add(0.25, 'kick_hit', Round(115 * Intensity));
-      Result.Beats[BarIdx].Add(0.5, 'snare_1_hit', Round(105 * Intensity));
-      Result.Beats[BarIdx].Add(0.75, 'kick_hit', Round(110 * Intensity));
+      Result.AddBeat(I, TInstrumentRegistry.Get('snare_1_hit'), Round(110 * Intensity));
+      Result.AddBeat(I + 0.25, TInstrumentRegistry.Get('kick_hit'), Round(115 * Intensity));
+      Result.AddBeat(I + 0.5, TInstrumentRegistry.Get('snare_1_hit'), Round(105 * Intensity));
+      Result.AddBeat(I + 0.75, TInstrumentRegistry.Get('kick_hit'), Round(110 * Intensity));
     end;
-  end;
 end;
 
 end.

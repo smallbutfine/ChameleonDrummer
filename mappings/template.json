@@ -1,8 +1,7 @@
 {
-    "name": "AD2 Template",
+    "name": " Template",
     "version": "1.0",
-    "description": "Complete AD2 keymap template — all midi_note set to null for user to fill in.",
-    "source": "Addictive Drums 2 Keymap PDF - XLN Audio (reference only)",
+    "description": "keymap template — all midi_note set to null for user to fill in.",
     "instruments": {
         "cymbal_1_choke": {"midi_note": null, "description": "Cymbal 1 Choke"},
         "cymbal_1_hit": {"midi_note": null, "description": "Cymbal 1 Hit"},

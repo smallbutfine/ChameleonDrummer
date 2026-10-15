@@ -5,9 +5,9 @@
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TPorcaroPlugin = class(TDrummerPlugin)
@@ -34,12 +34,10 @@ begin
 end;
 
 function TPorcaroPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create(APattern.Name + '_porcaro');
-  Composer.Add(TBasicGroove.Create);
-  Result := Composer.Build(2, 0.6);
+  // Porcaro style: shuffle feel + ghost notes (matches Python implementation)
+  Result := TShuffleFeelApplication.Create(0.6).Apply(APattern, 0.8);
+  Result := TGhostNoteLayer.Create(0.4).Apply(Result, 0.7);
 end;
 
 function TPorcaroPlugin.GetSignatureFills: specialize TList<TFill>;
