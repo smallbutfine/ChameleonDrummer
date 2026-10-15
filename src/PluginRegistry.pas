@@ -165,6 +165,7 @@ begin
   // Remove old plugin if key already exists
   if FGenrePlugins.ContainsKey(GenreKey) then
   begin
+    OldPlugin := FGenrePlugins[GenreKey];
     if Assigned(OldPlugin) then OldPlugin.Free;
     FGenrePlugins.Remove(GenreKey);
   end;
