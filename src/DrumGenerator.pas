@@ -212,6 +212,7 @@ end;
 
 destructor TDrumGenerator.Destroy;
 begin
+  FDrumKit.Free;
   FPluginManager.Free;
   inherited Destroy;
 end;

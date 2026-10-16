@@ -167,6 +167,7 @@ destructor TPatternVariation.Destroy;
 begin
   if Assigned(FBars) then
     FBars.Free;
+  FPattern.Free;
   inherited Destroy;
 end;
 
@@ -205,6 +206,7 @@ end;
 
 destructor TSection.Destroy;
 begin
+  Pattern.Free;
   Variations.Free;
   Fills.Free;
   SectionParameters.Free;

@@ -118,6 +118,7 @@ end;
 destructor TPattern.Destroy;
 begin
   FBeats.Free;
+  FTimeSignature.Free;
   FMetadata.Free;
   inherited Destroy;
 end;

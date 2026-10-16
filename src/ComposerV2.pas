@@ -460,6 +460,7 @@ var
   FlavorItem: TPattern;
   OffsetMs: Single;
   JBar: Integer;
+  Idx: Integer;
   Section: TSection;
 begin
   { Create generation parameters }
@@ -617,7 +618,11 @@ begin
         GrooveOffsetsMs.Free;
       end;
     finally
+    begin
+      for Idx := GeneratedBars.Count - 1 downto 0 do
+        GeneratedBars[Idx].Free;
       GeneratedBars.Free;
+    end;
     end;
   end;
 

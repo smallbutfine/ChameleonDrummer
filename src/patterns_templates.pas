@@ -198,8 +198,8 @@ begin inherited Create; KickPositions := specialize TList<Double>.Create; SnareP
 
 destructor TBasicGroove.Destroy;
 begin
-  KickPositions.Free;
-  SnarePositions.Free;
+  if Assigned(KickPositions) then KickPositions.Free;
+  if Assigned(SnarePositions) then SnarePositions.Free;
   if Assigned(OpenHiHatPositions) then OpenHiHatPositions.Free;
   inherited Destroy;
 end;
@@ -346,7 +346,11 @@ begin
 end;
 
 destructor TTemplateComposer.Destroy;
+var
+  I: Integer;
 begin
+  for I := FTemplates.Count - 1 downto 0 do
+    FTemplates[I].Free;
   FTemplates.Free;
   inherited Destroy;
 end;
