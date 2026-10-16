@@ -256,19 +256,22 @@ begin
     0.6,              // ADynamics - default dynamics
     Args.Humanization // AHumanization - humanization intensity from CLI
   );
+  try
+    { Save MIDI output and optionally timeline JSON }
+    if (Args.OutputFile = '') then
+      OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping])
+    else
+      OutputFile := Args.OutputFile;
 
-  { Save MIDI output and optionally timeline JSON }
-  if (Args.OutputFile = '') then
-    OutputFile := Format('%s_%s_%s.mid', [Args.Genre, Args.Style, Args.Mapping])
-  else
-    OutputFile := Args.OutputFile;
+    FGenerator.SaveSongMidi(Song, OutputFile);
+    Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
 
-  FGenerator.SaveSongMidi(Song, OutputFile);
-  Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
-
-  { Write timeline JSON if requested }
-  if (Args.WriteTimelinePath <> '') then
-    Writeln(Format('Timeline   : %s', [Args.WriteTimelinePath]));
+    { Write timeline JSON if requested }
+    if (Args.WriteTimelinePath <> '') then
+      Writeln(Format('Timeline   : %s', [Args.WriteTimelinePath]));
+  finally
+    Song.Free;
+  end;
 end;
 
 procedure TCLIInterface.HandlePattern(const Args: TCLIArgs);
@@ -380,18 +383,22 @@ begin
     RppFile := Args.OutputFile;
   MidiFile := ChangeFileExt(RppFile, '.mid');
 
-  { Save MIDI first }
-  FGenerator.SaveSongMidi(Song, MidiFile);
-
-  { Create REAPER project from song sections — use CreateFromSong to pass actual data }
-  Bridge := TReaperBridge.Create;
   try
-    if Bridge.CreateFromSong(Song, MidiFile) then
-      Writeln('REAPER project exported to:', RppFile)
-    else
-      Writeln('[Warning] Failed to create REAPER project from song sections');
+    { Save MIDI first }
+    FGenerator.SaveSongMidi(Song, MidiFile);
+
+    { Create REAPER project from song sections — use CreateFromSong to pass actual data }
+    Bridge := TReaperBridge.Create;
+    try
+      if Bridge.CreateFromSong(Song, MidiFile) then
+        Writeln('REAPER project exported to:', RppFile)
+      else
+        Writeln('[Warning] Failed to create REAPER project from song sections');
+    finally
+      Bridge.Free;
+    end;
   finally
-    Bridge.Free;
+    Song.Free;
   end;
 end;
 
