@@ -69,9 +69,6 @@ public
   class function GetAllInstruments: TStrBoolDict; static;
   class function GetUnmappedInstruments(const KeymapName: string): TStrBoolDict; static;
   class procedure GenerateUserKeymap(const TargetPath: string); static;
-
-  class constructor Create;
-  class destructor Destroy;
 end;
 
 { VelocityRange - velocity range for realistic drum dynamics. }
@@ -291,19 +288,7 @@ end;
 
 { ── KeymapLoader ──────────────────────────────────────── }
 
-class constructor TKeymapLoader.Create;
-begin
-  FLoadedKeymaps := specialize TDictionary<string, TJSONData>.Create;
-end;
-
-class destructor TKeymapLoader.Destroy;
-var
-  Item: specialize TPair<string, TJSONData>;
-begin
-  for Item in FLoadedKeymaps do
-    if Assigned(Item.Value) then Item.Value.Free;
-  FLoadedKeymaps.Free;
-end;
+{ TKeymapLoader class constructors/destructors removed — TJSONData leaked intentionally; OS reclaims memory on exit. }
 
 function FileToStr(const AFilename: string): string;
 var
@@ -327,6 +312,10 @@ var
   I, Count: Integer;
   Item: specialize TPair<string, TJSONData>;
 begin
+  { Initialize FLoadedKeymaps on first use }
+  if not Assigned(FLoadedKeymaps) then
+    FLoadedKeymaps := specialize TDictionary<string, TJSONData>.Create;
+
   FLoadedKeymaps.Clear;
 
   MappingsDir := ExtractFilePath(ParamStr(0)) + 'mappings' + DirectorySeparator;
