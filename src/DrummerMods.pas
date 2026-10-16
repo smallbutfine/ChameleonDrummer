@@ -2,28 +2,29 @@
 
 {$mode objfpc}{$H+}
 
+{ Composable drummer style modifications. }
+
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, Math, Kit, Pattern;
+  Classes, SysUtils, Math, Generics.Collections,
+  Pattern, Kit;
 
-// ============================================================================
-// BehindBeatTiming â€” delays hits slightly behind the beat (Bonham signature)
-// ============================================================================
+function HasAnyPrefix(const Str: String; const Prefixes: specialize TArray<String>): Boolean;
+
+{ ── BehindBeatTiming ───────────────────────────────────── }
 type
   TBehindBeatTiming = class
   private
-    FMaxDelayMs: Double;
+    FMaxDelayMs: Single;
   public
-    constructor Create(A_MAX_DELAY_MS: Double);
+    constructor Create(A_MAX_DELAY_MS: Single);
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// TriplettVocabulary â€” adds triplet-based fills and phrasing
-// ============================================================================
+{ ── TripletVocabulary ──────────────────────────────────── }
 type
-  TTripeltVocabulary = class
+  TTripetVocabulary = class
   private
     FTripProbability: Double;
   public
@@ -31,21 +32,7 @@ type
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// HeavyAccents â€” increases accent contrast for power playing
-// ============================================================================
-type
-  THeavyAccents = class
-  private
-    FAccentBoost: Integer;
-  public
-    constructor Create(A_ACCENT_BOOST: Integer);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
-  end;
-
-// ============================================================================
-// GhostNoteLayer â€” adds subtle ghost notes for groove
-// ============================================================================
+{ ── GhostNoteLayer ─────────────────────────────────────── }
 type
   TGhostNoteLayer = class
   private
@@ -55,9 +42,7 @@ type
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// LinearCoordination â€” removes simultaneous hits for linear playing
-// ============================================================================
+{ ── LinearCoordination ─────────────────────────────────── }
 type
   TLinearCoordination = class
   private
@@ -67,9 +52,17 @@ type
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// ShuffleFeelApplication â€” adds shuffle/swing feel (Porcaro signature)
-// ============================================================================
+{ ── HeavyAccents ───────────────────────────────────────── }
+type
+  THeavyAccents = class
+  private
+    FAccentBoost: Integer;
+  public
+    constructor Create(A_ACCENT_BOOST: Integer);
+    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+  end;
+
+{ ── ShuffleFeelApplication ─────────────────────────────── }
 type
   TShuffleFeelApplication = class
   private
@@ -79,9 +72,7 @@ type
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// FastChopsTriplets â€” fast technical fills (Chambers signature)
-// ============================================================================
+{ ── FastChopsTriplets ──────────────────────────────────── }
 type
   TFastChopsTriplets = class
   private
@@ -91,274 +82,174 @@ type
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// PocketStretching â€” subtle groove variations (Chambers signature)
-// ============================================================================
+{ ── PocketStretching ───────────────────────────────────── }
 type
   TPocketStretching = class
   public
+    constructor Create;
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// MinimalCreativity â€” sparse, atmospheric approach (Roeder signature)
-// ============================================================================
+{ ── MinimalCreativity ──────────────────────────────────── }
 type
   TMinimalCreativity = class
   public
+    constructor Create;
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// SpeedPrecision â€” consistent timing/velocity (Dee signature)
-// ============================================================================
+{ ── SpeedPrecision ─────────────────────────────────────── }
 type
   TSpeedPrecision = class
-  private
-    FVelocityTolerance: Double;
   public
-    constructor Create(A_VELOCITY_TOLERANCE: Double);
+    constructor Create;
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// TwistedAccents â€” displaced accents (Dee signature)
-// ============================================================================
+{ ── TwistedAccents ─────────────────────────────────────── }
 type
-  TTwistedAccents = class
+  TWistedAccents = class
   private
-    FAccentDisplacement: Integer;
+    FTwistAmount: Double;
   public
-    constructor Create(A_ACCENT_DISPLACEMENT: Integer);
+    constructor Create(A_TWIST_AMOUNT: Double);
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
-// ============================================================================
-// MechanicalPrecision â€” extreme quantization (Hoglan signature)
-// ============================================================================
+{ ── MechanicalPrecision ────────────────────────────────── }
 type
   TMechanicalPrecision = class
-  private
-    FQuantizationStrength: Double;
   public
-    constructor Create(A_QUANT_STRENGTH: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
-  end;
-
-// ============================================================================
-// BlastBeatApplication â€” applies blast beats for metal (Hoglan signature)
-// ============================================================================
-type
-  TBlastBeatApplication = class
-  private
-    FBlastDensity: Double;
-  public
-    constructor Create(A_BLAST_DENSITY: Double);
+    constructor Create;
     function Apply(APattern: TPattern; Intensity: Double): TPattern;
   end;
 
 implementation
 
-{ Helper: check if a string starts with any of the given prefixes }
-function HasPrefix(const S, Prefix: String): Boolean;
+function HasAnyPrefix(const Str: String; const Prefixes: specialize TArray<String>): Boolean;
+var P: string;
 begin
-  Result := Pos(LowerCase(Prefix), LowerCase(S)) = 1;
-end;
-
-function HasAnyPrefix(const S: String; const Prefixes: specialize TArray<String>): Boolean;
-var
-  I: Integer;
-begin
-  for I := Low(Prefixes) to High(Prefixes) do
-    if Pos(LowerCase(Prefixes[I]), LowerCase(S)) > 0 then
-      Exit(True);
-  Exit(False);
+  for P in Prefixes do
+    if Pos(LowerCase(P), Str) = 1 then Exit(True);
+  Result := False;
 end;
 
 { TBehindBeatTiming }
-constructor TBehindBeatTiming.Create(A_MAX_DELAY_MS: Double);
-begin
-  FMaxDelayMs := A_MAX_DELAY_MS;
-end;
+constructor TBehindBeatTiming.Create(A_MAX_DELAY_MS: Single);
+begin FMaxDelayMs := A_MAX_DELAY_MS; end;
 
 function TBehindBeatTiming.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-  Beat: TBeat;
+var Beat: TBeat; InstName: String; OffsetMs: Single;
 begin
   Result := APattern.Copy;
-  if (Intensity <= 0) then Exit;
-
-  for BIdx := 0 to Result.Beats.Count - 1 do
+  if (Intensity <= 0) or (FMaxDelayMs <= 0) then Exit;
+  for Beat in Result.Beats do
   begin
-    Beat := Result.Beats[BIdx];
-    if Random < Intensity * 0.3 then
+    if not Assigned(Beat.Instrument) then Continue;
+    InstName := LowerCase(Beat.Instrument.Name);
+    if ((Pos('kick', InstName) = 1) or (Pos('snare', InstName) = 1)) then
     begin
-      // Add delayed copy of this beat (behind-the-beat feel)
-      Beat.Position := Beat.Position + FMaxDelayMs / 1000.0 * Intensity;
-      Beat.GhostNote := True;
-      Beat.Velocity := Trunc(Beat.Velocity * 0.95);
+      OffsetMs := FMaxDelayMs * Intensity * (0.5 + Random * 0.5);
+      Beat.Position := Beat.Position + (OffsetMs / 1000.0);
     end;
   end;
 end;
 
-{ TTripeltVocabulary }
-constructor TTripeltVocabulary.Create(A_TRIP_PROBABILITY: Double);
-begin
-  FTripProbability := A_TRIP_PROBABILITY;
-end;
+{ TTripetVocabulary }
+constructor TTripetVocabulary.Create(A_TRIP_PROBABILITY: Double);
+begin FTripProbability := A_TRIP_PROBABILITY; end;
 
-function TTripeltVocabulary.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  I: Integer;
+function TTripetVocabulary.Apply(APattern: TPattern; Intensity: Double): TPattern;
+var BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FTripProbability <= 0) then Exit;
-
-  // Add triplet accent every bar
-  for I := 0 to Trunc(Result.DurationBars) - 1 do
-    if Random < FTripProbability * Intensity * 0.2 then
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    if (Result.Beats[BIdx].Position mod 4.0 = 3.0) and (Random < FTripProbability * Intensity * 0.2) then
       Result.AddBeat(0.5, TInstrumentRegistry.Get('snare_1_hit'), Round(90 * Intensity));
 end;
 
 { THeavyAccents }
 constructor THeavyAccents.Create(A_ACCENT_BOOST: Integer);
-begin
-  FAccentBoost := A_ACCENT_BOOST;
-end;
+begin FAccentBoost := A_ACCENT_BOOST; end;
 
 function THeavyAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-  BoostedVel: Integer;
-  InstName: String;
+var BIdx: Integer; BoostedVel: Integer; InstName: String;
 begin
   Result := APattern.Copy;
-
   for BIdx := 0 to Result.Beats.Count - 1 do
   begin
+    if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
     InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
-    // Boost snare and kick accents
     if ((HasAnyPrefix(InstName, ['snare', 'kick'])) and (Intensity > 0.5)) then
-    begin
-      BoostedVel := Min(127, Result.Beats[BIdx].Velocity + FAccentBoost);
-      Result.Beats[BIdx].Velocity := Trunc(BoostedVel * Intensity);
-    end;
+      Result.Beats[BIdx].Velocity := Trunc(Min(127, Result.Beats[BIdx].Velocity + FAccentBoost) * Intensity);
   end;
 end;
 
 { TGhostNoteLayer }
 constructor TGhostNoteLayer.Create(A_GHOST_DENSITY: Double);
-begin
-  FGhostDensity := A_GHOST_DENSITY;
-end;
+begin FGhostDensity := A_GHOST_DENSITY; end;
 
 function TGhostNoteLayer.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx, GhostCount, MaxGhostsPerBar: Integer;
-  EffectiveDensity, ScaleFactor: Double;
-  BarStart: Double;
-  InstName: String;
-  SnarePrefixes: specialize TArray<String>;
+var BIdx, GhostCount, MaxGhostsPerBar: Integer; EffDensity, ScaleF: Double; BarStart: Double; InstName: String;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FGhostDensity <= 0) then Exit;
 
-  SetLength(SnarePrefixes, 4);
-  SnarePrefixes[0] := 'snare';
-  SnarePrefixes[1] := 'snare_sticks';
-  SnarePrefixes[2] := 'snare_1_hit';
-  SnarePrefixes[3] := 'rimshot';
+  EffDensity := FGhostDensity * Intensity;
+  if EffDensity >= 0.99 then ScaleF := 1.0
+  else if Result.Beats.Count <= 6 then ScaleF := 1.0
+  else if Result.Beats.Count <= 14 then ScaleF := 0.6
+  else ScaleF := 0.3;
+  EffDensity := EffDensity * ScaleF;
+  MaxGhostsPerBar := Max(2, Trunc((16 - Result.Beats.Count) * EffDensity));
 
-  // Scale density inversely to input beat count (matches Python)
-  EffectiveDensity := FGhostDensity * Intensity;
-  if EffectiveDensity >= 0.99 then
-    ScaleFactor := 1.0
-  else if Result.Beats.Count <= 6 then
-    ScaleFactor := 1.0
-  else if Result.Beats.Count <= 14 then
-    ScaleFactor := 0.6
-  else
-    ScaleFactor := 0.3;
-
-  EffectiveDensity := EffectiveDensity * ScaleFactor;
-  MaxGhostsPerBar := Max(2, Trunc((16 - Result.Beats.Count) * EffectiveDensity));
-
-  // Iterate beats in order by bar
-  GhostCount := 0;
-  BarStart := -1.0;
+  GhostCount := 0; BarStart := -1.0;
   for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    // Detect new bar boundary and reset ghost count
-    if Trunc(Result.Beats[BIdx].Position) > Trunc(BarStart) then
-    begin
-      GhostCount := 0;
-      BarStart := Result.Beats[BIdx].Position;
-    end;
-
-    // Stop adding ghosts for this bar if budget exceeded
+    if Trunc(Result.Beats[BIdx].Position) > Trunc(BarStart) then begin GhostCount := 0; BarStart := Result.Beats[BIdx].Position; end;
     if GhostCount >= MaxGhostsPerBar then Continue;
-
-    // Check if this is a snare beat (by instrument name)
+    if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
     InstName := Result.Beats[BIdx].Instrument.Name;
-    if not HasAnyPrefix(InstName, SnarePrefixes) then Continue;
-
-    // Add ghost note slightly offset from original
-    GhostCount := GhostCount + 1;
-    Result.Beats.Add(TBeat.Create(Result.Beats[BIdx].Position + 0.25,
-      TInstrumentRegistry.Get('snare_1_hit'), Max(40, Trunc(40 * Intensity))));
+    // Only add ghost notes to actual snare-type instruments (not sticks, not rimshot)
+    if ((InstName = 'snare') or (InstName = 'snare_open_hit_open_lateral_hit')) and (GhostCount < MaxGhostsPerBar) then
+    begin
+      Inc(GhostCount);
+      Result.Beats.Add(TBeat.Create(Result.Beats[BIdx].Position + 0.25,
+        TInstrumentRegistry.Get('snare_1_hit'), Max(30, Trunc(35 * Intensity))));
+    end;
   end;
 end;
 
 { TLinearCoordination }
 constructor TLinearCoordination.Create(A_LINEAR_PROBABILITY: Double);
-begin
-  FLinearProbability := A_LINEAR_PROBABILITY;
-end;
+begin FLinearProbability := A_LINEAR_PROBABILITY; end;
 
 function TLinearCoordination.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  I, J: Integer;
-  TimeDiff: Double;
+var I, J: Integer; TimeDiff: Double;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FLinearProbability <= 0) then Exit;
-
-  // Check all pairs for simultaneous hits on different instruments
   for I := 0 to Result.Beats.Count - 2 do
     for J := I + 1 to Result.Beats.Count - 1 do
-    begin
-      TimeDiff := Abs(Result.Beats[I].Position - Result.Beats[J].Position);
-      if (TimeDiff < 0.01) and
-         (Result.Beats[I].Instrument <> Result.Beats[J].Instrument) then
-      begin
-        if Random < FLinearProbability * Intensity then
+      if Abs(Result.Beats[I].Position - Result.Beats[J].Position) < 0.01 then
+        if (Result.Beats[I].Instrument <> Result.Beats[J].Instrument) and (Random < FLinearProbability * Intensity) then
           Result.Beats[J].Position := Result.Beats[J].Position + 0.0625;
-      end;
-    end;
 end;
 
 { TShuffleFeelApplication }
 constructor TShuffleFeelApplication.Create(A_SHUFFLE_AMOUNT: Double);
-begin
-  FShuffleAmount := A_SHUFFLE_AMOUNT;
-end;
+begin FShuffleAmount := A_SHUFFLE_AMOUNT; end;
 
 function TShuffleFeelApplication.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-  BeatWithinQuarter, ShuffleOffset: Double;
+var BIdx: Integer; BeatWithinQuarter, ShuffleOffset: Double;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FShuffleAmount <= 0) then Exit;
-
-  ShuffleOffset := FShuffleAmount * Intensity * 0.25; // triplet-based swing amount
-
+  ShuffleOffset := FShuffleAmount * Intensity * 0.25;
   for BIdx := 0 to Result.Beats.Count - 1 do
   begin
     BeatWithinQuarter := Result.Beats[BIdx].Position mod 1.0;
-
-    // Apply shuffle to offbeat 16ths (positions .25, .75 within quarter note)
     if (Abs(BeatWithinQuarter - 0.25) < 0.01) or (Abs(BeatWithinQuarter - 0.75) < 0.01) then
       Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + ShuffleOffset;
   end;
@@ -366,145 +257,97 @@ end;
 
 { TFastChopsTriplets }
 constructor TFastChopsTriplets.Create(A_CHOP_PROBABILITY: Double);
-begin
-  FChopProbability := A_CHOP_PROBABILITY;
-end;
+begin FChopProbability := A_CHOP_PROBABILITY; end;
 
 function TFastChopsTriplets.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
+var BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FChopProbability <= 0) then Exit;
-
-  // Add tom chop every bar at the bar start position
   for BIdx := 0 to Result.Beats.Count - 1 do
     if Random < FChopProbability * Intensity * 0.2 then
       Result.AddBeat(Trunc(Result.Beats[BIdx].Position), TInstrumentRegistry.Get('tom_2_open_hit'), Round(100 * Intensity));
 end;
 
 { TPocketStretching }
+constructor TPocketStretching.Create;
+begin inherited Create; end;
+
 function TPocketStretching.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-  MicroDelay: Double;
-  InstName: String;
+var BIdx: Integer; MicroDelay: Double; InstName: String;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
-
-  // Subtle micro-timing variations for pocket feel on kick/snare beats
   MicroDelay := (Random(100) / 100.0 - 0.5) * 0.02 * Intensity;
   for BIdx := 0 to Result.Beats.Count - 1 do
   begin
+    if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
     InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
-    if (HasAnyPrefix(InstName, ['kick', 'snare'])) then
+    if HasAnyPrefix(InstName, ['kick', 'snare']) then
       Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + MicroDelay;
   end;
 end;
 
 { TMinimalCreativity }
+constructor TMinimalCreativity.Create;
+begin inherited Create; end;
+
 function TMinimalCreativity.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
+var BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
-
-  // Remove some beats for sparse atmosphere
   for BIdx := 0 to Result.Beats.Count - 1 do
     if (Random < Intensity * 0.4) and (Result.Beats.Count > 2) then
       Result.Beats.Delete(Random(Result.Beats.Count - 1));
 end;
 
 { TSpeedPrecision }
-constructor TSpeedPrecision.Create(A_VELOCITY_TOLERANCE: Double);
-begin
-  FVelocityTolerance := A_VELOCITY_TOLERANCE;
-end;
+constructor TSpeedPrecision.Create;
+begin inherited Create; end;
 
 function TSpeedPrecision.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-  AvgVel: Integer;
+var BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    if Assigned(Result.Beats[BIdx].Instrument) then
+      Result.Beats[BIdx].Velocity := Min(127, Max(80, Round(105 * Intensity)));
+end;
 
-  // Normalize velocities toward precision
+{ TWistedAccents }
+constructor TWistedAccents.Create(A_TWIST_AMOUNT: Double);
+begin FTwistAmount := A_TWIST_AMOUNT; end;
+
+function TWistedAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
+var BIdx: Integer; InstName: String;
+begin
+  Result := APattern.Copy;
+  if (Intensity <= 0) or (FTwistAmount <= 0) then Exit;
   for BIdx := 0 to Result.Beats.Count - 1 do
   begin
-    AvgVel := Round(Result.Beats[BIdx].Velocity * FVelocityTolerance +
-                    100 * (1.0 - FVelocityTolerance));
-    Result.Beats[BIdx].Velocity := Max(40, Min(127, AvgVel));
+    if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
+    InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
+    if HasAnyPrefix(InstName, ['snare', 'kick']) then
+      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + (FTwistAmount * 0.05 * (Random - 0.5));
   end;
-end;
-
-{ TTwistedAccents }
-constructor TTwistedAccents.Create(A_ACCENT_DISPLACEMENT: Integer);
-begin
-  FAccentDisplacement := A_ACCENT_DISPLACEMENT;
-end;
-
-function TTwistedAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-begin
-  Result := APattern.Copy;
-  if (Intensity <= 0) then Exit;
-
-  for BIdx := 0 to Result.Beats.Count - 1 do
-    if (Random < Intensity * 0.3) and
-       HasAnyPrefix(LowerCase(Result.Beats[BIdx].Instrument.Name), ['snare']) then
-      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + (FAccentDisplacement / 480.0);
 end;
 
 { TMechanicalPrecision }
-constructor TMechanicalPrecision.Create(A_QUANT_STRENGTH: Double);
-begin
-  FQuantizationStrength := A_QUANT_STRENGTH;
-end;
+constructor TMechanicalPrecision.Create;
+begin inherited Create; end;
 
 function TMechanicalPrecision.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  BIdx: Integer;
-  QuantTime: Double;
+var BIdx: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
-
-  // Quantize all notes to strict grid with strength factor
   for BIdx := 0 to Result.Beats.Count - 1 do
-  begin
-    QuantTime := Round(Result.Beats[BIdx].Position * 16) / 16.0;
-    Result.Beats[BIdx].Position :=
-      Result.Beats[BIdx].Position * (1.0 - FQuantizationStrength) +
-      QuantTime * FQuantizationStrength;
-  end;
-end;
-
-{ TBlastBeatApplication }
-constructor TBlastBeatApplication.Create(A_BLAST_DENSITY: Double);
-begin
-  FBlastDensity := A_BLAST_DENSITY;
-end;
-
-function TBlastBeatApplication.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var
-  I: Integer;
-begin
-  Result := APattern.Copy;
-  if (Intensity <= 0) or (FBlastDensity <= 0) then Exit;
-
-  // Add blast beat hits at the start of each bar
-  for I := 0 to Trunc(Result.DurationBars) - 1 do
-    if Random < FBlastDensity * Intensity * 0.25 then
-    begin
-      Result.AddBeat(I, TInstrumentRegistry.Get('snare_1_hit'), Round(110 * Intensity));
-      Result.AddBeat(I + 0.25, TInstrumentRegistry.Get('kick_hit'), Round(115 * Intensity));
-      Result.AddBeat(I + 0.5, TInstrumentRegistry.Get('snare_1_hit'), Round(105 * Intensity));
-      Result.AddBeat(I + 0.75, TInstrumentRegistry.Get('kick_hit'), Round(110 * Intensity));
-    end;
+    Result.Beats[BIdx].Position := Round(Result.Beats[BIdx].Position * 32) / 32.0;
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    if Assigned(Result.Beats[BIdx].Instrument) then
+      Result.Beats[BIdx].Velocity := Round(110 * Intensity);
 end;
 
 end.

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TRoederPlugin = class(TDrummerPlugin)
@@ -24,41 +24,29 @@ type
 implementation
 
 constructor TRoederPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor TRoederPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function TRoederPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Roeder style: atmospheric sludge, minimal creativity, crushing weight
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Roeder style: minimal creative sparsity + heavy crush on remaining hits
+  Result1 := TMinimalCreativity.Create.Apply(APattern, 0.35);
+  Result2 := THeavyAccents.Create(20).Apply(Result1, 0.85);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(90, Beat.Velocity + 15))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(80, Beat.Velocity + 10))
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(75, Max(40, Beat.Velocity - 10)); // Sparse touch
+        Result2.Beats[B].Velocity := Min(127, Max(95, Result2.Beats[B].Velocity + 15));
     end;
-  end;
+  Result := Result2;
 end;
 
 function TRoederPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('roeder_atmospheric_fill', 'Jason Roeder atmospheric fill');
@@ -68,15 +56,9 @@ begin
 end;
 
 function TRoederPlugin.GetDrummerName: String;
-begin
-  Result := 'roeder';
-end;
+begin Result := 'roeder'; end;
 
 function TRoederPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'metal';
-  Result[1] := 'doom';
-end;
+begin SetLength(Result, 2); Result[0] := 'metal'; Result[1] := 'doom'; end;
 
 end.

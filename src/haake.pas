@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   THaakePlugin = class(TDrummerPlugin)
@@ -24,41 +24,29 @@ type
 implementation
 
 constructor THaakePlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor THaakePlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function THaakePlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Haake style: Meshuggah mechanical polyrhythms, extreme quantization
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Haake style: Meshuggah mechanical precision + heavy blast beats + linear
+  Result1 := TMechanicalPrecision.Create.Apply(APattern, 0.95);
+  Result2 := THeavyAccents.Create(20).Apply(Result1, 0.9);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(95, Beat.Velocity + 15))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(90, Beat.Velocity + 12))
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(100, Max(85, Beat.Velocity + 5)); // Tight HH
+        Result2.Beats[B].Velocity := Min(127, Max(95, Result2.Beats[B].Velocity + 15));
     end;
-  end;
+  Result := Result2;
 end;
 
 function THaakePlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('haake_polyrhythm_fill', 'Fabio Haake polyrhythm fill');
@@ -68,15 +56,9 @@ begin
 end;
 
 function THaakePlugin.GetDrummerName: String;
-begin
-  Result := 'haake';
-end;
+begin Result := 'haake'; end;
 
 function THaakePlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'metal';
-  Result[1] := 'progressive';
-end;
+begin SetLength(Result, 2); Result[0] := 'metal'; Result[1] := 'progressive'; end;
 
 end.

@@ -38,24 +38,30 @@ var
   Beat: TBeat;
   InstName: string;
 begin
-  // Bonham style: behind-the-beat feel, powerful accents on kick/snare,
-  // slightly reduced hi-hat for "drunk" groove feel
+  // Bonham style: powerful kick/snare, behind-the-beat ghost notes on backbeat snares,
+  // slightly quieter hi-hat for "drunk" groove feel
   Result := APattern.Copy;
   for Beat in Result.Beats do
   begin
-    if Assigned(Beat.Instrument) then
+    if not Assigned(Beat.Instrument) then Continue;
+    InstName := LowerCase(Beat.Instrument.Name);
+
+    // Boost kick by +10
+    if Pos('kick', InstName) = 1 then
+      Beat.Velocity := Min(127, Beat.Velocity + 10);
+
+    // Snare: backbeats (positions 1.0, 3.0) get punchy boost, others get ghost note reduction
+    if (InstName = 'snare') or (InstName = 'snare_open_hit_open_lateral_hit') then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
-      if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Beat.Velocity + 8)
-      else if (InstName = 'snare') or (InstName = 'snare_sticks') or (InstName = 'snare_open_hit_open_lateral_hit') then
-      begin
-        if Random < 0.4 then
-          Beat.Velocity := Max(50, Beat.Velocity - 15);
-      end
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(95, Beat.Velocity + 5);
+      if (Trunc(Beat.Position mod 4.0) = 1) or (Trunc(Beat.Position mod 4.0) = 3) then
+        Beat.Velocity := Min(127, Beat.Velocity + 15)
+      else
+        Beat.Velocity := Max(50, Beat.Velocity - 10);
     end;
+
+    // Hi-hat slightly boosted for loose feel
+    if Pos('hihat', InstName) = 1 then
+      Beat.Velocity := Min(95, Beat.Velocity + 8);
   end;
 end;
 

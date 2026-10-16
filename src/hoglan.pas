@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   THoglanPlugin = class(TDrummerPlugin)
@@ -24,41 +24,29 @@ type
 implementation
 
 constructor THoglanPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor THoglanPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function THoglanPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Hoglan style: mechanical precision, extreme velocity consistency, blast-ready
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Hoglan style: mechanical precision + heavy blast-beat-ready accents
+  Result1 := TMechanicalPrecision.Create.Apply(APattern, 0.85);
+  Result2 := THeavyAccents.Create(18).Apply(Result1, 0.9);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(95, Beat.Velocity + 10))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(95, Beat.Velocity + 10))
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(100, Max(85, Beat.Velocity + 5));
+        Result2.Beats[B].Velocity := Min(127, Max(95, Result2.Beats[B].Velocity + 10));
     end;
-  end;
+  Result := Result2;
 end;
 
 function THoglanPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('hoglan_blast_fill', 'Gene Hoglan blast fill');
@@ -68,15 +56,9 @@ begin
 end;
 
 function THoglanPlugin.GetDrummerName: String;
-begin
-  Result := 'hoglan';
-end;
+begin Result := 'hoglan'; end;
 
 function THoglanPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'metal';
-  Result[1] := 'progressive';
-end;
+begin SetLength(Result, 2); Result[0] := 'metal'; Result[1] := 'progressive'; end;
 
 end.

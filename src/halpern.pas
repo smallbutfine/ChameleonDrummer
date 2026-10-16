@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   THalpernPlugin = class(TDrummerPlugin)
@@ -24,41 +24,33 @@ type
 implementation
 
 constructor THalpernPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor THalpernPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function THalpernPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Halpern style: jazz-fusion versatility, dynamic range, studio precision
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Halpern style: jazz-fusion versatility + ghost notes + behind-the-beat timing
+  Result1 := TGhostNoteLayer.Create(0.3).Apply(APattern, 0.5);
+  Result2 := TBehindBeatTiming.Create(15.0).Apply(Result1, 0.4);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(65, Beat.Velocity))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(50, Beat.Velocity + 3))
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(90, Max(55, Beat.Velocity - 2)); // Brushed feel
+        Result2.Beats[B].Velocity := Min(127, Max(60, Result2.Beats[B].Velocity));
     end;
-  end;
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
+      if Pos('snare', LowerCase(Result2.Beats[B].Instrument.Name)) = 1 then
+        Result2.Beats[B].Velocity := Min(127, Max(50, Result2.Beats[B].Velocity + 3));
+  Result := Result2;
 end;
 
 function THalpernPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('halpern_jazz_fill', 'Eric Halpern jazz fill');
@@ -68,15 +60,9 @@ begin
 end;
 
 function THalpernPlugin.GetDrummerName: String;
-begin
-  Result := 'halpern';
-end;
+begin Result := 'halpern'; end;
 
 function THalpernPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'jazz';
-  Result[1] := 'fusion';
-end;
+begin SetLength(Result, 2); Result[0] := 'jazz'; Result[1] := 'fusion'; end;
 
 end.

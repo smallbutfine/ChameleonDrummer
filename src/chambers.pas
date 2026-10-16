@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TChambersPlugin = class(TDrummerPlugin)
@@ -24,46 +24,29 @@ type
 implementation
 
 constructor TChambersPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor TChambersPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function TChambersPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Chambers style: funk mastery, ghost notes on snare, deep kick pocket
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Chambers style: ghost notes + pocket stretching + deep kick
+  Result1 := TGhostNoteLayer.Create(0.5).Apply(APattern, 0.8);
+  Result2 := TPocketStretching.Create.Apply(Result1, 0.7);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(80, Beat.Velocity + 5))
-      else if Pos('snare', InstName) = 1 then
-      begin
-        if Random < 0.35 then
-          Beat.Velocity := Max(35, Beat.Velocity - 30) // Ghost notes
-        else
-          Beat.Velocity := Min(127, Beat.Velocity + 5);
-      end
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(88, Beat.Velocity - 3); // Pocket-focused HH
+        Result2.Beats[B].Velocity := Min(127, Max(85, Result2.Beats[B].Velocity + 5));
     end;
-  end;
+  Result := Result2;
 end;
 
 function TChambersPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('chambers_funk_fill', 'Dennis Chambers funk fill');
@@ -73,16 +56,9 @@ begin
 end;
 
 function TChambersPlugin.GetDrummerName: String;
-begin
-  Result := 'chambers';
-end;
+begin Result := 'chambers'; end;
 
 function TChambersPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 3);
-  Result[0] := 'funk';
-  Result[1] := 'jazz';
-  Result[2] := 'rock';
-end;
+begin SetLength(Result, 3); Result[0] := 'funk'; Result[1] := 'jazz'; Result[2] := 'rock'; end;
 
 end.

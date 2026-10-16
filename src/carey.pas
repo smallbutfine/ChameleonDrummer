@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TCareyPlugin = class(TDrummerPlugin)
@@ -24,51 +24,29 @@ type
 implementation
 
 constructor TCareyPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor TCareyPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function TCareyPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  PatternCopy: TPattern;
-  Beat: TBeat;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Copy the pattern and apply Danny Carey-style modifications:
-  // - Deep tom cascades on fills
-  // - Polyrhythmic ghost notes
-  // - Pushed-ahead feel with deep tom accents
-  PatternCopy := APattern.Copy;
-  for Beat in PatternCopy.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Carey style: polyrhythmic ghost notes + deep tom emphasis
+  Result1 := TGhostNoteLayer.Create(0.6).Apply(APattern, 0.7);
+  Result2 := TPocketStretching.Create.Apply(Result1, 0.5);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      case LowerCase(Beat.Instrument.Name) of
-        'kick':
-          begin
-            // Deep kick with slight velocity boost
-            Beat.Velocity := Min(127, Beat.Velocity + 5);
-          end;
-        'snare', 'snare_sticks_hit':
-          begin
-            // Add ghost note texture - reduce velocity slightly for Carey style
-            if Random < 0.3 then
-              Beat.Velocity := Max(40, Beat.Velocity - 20);
-          end;
-      end;
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
+      if Pos('kick', InstName) = 1 then
+        Result2.Beats[B].Velocity := Min(127, Result2.Beats[B].Velocity + 5);
     end;
-  end;
-  Result := PatternCopy;
+  Result := Result2;
 end;
 
 function TCareyPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('carey_polyrhythmic_fill', 'Danny Carey polyrhythmic fill');
@@ -78,15 +56,9 @@ begin
 end;
 
 function TCareyPlugin.GetDrummerName: String;
-begin
-  Result := 'carey';
-end;
+begin Result := 'carey'; end;
 
 function TCareyPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'metal';
-  Result[1] := 'progressive';
-end;
+begin SetLength(Result, 2); Result[0] := 'metal'; Result[1] := 'progressive'; end;
 
 end.

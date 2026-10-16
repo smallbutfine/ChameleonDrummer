@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TPeartPlugin = class(TDrummerPlugin)
@@ -24,41 +24,30 @@ type
 implementation
 
 constructor TPeartPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor TPeartPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function TPeartPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2, Result3: TPattern;
 begin
-  // Peart style: extreme precision, linear limb independence, tight control
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Peart style: linear coordination + mechanical precision + heavy accents
+  Result1 := TLinearCoordination.Create(0.9).Apply(APattern, 0.85);
+  Result2 := TMechanicalPrecision.Create.Apply(Result1, 0.95);
+  Result3 := THeavyAccents.Create(15).Apply(Result2, 0.8);
+  for B := 0 to Result3.Beats.Count - 1 do
+    if Assigned(Result3.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result3.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(85, Beat.Velocity + 5))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(90, Beat.Velocity + 8))
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(95, Max(70, Beat.Velocity));
+        Result3.Beats[B].Velocity := Min(127, Max(85, Result3.Beats[B].Velocity + 5));
     end;
-  end;
+  Result := Result3;
 end;
 
 function TPeartPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('peart_polyrhythmic_fill', 'Neil Peart polyrhythmic fill');
@@ -68,15 +57,9 @@ begin
 end;
 
 function TPeartPlugin.GetDrummerName: String;
-begin
-  Result := 'peart';
-end;
+begin Result := 'peart'; end;
 
 function TPeartPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'progressive';
-  Result[1] := 'metal';
-end;
+begin SetLength(Result, 2); Result[0] := 'progressive'; Result[1] := 'metal'; end;
 
 end.

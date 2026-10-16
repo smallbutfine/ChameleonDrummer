@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TCopelandPlugin = class(TDrummerPlugin)
@@ -24,41 +24,33 @@ type
 implementation
 
 constructor TCopelandPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor TCopelandPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function TCopelandPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Stretched, Result1: TPattern;
 begin
-  // Copeland style: reggae/ska off-beat, cross-stick snare feel, light touch
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Copeland style: reggae/ska off-beat feel + light touch + pocket stretching
+  Stretched := TPocketStretching.Create.Apply(APattern, 0.5);
+  Result1 := TMinimalCreativity.Create.Apply(Stretched, 0.2);
+  for B := 0 to Result1.Beats.Count - 1 do
+    if Assigned(Result1.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result1.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(60, Beat.Velocity - 10))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(85, Max(45, Beat.Velocity - 20)) // Cross-stick feel
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(90, Max(60, Beat.Velocity + 5));
+        Result1.Beats[B].Velocity := Min(127, Max(55, Result1.Beats[B].Velocity - 10));
     end;
-  end;
+  for B := 0 to Result1.Beats.Count - 1 do
+    if Assigned(Result1.Beats[B].Instrument) then
+      if Pos('snare', LowerCase(Result1.Beats[B].Instrument.Name)) = 1 then
+        Result1.Beats[B].Velocity := Min(85, Max(40, Result1.Beats[B].Velocity - 20));
+  Result := Result1;
 end;
 
 function TCopelandPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('copeland_offbeat_fill', 'Stewart Copeland offbeat fill');
@@ -68,15 +60,9 @@ begin
 end;
 
 function TCopelandPlugin.GetDrummerName: String;
-begin
-  Result := 'copeland';
-end;
+begin Result := 'copeland'; end;
 
 function TCopelandPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'rock';
-  Result[1] := 'funk';
-end;
+begin SetLength(Result, 2); Result[0] := 'rock'; Result[1] := 'funk'; end;
 
 end.

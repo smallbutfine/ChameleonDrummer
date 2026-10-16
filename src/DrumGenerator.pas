@@ -622,6 +622,7 @@ begin
 
         { Add note_on event }
         MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+        if MidiNote <= 0 then Continue;
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
         begin
@@ -661,6 +662,8 @@ begin
               end;
             if DupFound then Continue;
 
+            MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+            if MidiNote <= 0 then Continue;
             SetLength(Events, Length(Events) + 1);
             with Events[High(Events)] do
             begin
@@ -800,6 +803,7 @@ var
   Events: TMidiEventArray;
   Beat: TBeat;
   Tick, AbsTick: Int64;
+MidiNote: Integer;
 i: Integer;
 DurTicks: Integer; { duration in ticks }
 PrevTick: Int64; { delta-time accumulator }
@@ -811,6 +815,8 @@ begin
     AbsTick := Round(Beat.Position * APattern.Subdivision);
 
     { Add note_on with absolute tick }
+    MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+    if MidiNote <= 0 then Continue;
     SetLength(Events, Length(Events) + 1);
     with Events[High(Events)] do
     begin

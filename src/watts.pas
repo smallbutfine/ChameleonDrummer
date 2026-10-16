@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections,
   Pattern, Song,
-  DrummerPlugin, patterns_templates;
+  DrummerPlugin, patterns_templates, DrummerMods;
 
 type
   TWattsPlugin = class(TDrummerPlugin)
@@ -24,41 +24,33 @@ type
 implementation
 
 constructor TWattsPlugin.Create;
-begin
-  inherited Create;
-end;
+begin inherited Create; end;
 
 destructor TWattsPlugin.Destroy;
-begin
-  inherited Destroy;
-end;
+begin inherited Destroy; end;
 
 function TWattsPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var
-  Beat: TBeat;
-  InstName: string;
+var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
-  // Watts style: Arctic Monkeys energy, tight punk-funk pocket
-  Result := APattern.Copy;
-  for Beat in Result.Beats do
-  begin
-    if Assigned(Beat.Instrument) then
+  // Watts style: tight punk-funk pocket + linear coordination + pocket feel
+  Result1 := TLinearCoordination.Create(0.6).Apply(APattern, 0.7);
+  Result2 := TPocketStretching.Create.Apply(Result1, 0.5);
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Beat.Instrument.Name);
+      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(75, Beat.Velocity + 8))
-      else if Pos('snare', InstName) = 1 then
-        Beat.Velocity := Min(127, Max(80, Beat.Velocity + 10))
-      else if Pos('hihat', InstName) = 1 then
-        Beat.Velocity := Min(95, Max(70, Beat.Velocity + 3));
+        Result2.Beats[B].Velocity := Min(127, Max(75, Result2.Beats[B].Velocity + 8));
     end;
-  end;
+  for B := 0 to Result2.Beats.Count - 1 do
+    if Assigned(Result2.Beats[B].Instrument) then
+      if Pos('snare', LowerCase(Result2.Beats[B].Instrument.Name)) = 1 then
+        Result2.Beats[B].Velocity := Min(127, Max(80, Result2.Beats[B].Velocity + 10));
+  Result := Result2;
 end;
 
 function TWattsPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill: TFill;
+var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('watts_groove_fill', 'Chris Watts groove fill');
@@ -68,15 +60,9 @@ begin
 end;
 
 function TWattsPlugin.GetDrummerName: String;
-begin
-  Result := 'watts';
-end;
+begin Result := 'watts'; end;
 
 function TWattsPlugin.GetPreferredGenres: TStringArray;
-begin
-  SetLength(Result, 2);
-  Result[0] := 'rock';
-  Result[1] := 'metal';
-end;
+begin SetLength(Result, 2); Result[0] := 'rock'; Result[1] := 'metal'; end;
 
 end.

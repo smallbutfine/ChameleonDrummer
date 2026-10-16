@@ -214,7 +214,7 @@ begin
     Output.Add('[Markers]');
     for I := 0 to FMarkers.Count - 1 do
     begin
-      Output.Add(Format('MARKER %d %.6f "%s"', [I, FMarkers[I].Measure,
+      Output.Add(Format('MARKER %.0f %.6f "%s"', [I, FMarkers[I].Measure,
         EscapeRPPString(FMarkers[I].Name)]));
     end;
 
