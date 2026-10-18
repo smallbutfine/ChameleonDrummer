@@ -205,7 +205,7 @@ begin
   end;
 
   Result := TPattern.Create(FName + '_humanized');
-  Result.FTimeSignature := FTimeSignature;
+  Result.FTimeSignature := TTimeSignature.Create(FTimeSignature.Numerator, FTimeSignature.Denominator);
   Result.FSubdivision := FSubdivision;
   Result.FSwingRatio := FSwingRatio;
 

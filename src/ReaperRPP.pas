@@ -45,6 +45,7 @@ type
     function EscapeRPPString(const S: String): String;
   public
     constructor Create;
+    destructor Destroy; override;
 
     procedure SetTitle(const ATitle: String);
     procedure AddMarker(Measure: Double; const AMarkerName: String);
@@ -152,9 +153,16 @@ end;
 { TReaperRPPWriter }
 constructor TReaperRPPWriter.Create;
 begin
+  inherited Create;
   FMarkers := specialize TList<TReaperMarker>.Create;
   FTitle := '';
   FTMPFile := '';
+end;
+
+destructor TReaperRPPWriter.Destroy;
+begin
+  FMarkers.Free;
+  inherited Destroy;
 end;
 
 procedure TReaperRPPWriter.SetTitle(const ATitle: String);
@@ -214,7 +222,7 @@ begin
     Output.Add('[Markers]');
     for I := 0 to FMarkers.Count - 1 do
     begin
-      Output.Add(Format('MARKER %.0f %.6f "%s"', [I, FMarkers[I].Measure,
+      Output.Add(Format('MARKER %d %.6f "%s"', [I, FMarkers[I].Measure,
         EscapeRPPString(FMarkers[I].Name)]));
     end;
 

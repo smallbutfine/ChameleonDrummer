@@ -250,7 +250,6 @@ begin
     Args.Tempo,
     nil,   // AStructure - use genre default
     DrumKit, // Pass pre-loaded keymap
-    '',     // AEngineOverride - use default (v2)
     DrummerName, // ADrummer - pass directly to composer
     Args.Complexity,  // AComplexity - pattern complexity from CLI
     0.6,              // ADynamics - default dynamics
@@ -369,7 +368,6 @@ begin
     Args.Tempo,
     nil,      // AStructure - use genre default
     DrumKit,
-    '',       // AEngineOverride - use default (v2)
     Args.Drummer,
     0.5,      // AComplexity
     0.6,      // ADynamics

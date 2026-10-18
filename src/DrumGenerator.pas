@@ -40,9 +40,6 @@ private
   procedure LoadPlugins;
   function GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
 
-  { --- Private helpers for V1 engine. --- }
-  procedure _GenerateVariations(const APattern: TPattern; out AResult: specialize TList<TPatternVariation>; const AParams: TGenerationParameters);
-  procedure _GenerateFills(const Genre: string; out AResult: specialize TList<TFill>; const AParams: TGenerationParameters);
 
 public
   constructor Create(AComposerEngine: string = 'v2'); { default = v2 (bar-by-bar, matches Python) }
@@ -56,10 +53,10 @@ public
     ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
     AHumanization: Double = 0.5): TSong;
 
-  { Create a complete song — selects engine (V1 static or V2 evolution). }
+  { Create a complete song — always uses V2 (bar-by-bar evolution). }
   function CreateSong(const Genre, Style: string; ATempo: Integer = 120;
     const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
-    AEngineOverride: string = ''; ADrummer: string = ''; AComplexity: Double = 0.5;
+    ADrummer: string = ''; AComplexity: Double = 0.5;
     ADynamics: Double = 0.6; AHumanization: Double = 0.5): TSong;
 
   { Export a Song to a MIDI file. }
@@ -409,102 +406,11 @@ end;
 
 function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer = 120;
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
-  AEngineOverride: string = ''; ADrummer: string = ''; AComplexity: Double = 0.5;
+  ADrummer: string = ''; AComplexity: Double = 0.5;
   ADynamics: Double = 0.6; AHumanization: Double = 0.5): TSong;
-{ Public entry  selects V1 (static) or V2 (bar-by-bar). }
-var
-  Engine: string;
-  Tempo: Integer;
-  Structure: specialize TArray<TStructureEntry>;
-  Params: TGenerationParameters;
-  SongName: String;
-  SectionName: String;
-  Bars: Integer;
-  Pattern: TPattern;
-  Section: TSection;
-  SecIdx: Integer;
-  Variations: specialize TList<TPatternVariation>;
-  Fills: specialize TList<TFill>;
 begin
-  { Resolve engine. }
-  Engine := AEngineOverride;
-  if Engine = '' then
-    Engine := FComposerEngine;
-
-  { Resolve tempo  use genre-aware default when zero. }
-  Tempo := ATempo;
-  if Tempo = 0 then
-    Tempo := GetDefaultBpm(Genre, Style);
-
-  { Update drum kit / MIDI engine if new kit provided. }
-  if Assigned(ADrumKit) then
-  begin
-    FDrumKit := ADrumKit;
-  end;
-
-  { V2: bar-by-bar evolution (recommended, matches Python default) }
-  if Engine = 'v2' then
-    Exit(CreateSongV2(Genre, Style, Tempo, AStructure, ADrumKit, ADrummer,
-      AComplexity, ADynamics, AHumanization));
-
-  {  Engine V1: Static pattern reuse  per-section pattern generation. â”€â”€ }
-  Params := TGenerationParameters.Create(Genre, Style);
-  SongName := Genre + '_' + Style + '_song';
-  Result := TSong.Create(SongName, Tempo);
-  Result.GlobalParameters := Params;
-
-  { Use default structure if none provided. }
-  if (AStructure = nil) or (Length(AStructure) = 0) then
-    Structure := GetGenreDefaultStructure(Genre)
-  else
-    Structure := AStructure;
-
-  for SecIdx := Low(Structure) to High(Structure) do
-  begin
-    SectionName := Structure[SecIdx].Name;
-    Bars := Structure[SecIdx].Bars;
-
-    { Generate pattern for this section. }
-    Pattern := GeneratePattern(Genre, SectionName, TDrumKit.Create('gm', 10));
-    try
-      if Assigned(Pattern) then
-      begin
-        Section := TSection.Create(SectionName, Pattern, Bars);
-        Result.Sections.Add(Section);
-
-        { Add variations for high complexity. }
-        if Params.Complexity > 0.5 then
-        begin
-          Variations := specialize TList<TPatternVariation>.Create;
-          try
-            _GenerateVariations(Pattern, Variations, Params);
-            Section.Variations.AddRange(Variations);
-          finally
-            Variations.Free;
-          end;
-        end;
-
-        { Add fills for this section. }
-        Fills := specialize TList<TFill>.Create;
-        try
-          _GenerateFills(Genre, Fills, Params);
-          Section.Fills.AddRange(Fills);
-        finally
-          Fills.Free;
-        end;
-      end
-      else
-      begin
-        { Pattern generation failed  create empty section. }
-        Section := TSection.Create(SectionName, TPattern.Create(''), Bars);
-        Result.Sections.Add(Section);
-      end;
-    except
-      on E: Exception do
-        Writeln('[Warning] Failed to generate section "' + SectionName + '": ', E.Message);
-        { Continue with next section. }
-    end;
-  end;
+  Exit(CreateSongV2(Genre, Style, ATempo, AStructure, ADrumKit, ADrummer,
+    AComplexity, ADynamics, AHumanization));
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
@@ -878,40 +784,6 @@ begin
   end;
 end;
 
-procedure TDrumGenerator._GenerateVariations(const APattern: TPattern; out AResult: specialize TList<TPatternVariation>; const AParams: TGenerationParameters);
-var
-  VarName: string;
-begin
-  { V1 variations  simple pattern copy. }
-  AResult := specialize TList<TPatternVariation>.Create;
-
-  if not Assigned(APattern) then Exit;
-
-  VarName := APattern.Name + '_variation';
-  AResult.Add(TPatternVariation.Create(APattern));
-end;
-
-procedure TDrumGenerator._GenerateFills(const Genre: string; out AResult: specialize TList<TFill>; const AParams: TGenerationParameters);
-var
-  GenrePlugin: TObject;
-  CommonFills: specialize TList<TFill>;
-begin
-  { V1 fills  get common fills from genre plugin. }
-  AResult := specialize TList<TFill>.Create;
-
-  try
-    GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
-    if not Assigned(GenrePlugin) then Exit;
-
-    { Get common fills from genre plugin. }
-    CommonFills := (GenrePlugin as TGenrePlugin).GetCommonFills;
-    if Assigned(CommonFills) and (CommonFills.Count > 0) then
-      AResult.AddRange(CommonFills);
-  except
-    on E: Exception do
-      Writeln('[Warning] _GenerateFills failed: ', E.Message);
-  end;
-end;
 
 initialization
   SetLength(GENRE_ARCHETYPES, 5);

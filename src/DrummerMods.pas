@@ -24,7 +24,7 @@ type
 
 { ── TripletVocabulary ──────────────────────────────────── }
 type
-  TTripetVocabulary = class
+  TTripletVocabulary = class
   private
     FTripProbability: Double;
   public
@@ -108,7 +108,7 @@ type
 
 { ── TwistedAccents ─────────────────────────────────────── }
 type
-  TWistedAccents = class
+  TTwistedAccents = class
   private
     FTwistAmount: Double;
   public
@@ -155,11 +155,11 @@ begin
   end;
 end;
 
-{ TTripetVocabulary }
-constructor TTripetVocabulary.Create(A_TRIP_PROBABILITY: Double);
+{ TTripletVocabulary }
+constructor TTripletVocabulary.Create(A_TRIP_PROBABILITY: Double);
 begin FTripProbability := A_TRIP_PROBABILITY; end;
 
-function TTripetVocabulary.Apply(APattern: TPattern; Intensity: Double): TPattern;
+function TTripletVocabulary.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var BIdx: Integer;
 begin
   Result := APattern.Copy;
@@ -234,7 +234,7 @@ begin
     for J := I + 1 to Result.Beats.Count - 1 do
       if Abs(Result.Beats[I].Position - Result.Beats[J].Position) < 0.01 then
         if (Result.Beats[I].Instrument <> Result.Beats[J].Instrument) and (Random < FLinearProbability * Intensity) then
-          Result.Beats[J].Position := Result.Beats[J].Position + 0.0625;
+          Result.Beats[J].Position := Max(0.0, Result.Beats[J].Position + 0.0625);
 end;
 
 { TShuffleFeelApplication }
@@ -251,7 +251,7 @@ begin
   begin
     BeatWithinQuarter := Result.Beats[BIdx].Position mod 1.0;
     if (Abs(BeatWithinQuarter - 0.25) < 0.01) or (Abs(BeatWithinQuarter - 0.75) < 0.01) then
-      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + ShuffleOffset;
+      Result.Beats[BIdx].Position := Max(0.0, Result.Beats[BIdx].Position + ShuffleOffset);
   end;
 end;
 
@@ -278,7 +278,8 @@ var BIdx: Integer; MicroDelay: Double; InstName: String;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
-  MicroDelay := (Random(100) / 100.0 - 0.5) * 0.02 * Intensity;
+  // Clamp micro-delay to positive range only — negative delays cause sub-zero positions
+  MicroDelay := ((Random(100) / 100.0) * 0.5) * 0.02 * Intensity; // 0 .. +0.01 * Intensity
   for BIdx := 0 to Result.Beats.Count - 1 do
   begin
     if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
@@ -293,13 +294,17 @@ constructor TMinimalCreativity.Create;
 begin inherited Create; end;
 
 function TMinimalCreativity.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var BIdx: Integer;
+var BIdx, DelIdx: Integer;
 begin
   Result := APattern.Copy;
-  if (Intensity <= 0) then Exit;
-  for BIdx := 0 to Result.Beats.Count - 1 do
-    if (Random < Intensity * 0.4) and (Result.Beats.Count > 2) then
-      Result.Beats.Delete(Random(Result.Beats.Count - 1));
+  if (Intensity <= 0) or (Result.Beats.Count <= 2) then Exit;
+  // Delete backwards so indices don't shift during iteration
+  for BIdx := Result.Beats.Count - 1 downto 0 do
+    if Random < Intensity * 0.4 then
+    begin
+      DelIdx := BIdx;
+      Result.Beats.Delete(DelIdx);
+    end;
 end;
 
 { TSpeedPrecision }
@@ -316,11 +321,11 @@ begin
       Result.Beats[BIdx].Velocity := Min(127, Max(80, Round(105 * Intensity)));
 end;
 
-{ TWistedAccents }
-constructor TWistedAccents.Create(A_TWIST_AMOUNT: Double);
+{ TTwistedAccents }
+constructor TTwistedAccents.Create(A_TWIST_AMOUNT: Double);
 begin FTwistAmount := A_TWIST_AMOUNT; end;
 
-function TWistedAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
+function TTwistedAccents.Apply(APattern: TPattern; Intensity: Double): TPattern;
 var BIdx: Integer; InstName: String;
 begin
   Result := APattern.Copy;
@@ -330,7 +335,7 @@ begin
     if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
     InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
     if HasAnyPrefix(InstName, ['snare', 'kick']) then
-      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + (FTwistAmount * 0.05 * (Random - 0.5));
+      Result.Beats[BIdx].Position := Max(0.0, Result.Beats[BIdx].Position + (FTwistAmount * 0.05 * (Random - 0.5)));
   end;
 end;
 
@@ -344,10 +349,10 @@ begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
   for BIdx := 0 to Result.Beats.Count - 1 do
-    Result.Beats[BIdx].Position := Round(Result.Beats[BIdx].Position * 32) / 32.0;
+    Result.Beats[BIdx].Position := Max(0.0, Round(Result.Beats[BIdx].Position * 32) / 32.0);
   for BIdx := 0 to Result.Beats.Count - 1 do
     if Assigned(Result.Beats[BIdx].Instrument) then
-      Result.Beats[BIdx].Velocity := Round(110 * Intensity);
+      Result.Beats[BIdx].Velocity := Max(80, Min(127, Round(110 * Intensity)));
 end;
 
 end.

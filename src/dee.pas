@@ -33,7 +33,7 @@ function TDeePlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
   // Dee style: twisted backbeats + heavy metal power accents
-  Result1 := TWistedAccents.Create(0.5).Apply(APattern, 0.7);
+  Result1 := TTwistedAccents.Create(0.5).Apply(APattern, 0.7);
   Result2 := THeavyAccents.Create(15).Apply(Result1, 0.9);
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
