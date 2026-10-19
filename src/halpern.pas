@@ -16,6 +16,8 @@ type
     destructor Destroy; override;
 
     function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function ApplyStyleAtTempo(const APattern: TPattern;
+      ATempo: Integer): TPattern; override;
     function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
     function GetPreferredGenres: TStringArray; override;
@@ -30,11 +32,27 @@ destructor THalpernPlugin.Destroy;
 begin inherited Destroy; end;
 
 function THalpernPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var B: Integer; InstName: String; Result1, Result2: TPattern;
+begin
+  Result := ApplyStyleAtTempo(APattern, 120);
+end;
+
+function THalpernPlugin.ApplyStyleAtTempo(const APattern: TPattern;
+  ATempo: Integer): TPattern;
+var
+  B: Integer;
+  InstName: String;
+  Result1, Result2: TPattern;
+  BehindBeat: TBehindBeatTiming;
 begin
   // Halpern style: jazz-fusion versatility + ghost notes + behind-the-beat timing
   Result1 := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.3), APattern, 0.5);
-  Result2 := ApplyAndFreeModifier(TBehindBeatTiming.Create(15.0), Result1, 0.4, True);
+  BehindBeat := TBehindBeatTiming.Create(15.0);
+  try
+    Result2 := BehindBeat.ApplyAtTempo(Result1, 0.4, ATempo);
+  finally
+    BehindBeat.Free;
+    Result1.Free;
+  end;
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
     begin

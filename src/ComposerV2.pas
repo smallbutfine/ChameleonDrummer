@@ -635,7 +635,8 @@ begin
         begin
           DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
           if Assigned(DrummerPlugin) then
-            DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
+            DrummedPattern := (DrummerPlugin as TDrummerPlugin).
+              ApplyStyleAtTempo(BasePattern, ATempo);
         end;
 
         try

@@ -4,7 +4,7 @@ program test_drummers;
 
 uses
   Classes, SysUtils, Math, Generics.Collections, jsonparser, Pattern, Kit, Song,
-  DrummerPlugin, DrummerMods, patterns_templates, Hoglan, ComposerV2;
+  DrummerPlugin, DrummerMods, patterns_templates, Hoglan, Halpern, ComposerV2;
 
 procedure Check(Condition: Boolean; const MessageText: string);
 begin
@@ -302,6 +302,94 @@ begin
   end;
 end;
 
+procedure CheckBehindBeatTempoConversion;
+var
+  Source, AtSlowTempo, AtFastTempo: TPattern;
+  Kick: TDrumInstrument;
+  Modifier: TBehindBeatTiming;
+  SlowDelay, FastDelay: Double;
+  Plugin: THalpernPlugin;
+  PluginResult: TPattern;
+begin
+  Kick := TInstrumentRegistry.Get('kick');
+  Check(Assigned(Kick), 'kick must be registered for behind-beat testing');
+  Source := TPattern.Create('behind_beat_tempo_test');
+  Source.AddBeat(0.0, Kick, 90);
+  Modifier := TBehindBeatTiming.Create(15.0);
+  try
+    AtSlowTempo := Modifier.ApplyAtTempo(Source, 1.0, 60);
+    try
+      AtFastTempo := Modifier.ApplyAtTempo(Source, 1.0, 120);
+      try
+        SlowDelay := AtSlowTempo.Beats[0].Position;
+        FastDelay := AtFastTempo.Beats[0].Position;
+        Check((SlowDelay >= 0.0075) and (SlowDelay <= 0.015),
+          'behind-beat timing must convert milliseconds to quarter-note position at 60 BPM');
+        Check((FastDelay >= 0.015) and (FastDelay <= 0.03),
+          'behind-beat timing must convert milliseconds to quarter-note position at 120 BPM');
+      finally
+        AtFastTempo.Free;
+      end;
+    finally
+      AtSlowTempo.Free;
+    end;
+  finally
+    Modifier.Free;
+    Source.Free;
+  end;
+
+  Plugin := THalpernPlugin.Create;
+  Source := TPattern.Create('halpern_tempo_test');
+  Source.AddBeat(0.0, Kick, 90);
+  try
+    PluginResult := Plugin.ApplyStyleAtTempo(Source, 120);
+    try
+      Check((PluginResult.Beats[0].Position >= 0.006) and
+        (PluginResult.Beats[0].Position <= 0.012),
+        'Halpern drummer must apply its configured timing delay in beat units');
+    finally
+      PluginResult.Free;
+    end;
+  finally
+    Source.Free;
+    Plugin.Free;
+  end;
+end;
+
+procedure CheckTripletVocabulary;
+var
+  Source, Modified: TPattern;
+  Kick: TDrumInstrument;
+begin
+  Kick := TInstrumentRegistry.Get('kick');
+  Check(Assigned(Kick), 'kick must be registered for triplet testing');
+  Source := TPattern.Create('triplet_vocabulary_test');
+  Source.AddBeat(0.0, Kick, 90);
+  Source.AddBeat(0.5, Kick, 80);
+  Source.AddBeat(1.0, Kick, 85);
+  Source.AddBeat(1.5, Kick, 75);
+  try
+    Modified := ApplyAndFreeModifier(TTripletVocabulary.Create(1.0),
+      Source, 1.0);
+    try
+      Check(Modified.Beats.Count = Source.Beats.Count,
+        'triplet feel must reposition existing hits instead of adding phantom instruments');
+      Check((Abs(Modified.Beats[0].Position - 0.0) < 0.000001) and
+        (Abs(Modified.Beats[1].Position - (2.0 / 3.0)) < 0.000001) and
+        (Abs(Modified.Beats[2].Position - 1.0) < 0.000001) and
+        (Abs(Modified.Beats[3].Position - (5.0 / 3.0)) < 0.000001),
+        'triplet feel must move eighth-note offbeats onto the triplet grid');
+      Check((Source.Beats[1].Position = 0.5) and
+        (Source.Beats[3].Position = 1.5),
+        'triplet feel must leave the source pattern unchanged');
+    finally
+      Modified.Free;
+    end;
+  finally
+    Source.Free;
+  end;
+end;
+
 begin
   CheckPedalGrid('continuous', 8, 8, 0.5);
   CheckPedalGrid('continuous', 16, 16, 0.25);
@@ -314,5 +402,7 @@ begin
   CheckIntensityAndDynamicsModulation;
   CheckDrummerDynamicsAndFills;
   CheckGhostNotesOnGeneratedSnareVariants;
+  CheckBehindBeatTempoConversion;
+  CheckTripletVocabulary;
   WriteLn('PASS: double-bass subdivisions, multi-bar templates, drummer dynamics, and signature fills');
 end.

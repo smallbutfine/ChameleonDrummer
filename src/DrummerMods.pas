@@ -29,6 +29,8 @@ type
   public
     constructor Create(A_MAX_DELAY_MS: Single);
     function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
+    function ApplyAtTempo(APattern: TPattern; Intensity: Double;
+      ATempo: Integer): TPattern;
   end;
 
 { ── TripletVocabulary ──────────────────────────────────── }
@@ -163,8 +165,16 @@ constructor TBehindBeatTiming.Create(A_MAX_DELAY_MS: Single);
 begin FMaxDelayMs := A_MAX_DELAY_MS; end;
 
 function TBehindBeatTiming.Apply(APattern: TPattern; Intensity: Double): TPattern;
+begin
+  Result := ApplyAtTempo(APattern, Intensity, 120);
+end;
+
+function TBehindBeatTiming.ApplyAtTempo(APattern: TPattern; Intensity: Double;
+  ATempo: Integer): TPattern;
 var Beat: TBeat; InstName: String; OffsetMs: Single;
 begin
+  if ATempo <= 0 then
+    raise Exception.CreateFmt('Tempo must be positive, got %d', [ATempo]);
   Result := APattern.Copy;
   if (Intensity <= 0) or (FMaxDelayMs <= 0) then Exit;
   for Beat in Result.Beats do
@@ -174,7 +184,7 @@ begin
     if ((Pos('kick', InstName) = 1) or (Pos('snare', InstName) = 1)) then
     begin
       OffsetMs := FMaxDelayMs * Intensity * (0.5 + Random * 0.5);
-      Beat.Position := Beat.Position + (OffsetMs / 1000.0);
+      Beat.Position := Beat.Position + (OffsetMs * ATempo / 60000.0);
     end;
   end;
 end;
@@ -184,13 +194,22 @@ constructor TTripletVocabulary.Create(A_TRIP_PROBABILITY: Double);
 begin FTripProbability := A_TRIP_PROBABILITY; end;
 
 function TTripletVocabulary.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var BIdx: Integer;
+var
+  BIdx: Integer;
+  BeatWithinQuarter: Double;
+  EffectiveProbability: Double;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FTripProbability <= 0) then Exit;
+  EffectiveProbability := Min(1.0, FTripProbability * Intensity);
   for BIdx := 0 to Result.Beats.Count - 1 do
-    if (Result.Beats[BIdx].Position mod 4.0 = 3.0) and (Random < FTripProbability * Intensity * 0.2) then
-      Result.AddBeat(0.5, TInstrumentRegistry.Get('snare_1_hit'), Round(90 * Intensity));
+  begin
+    BeatWithinQuarter := Result.Beats[BIdx].Position -
+      Floor(Result.Beats[BIdx].Position);
+    if (Abs(BeatWithinQuarter - 0.5) < 0.000001) and
+       (Random < EffectiveProbability) then
+      Result.Beats[BIdx].Position := Result.Beats[BIdx].Position + (1.0 / 6.0);
+  end;
 end;
 
 { THeavyAccents }

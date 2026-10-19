@@ -42,6 +42,7 @@ public
 
   { Core method (override in subclass). }
   function ApplyStyle(const APattern: TPattern): TPattern; virtual;
+  function ApplyStyleAtTempo(const APattern: TPattern; ATempo: Integer): TPattern; virtual;
 
   { Signature fills — characteristic fills of this drummer. }
   function GetSignatureFills: specialize TList<TFill>; virtual;
@@ -101,6 +102,12 @@ end;
 function TDrummerPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 begin
   Result := APattern.Copy; { Default: no modification }
+end;
+
+function TDrummerPlugin.ApplyStyleAtTempo(const APattern: TPattern;
+  ATempo: Integer): TPattern;
+begin
+  Result := ApplyStyle(APattern);
 end;
 
 function TDrummerPlugin.GetSignatureFills: specialize TList<TFill>;
