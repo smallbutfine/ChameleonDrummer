@@ -33,8 +33,8 @@ function THalpernPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
   // Halpern style: jazz-fusion versatility + ghost notes + behind-the-beat timing
-  Result1 := TGhostNoteLayer.Create(0.3).Apply(APattern, 0.5);
-  Result2 := TBehindBeatTiming.Create(15.0).Apply(Result1, 0.4);
+  Result1 := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.3), APattern, 0.5);
+  Result2 := ApplyAndFreeModifier(TBehindBeatTiming.Create(15.0), Result1, 0.4, True);
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
     begin
@@ -54,7 +54,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('halpern_jazz_fill', 'Eric Halpern jazz fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

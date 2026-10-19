@@ -67,7 +67,7 @@ var
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('doomblues_fill', 'Doom Blues composite fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

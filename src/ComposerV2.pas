@@ -463,6 +463,8 @@ var
   HumanizationContext: THumanizationContext;
   Combined: TPattern;
   Fills: specialize TList<TFill>;
+  SignatureFills: specialize TList<TFill>;
+  SignatureFill: TFill;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
   I, J: Integer;
@@ -674,13 +676,33 @@ begin
         Song.TimeSignature.Denominator);
       try
         for FlavorItem in GMDFlavors do
-          if FlavorItem.DurationBars <= Bars then
+          if (FlavorItem.DurationBars <= Bars) and
+             (FlavorItem.Beats.Count > 0) then
             Fills.Add(TFill.Create(FlavorItem.Copy));
       finally
         for FlavorItem in GMDFlavors do
           FlavorItem.Free;
         GMDFlavors.Free;
         GMDFlavors := nil;
+      end;
+      if ADrummer <> '' then
+      begin
+        DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
+        if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
+        begin
+          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetSignatureFills;
+          if Assigned(SignatureFills) then
+            try
+              for SignatureFill in SignatureFills do
+                if Assigned(SignatureFill.Pattern) and
+                   (SignatureFill.Pattern.Beats.Count > 0) then
+                  Fills.Add(TFill.Create(SignatureFill.Pattern.Copy));
+            finally
+              for Idx := SignatureFills.Count - 1 downto 0 do
+                SignatureFills[Idx].Free;
+              SignatureFills.Free;
+            end;
+        end;
       end;
 
       { Calculate groove timing offsets per bar }

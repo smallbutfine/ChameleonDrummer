@@ -12,116 +12,125 @@ uses
 
 function HasAnyPrefix(const Str: String; const Prefixes: specialize TArray<String>): Boolean;
 
+type
+  TPatternModifier = class
+  public
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; virtual; abstract;
+  end;
+
+function ApplyAndFreeModifier(AModifier: TPatternModifier; APattern: TPattern;
+  Intensity: Double; OwnsPattern: Boolean = False): TPattern;
+
 { ── BehindBeatTiming ───────────────────────────────────── }
 type
-  TBehindBeatTiming = class
+  TBehindBeatTiming = class(TPatternModifier)
   private
     FMaxDelayMs: Single;
   public
     constructor Create(A_MAX_DELAY_MS: Single);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── TripletVocabulary ──────────────────────────────────── }
 type
-  TTripletVocabulary = class
+  TTripletVocabulary = class(TPatternModifier)
   private
     FTripProbability: Double;
   public
     constructor Create(A_TRIP_PROBABILITY: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── GhostNoteLayer ─────────────────────────────────────── }
 type
-  TGhostNoteLayer = class
+  TGhostNoteLayer = class(TPatternModifier)
   private
     FGhostDensity: Double;
   public
     constructor Create(A_GHOST_DENSITY: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── LinearCoordination ─────────────────────────────────── }
 type
-  TLinearCoordination = class
+  TLinearCoordination = class(TPatternModifier)
   private
     FLinearProbability: Double;
   public
     constructor Create(A_LINEAR_PROBABILITY: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── HeavyAccents ───────────────────────────────────────── }
 type
-  THeavyAccents = class
+  THeavyAccents = class(TPatternModifier)
   private
     FAccentBoost: Integer;
   public
     constructor Create(A_ACCENT_BOOST: Integer);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── ShuffleFeelApplication ─────────────────────────────── }
 type
-  TShuffleFeelApplication = class
+  TShuffleFeelApplication = class(TPatternModifier)
   private
     FShuffleAmount: Double;
   public
     constructor Create(A_SHUFFLE_AMOUNT: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── FastChopsTriplets ──────────────────────────────────── }
 type
-  TFastChopsTriplets = class
+  TFastChopsTriplets = class(TPatternModifier)
   private
     FChopProbability: Double;
   public
     constructor Create(A_CHOP_PROBABILITY: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── PocketStretching ───────────────────────────────────── }
 type
-  TPocketStretching = class
+  TPocketStretching = class(TPatternModifier)
   public
     constructor Create;
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── MinimalCreativity ──────────────────────────────────── }
 type
-  TMinimalCreativity = class
+  TMinimalCreativity = class(TPatternModifier)
   public
     constructor Create;
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── SpeedPrecision ─────────────────────────────────────── }
 type
-  TSpeedPrecision = class
+  TSpeedPrecision = class(TPatternModifier)
   public
     constructor Create;
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── TwistedAccents ─────────────────────────────────────── }
 type
-  TTwistedAccents = class
+  TTwistedAccents = class(TPatternModifier)
   private
     FTwistAmount: Double;
   public
     constructor Create(A_TWIST_AMOUNT: Double);
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 { ── MechanicalPrecision ────────────────────────────────── }
 type
-  TMechanicalPrecision = class
+  TMechanicalPrecision = class(TPatternModifier)
   public
     constructor Create;
-    function Apply(APattern: TPattern; Intensity: Double): TPattern;
+    function Apply(APattern: TPattern; Intensity: Double): TPattern; override;
   end;
 
 implementation
@@ -132,6 +141,21 @@ begin
   for P in Prefixes do
     if Pos(LowerCase(P), Str) = 1 then Exit(True);
   Result := False;
+end;
+
+function ApplyAndFreeModifier(AModifier: TPatternModifier; APattern: TPattern;
+  Intensity: Double; OwnsPattern: Boolean): TPattern;
+begin
+  Result := nil;
+  if not Assigned(AModifier) then
+    raise Exception.Create('Cannot apply an unassigned drummer modifier');
+  try
+    Result := AModifier.Apply(APattern, Intensity);
+  finally
+    AModifier.Free;
+    if OwnsPattern and Assigned(APattern) and (APattern <> Result) then
+      APattern.Free;
+  end;
 end;
 
 { TBehindBeatTiming }
@@ -181,7 +205,8 @@ begin
   begin
     if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
     InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
-    if ((HasAnyPrefix(InstName, ['snare', 'kick'])) and (Intensity > 0.5)) then
+    if ((HasAnyPrefix(InstName, ['snare', 'kick'])) and
+        not Result.Beats[BIdx].GhostNote and (Intensity > 0.5)) then
       Result.Beats[BIdx].Velocity := Trunc(Min(127, Result.Beats[BIdx].Velocity + FAccentBoost) * Intensity);
   end;
 end;
@@ -217,6 +242,7 @@ begin
       Inc(GhostCount);
       Result.Beats.Add(TBeat.Create(Result.Beats[BIdx].Position + 0.25,
         TInstrumentRegistry.Get('snare_rimshot_open_hit'), Max(30, Trunc(35 * Intensity))));
+      Result.Beats[Result.Beats.Count - 1].GhostNote := True;
     end;
   end;
 end;
@@ -351,9 +377,6 @@ begin
   if (Intensity <= 0) then Exit;
   for BIdx := 0 to Result.Beats.Count - 1 do
     Result.Beats[BIdx].Position := Max(0.0, Round(Result.Beats[BIdx].Position * 32) / 32.0);
-  for BIdx := 0 to Result.Beats.Count - 1 do
-    if Assigned(Result.Beats[BIdx].Instrument) then
-      Result.Beats[BIdx].Velocity := Max(80, Min(127, Round(110 * Intensity)));
 end;
 
 end.

@@ -33,8 +33,8 @@ function THoglanPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
   // Hoglan style: mechanical precision + heavy blast-beat-ready accents
-  Result1 := TMechanicalPrecision.Create.Apply(APattern, 0.85);
-  Result2 := THeavyAccents.Create(18).Apply(Result1, 0.9);
+  Result1 := ApplyAndFreeModifier(TMechanicalPrecision.Create, APattern, 0.85);
+  Result2 := ApplyAndFreeModifier(THeavyAccents.Create(18), Result1, 0.9, True);
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
     begin
@@ -50,7 +50,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('hoglan_blast_fill', 'Gene Hoglan blast fill');
-  LFill.Pattern := TPattern.Create('blast_beat');
+  LFill.Pattern := CreateSignatureFillPattern('blast_beat');
   FillList.Add(LFill);
   Result := FillList;
 end;

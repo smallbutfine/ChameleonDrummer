@@ -33,7 +33,7 @@ function TSmithPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Stretched: TPattern;
 begin
   // Smith style: RHCP pocket groove, bouncy kick, loose HH
-  Stretched := TPocketStretching.Create.Apply(APattern, 0.6);
+  Stretched := ApplyAndFreeModifier(TPocketStretching.Create, APattern, 0.6);
   for B := 0 to Stretched.Beats.Count - 1 do
     if Assigned(Stretched.Beats[B].Instrument) then
     begin
@@ -53,7 +53,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('smith_pocket_fill', 'Chad Smith pocket fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

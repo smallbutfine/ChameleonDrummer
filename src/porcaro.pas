@@ -36,8 +36,8 @@ end;
 function TPorcaroPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 begin
   // Porcaro style: shuffle feel + ghost notes (matches Python implementation)
-  Result := TShuffleFeelApplication.Create(0.6).Apply(APattern, 0.8);
-  Result := TGhostNoteLayer.Create(0.4).Apply(Result, 0.7);
+  Result := ApplyAndFreeModifier(TShuffleFeelApplication.Create(0.6), APattern, 0.8);
+  Result := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.4), Result, 0.7, True);
 end;
 
 function TPorcaroPlugin.GetSignatureFills: specialize TList<TFill>;
@@ -47,7 +47,7 @@ var
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('porcaro_shuffle_fill', 'Jeff Porcaro shuffle fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

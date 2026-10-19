@@ -33,8 +33,8 @@ function TCareyPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
   // Carey style: polyrhythmic ghost notes + deep tom emphasis
-  Result1 := TGhostNoteLayer.Create(0.6).Apply(APattern, 0.7);
-  Result2 := TPocketStretching.Create.Apply(Result1, 0.5);
+  Result1 := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.6), APattern, 0.7);
+  Result2 := ApplyAndFreeModifier(TPocketStretching.Create, Result1, 0.5, True);
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
     begin
@@ -50,7 +50,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('carey_polyrhythmic_fill', 'Danny Carey polyrhythmic fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

@@ -123,6 +123,7 @@ var
   Fill: TFill;
   SourceType, OutputPath: string;
   HasGMDOneBarFill, HasGMDTwoBarFill: Boolean;
+  HasDrummerSignatureFill: Boolean;
   FillIndex: Integer;
   MultiBarGMDPattern: TPattern;
 begin
@@ -138,6 +139,7 @@ begin
     GeneratedSong.GlobalParameters.FillFrequency := 1.0;
     HasGMDOneBarFill := False;
     HasGMDTwoBarFill := False;
+    HasDrummerSignatureFill := False;
     for Fill in GeneratedSong.Sections[0].Fills do
       if Assigned(Fill.Pattern) and
          Fill.Pattern.Metadata.TryGetValue('gmd_source_type', SourceType) and
@@ -150,8 +152,14 @@ begin
         if not Assigned(MultiBarGMDPattern) then
           MultiBarGMDPattern := Fill.Pattern.Copy;
       end;
+    for Fill in GeneratedSong.Sections[0].Fills do
+      if Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) and
+         (Pos('signature_', Fill.Pattern.Name) = 1) then
+        HasDrummerSignatureFill := True;
     Check(HasGMDOneBarFill and HasGMDTwoBarFill,
       'composer must include one- and two-bar GMD fill phrases');
+    Check(HasDrummerSignatureFill,
+      'composer must include the selected drummer signature fills');
 
     Check(Assigned(MultiBarGMDPattern),
       'composer must provide a selectable two-bar GMD fill');

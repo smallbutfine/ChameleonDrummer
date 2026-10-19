@@ -33,7 +33,7 @@ function TRichPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1: TPattern;
 begin
   // Rich style: dramatic dynamic contrast + heavy accents (virtuosic speed)
-  Result1 := THeavyAccents.Create(20).Apply(APattern, 0.9);
+  Result1 := ApplyAndFreeModifier(THeavyAccents.Create(20), APattern, 0.9);
   for B := 0 to Result1.Beats.Count - 1 do
     if Assigned(Result1.Beats[B].Instrument) then
     begin
@@ -49,7 +49,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('rich_virtuoso_fill', 'Buddy Rich virtuoso fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

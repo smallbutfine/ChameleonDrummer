@@ -73,11 +73,11 @@ begin
   FillList := specialize TList<TFill>.Create;
 
   LFill1 := TFill.Create('bonham_moby_dick_fill', 'Moby Dick solo fill');
-  LFill1.Pattern := TPattern.Create('tom_fill');
+  LFill1.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill1);
 
   LFill2 := TFill.Create('bonham_triplet_fill', 'Bonham triplet fill');
-  LFill2.Pattern := TPattern.Create('blast_beat');
+  LFill2.Pattern := CreateSignatureFillPattern('blast_beat');
   FillList.Add(LFill2);
 
   Result := FillList;

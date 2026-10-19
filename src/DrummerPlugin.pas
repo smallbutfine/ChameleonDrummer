@@ -10,7 +10,7 @@
 interface
 
 uses
-  Classes, SysUtils, Math, Generics.Collections, pattern, song;
+  Classes, SysUtils, Math, Generics.Collections, pattern, song, Kit;
 
 type
 
@@ -53,6 +53,8 @@ protected
   { Virtual helpers for subclasses. }
   procedure ApplyTechnique(APattern: TPattern; const TechniqueName: string; Intensity: Double); virtual;
 end;
+
+function CreateSignatureFillPattern(const AFillName: string): TPattern;
 
 implementation
 
@@ -104,6 +106,31 @@ end;
 function TDrummerPlugin.GetSignatureFills: specialize TList<TFill>;
 begin
   Result := specialize TList<TFill>.Create;
+end;
+
+function CreateSignatureFillPattern(const AFillName: string): TPattern;
+var
+  I: Integer;
+  TomNumber: Integer;
+begin
+  Result := TPattern.Create('signature_' + AFillName);
+  if Pos('blast', LowerCase(AFillName)) > 0 then
+  begin
+    for I := 0 to 15 do
+      if (I mod 2) = 0 then
+        Result.AddBeat(I * 0.25, TInstrumentRegistry.Get('snare_rimshot_open_hit'), 105)
+      else
+        Result.AddBeat(I * 0.25, TInstrumentRegistry.Get('kick'), 100);
+    Exit;
+  end;
+
+  for I := 0 to 7 do
+  begin
+    TomNumber := 4 - (I div 2);
+    Result.AddBeat(I * 0.5,
+      TInstrumentRegistry.Get('tom_' + IntToStr(TomNumber) + '_open_hit'),
+      88 + I * 4);
+  end;
 end;
 
 function TDrummerPlugin.IsPreferredForGenre(const Genre: string): boolean;

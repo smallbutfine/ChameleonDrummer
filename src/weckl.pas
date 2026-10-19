@@ -34,10 +34,11 @@ var B: Integer; Result1, Result2: TPattern;
 begin
   // Weckl style: linear coordination (remove simultaneous kick+snare),
   // tight even velocity, ghost notes on snare, crisp HH
-  Result1 := TLinearCoordination.Create(0.85).Apply(APattern, 0.9);
-  Result2 := TGhostNoteLayer.Create(0.3).Apply(Result1, 0.6);
+  Result1 := ApplyAndFreeModifier(TLinearCoordination.Create(0.85), APattern, 0.9);
+  Result2 := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.3), Result1, 0.6, True);
   for B := 0 to Result2.Beats.Count - 1 do
-    if Assigned(Result2.Beats[B].Instrument) then
+    if Assigned(Result2.Beats[B].Instrument) and
+       not Result2.Beats[B].GhostNote then
       Result2.Beats[B].Velocity := Min(127, Max(75, Round(85 + Random * 30)));
   Result := Result2;
 end;
@@ -47,7 +48,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('weckl_linear_fill', 'Dave Weckl linear fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

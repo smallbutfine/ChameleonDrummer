@@ -33,9 +33,9 @@ function TPeartPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2, Result3: TPattern;
 begin
   // Peart style: linear coordination + mechanical precision + heavy accents
-  Result1 := TLinearCoordination.Create(0.9).Apply(APattern, 0.85);
-  Result2 := TMechanicalPrecision.Create.Apply(Result1, 0.95);
-  Result3 := THeavyAccents.Create(15).Apply(Result2, 0.8);
+  Result1 := ApplyAndFreeModifier(TLinearCoordination.Create(0.9), APattern, 0.85);
+  Result2 := ApplyAndFreeModifier(TMechanicalPrecision.Create, Result1, 0.95, True);
+  Result3 := ApplyAndFreeModifier(THeavyAccents.Create(15), Result2, 0.8, True);
   for B := 0 to Result3.Beats.Count - 1 do
     if Assigned(Result3.Beats[B].Instrument) then
     begin
@@ -51,7 +51,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('peart_polyrhythmic_fill', 'Neil Peart polyrhythmic fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

@@ -33,8 +33,8 @@ function TCopelandPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Stretched, Result1: TPattern;
 begin
   // Copeland style: reggae/ska off-beat feel + light touch + pocket stretching
-  Stretched := TPocketStretching.Create.Apply(APattern, 0.5);
-  Result1 := TMinimalCreativity.Create.Apply(Stretched, 0.2);
+  Stretched := ApplyAndFreeModifier(TPocketStretching.Create, APattern, 0.5);
+  Result1 := ApplyAndFreeModifier(TMinimalCreativity.Create, Stretched, 0.2, True);
   for B := 0 to Result1.Beats.Count - 1 do
     if Assigned(Result1.Beats[B].Instrument) then
     begin
@@ -54,7 +54,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('copeland_offbeat_fill', 'Stewart Copeland offbeat fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

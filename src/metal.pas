@@ -137,7 +137,7 @@ begin
         // Classic heavy metal — Sabbath/Iron Maiden style
         Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 2 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+          Composer.Add(TDoubleBassPedal.Create('continuous', 8));
       end;
     'death':
       begin
@@ -157,7 +157,7 @@ begin
         // Progressive â€" complex syncopation
         Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         if (BarIndex mod 3 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+          Composer.Add(TDoubleBassPedal.Create('continuous', 8));
       end;
     'thrash':
       begin
@@ -174,7 +174,7 @@ begin
     'breakdown':
       begin
         // Breakdown â€” syncopated chugs
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+        Composer.Add(TDoubleBassPedal.Create('burst', 32));
       end;
   else
     Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
@@ -235,7 +235,7 @@ begin
     'breakdown':
       begin
         // Breakdown chorus â€” half-time chugs
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+        Composer.Add(TDoubleBassPedal.Create('burst', 32));
       end;
   else
     Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
@@ -285,7 +285,7 @@ begin
     'thrash':
       begin
         // Thrash bridge â€” half-time chug
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+        Composer.Add(TDoubleBassPedal.Create('burst', 32));
       end;
     'doom':
       begin
@@ -295,7 +295,7 @@ begin
     'breakdown':
       begin
         // Breakdown bridge â€” stop-time feel
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+        Composer.Add(TDoubleBassPedal.Create('burst', 32));
       end;
   else
     Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
@@ -356,37 +356,56 @@ var
   GrooveList: specialize TList<TPattern>;
   BarIdx: Integer;
   StyleForVerse: String;
+  PreviousStyle: String;
+  PreviousComplexity, PreviousIntensity: Double;
 begin
   GrooveList := specialize TList<TPattern>.Create;
-  
-  // Use Parameters.Style when available, otherwise fall back to FStyle
-  if (Parameters <> nil) and (Parameters.Style <> '') then
-    StyleForVerse := LowerCase(Parameters.Style)
-  else
-    StyleForVerse := FStyle;
+  PreviousStyle := FStyle;
+  PreviousComplexity := FComplexity;
+  PreviousIntensity := FIntensity;
+  try
+    if (Parameters <> nil) and (Parameters.Style <> '') then
+      StyleForVerse := LowerCase(Parameters.Style)
+    else
+      StyleForVerse := FStyle;
+    FStyle := StyleForVerse;
+    if Parameters <> nil then
+    begin
+      FComplexity := Parameters.Complexity;
+      FIntensity := Parameters.Dynamics;
+    end;
 
-  // Verse grooves (3 per style) - now uses Parameters.Style
-  for BarIdx := 0 to 2 do
-    GrooveList.Add(GetFlavorVerseInternal(BarIdx, StyleForVerse));
+    for BarIdx := 0 to 2 do
+      GrooveList.Add(GetFlavorVerseInternal(BarIdx, StyleForVerse));
 
-  // Chorus grooves (2-3 per style)
-  case StyleForVerse of
-    'heavy', 'power', 'doom':
-      begin
-        GrooveList.Add(GetFlavorChorus(0));
-        GrooveList.Add(GetFlavorChorus(1));
-        GrooveList.Add(GetFlavorChorus(2));
-      end;
-  else
-    GrooveList.Add(GetFlavorChorus(0));
-    GrooveList.Add(GetFlavorChorus(1));
+    case StyleForVerse of
+      'heavy', 'power', 'doom':
+        begin
+          GrooveList.Add(GetFlavorChorusInternal(0, StyleForVerse));
+          GrooveList.Add(GetFlavorChorusInternal(1, StyleForVerse));
+          GrooveList.Add(GetFlavorChorusInternal(2, StyleForVerse));
+        end;
+    else
+      GrooveList.Add(GetFlavorChorusInternal(0, StyleForVerse));
+      GrooveList.Add(GetFlavorChorusInternal(1, StyleForVerse));
+    end;
+
+    for BarIdx := 0 to 1 do
+      GrooveList.Add(GetFlavorBridgeInternal(BarIdx, StyleForVerse));
+
+    Result := GrooveList;
+    GrooveList := nil;
+  finally
+    FStyle := PreviousStyle;
+    FComplexity := PreviousComplexity;
+    FIntensity := PreviousIntensity;
+    if Assigned(GrooveList) then
+    begin
+      for BarIdx := GrooveList.Count - 1 downto 0 do
+        GrooveList[BarIdx].Free;
+      GrooveList.Free;
+    end;
   end;
-
-  // Bridge grooves (2 per style)
-  for BarIdx := 0 to 1 do
-    GrooveList.Add(GetFlavorBridge(BarIdx));
-
-  Result := GrooveList;
 end;
 
 function TMetalGenrePlugin.GetCommonFills: specialize TList<TFill>;
@@ -428,10 +447,15 @@ begin
   { Generate default metal pattern using template system } 
   Composer := TTemplateComposer.Create(Section + '_metal_' + Style);
   try
-    if SameText(Style, 'heavy') or SameText(Style, 'power') then
+    if SameText(Style, 'heavy') then
       begin
         Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+        Composer.Add(TDoubleBassPedal.Create('continuous', 8));
+      end
+    else if SameText(Style, 'power') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
       end
     else if SameText(Style, 'death') or SameText(Style, 'thrash') then
       begin
@@ -440,12 +464,18 @@ begin
       end
     else if SameText(Style, 'doom') then
       begin
-        // Doom: slow half-time groove with heavy kick on beat 1
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+      end
+    else if SameText(Style, 'breakdown') then
+      Composer.Add(TDoubleBassPedal.Create('burst', 32))
+    else if SameText(Style, 'progressive') then
+      begin
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
+        Composer.Add(TDoubleBassPedal.Create('continuous', 8));
       end
     else
       begin
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
+        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
         Composer.Add(TCrashAccents.Create);
       end;
     Result := Composer.Build(2, FComplexity);

@@ -33,8 +33,8 @@ function THaakePlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
   // Haake style: Meshuggah mechanical precision + heavy blast beats + linear
-  Result1 := TMechanicalPrecision.Create.Apply(APattern, 0.95);
-  Result2 := THeavyAccents.Create(20).Apply(Result1, 0.9);
+  Result1 := ApplyAndFreeModifier(TMechanicalPrecision.Create, APattern, 0.95);
+  Result2 := ApplyAndFreeModifier(THeavyAccents.Create(20), Result1, 0.9, True);
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
     begin
@@ -50,7 +50,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('haake_polyrhythm_fill', 'Fabio Haake polyrhythm fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

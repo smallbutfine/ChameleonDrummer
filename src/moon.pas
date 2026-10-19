@@ -33,8 +33,8 @@ function TMoonPlugin.ApplyStyle(const APattern: TPattern): TPattern;
 var B: Integer; InstName: String; Result1, Result2: TPattern;
 begin
   // Moon style: minimal power + spacious feel + light touch
-  Result1 := TMinimalCreativity.Create.Apply(APattern, 0.3);
-  Result2 := TPocketStretching.Create.Apply(Result1, 0.4);
+  Result1 := ApplyAndFreeModifier(TMinimalCreativity.Create, APattern, 0.3);
+  Result2 := ApplyAndFreeModifier(TPocketStretching.Create, Result1, 0.4, True);
   for B := 0 to Result2.Beats.Count - 1 do
     if Assigned(Result2.Beats[B].Instrument) then
     begin
@@ -54,7 +54,7 @@ var FillList: specialize TList<TFill>; LFill: TFill;
 begin
   FillList := specialize TList<TFill>.Create;
   LFill := TFill.Create('moon_fill', 'Moon signature fill');
-  LFill.Pattern := TPattern.Create('tom_fill');
+  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
   FillList.Add(LFill);
   Result := FillList;
 end;

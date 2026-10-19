@@ -10,11 +10,14 @@ uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song;
 
 type
-  { Stub TPatternBuilder — full implementation in .pas file below }
+  { Stub TPatternBuilder ï¿½ full implementation in .pas file below }
   TPatternBuilder = class(TObject)
   private
     FPName: string;
     FBeats: specialize TList<TBeat>;
+    FPositionOffset: Double;
+    procedure AddDrumHit(const AInstrumentName: string; AtPos: Double;
+      AVelocity: Integer);
   public
     constructor Create(const AName: string);
     destructor Destroy; override;
@@ -23,6 +26,7 @@ type
     function HiHat(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Tom(AtPos: Double; ATomNum: string): TPatternBuilder; virtual;
     function Build: TPattern; virtual;
+    property PositionOffset: Double read FPositionOffset write FPositionOffset;
   end;
 
   TPatternTemplate = class(TObject)
@@ -47,6 +51,7 @@ type
 
   TDoubleBassPedal = class(TPatternTemplate)
   public
+    { Note denominator: 8 = eighth notes, 16 = sixteenth notes, etc. }
     Subdivision: Double;
     Intensity: Double;
     PatternType: string;
@@ -120,42 +125,57 @@ begin
 end;
 
 destructor TPatternBuilder.Destroy;
+var
+  Beat: TBeat;
 begin
+  for Beat in FBeats do
+    Beat.Free;
   FBeats.Free;
   inherited Destroy;
 end;
 
+procedure TPatternBuilder.AddDrumHit(const AInstrumentName: string;
+  AtPos: Double; AVelocity: Integer);
+var
+  Instrument: TDrumInstrument;
+  Beat: TBeat;
+begin
+  Instrument := TInstrumentRegistry.Get(AInstrumentName);
+  if not Assigned(Instrument) then
+    Exit;
+  for Beat in FBeats do
+    if Assigned(Beat.Instrument) and
+       SameText(Beat.Instrument.Name, Instrument.Name) and
+       (Abs(Beat.Position - (AtPos + FPositionOffset)) < 0.000001) then
+    begin
+      Beat.Velocity := Max(Beat.Velocity, AVelocity);
+      Exit;
+    end;
+  FBeats.Add(TBeat.Create(AtPos + FPositionOffset, Instrument, AVelocity));
+end;
+
 function TPatternBuilder.Kick(AtPos: Double; AVel: Integer): TPatternBuilder;
-var Inst: TDrumInstrument;
 begin
   Result := Self;
-  Inst := TInstrumentRegistry.Get('kick');
-  if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, AVel));
+  AddDrumHit('kick', AtPos, AVel);
 end;
 
 function TPatternBuilder.Snare(AtPos: Double; AVel: Integer): TPatternBuilder;
-var Inst: TDrumInstrument;
 begin
   Result := Self;
-  Inst := TInstrumentRegistry.Get('snare_open_hit_open_lateral_hit');
-  if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, AVel));
+  AddDrumHit('snare_open_hit_open_lateral_hit', AtPos, AVel);
 end;
 
 function TPatternBuilder.HiHat(AtPos: Double; AVel: Integer): TPatternBuilder;
-var Inst: TDrumInstrument;
 begin
   Result := Self;
-  Inst := TInstrumentRegistry.Get('hihat_closed_1_tip_closed_1_hit');
-  if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, AVel));
+  AddDrumHit('hihat_closed_1_tip_closed_1_hit', AtPos, AVel);
 end;
 
 function TPatternBuilder.Tom(AtPos: Double; ATomNum: string): TPatternBuilder;
-var Inst: TDrumInstrument; Key: string;
 begin
   Result := Self;
-  Key := 'tom_' + ATomNum + '_open_hit';
-  Inst := TInstrumentRegistry.Get(Key);
-  if Assigned(Inst) then FBeats.Add(TBeat.Create(AtPos, Inst, 100));
+  AddDrumHit('tom_' + ATomNum + '_open_hit', AtPos, 100);
 end;
 
 function TPatternBuilder.Build: TPattern;
@@ -232,35 +252,52 @@ constructor TDoubleBassPedal.Create(APatternType: string; ASubdiv: Double; AInte
 begin inherited Create; PatternType := APatternType; Subdivision := ASubdiv; Intensity := AIntensity; end;
 
 function TDoubleBassPedal.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
-var I: Integer;
+var
+  I: Integer;
+  Pulse: Integer;
+  PulseCount: Integer;
+  GridStep: Double;
+  BarPosition: Double;
 begin
   Result := Builder;
-  // Double bass pedal pattern based on type
+  if (Subdivision < 4) or (Subdivision > 32) or
+     (Abs(Subdivision - Round(Subdivision)) > 0.000001) or
+     ((Round(Subdivision) mod 4) <> 0) then
+    raise Exception.CreateFmt(
+      'Double-bass subdivision must be 4, 8, 16, or 32, got %s',
+      [FloatToStr(Subdivision)]);
+  GridStep := 4.0 / Subdivision;
+
   if SameText(PatternType, 'gallop') then
   begin
-    // Gallop: 8th-note triplet feel (16th, 32nd, 16th)
+    if Subdivision < 16 then
+      raise Exception.Create('Gallop double-bass patterns require a 16th-note grid or finer');
     for I := 0 to 3 do
     begin
-      Builder.Kick(I * 1.0, Trunc(100 * Intensity));
-      Builder.Kick(I * 1.0 + 0.5, Trunc(95 * Intensity));
-      Builder.Kick(I * 1.0 + 0.75, Trunc(100 * Intensity));
+      BarPosition := I * 1.0;
+      Builder.Kick(BarPosition, Trunc(100 * Intensity));
+      Builder.Kick(BarPosition + 0.5, Trunc(95 * Intensity));
+      Builder.Kick(BarPosition + 0.75, Trunc(100 * Intensity));
     end;
   end
   else if SameText(PatternType, 'burst') then
   begin
-    // Burst: rapid kick on beat 1 only
-    for I := 0 to 7 do
-      Builder.Kick(0.0 + I * 0.125, Trunc(110 * Intensity));
+    if Subdivision < 16 then
+      raise Exception.Create('Burst double-bass patterns require a 16th-note grid or finer');
+    PulseCount := Round(1.0 / GridStep);
+    for Pulse := 0 to PulseCount - 1 do
+      Builder.Kick(Pulse * GridStep, Trunc(110 * Intensity));
+  end
+  else if SameText(PatternType, 'continuous') then
+  begin
+    PulseCount := Round(4.0 / GridStep);
+    for Pulse := 0 to PulseCount - 1 do
+      Builder.Kick(Pulse * GridStep,
+        Trunc((105 - (Pulse mod 2) * 7) * Intensity));
   end
   else
-  begin
-    // Continuous: steady quarter-note double bass
-    for I := 0 to 3 do
-    begin
-      Builder.Kick(I * 1.0, Trunc(105 * Intensity));
-      Builder.Kick(I * 1.0 + 0.5, Trunc(98 * Intensity));
-    end;
-  end;
+    raise Exception.CreateFmt('Unknown double-bass pattern type: %s',
+      [PatternType]);
 end;
 
 constructor TBlastBeat.Create(AStyle: string; AIntensity: Double);
@@ -291,10 +328,14 @@ constructor TTomFill.Create(AFillType: string);
 begin inherited Create; FillType := AFillType; end;
 
 function TTomFill.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
-var I: Integer;
+var
+  I, BarIndex, BarCount: Integer;
 begin
   Result := Builder;
-  // Descending tom fill: tom_4 -> tom_3 -> tom_2 -> tom_1
+  BarIndex := StrToIntDef(Kwargs.Items['bar'], 0);
+  BarCount := StrToIntDef(Kwargs.Items['bars'], 1);
+  if BarIndex <> BarCount - 1 then
+    Exit;
   for I := 0 to 3 do
     Builder.Tom(I * 0.75, IntToStr(4 - I));
 end;
@@ -362,14 +403,27 @@ begin
 end;
 
 function TTemplateComposer.Build(ABars: Integer; AComplexity: Double): TPattern;
-var Builder: TPatternBuilder; Template: TPatternTemplate; Kwargs: specialize TDictionary<string, string>;
+var
+  Builder: TPatternBuilder;
+  Template: TPatternTemplate;
+  Kwargs: specialize TDictionary<string, string>;
+  BarIndex: Integer;
 begin
+  if ABars <= 0 then
+    raise Exception.CreateFmt('Template pattern bars must be positive, got %d',
+      [ABars]);
   Kwargs := specialize TDictionary<string, string>.Create;
+  Builder := TPatternBuilder.Create(FPName);
   try
     Kwargs.Add('bars', IntToStr(ABars));
     Kwargs.Add('complexity', FloatToStr(AComplexity));
-    Builder := TPatternBuilder.Create(FPName);
-    for Template in FTemplates do Template.Generate(Builder, Kwargs);
+    for BarIndex := 0 to ABars - 1 do
+    begin
+      Builder.PositionOffset := BarIndex * 4.0;
+      Kwargs.AddOrSetValue('bar', IntToStr(BarIndex));
+      for Template in FTemplates do
+        Template.Generate(Builder, Kwargs);
+    end;
     Result := Builder.Build;
   finally
     Kwargs.Free;
