@@ -70,62 +70,73 @@ begin
   Result.Mapping := 'gm';
 
   I := 1;
-  while (I <= Length(Args)) do
+  while (I < Length(Args)) do
   begin
     if (Args[I] = '--genre') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.Genre := LowerCase(Args[I]);
+      if (I < Length(Args)) then Result.Genre := LowerCase(Args[I])
+      else raise Exception.Create('--genre requires a value');
     end
     else if (Args[I] = '--style') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.Style := LowerCase(Args[I]);
+      if (I < Length(Args)) then Result.Style := LowerCase(Args[I])
+      else raise Exception.Create('--style requires a value');
     end
     else if (Args[I] = '--tempo') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Val(Args[I], Result.Tempo);
+      if (I < Length(Args)) then Val(Args[I], Result.Tempo)
+      else raise Exception.Create('--tempo requires a value');
     end
     else if (Args[I] = '--complexity') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Val(Args[I], Result.Complexity);
+      if (I < Length(Args)) then Val(Args[I], Result.Complexity)
+      else raise Exception.Create('--complexity requires a value');
     end
     else if (Args[I] = '--humanization') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Val(Args[I], Result.Humanization);
+      if (I < Length(Args)) then Val(Args[I], Result.Humanization)
+      else raise Exception.Create('--humanization requires a value');
     end
     else if (Args[I] = '--drummer') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.Drummer := LowerCase(Args[I]);
+      if (I < Length(Args)) then Result.Drummer := LowerCase(Args[I])
+      else raise Exception.Create('--drummer requires a value');
     end
     else if (Args[I] = '--output') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.OutputFile := Args[I];
+      if (I < Length(Args)) then Result.OutputFile := Args[I]
+      else raise Exception.Create('--output requires a value');
     end
     else if (Args[I] = '--mapping') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.Mapping := LowerCase(Args[I]);
+      if (I < Length(Args)) then Result.Mapping := LowerCase(Args[I])
+      else raise Exception.Create('--mapping requires a value');
     end
     else if (Args[I] = '--sidecar') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.SidecarFile := Args[I];
+      if (I < Length(Args)) then Result.SidecarFile := Args[I]
+      else raise Exception.Create('--sidecar requires a value');
     end
     else if (Args[I] = '--song-map') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.SongMapFile := Args[I];
+      if (I < Length(Args)) then Result.SongMapFile := Args[I]
+      else raise Exception.Create('--song-map requires a value');
     end
     else if (Args[I] = '--write-timeline') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.WriteTimelinePath := Args[I];
+      if (I < Length(Args)) then Result.WriteTimelinePath := Args[I]
+      else raise Exception.Create('--write-timeline requires a value');
     end
     else if (Args[I] = '--preset-only') then
     begin
@@ -139,7 +150,8 @@ begin
     else if (Args[I] = '--list') then
     begin
       Inc(I);
-      if (I <= Length(Args)) then Result.ListType := LowerCase(Args[I]);
+      if (I < Length(Args)) then Result.ListType := LowerCase(Args[I])
+      else raise Exception.Create('--list requires a value');
       Result.Command := 'list';
     end
     else if (Args[I] = '--help') or (Args[I] = '-h') then
@@ -160,16 +172,20 @@ begin
       Result.Command := 'list';
       { Check for list type as next arg }
       Inc(I);
-      if (I <= Length(Args)) then
+      if (I < Length(Args)) then
         Result.ListType := LowerCase(Args[I]);
+      if (I >= Length(Args)) then
+        raise Exception.Create('list requires a list type');
     end
     else if (Args[I] = 'reaper') then
     begin
       Result.Command := 'reaper';
       { Check for subcommand }
       Inc(I);
-      if (I <= Length(Args)) then
+      if (I < Length(Args)) then
         Result.SubCommand := LowerCase(Args[I]);
+      if (I >= Length(Args)) then
+        raise Exception.Create('reaper requires a sub-command');
     end;
 
     Inc(I);
@@ -232,10 +248,7 @@ var
   DrummerName: String;
 begin
   if (Args.Genre = '') then
-  begin
-    Writeln('[Error] --genre is required for generate command');
-    Exit;
-  end;
+    raise Exception.Create('--genre is required for generate command');
 
   { Load keymap from JSON files dynamically via factory method }
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
@@ -280,23 +293,23 @@ var
   OutputFile: string;
 begin
   if (Args.Genre = '') then
-  begin
-    Writeln('[Error] --genre is required for pattern command');
-    Exit;
-  end;
+    raise Exception.Create('--genre is required for pattern command');
 
   { Load keymap from JSON files dynamically via factory method }
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
 
   Pattern := FGenerator.GeneratePattern(Args.Genre, 'verse', DrumKit);
+  try
+    if (Args.OutputFile = '') then
+      OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])
+    else
+      OutputFile := Args.OutputFile;
 
-  if (Args.OutputFile = '') then
-    OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])
-  else
-    OutputFile := Args.OutputFile;
-
-  FGenerator.SavePatternMidi(Pattern, OutputFile, Args.Tempo);
-  Writeln(Format('Pattern generated: %s', [OutputFile]));
+    FGenerator.SavePatternMidi(Pattern, OutputFile, Args.Tempo);
+    Writeln(Format('Pattern generated: %s', [OutputFile]));
+  finally
+    Pattern.Free;
+  end;
 end;
 
 procedure TCLIInterface.HandleList(const Args: TCLIArgs);
@@ -353,10 +366,7 @@ var
   Bridge: TReaperBridge;
 begin
   if (Args.Genre = '') then
-  begin
-    Writeln('[Error] --genre is required for reaper export');
-    Exit;
-  end;
+    raise Exception.Create('--genre is required for reaper export');
 
   { Load keymap }
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);

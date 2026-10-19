@@ -117,14 +117,16 @@ implementation
 { ── DrumInstrument ─────────────────────────────────────── }
 
 constructor TDrumInstrument.Create(const AName, ADescription: string; const AMetadata: TStrDict = nil);
+var
+  Entry: specialize TPair<string, string>;
 begin
   inherited Create;
   FName := AName;
   FDescription := ADescription;
+  FMetadata := TStrDict.Create;
   if Assigned(AMetadata) then
-    FMetadata := AMetadata
-  else
-    FMetadata := TStrDict.Create;
+    for Entry in AMetadata do
+      FMetadata.Add(Entry.Key, Entry.Value);
 end;
 
 destructor TDrumInstrument.Destroy;
@@ -159,12 +161,20 @@ begin
 end;
 
 class destructor TInstrumentRegistry.Destroy;
+var
+  Inst: TDrumInstrument;
 begin
+  for Inst in Finstruments.Values do
+    Inst.Free;
   Finstruments.Free;
 end;
 
 class procedure TInstrumentRegistry.ClearInternal;
+var
+  Inst: TDrumInstrument;
 begin
+  for Inst in Finstruments.Values do
+    Inst.Free;
   Finstruments.Clear;
   FInitialized := false;
 end;

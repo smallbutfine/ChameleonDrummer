@@ -216,7 +216,7 @@ begin
     begin
       Inc(GhostCount);
       Result.Beats.Add(TBeat.Create(Result.Beats[BIdx].Position + 0.25,
-        TInstrumentRegistry.Get('snare_1_hit'), Max(30, Trunc(35 * Intensity))));
+        TInstrumentRegistry.Get('snare_rimshot_open_hit'), Max(30, Trunc(35 * Intensity))));
     end;
   end;
 end;
@@ -303,6 +303,7 @@ begin
     if Random < Intensity * 0.4 then
     begin
       DelIdx := BIdx;
+      Result.Beats[DelIdx].Free;
       Result.Beats.Delete(DelIdx);
     end;
 end;

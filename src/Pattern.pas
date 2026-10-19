@@ -116,7 +116,11 @@ begin
 end;
 
 destructor TPattern.Destroy;
+var
+  Beat: TBeat;
 begin
+  for Beat in FBeats do
+    Beat.Free;
   FBeats.Free;
   FTimeSignature.Free;
   FMetadata.Free;
@@ -205,6 +209,7 @@ begin
   end;
 
   Result := TPattern.Create(FName + '_humanized');
+  Result.FTimeSignature.Free;
   Result.FTimeSignature := TTimeSignature.Create(FTimeSignature.Numerator, FTimeSignature.Denominator);
   Result.FSubdivision := FSubdivision;
   Result.FSwingRatio := FSwingRatio;
@@ -238,6 +243,7 @@ begin
     Result.FBeats.Add(NewBeat);
   end;
 
+  Result.FTimeSignature.Free;
   Result.FTimeSignature := TTimeSignature.Create(FTimeSignature.Numerator, FTimeSignature.Denominator);
   Result.FSubdivision := FSubdivision;
   Result.FSwingRatio := FSwingRatio;

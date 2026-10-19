@@ -38,6 +38,7 @@ private
   FComposerEngine: string;
 
   procedure LoadPlugins;
+  procedure SetDrumKit(AValue: TDrumKit);
   function GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
 
 
@@ -69,7 +70,7 @@ public
   function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit): TPattern;
 
   property PluginManager: TPluginManager read FPluginManager;
-  property DrumKit: TDrumKit read FDrumKit write FDrumKit;
+  property DrumKit: TDrumKit read FDrumKit write SetDrumKit;
   property ComposerEngine: string read FComposerEngine write FComposerEngine;
 end;
 
@@ -214,6 +215,14 @@ begin
   inherited Destroy;
 end;
 
+procedure TDrumGenerator.SetDrumKit(AValue: TDrumKit);
+begin
+  if FDrumKit = AValue then
+    Exit;
+  FDrumKit.Free;
+  FDrumKit := AValue;
+end;
+
 procedure TDrumGenerator.LoadPlugins;
 var
   GS: specialize TArray<string>; { Genre Styles }
@@ -332,6 +341,7 @@ function TDrumGenerator.GetGenreDefaultStructure(const Genre: string): TSongStru
 var
   I, J: Integer;
 begin
+  Result := nil;
   for I := Low(GENRE_ARCHETYPES) to High(GENRE_ARCHETYPES) do
     if SameText(GENRE_ARCHETYPES[I].Genre, LowerCase(Genre)) then
     begin
@@ -382,7 +392,7 @@ begin
   { Update drum kit / MIDI engine if new kit provided. }
   if Assigned(ADrumKit) then
   begin
-    FDrumKit := ADrumKit;
+    SetDrumKit(ADrumKit);
   end;
 
   { Use default structure if none provided. }
@@ -421,6 +431,7 @@ type
     Tick: Int64;
     Note: Byte;
     Velocity: Byte;
+    Tempo: Integer;
     IsMeta: Boolean;   { True = tempo/time-sig change, False = note event }
     TsNum: Byte;       { time signature numerator for meta events }
     TsDenLog: Byte;    { log2 of denominator for meta events }
@@ -487,7 +498,7 @@ begin
         begin
           Tick := TickOffset;
           IsMeta := True;
-          Velocity := Byte(EffTempo); { BPM stored in velocity field }
+          Tempo := EffTempo;
           TsNum := 0;
           TsDenLog := 0;
         end;
@@ -509,17 +520,25 @@ begin
 
       cycle_bar := I mod _pbars;
 
+      if Assigned(EffPattern) then
       for Beat in EffPattern.Beats do
       begin
+        if not Assigned(Beat.Instrument) then
+          Continue;
         if (EffPattern <> nil) and (Trunc(Beat.Position / EffTsNum) <> cycle_bar) then
           Continue;
 
         AbsTick := TickOffset + Round((Beat.Position - Int64(cycle_bar) * EffTsNum) * PPQ);
 
+        MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+        if MidiNote <= 0 then Continue;
+
         { Deduplicate: skip if same note already at this tick }
         DupFound := False;
         for J := Low(Events) to High(Events) do
-          if (Events[J].Tick = AbsTick) and not Events[J].IsMeta then
+          if (Events[J].Tick = AbsTick) and not Events[J].IsMeta and
+             (Events[J].Note = Byte(MidiNote)) and
+             (Events[J].Velocity > 0) then
           begin
             DupFound := True;
             Break;
@@ -527,8 +546,6 @@ begin
         if DupFound then Continue;
 
         { Add note_on event }
-        MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
-        if MidiNote <= 0 then Continue;
         SetLength(Events, Length(Events) + 1);
         with Events[High(Events)] do
         begin
@@ -560,21 +577,26 @@ begin
           begin
             AbsTick := TickOffset + Round((EffTsNum - 1.0 + Beat.Position) * PPQ);
             DupFound := False;
-            for J := Low(Events) to High(Events) do
-              if (Events[J].Tick = AbsTick) and not Events[J].IsMeta then
+              if not Assigned(Beat.Instrument) then
+                Continue;
+              MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+              if MidiNote <= 0 then
+                Continue;
+              for J := Low(Events) to High(Events) do
+                if (Events[J].Tick = AbsTick) and not Events[J].IsMeta and
+                   (Events[J].Note = Byte(MidiNote)) and
+                   (Events[J].Velocity > 0) then
               begin
                 DupFound := True;
                 Break;
               end;
-            if DupFound then Continue;
+              if DupFound then Continue;
 
-            MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
-            if MidiNote <= 0 then Continue;
-            SetLength(Events, Length(Events) + 1);
-            with Events[High(Events)] do
-            begin
-              Tick := AbsTick;
-              Note := Byte(FDrumKit.GetMidiNote(Beat.Instrument.Name));
+              SetLength(Events, Length(Events) + 1);
+              with Events[High(Events)] do
+              begin
+                Tick := AbsTick;
+                Note := Byte(MidiNote);
               Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
               IsMeta := False;
             end;
@@ -584,7 +606,7 @@ begin
             with Events[High(Events)] do
             begin
               Tick := AbsTick + FillDurTicks;
-              Note := Byte(FDrumKit.GetMidiNote(Beat.Instrument.Name));
+              Note := Byte(MidiNote);
               Velocity := 0;
               IsMeta := False;
             end;
@@ -666,7 +688,7 @@ begin
       if Events[I].IsMeta then
       begin
         { Tempo change: FF 51 <3-byte microseconds-per-beat> }
-        MicroSecs := 60000000 div Events[I].Velocity;
+        MicroSecs := 60000000 div Events[I].Tempo;
         MetaByte := $FF; FS.WriteBuffer(MetaByte, 1);
         MetaByte := $51; FS.WriteBuffer(MetaByte, 1);
         b1 := Byte(MicroSecs shr 16);
@@ -709,18 +731,20 @@ var
   Events: TMidiEventArray;
   Beat: TBeat;
   Tick, AbsTick: Int64;
-MidiNote: Integer;
-i: Integer;
-DurTicks: Integer; { duration in ticks }
-PrevTick: Int64; { delta-time accumulator }
+  MidiNote: Integer;
+  I, J: Integer;
+  DurTicks: Integer;
+  PrevTick: Int64;
+  TempEvent: TMidiEvent;
 begin
   if not Assigned(APattern) then Exit;
   SetLength(Events, 0);
   for Beat in APattern.Beats do
   begin
+    if not Assigned(Beat.Instrument) then
+      Continue;
     AbsTick := Round(Beat.Position * APattern.Subdivision);
 
-    { Add note_on with absolute tick }
     MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
     if MidiNote <= 0 then Continue;
     SetLength(Events, Length(Events) + 1);
@@ -728,7 +752,7 @@ begin
     begin
       DeltaTick := AbsTick;
       Status := $99; { channel 10 note-on }
-      Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+      Note := Byte(MidiNote);
       Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
     end;
 
@@ -739,17 +763,26 @@ begin
     begin
       DeltaTick := AbsTick + DurTicks;
       Status := $89; { channel 10 note-off }
-      Note := FDrumKit.GetMidiNote(Beat.Instrument.Name);
+      Note := Byte(MidiNote);
       Velocity := 0;
     end;
   end;
 
-  { Convert from absolute ticks to delta-times for MIDI format }
+  for I := High(Events) downto Low(Events) do
+    for J := Low(Events) to I - 1 do
+      if Events[J].DeltaTick > Events[J + 1].DeltaTick then
+      begin
+        TempEvent := Events[J];
+        Events[J] := Events[J + 1];
+        Events[J + 1] := TempEvent;
+      end;
+
   PrevTick := 0;
-  for i := Low(Events) to High(Events) do
+  for I := Low(Events) to High(Events) do
   begin
-    Events[i].DeltaTick := Max(0, Events[i].DeltaTick - PrevTick);
-    PrevTick := Events[i].DeltaTick;
+    Tick := Events[I].DeltaTick;
+    Events[I].DeltaTick := Tick - PrevTick;
+    PrevTick := Tick;
   end;
 
   SaveMidi(AOutputPath, Events, APattern.Subdivision, ATempo);
@@ -764,23 +797,21 @@ var
 begin
   Result := nil;
 
+  if not Assigned(FPluginManager) then
+    raise Exception.Create('Plugin manager is not initialized');
+
+  GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
+  if not Assigned(GenrePlugin) then
+    raise Exception.CreateFmt('Unsupported genre: %s', [Genre]);
+
+  if Assigned(ADk) then
+    SetDrumKit(ADk);
+
+  Params := TGenerationParameters.Create(Genre, 'default');
   try
-    if not Assigned(FPluginManager) then Exit;
-
-    { Query genre plugin by name. }
-    GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
-    if not Assigned(GenrePlugin) then Exit;
-
-    { Delegate to genre plugin's pattern generator. }
-    Params := TGenerationParameters.Create(Genre, 'default');
-    try
-      Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
-    finally
-      Params.Free;
-    end;
-  except
-    on E: Exception do
-      Writeln('[Warning] GeneratePattern failed: ', E.Message);
+    Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
+  finally
+    Params.Free;
   end;
 end;
 

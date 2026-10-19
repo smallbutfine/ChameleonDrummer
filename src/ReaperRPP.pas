@@ -216,7 +216,7 @@ begin
 
     // Write file references
     Output.Add('[File]');
-    Output.Add('f' + BaseName);
+    Output.Add('f' + ExtractFileName(AMIDIFile));
 
     // Write markers
     Output.Add('[Markers]');
@@ -239,8 +239,9 @@ begin
 
     // Write tempo map
     Output.Add('[TempoMap]');
-    Output.Add('0 0.000000 75.000000 4 4');
+    Output.Add('0 0.000000 120.000000 4 4');
 
+    Output.SaveToFile(AFilePath);
     Result := True;
   finally
     Output.Free;

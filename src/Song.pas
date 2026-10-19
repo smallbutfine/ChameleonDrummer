@@ -205,11 +205,21 @@ begin
 end;
 
 destructor TSection.Destroy;
+var
+  Variation: TPatternVariation;
+  Fill: TFill;
+  Segment: TSongSegment;
 begin
   Pattern.Free;
+  for Variation in Variations do
+    Variation.Free;
   Variations.Free;
+  for Fill in Fills do
+    Fill.Free;
   Fills.Free;
   SectionParameters.Free;
+  for Segment in Segments do
+    Segment.Free;
   Segments.Free;
   GrooveOffsetsMs.Free;
   inherited Destroy;
@@ -354,8 +364,14 @@ begin
 end;
 
 destructor TSong.Destroy;
+var
+  Section: TSection;
 begin
+  for Section in Sections do
+    Section.Free;
   Sections.Free;
+  TimeSignature.Free;
+  GlobalParameters.Free;
   Metadata.Free;
   inherited Destroy;
 end;
@@ -445,14 +461,16 @@ begin
   Song.GlobalParameters := Params;
 
   { Standard pop/rock structure }
-  Song.AddSection(TSection.Create('intro', VersePattern, 4));
-  Song.AddSection(TSection.Create('verse', VersePattern, 8));
-  Song.AddSection(TSection.Create('chorus', ChorusPattern, 8));
-  Song.AddSection(TSection.Create('verse', VersePattern, 8));
-  Song.AddSection(TSection.Create('chorus', ChorusPattern, 8));
-  Song.AddSection(TSection.Create('bridge', VersePattern, 4));
-  Song.AddSection(TSection.Create('chorus', ChorusPattern, 8));
-  Song.AddSection(TSection.Create('outro', ChorusPattern, 4));
+  Song.AddSection(TSection.Create('intro', VersePattern.Copy, 4));
+  Song.AddSection(TSection.Create('verse', VersePattern.Copy, 8));
+  Song.AddSection(TSection.Create('chorus', ChorusPattern.Copy, 8));
+  Song.AddSection(TSection.Create('verse', VersePattern.Copy, 8));
+  Song.AddSection(TSection.Create('chorus', ChorusPattern.Copy, 8));
+  Song.AddSection(TSection.Create('bridge', VersePattern.Copy, 4));
+  Song.AddSection(TSection.Create('chorus', ChorusPattern.Copy, 8));
+  Song.AddSection(TSection.Create('outro', ChorusPattern.Copy, 4));
+  VersePattern.Free;
+  ChorusPattern.Free;
 
   Result := Song;
 end;

@@ -448,7 +448,6 @@ var
   FinalPattern: TPattern;
   Combined: TPattern;
   Fills: specialize TList<TFill>;
-  GrooveOffsetsMs: specialize TList<Single>;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
   I, J: Integer;
@@ -463,6 +462,12 @@ var
   Idx: Integer;
   Section: TSection;
 begin
+  if not Assigned(FPluginManager.Registry.GetGenrePlugin(Genre)) then
+    raise Exception.CreateFmt('Unsupported genre: %s', [Genre]);
+  if (ADrummer <> '') and
+     not Assigned(FPluginManager.Registry.GetDrummerPlugin(ADrummer)) then
+    raise Exception.CreateFmt('Unknown drummer: %s', [ADrummer]);
+
   { Create generation parameters }
   Params := TGenerationParameters.Create(Genre, Style);
   Params.Complexity := AComplexity;
@@ -595,28 +600,21 @@ begin
       Fills := FFilPicker.PickFillsForSection(Genre, Params, Bars, SectionName);
 
       { Calculate groove timing offsets per bar }
-      GrooveOffsetsMs := specialize TList<Single>.Create;
-      try
-        if ADrummer <> '' then
-          for JBar := 0 to Bars - 1 do
-          begin
-            IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
-            OffsetMs := FGrooveEngine.GetBarOffsetMs(JBar, ATempo, IntensityPt, SectionName, ADrummer);
-            GrooveOffsetsMs.Add(OffsetMs);
-          end;
-
-        if GrooveOffsetsMs.Count = 0 then
-          for JBar := 0 to Bars - 1 do
-            GrooveOffsetsMs.Add(0.0);
-
-        { Create section }
-        Section := TSection.Create(SectionName, Combined, Bars);
-        Section.Fills := Fills;
-        Section.GrooveOffsetsMs := GrooveOffsetsMs;
-        Song.Sections.Add(Section);
-      finally
-        GrooveOffsetsMs.Free;
-      end;
+      Section := TSection.Create(SectionName, Combined, Bars);
+      Section.Fills.Free;
+      Section.Fills := Fills;
+      Fills := nil;
+      if ADrummer <> '' then
+        for JBar := 0 to Bars - 1 do
+        begin
+          IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
+          OffsetMs := FGrooveEngine.GetBarOffsetMs(JBar, ATempo, IntensityPt, SectionName, ADrummer);
+          Section.GrooveOffsetsMs.Add(OffsetMs);
+        end;
+      if Section.GrooveOffsetsMs.Count = 0 then
+        for JBar := 0 to Bars - 1 do
+          Section.GrooveOffsetsMs.Add(0.0);
+      Song.Sections.Add(Section);
     finally
     begin
       for Idx := GeneratedBars.Count - 1 downto 0 do

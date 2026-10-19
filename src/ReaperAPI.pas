@@ -122,10 +122,13 @@ begin
   if (Length(ASections) = 0) then Exit;
 
   // Use first section's BPM for measure length estimation
-  BarLen := 60.0 / ASections[0].BPM; { seconds per bar }
-
   for I := Low(ASections) to High(ASections) do
   begin
+    if (ASections[I].BPM <= 0) or (ASections[I].Denom <= 0) then
+      raise Exception.CreateFmt('Invalid tempo or time signature in section "%s"',
+        [ASections[I].Name]);
+    BarLen := (60.0 / ASections[I].BPM) *
+      (ASections[I].Num * 4.0 / ASections[I].Denom);
     FRPPWriter.AddMarker(AccumulatedMeasure, ASections[I].Name);
     M.Measure := AccumulatedMeasure;
     M.Name := ASections[I].Name;
