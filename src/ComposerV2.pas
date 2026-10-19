@@ -86,6 +86,7 @@ private
   { Helper methods }
   function GetSectionCurveMap(const Structure: array of TSectionDef): specialize TDictionary<string, Integer>;
   function SelectFlavor(const Available: specialize TList<TPattern>; ABarIndex: Integer): TPattern;
+  function ExtractPatternBar(APattern: TPattern; ABarIndex: Integer): TPattern;
   procedure CombineBarPatterns(const GeneratedBars: specialize TList<TPattern>; out Combined: TPattern);
   function GetIntensityPt(CurveMap: specialize TDictionary<string, Integer>; const SectionName: string;
     ABarIndex, ABars: Integer): Double;
@@ -114,7 +115,6 @@ begin
 
   if not Assigned(Result) then Exit;
 
-  // Apply intensity-based modifications (velocity boost on kick/snare at high intensity)
   Result := ApplyIntensityModifications(Result, IntensityPt);
 end;
 
@@ -124,7 +124,7 @@ var
   IBeat: Integer;
   InstName: AnsiString;
 begin
-  Result := APattern.Copy;
+  Result := APattern;
 
   if not Assigned(Result) then Exit;
 
@@ -445,6 +445,7 @@ var
   BasePattern: TPattern;
   PhaseGroove: TPattern;
   DrummedPattern: TPattern;
+  BarSourcePattern: TPattern;
   FinalPattern: TPattern;
   Combined: TPattern;
   Fills: specialize TList<TFill>;
@@ -457,6 +458,7 @@ var
   Flavors: specialize TList<TPattern>;
   Available: specialize TList<TPattern>;
   FlavorItem: TPattern;
+  OwnBasePattern: Boolean;
   OffsetMs: Single;
   JBar: Integer;
   Idx: Integer;
@@ -542,54 +544,76 @@ begin
         { Determine macro-composer phase for purposeful variation }
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
 
-        { Get flavor rotation for this section from genre plugin }
-        Flavors := FGenrePlugin.GetSectionFlavors(SectionName, Params);
+        Flavors := nil;
+        Available := nil;
         BasePattern := nil;
+        DrummedPattern := nil;
+        BarSourcePattern := nil;
+        OwnBasePattern := False;
+        try
+          Flavors := FGenrePlugin.GetSectionFlavors(SectionName, Params);
 
-        // Use macro-composer phase to guide groove selection
-        PhaseGroove := MacroComposer.SelectGroove(Genre, SectionName, Phase, FRng);
+          { Use macro-composer phase to guide groove selection. }
+          PhaseGroove := MacroComposer.SelectGroove(Genre, SectionName, Phase, FRng);
 
-        if Assigned(Flavors) and (Flavors.Count > 0) then
-        begin
-          // Filter out None entries (Python-compatible)
-          Available := specialize TList<TPattern>.Create;
-          try
+          if Assigned(Flavors) and (Flavors.Count > 0) then
+          begin
+            Available := specialize TList<TPattern>.Create;
             for FlavorItem in Flavors do
-              if Assigned(FlavorItem) then Available.Add(FlavorItem);
+              if Assigned(FlavorItem) then
+                Available.Add(FlavorItem);
 
             if Available.Count > 0 then
-              BasePattern := SelectFlavor(Available, BarIndex)
-            else
-              BasePattern := FGenrePlugin.GeneratePattern(SectionName, Params); { Fallback: generate pattern }
-          finally
-            Available.Free;
+              BasePattern := SelectFlavor(Available, BarIndex);
           end;
-        end
-        else if Assigned(PhaseGroove) then
-        begin
-          // Use phase-aware groove when genre plugin has no flavors
-          BasePattern := PhaseGroove;
-        end
-        else
-          BasePattern := FGenrePlugin.GeneratePattern(SectionName, Params); { Generate default pattern }
 
-        if not Assigned(BasePattern) then
-          Continue;
+          if not Assigned(BasePattern) and Assigned(PhaseGroove) then
+            BasePattern := PhaseGroove;
 
-        { Apply drummer style to this specific bar's skeleton }
-        DrummedPattern := BasePattern;
-        if ADrummer <> '' then
-        begin
-          DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
-          if Assigned(DrummerPlugin) then
-            DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
+          if not Assigned(BasePattern) then
+          begin
+            BasePattern := FGenrePlugin.GeneratePattern(SectionName, Params);
+            OwnBasePattern := Assigned(BasePattern);
+          end;
+
+          if Assigned(BasePattern) then
+          begin
+            { Apply drummer style to the source phrase before extracting this bar. }
+            DrummedPattern := BasePattern;
+            if ADrummer <> '' then
+            begin
+              DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
+              if Assigned(DrummerPlugin) then
+                DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
+            end;
+
+            BarSourcePattern := ExtractPatternBar(DrummedPattern, BarIndex);
+            try
+              FinalPattern := FBarSelector.GenerateForBar(
+                BarSourcePattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars);
+            finally
+              BarSourcePattern.Free;
+              BarSourcePattern := nil;
+            end;
+            GeneratedBars.Add(FinalPattern);
+          end;
+        finally
+          if Assigned(DrummedPattern) and (DrummedPattern <> BasePattern) then
+            DrummedPattern.Free;
+          if OwnBasePattern and Assigned(BasePattern) then
+            BasePattern.Free;
+          if Assigned(Available) then
+            Available.Free;
+          if Assigned(Flavors) then
+          begin
+            for FlavorItem in Flavors do
+              if Assigned(FlavorItem) then
+                FlavorItem.Free;
+            Flavors.Free;
+          end;
         end;
-
-        { Final bar-level modulation (density, complexity, etc.) - DISABLED for Python-equivalent output }
-        { FinalPattern := FBarSelector.GenerateForBar(DrummedPattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars); }
-        FinalPattern := DrummedPattern;
-        GeneratedBars.Add(FinalPattern);
       end;
+      MacroComposer.Free;
 
       { Combine bars into a section }
       Combined := nil;
@@ -731,12 +755,46 @@ begin
   Exit(Available[0]);
 end;
 
+function TComposerV2.ExtractPatternBar(APattern: TPattern; ABarIndex: Integer): TPattern;
+var
+  BarLength, PatternBars, BarStart, BarEnd: Double;
+  SourceBar, I: Integer;
+  Beat: TBeat;
+begin
+  if not Assigned(APattern) then
+    Exit(nil);
+
+  BarLength := APattern.TimeSignature.BeatsPerBar;
+  PatternBars := APattern.DurationBars;
+  if (BarLength <= 0) or (PatternBars < 1) then
+    raise Exception.CreateFmt('Pattern %s has invalid bar length or duration',
+      [APattern.Name]);
+
+  SourceBar := ABarIndex mod Trunc(PatternBars);
+  BarStart := SourceBar * BarLength;
+  BarEnd := BarStart + BarLength;
+  Result := APattern.Copy;
+  for I := Result.Beats.Count - 1 downto 0 do
+  begin
+    Beat := Result.Beats[I];
+    if (Beat.Position < BarStart) or (Beat.Position >= BarEnd) then
+    begin
+      Beat.Free;
+      Result.Beats.Delete(I);
+    end
+    else
+      Beat.Position := Beat.Position - BarStart;
+  end;
+  Result.Name := APattern.Name + '_bar' + IntToStr(ABarIndex);
+end;
+
 procedure TComposerV2.CombineBarPatterns(const GeneratedBars: specialize TList<TPattern>; out Combined: TPattern);
 var
   TargetPattern: TPattern;
   Bar: TPattern;
   IBeat: Integer;
   Beat: TBeat;
+  NewBeat: TBeat;
   Offset: Double;
   InstName: string;
 //  DebugF: TextFile;
@@ -772,6 +830,11 @@ begin
         InstName := '(nil)';
    //   WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position + Offset) + '] name=' + InstName);
       TargetPattern.AddBeat(Beat.Position + Offset, Beat.Instrument, Beat.Velocity);
+      NewBeat := TargetPattern.Beats[TargetPattern.Beats.Count - 1];
+      NewBeat.Duration := Beat.Duration;
+      NewBeat.GhostNote := Beat.GhostNote;
+      NewBeat.Accent := Beat.Accent;
+      NewBeat.InstrumentPromoted := Beat.InstrumentPromoted;
     end;
   end;
 

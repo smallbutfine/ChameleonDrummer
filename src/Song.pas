@@ -96,7 +96,8 @@ public
   function SegmentForBar(ABarNumber: Integer): TSongSegment;
   function EffectiveTempo(ABarNumber, ASongTempo: Integer): Integer;
   function EffectiveTimeSignature(ABarNumber: Integer; ASongTimeSignature: TTimeSignature): TTimeSignature;
-  function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): specialize TList<TSongBarSpec>; { tuple of (bars, tempo, time_signature) }
+  { Returned TimeSignature references are borrowed from the section or song. }
+  function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): specialize TList<TSongBarSpec>;
 
   function GetEffectivePattern(ABarNumber: Integer): TPattern;
   function ShouldAddFill(ABarNumber: Integer; AFillFrequency: Double): TFill;
@@ -234,7 +235,16 @@ begin
   begin
     SegmentBars := 0;
     for Segment in Segments do
+    begin
+      if Segment.FBars <= 0 then
+        raise Exception.CreateFmt('Section %s segment bars must be positive, got %d',
+          [Name, Segment.FBars]);
+      if (Segment.FTempo <> -1) and
+         ((Segment.FTempo < 60) or (Segment.FTempo > 300)) then
+        raise Exception.CreateFmt('Section %s segment tempo must be between 60-300 BPM, got %d',
+          [Name, Segment.FTempo]);
       SegmentBars := SegmentBars + Segment.FBars;
+    end;
 
     if SegmentBars <> Bars then
       raise Exception.CreateFmt('Section %s segments sum to %d bars but Section.bars is %d', [Name, SegmentBars, Bars]);
@@ -288,15 +298,21 @@ begin
     for Segment in Segments do
     begin
       Spec.Bars := Segment.FBars;
-      Spec.Tempo := Segment.FTempo;
-      Spec.TimeSignature := TTimeSignature.Create(ASongTimeSignature.Numerator, ASongTimeSignature.Denominator);
+      if Segment.FTempo = -1 then
+        Spec.Tempo := ASongTempo
+      else
+        Spec.Tempo := Segment.FTempo;
+      if Assigned(Segment.FTimeSignature) then
+        Spec.TimeSignature := Segment.FTimeSignature
+      else
+        Spec.TimeSignature := ASongTimeSignature;
       Result.Add(Spec);
     end
   else
   begin
     Spec.Bars := Bars;
     Spec.Tempo := ASongTempo;
-    Spec.TimeSignature := TTimeSignature.Create(ASongTimeSignature.Numerator, ASongTimeSignature.Denominator);
+    Spec.TimeSignature := ASongTimeSignature;
     Result.Add(Spec);
   end;
 end;

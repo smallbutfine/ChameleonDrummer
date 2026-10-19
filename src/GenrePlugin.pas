@@ -318,13 +318,8 @@ begin
   Result := specialize TList<TPattern>.Create;
 
   { Default: return only the standard pattern (no flavor variety). }
-  try
-    StandardPattern := GeneratePattern(Section, Parameters);
-    Result.Add(StandardPattern);
-  except
-    on E: Exception do
-      ; { Ignore errors in flavor generation. }
-  end;
+  StandardPattern := GeneratePattern(Section, Parameters);
+  Result.Add(StandardPattern);
 end;
 
 function TGenrePlugin.SupportsStyle(const Style: string): boolean;

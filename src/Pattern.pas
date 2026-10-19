@@ -175,7 +175,7 @@ begin
       MaxPos := Beat.FPosition;
   end;
 
-  Result := Math.Max(1.0, (MaxPos + 1.0) / FTimeSignature.BeatsPerBar);
+  Result := Trunc(MaxPos / FTimeSignature.BeatsPerBar) + 1;
 end;
 
 function TPattern.Humanize(ATimingVariance: Double = 0.02; AVelocityVariance: Integer = 10): TPattern;

@@ -30,11 +30,11 @@ type
     destructor Destroy; override;
 
     // Song generation
-    function CreateSong(const AGenre, AStyle: String; ATempo: Integer = 120;
+    function CreateSong(const AGenre, AStyle: String; ATempo: Integer = 0;
       const ADrummer: String = ''): TSong;
 
     // Metal-specific convenience method
-    function MetalSong(const AStyle: String; ATempo: Integer = 155;
+    function MetalSong(const AStyle: String; ATempo: Integer = 0;
       AComplexity: Double = 0.7): TSong;
 
     // Pattern generation
@@ -81,7 +81,7 @@ begin
   Result := FGenerator.PluginManager.Registry;
 end;
 
-function TDrumGeneratorAPI.CreateSong(const AGenre, AStyle: String; ATempo: Integer = 120;
+function TDrumGeneratorAPI.CreateSong(const AGenre, AStyle: String; ATempo: Integer = 0;
   const ADrummer: String = ''): TSong;
 begin
   Result := FGenerator.CreateSong(AGenre, AStyle, ATempo, nil, nil, ADrummer);

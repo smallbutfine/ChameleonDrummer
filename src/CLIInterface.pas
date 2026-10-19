@@ -64,7 +64,7 @@ var
   I: Integer;
 begin
   FillChar(Result, SizeOf(Result), 0);
-  Result.Tempo := 120;
+  Result.Tempo := 0;
   Result.Complexity := 0.5;
   Result.Humanization := 0.3;
   Result.Mapping := 'gm';
@@ -222,7 +222,7 @@ begin
   Writeln('Options:');
   Writeln('  --genre <name>       Genre (e.g., metal, rock, jazz, funk)');
   Writeln('  --style <name>       Style within genre (e.g., heavy, classic, swing)');
-  Writeln('  --tempo <bpm>        Tempo in BPM (default: 120)');
+  Writeln('  --tempo <bpm>        Tempo in BPM (default: genre/style value)');
   Writeln('  --complexity <0-1>   Pattern complexity (default: 0.5)');
   Writeln('  --humanization <0-1> Humanization intensity (default: 0.3)');
   Writeln('  --drummer <name>     Drummer style (e.g., bonham, peart, carey)');
@@ -291,12 +291,14 @@ var
   Pattern: TPattern;
   DrumKit: TDrumKit;
   OutputFile: string;
+  Tempo: Integer;
 begin
   if (Args.Genre = '') then
     raise Exception.Create('--genre is required for pattern command');
 
   { Load keymap from JSON files dynamically via factory method }
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
+  FGenerator.DrumKit := DrumKit;
 
   Pattern := FGenerator.GeneratePattern(Args.Genre, 'verse', DrumKit);
   try
@@ -305,7 +307,10 @@ begin
     else
       OutputFile := Args.OutputFile;
 
-    FGenerator.SavePatternMidi(Pattern, OutputFile, Args.Tempo);
+    Tempo := Args.Tempo;
+    if Tempo = 0 then
+      Tempo := GetDefaultBpm(Args.Genre, Args.Style);
+    FGenerator.SavePatternMidi(Pattern, OutputFile, Tempo);
     Writeln(Format('Pattern generated: %s', [OutputFile]));
   finally
     Pattern.Free;
