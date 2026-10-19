@@ -30,12 +30,14 @@ type
   { TBarSelector — selects and modulates patterns per bar }
   TBarSelector = class
   private
-    function ApplyIntensityModifications(APattern: TPattern; IntensityPt: Double): TPattern;
+    function ApplyParameterModifications(APattern: TPattern; IntensityPt,
+      Complexity, Dynamics: Double): TPattern;
     { function SelectKickPattern - not implemented in this translation. }
     function GetSectionGrooveContext(const ASectionName: string; ABars: Integer): String;
   public
     function GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
-      IntensityPt: Double; const ADrummer: string; PreviousBars: specialize TList<TPattern>): TPattern;
+      IntensityPt, Complexity, Dynamics: Double; const ADrummer: string;
+      PreviousBars: specialize TList<TPattern>): TPattern;
   end;
 
   { TFillPicker — determines fill placement and type }
@@ -113,38 +115,38 @@ implementation
 { TBarSelector — Bar-level pattern selection and modulation }
 
 function TBarSelector.GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
-  IntensityPt: Double; const ADrummer: string; PreviousBars: specialize TList<TPattern>): TPattern;
+  IntensityPt, Complexity, Dynamics: Double; const ADrummer: string;
+  PreviousBars: specialize TList<TPattern>): TPattern;
 begin
+  if not Assigned(BasePattern) then
+    Exit(nil);
+
   Result := BasePattern.Copy;
-
-  if not Assigned(Result) then Exit;
-
-  Result := ApplyIntensityModifications(Result, IntensityPt);
+  Result := ApplyParameterModifications(Result, IntensityPt, Complexity, Dynamics);
 end;
 
-function TBarSelector.ApplyIntensityModifications(APattern: TPattern; IntensityPt: Double): TPattern;
+function TBarSelector.ApplyParameterModifications(APattern: TPattern;
+  IntensityPt, Complexity, Dynamics: Double): TPattern;
 var
-  PowerBoost: Integer;
-  IBeat: Integer;
-  InstName: AnsiString;
+  VelocityBias, NewVelocity: Integer;
+  DynamicsScale, ComplexityScale: Double;
+  Beat: TBeat;
 begin
   Result := APattern;
+  if not Assigned(Result) then
+    Exit;
 
-  if not Assigned(Result) then Exit;
+  ComplexityScale := 0.5 + EnsureRange(Complexity, 0.0, 1.0);
+  DynamicsScale := EnsureRange(Dynamics, 0.0, 1.0) / 0.6;
+  VelocityBias := Round(
+    (EnsureRange(IntensityPt, 0.0, 1.0) - 0.5) * 20 * ComplexityScale);
 
-  // Boost velocities on kick/snare at high intensity (matches Python behavior)
-  if IntensityPt > 0.7 then
+  for Beat in Result.Beats do
   begin
-    PowerBoost := Round((IntensityPt - 0.5) * 20);
-    for IBeat := 0 to Result.Beats.Count - 1 do
-    begin
-      if Assigned(Result.Beats[IBEat].Instrument) then
-      begin
-        InstName := Result.Beats[IBEat].Instrument.Name;
-        if SameText(InstName, 'kick') or SameText(InstName, 'snare_open_hit_open_lateral_hit') then
-          Result.Beats[IBEat].Velocity := Max(1, Min(127, Result.Beats[IBEat].Velocity + PowerBoost));
-      end;
-    end;
+    if Beat.Velocity <= 0 then
+      Continue;
+    NewVelocity := Round((Beat.Velocity + VelocityBias) * DynamicsScale);
+    Beat.Velocity := Max(1, Min(127, NewVelocity));
   end;
 end;
 
@@ -495,10 +497,8 @@ begin
     raise Exception.CreateFmt('Unknown drummer: %s', [ADrummer]);
 
   { Create generation parameters }
-  Params := TGenerationParameters.Create(Genre, Style);
-  Params.Complexity := AComplexity;
-  Params.Dynamics := ADynamics;
-  Params.Humanization := AHumanization;
+  Params := TGenerationParameters.Create(
+    Genre, Style, ADrummer, AComplexity, ADynamics, AHumanization);
 
   { Auto-select a random preferred drummer when none is specified }
   if ADrummer = '' then
@@ -643,7 +643,8 @@ begin
         end;
         try
           FinalPattern := FBarSelector.GenerateForBar(
-            BarSourcePattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars);
+            BarSourcePattern, BarIndex, Bars, IntensityPt, Params.Complexity,
+            Params.Dynamics, ADrummer, GeneratedBars);
         finally
           BarSourcePattern.Free;
         end;

@@ -133,6 +133,90 @@ begin
   end;
 end;
 
+procedure CheckIntensityAndDynamicsModulation;
+var
+  Selector: TBarSelector;
+  Source, Baseline, HighIntensity, LowIntensity, LowComplexity,
+    HighComplexity, HighDynamics, MaximumParameters: TPattern;
+  PreviousBars: specialize TList<TPattern>;
+  Kick, Snare: TDrumInstrument;
+begin
+  Kick := TInstrumentRegistry.Get('kick');
+  Snare := TInstrumentRegistry.Get('snare_rimshot_open_hit');
+  Check(Assigned(Kick) and Assigned(Snare),
+    'kick and snare instruments must be registered for parameter modulation');
+  Source := TPattern.Create('parameter_modulation_test');
+  Source.AddBeat(0.0, Kick, 70);
+  Source.AddBeat(1.0, Snare, 24);
+  Source.Beats[1].GhostNote := True;
+  Source.Beats[1].Accent := True;
+  Source.Beats[1].Duration := 0.125;
+  Source.AddBeat(2.0, Kick, 0);
+  Selector := TBarSelector.Create;
+  PreviousBars := specialize TList<TPattern>.Create;
+  try
+    Baseline := Selector.GenerateForBar(
+      Source, 0, 4, 0.5, 0.5, 0.6, '', PreviousBars);
+    try
+      Check((Baseline.Beats[0].Velocity = 70) and
+        (Baseline.Beats[1].Velocity = 24),
+        'default dynamics and midpoint intensity must preserve source velocities');
+      Check(Baseline.Beats[1].GhostNote and Baseline.Beats[1].Accent and
+        (Baseline.Beats[1].Duration = 0.125),
+        'bar modulation must preserve ghost, accent, and duration metadata');
+      Check(Baseline.Beats[2].Velocity = 0,
+        'bar modulation must preserve silent source hits');
+    finally
+      Baseline.Free;
+    end;
+
+    HighIntensity := Selector.GenerateForBar(
+      Source, 3, 4, 0.9, 0.5, 0.6, '', PreviousBars);
+    LowIntensity := Selector.GenerateForBar(
+      Source, 0, 4, 0.0, 1.0, 0.6, '', PreviousBars);
+    LowComplexity := Selector.GenerateForBar(
+      Source, 3, 4, 0.9, 0.0, 0.6, '', PreviousBars);
+    HighComplexity := Selector.GenerateForBar(
+      Source, 3, 4, 0.9, 1.0, 0.6, '', PreviousBars);
+    HighDynamics := Selector.GenerateForBar(
+      Source, 0, 4, 0.5, 0.5, 1.0, '', PreviousBars);
+    MaximumParameters := Selector.GenerateForBar(
+      Source, 3, 4, 1.0, 1.0, 1.0, '', PreviousBars);
+    try
+      Check((HighIntensity.Beats[0].Velocity = 78) and
+        (HighIntensity.Beats[1].Velocity = 32),
+        'higher intensity must lift velocities without flattening ghost notes');
+      Check((LowComplexity.Beats[0].Velocity = 74) and
+        (HighComplexity.Beats[0].Velocity = 82),
+        'complexity must scale intensity-driven velocity variation');
+      Check((LowIntensity.Beats[0].Velocity = 55) and
+        (LowIntensity.Beats[1].Velocity = 9),
+        'minimum intensity must reduce velocity without imposing a loudness floor');
+      Check((HighDynamics.Beats[0].Velocity = 117) and
+        (HighDynamics.Beats[1].Velocity = 40),
+        'dynamics must scale all hits relative to the default dynamics level');
+      Check((MaximumParameters.Beats[0].Velocity = 127) and
+        (MaximumParameters.Beats[1].Velocity = 65),
+        'maximum parameter values must remain within the MIDI velocity range');
+      Check(HighIntensity.Beats[1].GhostNote and HighIntensity.Beats[1].Accent,
+        'complexity and intensity must preserve beat articulation metadata');
+    finally
+      HighIntensity.Free;
+      LowIntensity.Free;
+      LowComplexity.Free;
+      HighComplexity.Free;
+      HighDynamics.Free;
+      MaximumParameters.Free;
+    end;
+    Check((Source.Beats[0].Velocity = 70) and (Source.Beats[1].Velocity = 24),
+      'parameter modulation must not mutate the source pattern');
+  finally
+    PreviousBars.Free;
+    Selector.Free;
+    Source.Free;
+  end;
+end;
+
 procedure CheckDrummerDynamicsAndFills;
 var
   Source, Precise: TPattern;
@@ -192,6 +276,7 @@ begin
   CheckRepeatedBarsAndDuplicateKicks;
   CheckFillScheduling;
   CheckGrooveOffsetUnits;
+  CheckIntensityAndDynamicsModulation;
   CheckDrummerDynamicsAndFills;
   WriteLn('PASS: double-bass subdivisions, multi-bar templates, drummer dynamics, and signature fills');
 end.

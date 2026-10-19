@@ -43,6 +43,15 @@ type
 
 implementation
 
+function IsInstrumentFamily(const AInstrument, AFamily: string): Boolean;
+var
+  InstrumentName: string;
+begin
+  InstrumentName := LowerCase(Trim(AInstrument));
+  Result := (InstrumentName = AFamily) or
+    (Pos(AFamily + '_', InstrumentName) = 1);
+end;
+
 constructor TAdvancedHumanizer.Create(A_TIMING_JITTER: Double; A_VELOCITY_CURVE: Double);
 begin
   FTimingJitter := A_TIMING_JITTER;
@@ -59,7 +68,10 @@ end;
 function TAdvancedHumanizer.GetTimingDeviation(Instrument: String; Context: THumanizationContext): Double;
 var
   BaseJitter: Double;
+  InstrumentName: string;
 begin
+  InstrumentName := LowerCase(Trim(Instrument));
+
   // Genre-specific timing jitter profiles
   case LowerCase(Context.Genre) of
     'metal':
@@ -78,10 +90,10 @@ begin
   end;
 
   // Instrument-specific deviations
-  if SameText(Instrument, 'hh_closed_1_tip_hit') or
-     SameText(Instrument, 'ride_1_tip_hit') then
+  if (Pos('hh_', InstrumentName) = 1) or
+     (Pos('ride_', InstrumentName) = 1) then
     Result := BaseJitter * 0.8 // cymbals tighter
-  else if SameText(Instrument, 'kick_hit') then
+  else if IsInstrumentFamily(InstrumentName, 'kick') then
     Result := BaseJitter * 1.2 // kick looser
   else
     Result := BaseJitter;
@@ -95,22 +107,24 @@ var
   CurveFactor: Double;
 begin
   // Velocity curve based on instrument and intensity
-  CurveFactor := FVelocityCurve * Context.Intensity * Context.Humanization;
+  CurveFactor := FVelocityCurve * EnsureRange(Context.Intensity, 0.0, 1.0) *
+    EnsureRange(Context.Humanization, 0.0, 1.0);
 
-  if SameText(Instrument, 'snare_1_hit') then
+  if IsInstrumentFamily(Instrument, 'snare') then
     Result := Round(BaseVel * (1.0 + CurveFactor * 0.1)) // snare gets slight boost
-  else if SameText(Instrument, 'kick_hit') or SameText(Instrument, 'crash_1_hit') then
+  else if IsInstrumentFamily(Instrument, 'kick') or
+          IsInstrumentFamily(Instrument, 'crash') or
+          IsInstrumentFamily(Instrument, 'cymbal') then
     Result := Round(BaseVel * (1.0 - CurveFactor * 0.05)) // kick/crash slight reduction
   else
     Result := BaseVel;
 
-  // Clamp to valid range
-  Result := Max(40, Min(127, Result));
+  Result := Max(0, Min(127, Result));
 end;
 
 function TAdvancedHumanizer.Apply(APattern: TPattern; Context: THumanizationContext): TPattern;
 var
-  Deviation: Double;
+  Deviation, HumanizationAmount: Double;
   NewVel: Integer;
   Beat: TBeat;
 begin
@@ -118,7 +132,8 @@ begin
     Exit(nil);
 
   Result := APattern.Copy;
-  if Context.Humanization <= 0 then
+  HumanizationAmount := EnsureRange(Context.Humanization, 0.0, 1.0);
+  if HumanizationAmount <= 0 then
     Exit;
 
   for Beat in Result.Beats do
@@ -127,19 +142,23 @@ begin
       Continue;
 
     Deviation := GetTimingDeviation(Beat.Instrument.Name, Context) *
-      Context.Humanization;
+      HumanizationAmount;
     Beat.Position := Max(0.0, Beat.Position + Deviation);
 
     NewVel := GetVelocityBias(Beat.Instrument.Name, Beat.Velocity, Context);
-    Beat.Velocity := NewVel;
+    Beat.Velocity := GetHumanizedVelocity(NewVel, Context);
   end;
 end;
 
 function TAdvancedHumanizer.GetHumanizedVelocity(BaseVel: Integer; Context: THumanizationContext): Integer;
 begin
+  if BaseVel <= 0 then
+    Exit(BaseVel);
+
   Result := Round(BaseVel * (1.0 + (Random(100) / 100.0 - 0.5) *
-    FVelocityCurve * Context.Intensity * Context.Humanization));
-  Result := Max(40, Min(127, Result));
+    FVelocityCurve * EnsureRange(Context.Intensity, 0.0, 1.0) *
+    EnsureRange(Context.Humanization, 0.0, 1.0)));
+  Result := Max(1, Min(127, Result));
 end;
 
 end.
