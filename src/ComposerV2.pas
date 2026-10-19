@@ -11,7 +11,7 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   time_signature, generation_parameters, GenrePlugin,
-  DrummerPlugin, PluginRegistry, ComposerTypes;
+  DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization;
 
 type
   { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
@@ -81,6 +81,7 @@ private
   FBarSelector: TBarSelector;
   FFilPicker: TFillPicker;
   FGrooveEngine: TGrooveEngine;
+  FHumanizer: TAdvancedHumanizer;
   FPrevIndices: specialize TDictionary<string, specialize TList<Integer>>;
 
   { Helper methods }
@@ -410,6 +411,7 @@ begin
   FBarSelector := TBarSelector.Create;
   FFilPicker := TFillPicker.Create;
   FGrooveEngine := TGrooveEngine.Create;
+  FHumanizer := TAdvancedHumanizer.Create;
   FPrevIndices := specialize TDictionary<string, specialize TList<Integer>>.Create;
 end;
 
@@ -424,6 +426,7 @@ begin
   FBarSelector.Free;
   FFilPicker.Free;
   FGrooveEngine.Free;
+  FHumanizer.Free;
   inherited Destroy;
 end;
 
@@ -447,6 +450,8 @@ var
   DrummedPattern: TPattern;
   BarSourcePattern: TPattern;
   FinalPattern: TPattern;
+  HumanizedPattern: TPattern;
+  HumanizationContext: THumanizationContext;
   Combined: TPattern;
   Fills: specialize TList<TFill>;
   AllDrummers: specialize TArray<string>;
@@ -595,7 +600,23 @@ begin
               BarSourcePattern.Free;
               BarSourcePattern := nil;
             end;
-            GeneratedBars.Add(FinalPattern);
+              if Params.Humanization > 0 then
+              begin
+                HumanizationContext.Genre := Genre;
+                HumanizationContext.Style := Style;
+                HumanizationContext.Section := SectionName;
+                HumanizationContext.Complexity := Params.Complexity;
+                HumanizationContext.Intensity := IntensityPt;
+                HumanizationContext.Humanization := Params.Humanization;
+                HumanizationContext.Tempo := ATempo;
+                try
+                  HumanizedPattern := FHumanizer.Apply(FinalPattern, HumanizationContext);
+                finally
+                  FinalPattern.Free;
+                end;
+                FinalPattern := HumanizedPattern;
+              end;
+              GeneratedBars.Add(FinalPattern);
           end;
         finally
           if Assigned(DrummedPattern) and (DrummedPattern <> BasePattern) then

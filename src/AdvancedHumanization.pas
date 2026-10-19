@@ -18,6 +18,7 @@ type
     Section: String;
     Complexity: Double;
     Intensity: Double;
+    Humanization: Double;
     Tempo: Integer;
   end;
 
@@ -31,7 +32,7 @@ type
     FVelocityCurve: Double;
     FGrooveMap: TStringList;
     function GetTimingDeviation(Instrument: String; Context: THumanizationContext): Double;
-    function GetVelocityBias(Instrument: String, BaseVel: Integer; Context: THumanizationContext): Integer;
+    function GetVelocityBias(Instrument: String; BaseVel: Integer; Context: THumanizationContext): Integer;
   public
     constructor Create(A_TIMING_JITTER: Double = 0.015; A_VELOCITY_CURVE: Double = 0.3);
     destructor Destroy; override;
@@ -60,10 +61,10 @@ var
   BaseJitter: Double;
 begin
   // Genre-specific timing jitter profiles
-  case Context.Genre of
+  case LowerCase(Context.Genre) of
     'metal':
       begin
-        if (Context.Style = 'death') or (Context.Style = 'thrash') then
+        if SameText(Context.Style, 'death') or SameText(Context.Style, 'thrash') then
           BaseJitter := FTimingJitter * 0.5 // tighter for fast metal
         else
           BaseJitter := FTimingJitter;
@@ -77,9 +78,10 @@ begin
   end;
 
   // Instrument-specific deviations
-  if (Instrument = 'hh_closed_1_tip_hit') or (Instrument = 'ride_1_tip_hit') then
+  if SameText(Instrument, 'hh_closed_1_tip_hit') or
+     SameText(Instrument, 'ride_1_tip_hit') then
     Result := BaseJitter * 0.8 // cymbals tighter
-  else if (Instrument = 'kick_hit') then
+  else if SameText(Instrument, 'kick_hit') then
     Result := BaseJitter * 1.2 // kick looser
   else
     Result := BaseJitter;
@@ -93,49 +95,51 @@ var
   CurveFactor: Double;
 begin
   // Velocity curve based on instrument and intensity
-  CurveFactor := FVelocityCurve * Context.Intensity;
+  CurveFactor := FVelocityCurve * Context.Intensity * Context.Humanization;
 
-  if (Instrument = 'snare_1_hit') then
+  if SameText(Instrument, 'snare_1_hit') then
     Result := Round(BaseVel * (1.0 + CurveFactor * 0.1)) // snare gets slight boost
-  else if ((Instrument = 'kick_hit') or (Instrument = 'crash_1_hit')) then
+  else if SameText(Instrument, 'kick_hit') or SameText(Instrument, 'crash_1_hit') then
     Result := Round(BaseVel * (1.0 - CurveFactor * 0.05)) // kick/crash slight reduction
   else
     Result := BaseVel;
 
   // Clamp to valid range
-  Result := Clamp(Result, 40, 127);
+  Result := Max(40, Min(127, Result));
 end;
 
 function TAdvancedHumanizer.Apply(APattern: TPattern; Context: THumanizationContext): TPattern;
 var
-  BarIdx, BeatIdx: Integer;
   Deviation: Double;
   NewVel: Integer;
+  Beat: TBeat;
 begin
+  if not Assigned(APattern) then
+    Exit(nil);
+
   Result := APattern.Copy;
+  if Context.Humanization <= 0 then
+    Exit;
 
-  for BarIdx := 0 to Result.BarsCount - 1 do
+  for Beat in Result.Beats do
   begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      // Apply timing jitter
-      Deviation := GetTimingDeviation(Result.Beats[BarIdx][BeatIdx].Instrument, Context);
-      Result.Beats[BarIdx][BeatIdx].Time := Result.Beats[BarIdx][BeatIdx].Time + Deviation;
+    if not Assigned(Beat.Instrument) then
+      Continue;
 
-      // Apply velocity bias
-      NewVel := GetVelocityBias(Result.Beats[BarIdx][BeatIdx].Instrument,
-                                Result.Beats[BarIdx][BeatIdx].Velocity, Context);
-      Result.Beats[BarIdx][BeatIdx].Velocity := NewVel;
-    end;
+    Deviation := GetTimingDeviation(Beat.Instrument.Name, Context) *
+      Context.Humanization;
+    Beat.Position := Max(0.0, Beat.Position + Deviation);
+
+    NewVel := GetVelocityBias(Beat.Instrument.Name, Beat.Velocity, Context);
+    Beat.Velocity := NewVel;
   end;
 end;
 
 function TAdvancedHumanizer.GetHumanizedVelocity(BaseVel: Integer; Context: THumanizationContext): Integer;
 begin
-  // Quick single-note humanization helper
-  Result := Round(BaseVel * (1.0 + (Random(100) / 100.0 - 0.5) * FVelocityCurve * Context.Intensity));
-  Result := Clamp(Result, 40, 127);
+  Result := Round(BaseVel * (1.0 + (Random(100) / 100.0 - 0.5) *
+    FVelocityCurve * Context.Intensity * Context.Humanization));
+  Result := Max(40, Min(127, Result));
 end;
 
 end.
