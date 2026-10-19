@@ -419,6 +419,7 @@ begin
   FPluginManager := APGMPluginManager;
   FGMDPatternLibrary := TGMDPatternLibrary.Create;
   FRng := TThreadedRandom.Create;
+  RandSeed := ARngSeed;
   FBarSelector := TBarSelector.Create;
   FFilPicker := TFillPicker.Create;
   FGrooveEngine := TGrooveEngine.Create;
@@ -570,9 +571,19 @@ begin
         Genre, Style, 'beat', Song.TimeSignature.Numerator,
         Song.TimeSignature.Denominator);
       try
-        for FlavorItem in GMDFlavors do
-          Flavors.Add(FlavorItem);
+        for Idx := 0 to GMDFlavors.Count - 1 do
+        begin
+          FlavorItem := GMDFlavors[Idx];
+          try
+            Flavors.Add(FGenrePlugin.AdaptExternalPattern(FlavorItem, Params));
+          finally
+            FlavorItem.Free;
+            GMDFlavors[Idx] := nil;
+          end;
+        end;
       finally
+        for FlavorItem in GMDFlavors do
+          FlavorItem.Free;
         GMDFlavors.Free;
         GMDFlavors := nil;
       end;
@@ -636,7 +647,7 @@ begin
           DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
           if Assigned(DrummerPlugin) then
             DrummedPattern := (DrummerPlugin as TDrummerPlugin).
-              ApplyStyleAtTempo(BasePattern, ATempo);
+              ApplyStyleForContext(BasePattern, Genre, Style, ATempo);
         end;
 
         try

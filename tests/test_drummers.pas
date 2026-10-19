@@ -4,7 +4,8 @@ program test_drummers;
 
 uses
   Classes, SysUtils, Math, Generics.Collections, jsonparser, Pattern, Kit, Song,
-  DrummerPlugin, DrummerMods, patterns_templates, Hoglan, Halpern, ComposerV2;
+  DrummerPlugin, DrummerMods, patterns_templates, Hoglan, Halpern, ComposerV2,
+  DrumGenerator, Haake, Metal, generation_parameters;
 
 procedure Check(Condition: Boolean; const MessageText: string);
 begin
@@ -50,6 +51,265 @@ begin
     Kwargs.Free;
     Pedal.Free;
     Builder.Free;
+  end;
+end;
+
+procedure CheckMetalExternalPattern(const Style: string; ExpectedKickCount: Integer);
+var
+  Plugin: TMetalGenrePlugin;
+  Parameters: TGenerationParameters;
+  Source, Adapted: TPattern;
+  Kick, Snare, HiHat: TDrumInstrument;
+  Beat: TBeat;
+  KickCount, SnareCount, HiHatCount: Integer;
+begin
+  Kick := TInstrumentRegistry.Get('kick');
+  Snare := TInstrumentRegistry.Get('snare_rimshot_open_hit');
+  HiHat := TInstrumentRegistry.Get('hihat_closed_1_tip_closed_1_hit');
+  Check(Assigned(Kick) and Assigned(Snare) and Assigned(HiHat),
+    'metal adaptation instruments must be registered');
+
+  Source := TPattern.Create('external_metal_source');
+  Source.Metadata.Add('phrase_bars', '2');
+  Source.AddBeat(0.0, Kick, 80);
+  Source.AddBeat(1.0, Snare, 90);
+  Source.AddBeat(2.0, HiHat, 70);
+  Parameters := TGenerationParameters.Create('metal', Style, '', 0.5, 0.6, 0.0);
+  Plugin := TMetalGenrePlugin.Create;
+  try
+    Adapted := Plugin.AdaptExternalPattern(Source, Parameters);
+    try
+      KickCount := 0;
+      SnareCount := 0;
+      HiHatCount := 0;
+      for Beat in Adapted.Beats do
+      begin
+        if not Assigned(Beat.Instrument) then
+          Continue;
+        if SameText(Beat.Instrument.Name, 'kick') then
+          Inc(KickCount)
+        else if SameText(Beat.Instrument.Name, Snare.Name) then
+          Inc(SnareCount)
+        else if SameText(Beat.Instrument.Name, HiHat.Name) then
+          Inc(HiHatCount);
+      end;
+      Check(KickCount = ExpectedKickCount,
+        Format('%s adaptation must produce %d kick hits over two bars, got %d',
+          [Style, ExpectedKickCount, KickCount]));
+      Check((SnareCount = 1) and (HiHatCount = 1),
+        Format('%s adaptation must preserve source snare and hi-hat hits', [Style]));
+      Check((Source.Beats.Count = 3) and
+        (Abs(Source.Beats[0].Position) < 0.000001),
+        Format('%s adaptation must leave its source pattern unchanged', [Style]));
+    finally
+      Adapted.Free;
+    end;
+  finally
+    Plugin.Free;
+    Parameters.Free;
+    Source.Free;
+  end;
+end;
+
+procedure CheckDrummerContextBehavior;
+var
+  Source, Modified: TPattern;
+  Kick, Snare: TDrumInstrument;
+  Beat: TBeat;
+  Haake: THaakePlugin;
+  Halpern: THalpernPlugin;
+  KickCount, GhostCount: Integer;
+begin
+  Kick := TInstrumentRegistry.Get('kick');
+  Snare := TInstrumentRegistry.Get('snare_rimshot_open_hit');
+  Source := TPattern.Create('drummer_context_test');
+  Source.Metadata.Add('phrase_bars', '2');
+  Source.AddBeat(0.0, Kick, 90);
+  Source.AddBeat(1.0, Snare, 95);
+  Haake := THaakePlugin.Create;
+  Halpern := THalpernPlugin.Create;
+  try
+    Modified := Haake.ApplyStyleForContext(Source, 'metal', 'heavy', 120);
+    try
+      KickCount := 0;
+      for Beat in Modified.Beats do
+        if Assigned(Beat.Instrument) and SameText(Beat.Instrument.Name, 'kick') then
+          Inc(KickCount);
+      Check(KickCount = 32,
+        'Haake metal heavy context must add continuous 16th-note double bass');
+      Check(Source.Beats.Count = 2,
+        'Haake context styling must not mutate the source pattern');
+    finally
+      Modified.Free;
+    end;
+
+    Modified := Haake.ApplyStyleForContext(Source, 'metal', 'doom', 70);
+    try
+      KickCount := 0;
+      for Beat in Modified.Beats do
+        if Assigned(Beat.Instrument) and SameText(Beat.Instrument.Name, 'kick') then
+          Inc(KickCount);
+      Check(KickCount = 1,
+        'Haake metal doom context must preserve sparse source kicks');
+    finally
+      Modified.Free;
+    end;
+
+    Modified := Haake.ApplyStyleForContext(Source, 'rock', 'classic', 120);
+    try
+      KickCount := 0;
+      for Beat in Modified.Beats do
+        if Assigned(Beat.Instrument) and SameText(Beat.Instrument.Name, 'kick') then
+          Inc(KickCount);
+      Check(KickCount = 1,
+        'Haake must not inject metal double bass into non-metal hybrids');
+    finally
+      Modified.Free;
+    end;
+
+    Modified := Halpern.ApplyStyleForContext(Source, 'metal', 'death', 180);
+    try
+      KickCount := 0;
+      GhostCount := 0;
+      for Beat in Modified.Beats do
+      begin
+        if Assigned(Beat.Instrument) and SameText(Beat.Instrument.Name, 'kick') then
+          Inc(KickCount);
+        if Beat.GhostNote then
+          Inc(GhostCount);
+      end;
+      Check((KickCount = 1) and (GhostCount > 0),
+        'Halpern metal hybrid must retain its source groove and ghost-note character');
+    finally
+      Modified.Free;
+    end;
+  finally
+    Halpern.Free;
+    Haake.Free;
+    Source.Free;
+  end;
+end;
+
+function SongsHaveSamePatterns(const LeftSong, RightSong: TSong): Boolean;
+var
+  SectionIndex, BeatIndex: Integer;
+  LeftSection, RightSection: TSection;
+  LeftBeat, RightBeat: TBeat;
+  LeftInstrument, RightInstrument: string;
+begin
+  Result := False;
+  if not Assigned(LeftSong) or not Assigned(RightSong) or
+     (LeftSong.Sections.Count <> RightSong.Sections.Count) then
+    Exit;
+
+  for SectionIndex := 0 to LeftSong.Sections.Count - 1 do
+  begin
+    LeftSection := LeftSong.Sections[SectionIndex];
+    RightSection := RightSong.Sections[SectionIndex];
+    if not Assigned(LeftSection.Pattern) or not Assigned(RightSection.Pattern) or
+       (LeftSection.Pattern.Beats.Count <> RightSection.Pattern.Beats.Count) then
+      Exit;
+    for BeatIndex := 0 to LeftSection.Pattern.Beats.Count - 1 do
+    begin
+      LeftBeat := LeftSection.Pattern.Beats[BeatIndex];
+      RightBeat := RightSection.Pattern.Beats[BeatIndex];
+      LeftInstrument := '';
+      RightInstrument := '';
+      if Assigned(LeftBeat.Instrument) then
+        LeftInstrument := LeftBeat.Instrument.Name;
+      if Assigned(RightBeat.Instrument) then
+        RightInstrument := RightBeat.Instrument.Name;
+      if (Abs(LeftBeat.Position - RightBeat.Position) > 0.000001) or
+         (LeftBeat.Velocity <> RightBeat.Velocity) or
+         not SameText(LeftInstrument, RightInstrument) or
+         (LeftBeat.GhostNote <> RightBeat.GhostNote) or
+         (LeftBeat.Accent <> RightBeat.Accent) then
+        Exit;
+    end;
+  end;
+  Result := True;
+end;
+
+procedure CheckSeededComposition;
+var
+  Generator: TDrumGenerator;
+  FirstComposer, SecondComposer: TComposerV2;
+  FirstSong, SecondSong: TSong;
+  Structure: TSongStructureArray;
+begin
+  SetLength(Structure, 1);
+  Structure[0].Name := 'verse';
+  Structure[0].Bars := 4;
+  Generator := TDrumGenerator.Create;
+  FirstComposer := nil;
+  SecondComposer := nil;
+  FirstSong := nil;
+  SecondSong := nil;
+  try
+    FirstComposer := TComposerV2.Create(Generator.PluginManager, 424242);
+    FirstSong := FirstComposer.CreateSong(
+      'metal', 'heavy', 140, Structure, 'haake', 0.6, 0.7, 0.5);
+    SecondComposer := TComposerV2.Create(Generator.PluginManager, 424242);
+    SecondSong := SecondComposer.CreateSong(
+      'metal', 'heavy', 140, Structure, 'haake', 0.6, 0.7, 0.5);
+    Check(SongsHaveSamePatterns(FirstSong, SecondSong),
+      'the same composer seed must reproduce identical patterns and humanization');
+  finally
+    SecondSong.Free;
+    FirstSong.Free;
+    SecondComposer.Free;
+    FirstComposer.Free;
+    Generator.Free;
+  end;
+end;
+
+procedure CheckComposedMetalKickDensity(const Style: string;
+  MinimumKickCount, MaximumKickPerBar: Integer);
+var
+  Generator: TDrumGenerator;
+  GeneratedSong: TSong;
+  Structure: TSongStructureArray;
+  Kick: TDrumInstrument;
+  Beat: TBeat;
+  KicksPerBar: array[0..3] of Integer;
+  BarIndex, TotalKicks: Integer;
+begin
+  FillChar(KicksPerBar, SizeOf(KicksPerBar), 0);
+  SetLength(Structure, 1);
+  Structure[0].Name := 'verse';
+  Structure[0].Bars := 4;
+  Generator := TDrumGenerator.Create;
+  try
+    RandSeed := 424242;
+    GeneratedSong := Generator.CreateSong(
+      'metal', Style, GetDefaultBpm('metal', Style), Structure, nil,
+      'haake', 0.5, 0.6, 0.0);
+    try
+      Kick := TInstrumentRegistry.Get('kick');
+      TotalKicks := 0;
+      for Beat in GeneratedSong.Sections[0].Pattern.Beats do
+        if Assigned(Beat.Instrument) and (Beat.Instrument = Kick) then
+        begin
+          BarIndex := Trunc(Beat.Position / 4.0);
+          if (BarIndex >= 0) and (BarIndex < Length(KicksPerBar)) then
+          begin
+            Inc(KicksPerBar[BarIndex]);
+            Inc(TotalKicks);
+          end;
+        end;
+      Check(TotalKicks >= MinimumKickCount,
+        Format('composed metal %s with Haake must have at least %d kick hits, got %d',
+          [Style, MinimumKickCount, TotalKicks]));
+      if MaximumKickPerBar > 0 then
+        for BarIndex := Low(KicksPerBar) to High(KicksPerBar) do
+          Check(KicksPerBar[BarIndex] <= MaximumKickPerBar,
+            Format('composed metal %s must stay at or below %d kicks per bar',
+              [Style, MaximumKickPerBar]));
+    finally
+      GeneratedSong.Free;
+    end;
+  finally
+    Generator.Free;
   end;
 end;
 
@@ -391,6 +651,22 @@ begin
 end;
 
 begin
+  CheckMetalExternalPattern('heavy', 16);
+  CheckMetalExternalPattern('death', 32);
+  CheckMetalExternalPattern('power', 24);
+  CheckMetalExternalPattern('progressive', 16);
+  CheckMetalExternalPattern('thrash', 32);
+  CheckMetalExternalPattern('doom', 1);
+  CheckMetalExternalPattern('breakdown', 16);
+  CheckDrummerContextBehavior;
+  CheckSeededComposition;
+  CheckComposedMetalKickDensity('heavy', 64, 0);
+  CheckComposedMetalKickDensity('death', 64, 0);
+  CheckComposedMetalKickDensity('power', 48, 0);
+  CheckComposedMetalKickDensity('progressive', 64, 0);
+  CheckComposedMetalKickDensity('thrash', 64, 0);
+  CheckComposedMetalKickDensity('doom', 0, 8);
+  CheckComposedMetalKickDensity('breakdown', 32, 0);
   CheckPedalGrid('continuous', 8, 8, 0.5);
   CheckPedalGrid('continuous', 16, 16, 0.25);
   CheckPedalGrid('gallop', 16, 12, 0);

@@ -116,6 +116,10 @@ type
     function Build(ABars: Integer; AComplexity: Double): TPattern;
   end;
 
+function OverlayDoubleBassPedal(const APattern: TPattern;
+  const APatternType: string; ASubdivision: Integer;
+  AIntensity: Double = 0.7): TPattern;
+
 implementation
 
 constructor TPatternBuilder.Create(const AName: string);
@@ -435,6 +439,57 @@ begin
   finally
     Kwargs.Free;
     Builder.Free;
+  end;
+end;
+
+function OverlayDoubleBassPedal(const APattern: TPattern;
+  const APatternType: string; ASubdivision: Integer;
+  AIntensity: Double): TPattern;
+var
+  Composer: TTemplateComposer;
+  PedalPattern: TPattern;
+  PedalBeat, ExistingBeat: TBeat;
+  BarCount, I: Integer;
+  FoundKick: Boolean;
+begin
+  if not Assigned(APattern) then
+    Exit(nil);
+  Result := APattern.Copy;
+  if (APattern.TimeSignature.Numerator <> 4) or
+     (APattern.TimeSignature.Denominator <> 4) then
+    Exit;
+
+  BarCount := Max(1, Trunc(Ceil(APattern.DurationBars)));
+  Composer := TTemplateComposer.Create(APattern.Name + '_double_bass');
+  Composer.Add(TDoubleBassPedal.Create(APatternType, ASubdivision, AIntensity));
+  try
+    PedalPattern := Composer.Build(BarCount, 0.5);
+    try
+      for PedalBeat in PedalPattern.Beats do
+      begin
+        FoundKick := False;
+        for I := 0 to Result.Beats.Count - 1 do
+        begin
+          ExistingBeat := Result.Beats[I];
+          if Assigned(ExistingBeat.Instrument) and
+             SameText(ExistingBeat.Instrument.Name, 'kick') and
+             (Abs(ExistingBeat.Position - PedalBeat.Position) < 0.000001) then
+          begin
+            ExistingBeat.Velocity := Max(ExistingBeat.Velocity,
+              PedalBeat.Velocity);
+            FoundKick := True;
+            Break;
+          end;
+        end;
+        if not FoundKick then
+          Result.AddBeat(PedalBeat.Position, PedalBeat.Instrument,
+            PedalBeat.Velocity);
+      end;
+    finally
+      PedalPattern.Free;
+    end;
+  finally
+    Composer.Free;
   end;
 end;
 

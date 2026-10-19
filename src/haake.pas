@@ -16,6 +16,8 @@ type
     destructor Destroy; override;
 
     function ApplyStyle(const APattern: TPattern): TPattern; override;
+    function ApplyStyleForContext(const APattern: TPattern; const AGenre,
+      AStyle: string; ATempo: Integer): TPattern; override;
     function GetSignatureFills: specialize TList<TFill>; override;
     function GetDrummerName: String; override;
     function GetPreferredGenres: TStringArray; override;
@@ -43,6 +45,36 @@ begin
         Result2.Beats[B].Velocity := Min(127, Max(95, Result2.Beats[B].Velocity + 15));
     end;
   Result := Result2;
+end;
+
+function THaakePlugin.ApplyStyleForContext(const APattern: TPattern;
+  const AGenre, AStyle: string; ATempo: Integer): TPattern;
+var
+  PedalType: string;
+  Subdivision: Integer;
+  Adapted: TPattern;
+begin
+  Result := inherited ApplyStyleForContext(APattern, AGenre, AStyle, ATempo);
+  if not Assigned(Result) or not SameText(AGenre, 'metal') or
+     (Result.TimeSignature.Numerator <> 4) or
+     (Result.TimeSignature.Denominator <> 4) then
+    Exit;
+
+  PedalType := 'continuous';
+  Subdivision := 16;
+  if SameText(AStyle, 'doom') then
+    Exit;
+  if SameText(AStyle, 'power') then
+    PedalType := 'gallop'
+  else if SameText(AStyle, 'breakdown') then
+  begin
+    PedalType := 'burst';
+    Subdivision := 32;
+  end;
+
+  Adapted := OverlayDoubleBassPedal(Result, PedalType, Subdivision, 0.8);
+  Result.Free;
+  Result := Adapted;
 end;
 
 function THaakePlugin.GetSignatureFills: specialize TList<TFill>;

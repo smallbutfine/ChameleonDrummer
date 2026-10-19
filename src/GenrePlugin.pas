@@ -36,6 +36,8 @@ public
 
   { Core methods (override in subclass). }
   function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; virtual;
+  function AdaptExternalPattern(const APattern: TPattern;
+    const Parameters: TGenerationParameters): TPattern; virtual;
   function GetCommonFills: specialize TList<TFill>; virtual;
 
   { Context blending — adapt patterns for cross-genre songs. }
@@ -106,6 +108,14 @@ end;
 function TGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 begin
   raise Exception.Create('GeneratePattern not implemented.');
+end;
+
+function TGenrePlugin.AdaptExternalPattern(const APattern: TPattern;
+  const Parameters: TGenerationParameters): TPattern;
+begin
+  if not Assigned(APattern) then
+    Exit(nil);
+  Result := APattern.Copy;
 end;
 
 function TGenrePlugin.GetCommonFills: specialize TList<TFill>;

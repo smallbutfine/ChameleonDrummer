@@ -24,6 +24,8 @@ var
   I: Integer;
 
 begin
+  Randomize;
+
   // Parse command-line arguments from program parameters
   ArgCount := ParamCount;
   SetLength(Args, ArgCount + 1);

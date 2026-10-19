@@ -50,6 +50,8 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
+    function AdaptExternalPattern(const APattern: TPattern;
+      const Parameters: TGenerationParameters): TPattern; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
@@ -440,6 +442,56 @@ begin
   FillList.Add(LFill2);
 
   Result := FillList;
+end;
+
+function TMetalGenrePlugin.AdaptExternalPattern(const APattern: TPattern;
+  const Parameters: TGenerationParameters): TPattern;
+var
+  Style, PedalType: string;
+  Subdivision: Integer;
+begin
+  if not Assigned(APattern) then
+    Exit(nil);
+  if not Assigned(Parameters) then
+    Exit(APattern.Copy);
+  if (APattern.TimeSignature.Numerator <> 4) or
+     (APattern.TimeSignature.Denominator <> 4) then
+    Exit(APattern.Copy);
+
+  Style := LowerCase(Parameters.Style);
+  PedalType := '';
+  Subdivision := 0;
+  case Style of
+    'heavy':
+      begin
+        PedalType := 'continuous';
+        Subdivision := 8;
+      end;
+    'death', 'thrash':
+      begin
+        PedalType := 'continuous';
+        Subdivision := 16;
+      end;
+    'power':
+      begin
+        PedalType := 'gallop';
+        Subdivision := 16;
+      end;
+    'progressive':
+      begin
+        PedalType := 'continuous';
+        Subdivision := 8;
+      end;
+    'breakdown':
+      begin
+        PedalType := 'burst';
+        Subdivision := 32;
+      end;
+  end;
+  if PedalType = '' then
+    Exit(inherited AdaptExternalPattern(APattern, Parameters));
+
+  Result := OverlayDoubleBassPedal(APattern, PedalType, Subdivision);
 end;
 
 function TMetalGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
