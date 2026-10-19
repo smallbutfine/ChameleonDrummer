@@ -251,9 +251,9 @@ begin
       '5/4 change must begin after one 6/8 measure');
 
     Check(Length(Notes) = 4, 'expected four kick note-on events');
-    Check((Notes[0].Tick = 0) and (Notes[1].Tick = 2400) and
-      (Notes[2].Tick = 2880) and (Notes[3].Tick = 7200),
-      'note positions must use quarter-note ticks and the correct measure lengths');
+    Check((Notes[0].Tick = 24) and (Notes[1].Tick = 2424) and
+      (Notes[2].Tick = 2904) and (Notes[3].Tick = 7224),
+      'note positions must honor quarter-note ticks, meter lengths, and per-bar groove offsets');
 
     for I := 0 to High(Notes) do
       Check(Notes[I].Note = ExpectedKick, 'unexpected MIDI drum note');
@@ -304,6 +304,8 @@ begin
 
     Check(Abs(TestSong.TotalDurationSeconds - 4.0) < 0.0001,
       'song duration must account for 6/8 and 5/4 measures');
+    Section68.GrooveOffsetsMs.Add(12.5);
+    Section54.GrooveOffsetsMs.Add(12.5);
     Generator.SaveSongMidi(TestSong, OutputPath);
     ReadAndCheckMidi(OutputPath, Byte(Generator.DrumKit.GetMidiNote('kick')));
   finally
@@ -311,5 +313,5 @@ begin
       TestSong.Free;
     Generator.Free;
   end;
-  WriteLn('PASS: genre/style BPM defaults and 6/8 to 5/4 MIDI export');
+  WriteLn('PASS: BPM defaults, 6/8 to 5/4 MIDI export, and groove timing offsets');
 end.

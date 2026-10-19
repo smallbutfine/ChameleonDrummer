@@ -4,7 +4,7 @@ program test_drummers;
 
 uses
   Classes, SysUtils, Math, Generics.Collections, jsonparser, Pattern, Kit, Song,
-  DrummerPlugin, DrummerMods, patterns_templates, Hoglan;
+  DrummerPlugin, DrummerMods, patterns_templates, Hoglan, ComposerV2;
 
 procedure Check(Condition: Boolean; const MessageText: string);
 begin
@@ -111,6 +111,28 @@ begin
   end;
 end;
 
+procedure CheckGrooveOffsetUnits;
+var
+  GrooveEngine: TGrooveEngine;
+  BonhamOffset, HoglanOffset: Single;
+begin
+  GrooveEngine := TGrooveEngine.Create;
+  try
+    BonhamOffset := GrooveEngine.GetBarOffsetMs(
+      0, 120, 0.5, 'verse', 'rock', 'bonham');
+    HoglanOffset := GrooveEngine.GetBarOffsetMs(
+      0, 120, 0.5, 'verse', 'metal', 'hoglan');
+    Check((Abs(BonhamOffset - 12.5) < 0.001) and
+      (Abs(HoglanOffset + 3.5) < 0.001),
+      'drummer groove profiles must resolve to bounded millisecond offsets');
+    Check(GrooveEngine.GetBarOffsetMs(
+      0, 0, 0.5, 'verse', 'metal', 'hoglan') = 0,
+      'invalid tempo must not produce an invalid groove offset');
+  finally
+    GrooveEngine.Free;
+  end;
+end;
+
 procedure CheckDrummerDynamicsAndFills;
 var
   Source, Precise: TPattern;
@@ -169,6 +191,7 @@ begin
   CheckPedalGrid('burst', 32, 8, 0.125);
   CheckRepeatedBarsAndDuplicateKicks;
   CheckFillScheduling;
+  CheckGrooveOffsetUnits;
   CheckDrummerDynamicsAndFills;
   WriteLn('PASS: double-bass subdivisions, multi-bar templates, drummer dynamics, and signature fills');
 end.

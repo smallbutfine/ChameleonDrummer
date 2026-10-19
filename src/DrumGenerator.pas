@@ -447,8 +447,9 @@ var
   PPQ, _pbars, cycle_bar: Integer;
   LastTsNum, LastTsDen: Integer;
   BarDurationQuarters, FillOffsetQuarters: Double;
-  TickOffset, AbsTick, PrevTick: Int64;
-  I, J, I22, J22, FillBars, FillStartBar: Integer;
+  TickOffset, AbsTick, PrevTick, GrooveOffsetTicks: Int64;
+  GrooveOffsetMs: Double;
+  I, J, I22, J22, FillBars, FillStartBar, FillNoteBar, FillTempo: Integer;
   Section: TSection;
   EffPattern: TPattern;
   Beat: TBeat;
@@ -561,8 +562,15 @@ begin
         if Trunc(Beat.Position / BarDurationQuarters) <> cycle_bar then
           Continue;
 
+        GrooveOffsetTicks := 0;
+        if I < Section.GrooveOffsetsMs.Count then
+          GrooveOffsetTicks := Round(
+            Section.GrooveOffsetsMs[I] * PPQ * EffTempo / 60000.0);
         AbsTick := TickOffset + Round(
-          (Beat.Position - cycle_bar * BarDurationQuarters) * PPQ);
+          (Beat.Position - cycle_bar * BarDurationQuarters) * PPQ) +
+          GrooveOffsetTicks;
+        if AbsTick < 0 then
+          AbsTick := 0;
 
         MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
         if MidiNote <= 0 then Continue;
@@ -610,15 +618,28 @@ begin
         if Assigned(Fill) then
         begin
           FillBars := Ceil(Fill.Pattern.DurationBars);
+          FillStartBar := I - FillBars + 1;
           FillOffsetQuarters := 0;
-          for FillStartBar := I - FillBars + 1 to I - 1 do
+          for FillNoteBar := FillStartBar to I - 1 do
             FillOffsetQuarters :=
               FillOffsetQuarters -
-              Section.EffectiveTimeSignature(FillStartBar, ASong.TimeSignature).BeatsPerBar;
+              Section.EffectiveTimeSignature(FillNoteBar, ASong.TimeSignature).BeatsPerBar;
           for Beat in Fill.Pattern.Beats do
           begin
+            FillNoteBar := FillStartBar + Trunc(
+              Beat.Position / Fill.Pattern.TimeSignature.BeatsPerBar);
+            GrooveOffsetMs := 0;
+            FillTempo := Section.EffectiveTempo(FillNoteBar, ASong.Tempo);
+            if (FillNoteBar >= 0) and
+               (FillNoteBar < Section.GrooveOffsetsMs.Count) then
+              GrooveOffsetMs := Section.GrooveOffsetsMs[FillNoteBar];
+            GrooveOffsetTicks := Round(
+              GrooveOffsetMs * PPQ * FillTempo / 60000.0);
             AbsTick := TickOffset + Round(
-              (FillOffsetQuarters + Beat.Position) * PPQ);
+              (FillOffsetQuarters + Beat.Position) * PPQ) +
+              GrooveOffsetTicks;
+            if AbsTick < 0 then
+              AbsTick := 0;
             DupFound := False;
               if not Assigned(Beat.Instrument) then
                 Continue;

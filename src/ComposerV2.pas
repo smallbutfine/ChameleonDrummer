@@ -57,7 +57,7 @@ type
     function GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
   public
     function GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: Double;
-      const ASectionName: string; const ADrummer: string): Single;
+      const ASectionName, AGenre, ADrummer: string): Single;
   end;
 
   { TMacroComposer — manages groove library phases and variation cycling }
@@ -287,24 +287,25 @@ end;
 { TGrooveEngine — Microtiming groove offsets per bar }
 
 function TGrooveEngine.GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: Double;
-  const ASectionName: string; const ADrummer: string): Single;
+  const ASectionName, AGenre, ADrummer: string): Single;
 var
   DrummerBias: Single;
   SectionContext: Single;
   MicrotimingMod: Single;
 begin
+  if ATempo <= 0 then
+    Exit(0);
+
   // Get drummer-specific groove bias (positive = behind beat, negative = push forward)
   DrummerBias := GetDrummerGrooveBias(ADrummer);
 
   // Get section-specific groove context
-  SectionContext := GetSectionGrooveContext(ASectionName, ADrummer);
+  SectionContext := GetSectionGrooveContext(ASectionName, AGenre);
 
-  // Calculate final microtiming offset in milliseconds
-  MicrotimingMod := (ABarIndex mod 4) * 0.5; // Slight progression through section
+  // Bias values are fractions of a beat; convert once to bounded milliseconds.
+  MicrotimingMod := (ABarIndex mod 4) * 0.005;
   Result := DrummerBias + SectionContext + MicrotimingMod * IntensityPt;
-
-  // Scale to milliseconds based on tempo
-  Result := Result * (60000.0 / ATempo); // Convert beats to ms at given tempo
+  Result := EnsureRange(Result * (60000.0 / ATempo), -25.0, 25.0);
 end;
 
 function TGrooveEngine.GetDrummerGrooveBias(const ADrummer: string): Single;
@@ -314,30 +315,30 @@ begin
   // Return groove bias value per drummer style
   DrummerLower := LowerCase(ADrummer);
   case DrummerLower of
-    'bonham': Exit(2.5);     // Behind beat (drunk feel)
-    'porcaro': Exit(-1.0);   // Push forward (shuffle ahead)
-    'weckl': Exit(0.5);      // Slightly behind, tight
-    'chambers': Exit(-0.5);  // Pocket center
-    'carey': Exit(1.5);      // Behind beat with pocket
-    'peart': Exit(0.0);      // Perfectly on grid
-    'hoglan': Exit(-0.2);    // Slightly ahead (mechanical)
-    'copeland': Exit(2.0);   // Reggae behind-beat
-    else Exit(0.5);          // Default: slight behind beat
+    'bonham': Exit(0.025);
+    'porcaro': Exit(-0.010);
+    'weckl': Exit(0.005);
+    'chambers': Exit(-0.005);
+    'carey': Exit(0.015);
+    'peart': Exit(0.0);
+    'hoglan': Exit(-0.002);
+    'copeland': Exit(0.020);
+    else Exit(0.005);
   end;
 end;
 
 function TGrooveEngine.GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
 begin
   // Adjust groove context based on section type and genre
-  if (Pos('intro', LowerCase(ASectionName)) > 0) then Exit(-1.5);
-  if (Pos('chorus', LowerCase(ASectionName)) > 0) then Exit(1.0);
-  if (Pos('breakdown', LowerCase(ASectionName)) > 0) then Exit(0.5);
-  if (Pos('bridge', LowerCase(ASectionName)) > 0) then Exit(-2.0);
+  if (Pos('intro', LowerCase(ASectionName)) > 0) then Exit(-0.015);
+  if (Pos('chorus', LowerCase(ASectionName)) > 0) then Exit(0.010);
+  if (Pos('breakdown', LowerCase(ASectionName)) > 0) then Exit(0.005);
+  if (Pos('bridge', LowerCase(ASectionName)) > 0) then Exit(-0.020);
 
   case LowerCase(AGenre) of
-    'funk': Exit(1.5);   // Funk naturally behind beat
-    'jazz': Exit(2.0);   // Jazz swing is behind beat
-    'metal': Exit(-0.5); // Metal pushes forward
+    'funk': Exit(0.015);
+    'jazz': Exit(0.020);
+    'metal': Exit(-0.005);
     else Exit(0.0);
   end;
 end;
@@ -717,7 +718,8 @@ begin
         for JBar := 0 to Bars - 1 do
         begin
           IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
-          OffsetMs := FGrooveEngine.GetBarOffsetMs(JBar, ATempo, IntensityPt, SectionName, ADrummer);
+          OffsetMs := FGrooveEngine.GetBarOffsetMs(
+            JBar, ATempo, IntensityPt, SectionName, Genre, ADrummer);
           Section.GrooveOffsetsMs.Add(OffsetMs);
         end;
       if Section.GrooveOffsetsMs.Count = 0 then
