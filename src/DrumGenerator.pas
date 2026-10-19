@@ -604,7 +604,8 @@ begin
         Fill := Section.ShouldAddFill(I, ASong.GlobalParameters.FillFrequency);
         if (Fill <> nil) and (I = Section.Bars - 1) and Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) then
         begin
-          FillOffsetQuarters := Max(0.0, BarDurationQuarters - 1.0);
+          FillOffsetQuarters :=
+            BarDurationQuarters * (1.0 - Fill.Pattern.DurationBars);
           for Beat in Fill.Pattern.Beats do
           begin
             AbsTick := TickOffset + Round(

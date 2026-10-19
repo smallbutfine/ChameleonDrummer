@@ -11,7 +11,8 @@ interface
 uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   time_signature, generation_parameters, GenrePlugin,
-  DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization;
+  DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization,
+  GMDPatternLibrary;
 
 type
   { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
@@ -82,6 +83,7 @@ private
   FFilPicker: TFillPicker;
   FGrooveEngine: TGrooveEngine;
   FHumanizer: TAdvancedHumanizer;
+  FGMDPatternLibrary: TGMDPatternLibrary;
   FPrevIndices: specialize TDictionary<string, specialize TList<Integer>>;
 
   { Helper methods }
@@ -407,6 +409,7 @@ constructor TComposerV2.Create(APGMPluginManager: PluginRegistry.TPluginManager;
 begin
   inherited Create;
   FPluginManager := APGMPluginManager;
+  FGMDPatternLibrary := TGMDPatternLibrary.Create;
   FRng := TThreadedRandom.Create;
   FBarSelector := TBarSelector.Create;
   FFilPicker := TFillPicker.Create;
@@ -427,6 +430,7 @@ begin
   FFilPicker.Free;
   FGrooveEngine.Free;
   FHumanizer.Free;
+  FGMDPatternLibrary.Free;
   inherited Destroy;
 end;
 
@@ -451,6 +455,11 @@ var
   BarSourcePattern: TPattern;
   FinalPattern: TPattern;
   HumanizedPattern: TPattern;
+  CurrentPattern: TPattern;
+  CurrentPatternOwned: Boolean;
+  CurrentPhraseStartBar: Integer;
+  NextPhraseBar: Integer;
+  PhraseBars: Integer;
   HumanizationContext: THumanizationContext;
   Combined: TPattern;
   Fills: specialize TList<TFill>;
@@ -461,9 +470,9 @@ var
   SectionDef: TSectionDef;
   FGenrePlugin: TGenrePlugin;
   Flavors: specialize TList<TPattern>;
+  GMDFlavors: specialize TList<TPattern>;
   Available: specialize TList<TPattern>;
   FlavorItem: TPattern;
-  OwnBasePattern: Boolean;
   OffsetMs: Single;
   JBar: Integer;
   Idx: Integer;
@@ -532,14 +541,43 @@ begin
     Bars := SectionDef.Bars;
 
     GeneratedBars := specialize TList<TPattern>.Create;
+    Flavors := nil;
+    GMDFlavors := nil;
+    Available := nil;
+    Fills := nil;
+    CurrentPattern := nil;
+    CurrentPatternOwned := False;
+    MacroComposer := nil;
     try
       { Get genre plugin }
       FGenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
       if not Assigned(FGenrePlugin) then
         Continue;
 
+      { Load section patterns once so multi-bar source phrases remain coherent. }
+      Flavors := FGenrePlugin.GetSectionFlavors(SectionName, Params);
+      if not Assigned(Flavors) then
+        Flavors := specialize TList<TPattern>.Create;
+      GMDFlavors := FGMDPatternLibrary.GetPatterns(
+        Genre, Style, 'beat', Song.TimeSignature.Numerator,
+        Song.TimeSignature.Denominator);
+      try
+        for FlavorItem in GMDFlavors do
+          Flavors.Add(FlavorItem);
+      finally
+        GMDFlavors.Free;
+        GMDFlavors := nil;
+      end;
+
+      Available := specialize TList<TPattern>.Create;
+      for FlavorItem in Flavors do
+        if Assigned(FlavorItem) then
+          Available.Add(FlavorItem);
+
       { Macro-composer phase tracking }
       MacroComposer := TMacroComposer.Create(FRng.NextInt(10000));
+      NextPhraseBar := 0;
+      CurrentPhraseStartBar := 0;
 
       for BarIndex := 0 to Bars - 1 do
       begin
@@ -549,92 +587,80 @@ begin
         { Determine macro-composer phase for purposeful variation }
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
 
-        Flavors := nil;
-        Available := nil;
-        BasePattern := nil;
+        PhaseGroove := MacroComposer.SelectGroove(Genre, SectionName, Phase, FRng);
+        if BarIndex >= NextPhraseBar then
+        begin
+          if CurrentPatternOwned and Assigned(CurrentPattern) then
+            CurrentPattern.Free;
+          CurrentPattern := nil;
+          CurrentPatternOwned := False;
+
+          if Available.Count > 0 then
+            CurrentPattern := SelectFlavor(Available, BarIndex);
+          if not Assigned(CurrentPattern) and Assigned(PhaseGroove) then
+            CurrentPattern := PhaseGroove;
+          if not Assigned(CurrentPattern) then
+          begin
+            CurrentPattern := FGenrePlugin.GeneratePattern(SectionName, Params);
+            CurrentPatternOwned := Assigned(CurrentPattern);
+          end;
+
+          if Assigned(CurrentPattern) then
+          begin
+            CurrentPhraseStartBar := BarIndex;
+            PhraseBars := Max(1, Ceil(CurrentPattern.DurationBars));
+            NextPhraseBar := BarIndex + PhraseBars;
+          end
+          else
+            NextPhraseBar := BarIndex + 1;
+        end;
+
+        BasePattern := CurrentPattern;
         DrummedPattern := nil;
         BarSourcePattern := nil;
-        OwnBasePattern := False;
+        if not Assigned(BasePattern) then
+          Continue;
+
+        { Apply drummer style to the selected phrase, then extract its current bar. }
+        DrummedPattern := BasePattern;
+        if ADrummer <> '' then
+        begin
+          DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
+          if Assigned(DrummerPlugin) then
+            DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
+        end;
+
         try
-          Flavors := FGenrePlugin.GetSectionFlavors(SectionName, Params);
-
-          { Use macro-composer phase to guide groove selection. }
-          PhaseGroove := MacroComposer.SelectGroove(Genre, SectionName, Phase, FRng);
-
-          if Assigned(Flavors) and (Flavors.Count > 0) then
-          begin
-            Available := specialize TList<TPattern>.Create;
-            for FlavorItem in Flavors do
-              if Assigned(FlavorItem) then
-                Available.Add(FlavorItem);
-
-            if Available.Count > 0 then
-              BasePattern := SelectFlavor(Available, BarIndex);
-          end;
-
-          if not Assigned(BasePattern) and Assigned(PhaseGroove) then
-            BasePattern := PhaseGroove;
-
-          if not Assigned(BasePattern) then
-          begin
-            BasePattern := FGenrePlugin.GeneratePattern(SectionName, Params);
-            OwnBasePattern := Assigned(BasePattern);
-          end;
-
-          if Assigned(BasePattern) then
-          begin
-            { Apply drummer style to the source phrase before extracting this bar. }
-            DrummedPattern := BasePattern;
-            if ADrummer <> '' then
-            begin
-              DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
-              if Assigned(DrummerPlugin) then
-                DrummedPattern := (DrummerPlugin as TDrummerPlugin).ApplyStyle(BasePattern);
-            end;
-
-            BarSourcePattern := ExtractPatternBar(DrummedPattern, BarIndex);
-            try
-              FinalPattern := FBarSelector.GenerateForBar(
-                BarSourcePattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars);
-            finally
-              BarSourcePattern.Free;
-              BarSourcePattern := nil;
-            end;
-              if Params.Humanization > 0 then
-              begin
-                HumanizationContext.Genre := Genre;
-                HumanizationContext.Style := Style;
-                HumanizationContext.Section := SectionName;
-                HumanizationContext.Complexity := Params.Complexity;
-                HumanizationContext.Intensity := IntensityPt;
-                HumanizationContext.Humanization := Params.Humanization;
-                HumanizationContext.Tempo := ATempo;
-                try
-                  HumanizedPattern := FHumanizer.Apply(FinalPattern, HumanizationContext);
-                finally
-                  FinalPattern.Free;
-                end;
-                FinalPattern := HumanizedPattern;
-              end;
-              GeneratedBars.Add(FinalPattern);
-          end;
+          BarSourcePattern := ExtractPatternBar(
+            DrummedPattern, BarIndex - CurrentPhraseStartBar);
         finally
           if Assigned(DrummedPattern) and (DrummedPattern <> BasePattern) then
             DrummedPattern.Free;
-          if OwnBasePattern and Assigned(BasePattern) then
-            BasePattern.Free;
-          if Assigned(Available) then
-            Available.Free;
-          if Assigned(Flavors) then
-          begin
-            for FlavorItem in Flavors do
-              if Assigned(FlavorItem) then
-                FlavorItem.Free;
-            Flavors.Free;
-          end;
         end;
+        try
+          FinalPattern := FBarSelector.GenerateForBar(
+            BarSourcePattern, BarIndex, Bars, IntensityPt, ADrummer, GeneratedBars);
+        finally
+          BarSourcePattern.Free;
+        end;
+        if Params.Humanization > 0 then
+        begin
+          HumanizationContext.Genre := Genre;
+          HumanizationContext.Style := Style;
+          HumanizationContext.Section := SectionName;
+          HumanizationContext.Complexity := Params.Complexity;
+          HumanizationContext.Intensity := IntensityPt;
+          HumanizationContext.Humanization := Params.Humanization;
+          HumanizationContext.Tempo := ATempo;
+          try
+            HumanizedPattern := FHumanizer.Apply(FinalPattern, HumanizationContext);
+          finally
+            FinalPattern.Free;
+          end;
+          FinalPattern := HumanizedPattern;
+        end;
+        GeneratedBars.Add(FinalPattern);
       end;
-      MacroComposer.Free;
 
       { Combine bars into a section }
       Combined := nil;
@@ -643,6 +669,19 @@ begin
 
       { Determine fill placement based on section context }
       Fills := FFilPicker.PickFillsForSection(Genre, Params, Bars, SectionName);
+      GMDFlavors := FGMDPatternLibrary.GetPatterns(
+        Genre, Style, 'fill', Song.TimeSignature.Numerator,
+        Song.TimeSignature.Denominator);
+      try
+        for FlavorItem in GMDFlavors do
+          if FlavorItem.DurationBars <= Bars then
+            Fills.Add(TFill.Create(FlavorItem.Copy));
+      finally
+        for FlavorItem in GMDFlavors do
+          FlavorItem.Free;
+        GMDFlavors.Free;
+        GMDFlavors := nil;
+      end;
 
       { Calculate groove timing offsets per bar }
       Section := TSection.Create(SectionName, Combined, Bars);
@@ -661,11 +700,34 @@ begin
           Section.GrooveOffsetsMs.Add(0.0);
       Song.Sections.Add(Section);
     finally
-    begin
+      if Assigned(MacroComposer) then
+        MacroComposer.Free;
+      if Assigned(GMDFlavors) then
+      begin
+        for FlavorItem in GMDFlavors do
+          FlavorItem.Free;
+        GMDFlavors.Free;
+      end;
+      if Assigned(Fills) then
+      begin
+        for Idx := Fills.Count - 1 downto 0 do
+          Fills[Idx].Free;
+        Fills.Free;
+      end;
+      if CurrentPatternOwned and Assigned(CurrentPattern) then
+        CurrentPattern.Free;
+      if Assigned(Available) then
+        Available.Free;
+      if Assigned(Flavors) then
+      begin
+        for FlavorItem in Flavors do
+          if Assigned(FlavorItem) then
+            FlavorItem.Free;
+        Flavors.Free;
+      end;
       for Idx := GeneratedBars.Count - 1 downto 0 do
         GeneratedBars[Idx].Free;
       GeneratedBars.Free;
-    end;
     end;
   end;
 
@@ -807,6 +869,7 @@ begin
       Beat.Position := Beat.Position - BarStart;
   end;
   Result.Name := APattern.Name + '_bar' + IntToStr(ABarIndex);
+  Result.Metadata.AddOrSetValue('phrase_bars', '1');
 end;
 
 procedure TComposerV2.CombineBarPatterns(const GeneratedBars: specialize TList<TPattern>; out Combined: TPattern);
@@ -858,6 +921,8 @@ begin
       NewBeat.InstrumentPromoted := Beat.InstrumentPromoted;
     end;
   end;
+
+  TargetPattern.Metadata.AddOrSetValue('phrase_bars', IntToStr(GeneratedBars.Count));
 
 //  WriteLn(DebugF, '  combined beats:');
   for Beat in TargetPattern.Beats do

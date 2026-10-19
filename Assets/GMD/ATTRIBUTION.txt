@@ -1,0 +1,29 @@
+Groove MIDI Dataset excerpts
+
+This directory contains transformed drum-performance phrases derived from the
+Groove MIDI Dataset (GMD) v1.0.0, made available by Google LLC under the
+Creative Commons Attribution 4.0 International license:
+
+  Dataset: https://magenta.tensorflow.org/datasets/groove
+  License: https://creativecommons.org/licenses/by/4.0/
+  Source archive: groove-v1.0.0-midionly.zip
+  Published source archive SHA-256:
+  651cbc524ffb891be1a3e46d89dc82a1cecb09a57c748c7b45b844c4841dcc1e
+
+The MIDI performances were recorded from drummers performing to a click in
+multiple styles. This project extracts bar-bounded phrases, converts event
+positions to 960 ticks per quarter note, maps source pitches to the project's
+drum-instrument names at load time, and may further humanize or transform
+phrases during song generation. Source performance IDs, style, meter, tempo,
+performer IDs, and split are retained in gmd_patterns.json.
+
+Please also cite:
+
+  Jon Gillick, Adam Roberts, Jesse Engel, Douglas Eck, and David Bamman.
+  "Learning to Groove with Inverse Sequence Transformations."
+  International Conference on Machine Learning (ICML), 2019.
+  https://goo.gl/magenta/groovae-paper
+
+Changes from the source are described in the JSON corpus metadata. The dataset
+and its adaptations are licensed under CC BY 4.0; reuse requires attribution
+and a link to the license.

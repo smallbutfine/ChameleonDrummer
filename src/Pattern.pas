@@ -164,7 +164,13 @@ function TPattern.DurationBars: Double;
 var
   MaxPos: Double;
   Beat: TBeat;
+  ExplicitBars: string;
+  BarCount: Integer;
 begin
+  if FMetadata.TryGetValue('phrase_bars', ExplicitBars) and
+     TryStrToInt(ExplicitBars, BarCount) and (BarCount > 0) then
+    Exit(BarCount);
+
   if FBeats.Count = 0 then
     Exit(1.0);
 
