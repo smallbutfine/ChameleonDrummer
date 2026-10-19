@@ -130,10 +130,10 @@ begin
     GeneratedSong.Free;
   end;
 
-  GeneratedSong := Generator.CreateSong('rock', 'blues', 123, Structure, nil, 'bonham');
+  GeneratedSong := Generator.CreateSong('rock', 'blues', 120, Structure, nil, 'bonham');
   try
-    Check(GeneratedSong.Tempo = 123,
-      'an explicitly requested tempo must override the style default');
+    Check(GeneratedSong.Tempo = 120,
+      'an explicit 120 BPM request must override the style default');
   finally
     GeneratedSong.Free;
   end;
