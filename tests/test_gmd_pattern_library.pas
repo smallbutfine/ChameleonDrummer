@@ -123,12 +123,15 @@ var
   Fill: TFill;
   SourceType, OutputPath: string;
   HasGMDOneBarFill, HasGMDTwoBarFill: Boolean;
+  FillIndex: Integer;
+  MultiBarGMDPattern: TPattern;
 begin
   SetLength(Structure, 1);
   Structure[0].Name := 'verse';
   Structure[0].Bars := 4;
   GeneratedSong := Generator.CreateSong(
     'funk', 'classic', 110, Structure, nil, 'chambers', 0.5, 0.6, 0.0);
+  MultiBarGMDPattern := nil;
   OutputPath := IncludeTrailingPathDelimiter(GetTempDir(False)) +
     'chameleon_gmd_fill_' + IntToStr(GetTickCount64) + '.mid';
   try
@@ -142,14 +145,27 @@ begin
       if Fill.Pattern.DurationBars = 1 then
         HasGMDOneBarFill := True
       else if Fill.Pattern.DurationBars = 2 then
+      begin
         HasGMDTwoBarFill := True;
+        if not Assigned(MultiBarGMDPattern) then
+          MultiBarGMDPattern := Fill.Pattern.Copy;
+      end;
     Check(HasGMDOneBarFill and HasGMDTwoBarFill,
       'composer must include one- and two-bar GMD fill phrases');
 
+    Check(Assigned(MultiBarGMDPattern),
+      'composer must provide a selectable two-bar GMD fill');
+    for FillIndex := GeneratedSong.Sections[0].Fills.Count - 1 downto 0 do
+      GeneratedSong.Sections[0].Fills[FillIndex].Free;
+    GeneratedSong.Sections[0].Fills.Clear;
+    GeneratedSong.Sections[0].Fills.Add(TFill.Create(MultiBarGMDPattern));
+    MultiBarGMDPattern := nil;
+
     Generator.SaveSongMidi(GeneratedSong, OutputPath);
     Check(MaxMidiNoteOnTick(OutputPath) <= 4 * 4 * 960,
-      'fill notes must remain within the four-bar section');
+      'two-bar fill notes must be placed within the four-bar section');
   finally
+    MultiBarGMDPattern.Free;
     GeneratedSong.Free;
     if FileExists(OutputPath) then
       DeleteFile(OutputPath);
