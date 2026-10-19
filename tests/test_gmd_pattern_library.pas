@@ -4,7 +4,7 @@ program test_gmd_pattern_library;
 
 uses
   Classes, SysUtils, Generics.Collections, jsonparser, DrumGenerator, Song,
-  GMDPatternLibrary, Pattern;
+  GMDPatternLibrary, Pattern, PluginRegistry, DrummerPlugin;
 
 procedure Check(Condition: Boolean; const MessageText: string);
 begin
@@ -180,6 +180,44 @@ begin
   end;
 end;
 
+procedure CheckDrummerPreferenceRegistry(Generator: TDrumGenerator);
+var
+  Registry: TPluginRegistry;
+  Genres, Drummers, PreferredDrummers: TStringArray;
+  Genre, Drummer: string;
+  Plugin: TObject;
+  IsPreferred, IsRegisteredPreferred: Boolean;
+  GenreIndex, DrummerIndex, PreferredIndex: Integer;
+begin
+  Registry := Generator.PluginManager.Registry;
+  Genres := Registry.GetAvailableGenres;
+  Drummers := Registry.GetAvailableDrummers;
+  for GenreIndex := 0 to Length(Genres) - 1 do
+  begin
+    Genre := Genres[GenreIndex];
+    PreferredDrummers := Registry.GetPreferredDrummersForGenre(Genre);
+    for DrummerIndex := 0 to Length(Drummers) - 1 do
+    begin
+      Drummer := Drummers[DrummerIndex];
+      Plugin := Registry.GetDrummerPlugin(Drummer);
+      Check(Assigned(Plugin) and (Plugin is TDrummerPlugin),
+        'every registered drummer must implement TDrummerPlugin');
+      IsPreferred := (Plugin as TDrummerPlugin).IsPreferredForGenre(Genre);
+      IsRegisteredPreferred := False;
+      for PreferredIndex := 0 to Length(PreferredDrummers) - 1 do
+        if SameText(PreferredDrummers[PreferredIndex], Drummer) then
+          IsRegisteredPreferred := True;
+      Check(IsPreferred = IsRegisteredPreferred,
+        Format('registry and drummer genre preferences must agree for %s/%s',
+          [Genre, Drummer]));
+    end;
+    for PreferredIndex := 0 to Length(PreferredDrummers) - 1 do
+      Check(Assigned(Registry.GetDrummerPlugin(PreferredDrummers[PreferredIndex])),
+        Format('preferred drummer %s for %s must be registered',
+          [PreferredDrummers[PreferredIndex], Genre]));
+  end;
+end;
+
 var
   Generator: TDrumGenerator;
   GMDLibrary: TGMDPatternLibrary;
@@ -189,6 +227,7 @@ var
 begin
   Generator := TDrumGenerator.Create;
   try
+    CheckDrummerPreferenceRegistry(Generator);
     GMDLibrary := TGMDPatternLibrary.Create('Assets\GMD\gmd_patterns.json');
     try
       CheckPatterns(GMDLibrary, 'rock', 'blues', 'beat', 4, 4, 1);

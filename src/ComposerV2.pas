@@ -467,6 +467,7 @@ var
   SignatureFill: TFill;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
+  PreferredDrummers: specialize TArray<string>;
   I, J: Integer;
   DrummerPlugin: TObject;
   SectionDef: TSectionDef;
@@ -496,23 +497,17 @@ begin
   if ADrummer = '' then
   begin
     AllDrummers := FPluginManager.Registry.GetAvailableDrummers;
+    PreferredDrummers := FPluginManager.Registry.GetPreferredDrummersForGenre(Genre);
     PreferredForGenre := specialize TList<string>.Create;
     try
-      for I := 0 to Length(AllDrummers) - 1 do
+      for J := 0 to Length(PreferredDrummers) - 1 do
       begin
-        DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(AllDrummers[I]);
-        if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
-        begin
-          // Check if genre matches any preferred genre
-          for J := 0 to Length((DrummerPlugin as TDrummerPlugin).GetPreferredGenres) - 1 do
-          begin
-            if SameText(Genre, (DrummerPlugin as TDrummerPlugin).GetPreferredGenres[J]) then
-            begin
-              PreferredForGenre.Add(AllDrummers[I]);
-              Break;
-            end;
-          end;
-        end;
+        DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(PreferredDrummers[J]);
+        if not Assigned(DrummerPlugin) or not (DrummerPlugin is TDrummerPlugin) then
+          raise Exception.CreateFmt(
+            'Genre %s references unavailable drummer plugin %s',
+            [Genre, PreferredDrummers[J]]);
+        PreferredForGenre.Add(PreferredDrummers[J]);
       end;
 
       if PreferredForGenre.Count > 0 then

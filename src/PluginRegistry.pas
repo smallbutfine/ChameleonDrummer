@@ -348,21 +348,12 @@ end;
 
 function TPluginRegistry.GetPreferredDrummersForGenre(const Genre: string): TStringArray;
 var
-  I, J: Integer;
+  GenreIdx: Integer;
 begin
+  GenreIdx := FindGenreIdx(Genre);
+  if GenreIdx >= 0 then
+    Exit(FGenreStyles[GenreIdx].PreferredDrummers);
   Result := [];
-
-  if not Assigned(FDrummerPrefs) then Exit;
-
-  SetLength(Result, 0);
-  for I := Low(FDrummerPrefs) to High(FDrummerPrefs) do
-    for J := Low(FDrummerPrefs[I].PreferredGenres) to High(FDrummerPrefs[I].PreferredGenres) do
-      if SameText(FDrummerPrefs[I].PreferredGenres[J], Genre) then
-      begin
-        SetLength(Result, Length(Result) + 1);
-        Result[High(Result)] := FDrummerPrefs[I].DrummerName;
-        Break;
-      end;
 end;
 
 { â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
