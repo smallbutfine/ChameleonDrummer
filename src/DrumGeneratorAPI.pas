@@ -87,7 +87,7 @@ begin
   Result := FGenerator.CreateSong(AGenre, AStyle, ATempo, nil, nil, ADrummer);
 end;
 
-function TDrumGeneratorAPI.MetalSong(const AStyle: String; ATempo: Integer = 155;
+function TDrumGeneratorAPI.MetalSong(const AStyle: String; ATempo: Integer = 0;
   AComplexity: Double = 0.7): TSong;
 begin
   Result := CreateSong('metal', AStyle, ATempo);
