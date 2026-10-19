@@ -492,6 +492,10 @@ var
 begin
   if not Assigned(FPluginManager.Registry.GetGenrePlugin(Genre)) then
     raise Exception.CreateFmt('Unsupported genre: %s', [Genre]);
+  FGenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
+  if (Style <> '') and not FGenrePlugin.SupportsStyle(Style) then
+    raise Exception.CreateFmt('Unsupported style "%s" for genre "%s".',
+      [Style, FGenrePlugin.GetGenreName]);
   if (ADrummer <> '') and
      not Assigned(FPluginManager.Registry.GetDrummerPlugin(ADrummer)) then
     raise Exception.CreateFmt('Unknown drummer: %s', [ADrummer]);

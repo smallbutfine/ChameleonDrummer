@@ -4,7 +4,7 @@ program test_genre_patterns;
 
 uses
   SysUtils, Generics.Collections, jsonparser, Pattern, Kit, Song, generation_parameters,
-  GenrePlugin, Rock, Jazz, Funk, Electronic;
+  GenrePlugin, Metal, Rock, Jazz, Funk, Electronic, DrumGeneratorAPI;
 
 type
   TGenrePluginClass = class of TGenrePlugin;
@@ -15,6 +15,129 @@ begin
   begin
     WriteLn(StdErr, 'FAIL: ', MessageText);
     Halt(1);
+  end;
+end;
+
+procedure CheckStyleContract(APluginClass: TGenrePluginClass;
+  const AGenre, AValidStyle, AInvalidStyle: string;
+  const ARegistryStyles: specialize TArray<string>);
+var
+  Plugin: TGenrePlugin;
+  Params: TGenerationParameters;
+  Patterns: specialize TList<TPattern>;
+  SupportedStyles: TStringArray;
+  PatternItem: TPattern;
+  I: Integer;
+  Rejected: Boolean;
+begin
+  Plugin := APluginClass.Create;
+  Params := nil;
+  Patterns := nil;
+  try
+    SupportedStyles := Plugin.GetSupportedStyles;
+    Check(SameText(Plugin.GetGenreName, AGenre),
+      AGenre + ' plugin must report its genre name');
+    Check(Length(SupportedStyles) = Length(ARegistryStyles),
+      AGenre + ' plugin style metadata must match the registry');
+    for I := 0 to High(SupportedStyles) do
+    begin
+      Check(SameText(SupportedStyles[I], ARegistryStyles[I]),
+        AGenre + ' plugin style metadata must match the registry');
+      Check(Plugin.SupportsStyle(SupportedStyles[I]),
+        AGenre + ' plugin must support each registered style');
+    end;
+    for I := 0 to High(SupportedStyles) do
+    begin
+      Params := TGenerationParameters.Create(AGenre, SupportedStyles[I]);
+      try
+        Patterns := Plugin.GetSectionFlavors('verse', Params);
+        try
+          Check((Patterns.Count > 0) and
+            (Pos(LowerCase(AGenre + '_' + SupportedStyles[I] + '_verse_'),
+              LowerCase(Patterns[0].Name)) = 1),
+            AGenre + ' must generate verse patterns for style ' +
+              SupportedStyles[I]);
+        finally
+          for PatternItem in Patterns do
+            PatternItem.Free;
+          Patterns.Free;
+          Patterns := nil;
+        end;
+      finally
+        Params.Free;
+        Params := nil;
+      end;
+    end;
+
+    Check(Plugin.SupportsStyle(UpperCase(AValidStyle)),
+      AGenre + ' style validation must be case-insensitive');
+    Check(not Plugin.SupportsStyle(AInvalidStyle),
+      AGenre + ' plugin must reject styles that belong to another genre');
+
+    Params := TGenerationParameters.Create(AGenre, AInvalidStyle);
+    Check(not Plugin.ValidateParameters(Params),
+      AGenre + ' parameter validation must reject unsupported styles');
+    Rejected := False;
+    try
+      Patterns := Plugin.GetSectionFlavors('verse', Params);
+    except
+      on E: Exception do
+        Rejected := Pos('Unsupported style', E.Message) > 0;
+    end;
+    Check(Rejected,
+      AGenre + ' pattern generation must report unsupported styles explicitly');
+  finally
+    if Assigned(Patterns) then
+    begin
+      for PatternItem in Patterns do
+        PatternItem.Free;
+      Patterns.Free;
+    end;
+    Params.Free;
+    Plugin.Free;
+  end;
+end;
+
+procedure CheckPublicPatternGeneration;
+var
+  API: TDrumGeneratorAPI;
+  GeneratedPattern: TPattern;
+  GeneratedSong: TSong;
+  Rejected: Boolean;
+begin
+  API := TDrumGeneratorAPI.Create;
+  try
+    GeneratedPattern := API.GeneratePattern('rock', 'blues');
+    try
+      Check(Pos('rock_blues_verse_', GeneratedPattern.Name) = 1,
+        'public pattern API must use its style argument and generate a verse');
+    finally
+      GeneratedPattern.Free;
+    end;
+
+    Rejected := False;
+    try
+      GeneratedPattern := API.GeneratePattern('rock', 'doom');
+      GeneratedPattern.Free;
+    except
+      on E: Exception do
+        Rejected := Pos('Unsupported style', E.Message) > 0;
+    end;
+    Check(Rejected,
+      'public pattern API must reject a style unsupported by the genre');
+
+    Rejected := False;
+    try
+      GeneratedSong := API.CreateSong('rock', 'doom');
+      GeneratedSong.Free;
+    except
+      on E: Exception do
+        Rejected := Pos('Unsupported style', E.Message) > 0;
+    end;
+    Check(Rejected,
+      'public song API must reject a style unsupported by the genre');
+  finally
+    API.Free;
   end;
 end;
 
@@ -94,7 +217,26 @@ var
   JazzSwing, JazzLatin: string;
   FunkClassic, FunkMinimal: string;
   ElectronicHouse, ElectronicDnB: string;
+  API: TDrumGeneratorAPI;
 begin
+  API := TDrumGeneratorAPI.Create;
+  try
+    CheckStyleContract(TMetalGenrePlugin, 'metal', 'heavy', 'house',
+      API.PluginRegistry.GetStylesForGenre('metal'));
+    CheckStyleContract(TRockGenrePlugin, 'rock', 'classic', 'doom',
+      API.PluginRegistry.GetStylesForGenre('rock'));
+    CheckStyleContract(TJazzGenrePlugin, 'jazz', 'swing', 'doom',
+      API.PluginRegistry.GetStylesForGenre('jazz'));
+    CheckStyleContract(TFunkGenrePlugin, 'funk', 'classic', 'doom',
+      API.PluginRegistry.GetStylesForGenre('funk'));
+    CheckStyleContract(TElectronicGenrePlugin, 'electronic', 'house', 'doom',
+      API.PluginRegistry.GetStylesForGenre('electronic'));
+  finally
+    API.Free;
+  end;
+
+  CheckPublicPatternGeneration;
+
   RockClassic := GetChorusSignature(TRockGenrePlugin, 'rock', 'classic', 'classic');
   RockBlues := GetChorusSignature(TRockGenrePlugin, 'rock', 'blues', 'classic');
   JazzSwing := GetChorusSignature(TJazzGenrePlugin, 'jazz', 'swing', 'swing');

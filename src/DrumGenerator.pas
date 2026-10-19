@@ -67,7 +67,8 @@ public
   procedure SavePatternMidi(const APattern: TPattern; const AOutputPath: string; ATempo: Integer = 120);
 
   { Generate a single pattern for a genre/section. }
-  function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit): TPattern;
+  function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit;
+    const AStyle: string = ''): TPattern;
 
   property PluginManager: TPluginManager read FPluginManager;
   property DrumKit: TDrumKit read FDrumKit write SetDrumKit;
@@ -871,10 +872,13 @@ end;
 
 {  V1 helpers  pattern generation, variations, fills. â”€â”€ }
 
-function TDrumGenerator.GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit): TPattern;
+function TDrumGenerator.GeneratePattern(const Genre, SectionName: string;
+  const ADk: TDrumKit; const AStyle: string): TPattern;
 var
   GenrePlugin: TObject;
   Params: TGenerationParameters;
+  EffectiveStyle: string;
+  AvailableStyles: specialize TArray<string>;
 begin
   Result := nil;
 
@@ -884,11 +888,25 @@ begin
   GenrePlugin := FPluginManager.Registry.GetGenrePlugin(Genre);
   if not Assigned(GenrePlugin) then
     raise Exception.CreateFmt('Unsupported genre: %s', [Genre]);
+  if not (GenrePlugin is TGenrePlugin) then
+    raise Exception.CreateFmt('Invalid genre plugin registered for genre: %s', [Genre]);
+
+  EffectiveStyle := AStyle;
+  if EffectiveStyle = '' then
+  begin
+    AvailableStyles := FPluginManager.Registry.GetStylesForGenre(Genre);
+    if Length(AvailableStyles) = 0 then
+      raise Exception.CreateFmt('No styles are registered for genre: %s', [Genre]);
+    EffectiveStyle := AvailableStyles[0];
+  end;
+  if not (GenrePlugin as TGenrePlugin).SupportsStyle(EffectiveStyle) then
+    raise Exception.CreateFmt('Unsupported style "%s" for genre "%s".',
+      [EffectiveStyle, (GenrePlugin as TGenrePlugin).GetGenreName]);
 
   if Assigned(ADk) then
     SetDrumKit(ADk);
 
-  Params := TGenerationParameters.Create(Genre, 'default');
+  Params := TGenerationParameters.Create(Genre, EffectiveStyle);
   try
     Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
   finally

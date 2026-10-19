@@ -40,6 +40,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
+    function GetGenreName: string; override;
+    function GetSupportedStyles: TStringArray; override;
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
@@ -52,6 +54,17 @@ type
   end;
 
 implementation
+
+function TFunkGenrePlugin.GetGenreName: string;
+begin
+  Result := 'funk';
+end;
+
+function TFunkGenrePlugin.GetSupportedStyles: TStringArray;
+begin
+  Result := ['classic', 'pfunk', 'shuffle', 'new_orleans', 'fusion',
+    'minimal', 'heavy'];
+end;
 
 constructor TFunkGenrePlugin.Create;
 begin
@@ -329,6 +342,7 @@ var
   SectionName, PreviousStyle, PreviousSection: string;
   PreviousComplexity, PreviousIntensity: Double;
 begin
+  RequireValidParameters(Parameters);
   Result := specialize TList<TPattern>.Create;
   PreviousStyle := FStyle;
   PreviousSection := FSection;

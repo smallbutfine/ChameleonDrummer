@@ -55,6 +55,8 @@ public
   function ValidateParameters(const Parameters: TGenerationParameters): boolean;
 
 protected
+  procedure RequireValidParameters(const Parameters: TGenerationParameters);
+
   { Virtual helpers for subclasses. }
   function ApplyContextBlendInternal(const APattern: TPattern; const ContextProfile: specialize TDictionary<string, Double>;
     BlendAmount: Double): TPattern; virtual;
@@ -323,18 +325,56 @@ begin
 end;
 
 function TGenrePlugin.SupportsStyle(const Style: string): boolean;
-{ Check if this plugin supports the given style (must be overridden). }
+var
+  SupportedStyle: string;
 begin
-  Result := False; { Abstract — must be overridden. }
+  Result := False;
+  if Style = '' then
+    Exit;
+  for SupportedStyle in GetSupportedStyles do
+    if SameText(SupportedStyle, Style) then
+      Exit(True);
 end;
 
 function TGenrePlugin.ValidateParameters(const Parameters: TGenerationParameters): boolean;
 { Validate that parameters are appropriate for this genre (checks genre and style). }
 begin
-  if Parameters.Genre <> GetGenreName then
+  if not Assigned(Parameters) then
     Exit(False);
 
-  Result := SupportsStyle(Parameters.Style);
+  Result := SameText(Parameters.Genre, GetGenreName) and
+    ((Parameters.Style = '') or SupportsStyle(Parameters.Style));
+end;
+
+procedure TGenrePlugin.RequireValidParameters(
+  const Parameters: TGenerationParameters);
+var
+  SupportedStyles: TStringArray;
+  StyleList: string;
+  I: Integer;
+begin
+  if not Assigned(Parameters) then
+    Exit;
+
+  if not SameText(Parameters.Genre, GetGenreName) then
+    raise Exception.CreateFmt(
+      'Genre plugin "%s" cannot generate parameters for genre "%s".',
+      [GetGenreName, Parameters.Genre]);
+
+  if (Parameters.Style = '') or SupportsStyle(Parameters.Style) then
+    Exit;
+
+  SupportedStyles := GetSupportedStyles;
+  StyleList := '';
+  for I := Low(SupportedStyles) to High(SupportedStyles) do
+  begin
+    if StyleList <> '' then
+      StyleList := StyleList + ', ';
+    StyleList := StyleList + SupportedStyles[I];
+  end;
+  raise Exception.CreateFmt(
+    'Unsupported style "%s" for genre "%s". Supported styles: %s.',
+    [Parameters.Style, GetGenreName, StyleList]);
 end;
 
 end.

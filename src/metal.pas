@@ -45,6 +45,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
+    function GetGenreName: string; override;
+    function GetSupportedStyles: TStringArray; override;
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
@@ -351,6 +353,17 @@ begin
   Result := GrooveList;
 end;
 
+function TMetalGenrePlugin.GetGenreName: string;
+begin
+  Result := 'metal';
+end;
+
+function TMetalGenrePlugin.GetSupportedStyles: TStringArray;
+begin
+  Result := ['heavy', 'death', 'power', 'progressive', 'thrash', 'doom',
+    'breakdown'];
+end;
+
 function TMetalGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>;
 var
   GrooveList: specialize TList<TPattern>;
@@ -359,6 +372,7 @@ var
   PreviousStyle: String;
   PreviousComplexity, PreviousIntensity: Double;
 begin
+  RequireValidParameters(Parameters);
   GrooveList := specialize TList<TPattern>.Create;
   PreviousStyle := FStyle;
   PreviousComplexity := FComplexity;

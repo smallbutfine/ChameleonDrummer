@@ -40,6 +40,8 @@ type
     procedure SetComplexity(AValue: Double);
     procedure SetIntensity(AValue: Double);
 
+    function GetGenreName: string; override;
+    function GetSupportedStyles: TStringArray; override;
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
@@ -52,6 +54,16 @@ type
   end;
 
 implementation
+
+function TElectronicGenrePlugin.GetGenreName: string;
+begin
+  Result := 'electronic';
+end;
+
+function TElectronicGenrePlugin.GetSupportedStyles: TStringArray;
+begin
+  Result := ['house', 'techno', 'drum_and_bass', 'dubstep'];
+end;
 
 constructor TElectronicGenrePlugin.Create;
 begin
@@ -268,6 +280,7 @@ var
   SectionName, PreviousStyle, PreviousSection: string;
   PreviousComplexity, PreviousIntensity: Double;
 begin
+  RequireValidParameters(Parameters);
   Result := specialize TList<TPattern>.Create;
   PreviousStyle := FStyle;
   PreviousSection := FSection;

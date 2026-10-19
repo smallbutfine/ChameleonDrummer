@@ -95,7 +95,8 @@ end;
 
 function TDrumGeneratorAPI.GeneratePattern(const AGenre, AStyle: String): TPattern;
 begin
-  Result := FGenerator.GeneratePattern(AGenre, AStyle, FGenerator.DrumKit);
+  Result := FGenerator.GeneratePattern(
+    AGenre, 'verse', FGenerator.DrumKit, AStyle);
 end;
 
 procedure TDrumGeneratorAPI.SaveAsMIDI(ASong: TSong; const AFileName: String);

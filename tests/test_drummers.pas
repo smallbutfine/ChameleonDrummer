@@ -267,6 +267,41 @@ begin
   end;
 end;
 
+procedure CheckGhostNotesOnGeneratedSnareVariants;
+var
+  Source, Modified: TPattern;
+  Beat: TBeat;
+  OpenSnare, RimshotSnare: TDrumInstrument;
+  GhostCount: Integer;
+begin
+  OpenSnare := TInstrumentRegistry.Get('snare_open_hit_open_lateral_hit');
+  RimshotSnare := TInstrumentRegistry.Get('snare_rimshot_open_hit');
+  Check(Assigned(OpenSnare) and Assigned(RimshotSnare),
+    'canonical generated snare instruments must be registered');
+
+  Source := TPattern.Create('ghost_note_snare_variants');
+  Source.AddBeat(0.0, OpenSnare, 90);
+  Source.AddBeat(1.0, RimshotSnare, 95);
+  try
+    Modified := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.5), Source, 0.8);
+    try
+      GhostCount := 0;
+      for Beat in Modified.Beats do
+        if Beat.GhostNote then
+          Inc(GhostCount);
+      Check((Modified.Beats.Count = 4) and (GhostCount = 2),
+        'ghost-note layer must handle both generated snare variants once');
+      Check((Source.Beats.Count = 2) and
+        not Source.Beats[0].GhostNote and not Source.Beats[1].GhostNote,
+        'ghost-note layer must not mutate its source pattern');
+    finally
+      Modified.Free;
+    end;
+  finally
+    Source.Free;
+  end;
+end;
+
 begin
   CheckPedalGrid('continuous', 8, 8, 0.5);
   CheckPedalGrid('continuous', 16, 16, 0.25);
@@ -278,5 +313,6 @@ begin
   CheckGrooveOffsetUnits;
   CheckIntensityAndDynamicsModulation;
   CheckDrummerDynamicsAndFills;
+  CheckGhostNotesOnGeneratedSnareVariants;
   WriteLn('PASS: double-bass subdivisions, multi-bar templates, drummer dynamics, and signature fills');
 end.

@@ -243,7 +243,8 @@ begin
   DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
   FGenerator.DrumKit := DrumKit;
 
-  Pattern := FGenerator.GeneratePattern(Args.Genre, 'verse', DrumKit);
+  Pattern := FGenerator.GeneratePattern(
+    Args.Genre, 'verse', DrumKit, Args.Style);
 
   if (Args.OutputFile = '') then
     OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])

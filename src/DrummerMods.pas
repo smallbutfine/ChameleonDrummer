@@ -216,7 +216,11 @@ constructor TGhostNoteLayer.Create(A_GHOST_DENSITY: Double);
 begin FGhostDensity := A_GHOST_DENSITY; end;
 
 function TGhostNoteLayer.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var BIdx, GhostCount, MaxGhostsPerBar: Integer; EffDensity, ScaleF: Double; BarStart: Double; InstName: String;
+var
+  BIdx, SourceBeatCount, GhostCount, MaxGhostsPerBar: Integer;
+  EffDensity, ScaleF: Double;
+  BarStart: Double;
+  InstName: String;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) or (FGhostDensity <= 0) then Exit;
@@ -229,15 +233,18 @@ begin
   EffDensity := EffDensity * ScaleF;
   MaxGhostsPerBar := Max(2, Trunc((16 - Result.Beats.Count) * EffDensity));
 
+  SourceBeatCount := Result.Beats.Count;
   GhostCount := 0; BarStart := -1.0;
-  for BIdx := 0 to Result.Beats.Count - 1 do
+  for BIdx := 0 to SourceBeatCount - 1 do
   begin
     if Trunc(Result.Beats[BIdx].Position) > Trunc(BarStart) then begin GhostCount := 0; BarStart := Result.Beats[BIdx].Position; end;
     if GhostCount >= MaxGhostsPerBar then Continue;
     if not Assigned(Result.Beats[BIdx].Instrument) then Continue;
-    InstName := Result.Beats[BIdx].Instrument.Name;
-    // Only add ghost notes to actual snare-type instruments (not sticks, not rimshot)
-    if ((InstName = 'snare') or (InstName = 'snare_open_hit_open_lateral_hit')) and (GhostCount < MaxGhostsPerBar) then
+    InstName := LowerCase(Result.Beats[BIdx].Instrument.Name);
+    if ((InstName = 'snare') or
+        (InstName = 'snare_open_hit_open_lateral_hit') or
+        (InstName = 'snare_rimshot_open_hit')) and
+       (GhostCount < MaxGhostsPerBar) then
     begin
       Inc(GhostCount);
       Result.Beats.Add(TBeat.Create(Result.Beats[BIdx].Position + 0.25,
