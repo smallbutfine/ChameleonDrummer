@@ -45,6 +45,7 @@ type
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
+    function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -318,24 +319,70 @@ end;
 
 function TRockGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Builder: TPatternBuilder;
-  I: Integer;
+  Patterns: specialize TList<TPattern>;
+  PatternItem: TPattern;
 begin
-  { Generate default rock pattern for the given section } 
-  Builder := TPatternBuilder.Create(Section + '_rock');
+  Patterns := GetSectionFlavors(Section, Parameters);
   try
-    { Classic rock basic groove } 
-    for I := 0 to 3 do
-    begin
-      Builder.Kick(I * 1.0, KICK_NORMAL);     // Kick on 1 and 3
-      Builder.Snare(I * 1.0 + 0.5, SNARE_NORMAL); // Snare on 2 and 4
-    end;
-    { Hi-hat eighth notes } 
-    for I := 0 to 7 do
-      Builder.HiHat(I * 0.5, HIHAT_NORMAL);
-    Result := Builder.Build();
+    if Patterns.Count = 0 then
+      raise Exception.CreateFmt('No rock patterns available for section %s', [Section]);
+    Result := Patterns[0].Copy;
   finally
-    Builder.Free;
+    for PatternItem in Patterns do
+      PatternItem.Free;
+    Patterns.Free;
+  end;
+end;
+
+function TRockGenrePlugin.GetSectionFlavors(const Section: string;
+  const Parameters: TGenerationParameters): specialize TList<TPattern>;
+var
+  BarIdx: Integer;
+  SectionName, PreviousStyle, PreviousSection: string;
+  PreviousComplexity, PreviousIntensity: Double;
+begin
+  Result := specialize TList<TPattern>.Create;
+  PreviousStyle := FStyle;
+  PreviousSection := FSection;
+  PreviousComplexity := FComplexity;
+  PreviousIntensity := FIntensity;
+  try
+    try
+      if Assigned(Parameters) then
+      begin
+        if Parameters.Style <> '' then
+          FStyle := LowerCase(Parameters.Style);
+        FComplexity := Parameters.Complexity;
+        FIntensity := Parameters.Dynamics;
+      end;
+      FSection := LowerCase(Section);
+      SectionName := FSection;
+
+      for BarIdx := 0 to 2 do
+      begin
+        if (Pos('chorus', SectionName) > 0) then
+          Result.Add(GetFlavorChorus(BarIdx))
+        else if (Pos('bridge', SectionName) > 0) or
+                (Pos('pre_chorus', SectionName) > 0) or
+                (Pos('breakdown', SectionName) > 0) then
+          Result.Add(GetFlavorBridge(BarIdx))
+        else
+          Result.Add(GetFlavorVerse(BarIdx));
+      end;
+    except
+      while Result.Count > 0 do
+      begin
+        Result[Result.Count - 1].Free;
+        Result.Delete(Result.Count - 1);
+      end;
+      Result.Free;
+      raise;
+    end;
+  finally
+    FStyle := PreviousStyle;
+    FSection := PreviousSection;
+    FComplexity := PreviousComplexity;
+    FIntensity := PreviousIntensity;
   end;
 end;
 

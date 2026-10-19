@@ -23,6 +23,7 @@ type
     destructor Destroy; override;
     function Kick(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Snare(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
+    function Crash(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function HiHat(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Tom(AtPos: Double; ATomNum: string): TPatternBuilder; virtual;
     function Build: TPattern; virtual;
@@ -164,6 +165,12 @@ function TPatternBuilder.Snare(AtPos: Double; AVel: Integer): TPatternBuilder;
 begin
   Result := Self;
   AddDrumHit('snare_open_hit_open_lateral_hit', AtPos, AVel);
+end;
+
+function TPatternBuilder.Crash(AtPos: Double; AVel: Integer): TPatternBuilder;
+begin
+  Result := Self;
+  AddDrumHit('cymbal_1_hit', AtPos, AVel);
 end;
 
 function TPatternBuilder.HiHat(AtPos: Double; AVel: Integer): TPatternBuilder;
@@ -321,7 +328,7 @@ begin inherited Create; end;
 function TCrashAccents.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 begin
   Result := Builder;
-  // Crash accents handled via high-energy cymbal promotion in genre plugin HighEnergyTimekeeper.
+  Builder.Crash(0.0, 110);
 end;
 
 constructor TTomFill.Create(AFillType: string);

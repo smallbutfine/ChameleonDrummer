@@ -45,6 +45,7 @@ type
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
+    function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
 
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
@@ -309,25 +310,70 @@ end;
 
 function TJazzGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Composer: TTemplateComposer;
+  Patterns: specialize TList<TPattern>;
+  PatternItem: TPattern;
 begin
-  { Generate default jazz pattern using ride swing } 
-  Composer := TTemplateComposer.Create(Section + '_jazz');
+  Patterns := GetSectionFlavors(Section, Parameters);
   try
-    if SameText(FStyle, 'swing') or SameText(FStyle, 'bebop') then
-      begin
-        Composer.Add(TSteadyRide.Create);
-        Composer.Add(TJazzRidePattern.Create('swing'));
-      end
-    else if SameText(FStyle, 'fusion') or SameText(FStyle, 'latin') then
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.7));
-      end
-    else
-      Composer.Add(TSteadyRide.Create);
-    Result := Composer.Build(2, FComplexity);
+    if Patterns.Count = 0 then
+      raise Exception.CreateFmt('No jazz patterns available for section %s', [Section]);
+    Result := Patterns[0].Copy;
   finally
-    Composer.Free;
+    for PatternItem in Patterns do
+      PatternItem.Free;
+    Patterns.Free;
+  end;
+end;
+
+function TJazzGenrePlugin.GetSectionFlavors(const Section: string;
+  const Parameters: TGenerationParameters): specialize TList<TPattern>;
+var
+  BarIdx: Integer;
+  SectionName, PreviousStyle, PreviousSection: string;
+  PreviousComplexity, PreviousIntensity: Double;
+begin
+  Result := specialize TList<TPattern>.Create;
+  PreviousStyle := FStyle;
+  PreviousSection := FSection;
+  PreviousComplexity := FComplexity;
+  PreviousIntensity := FIntensity;
+  try
+    try
+      if Assigned(Parameters) then
+      begin
+        if Parameters.Style <> '' then
+          FStyle := LowerCase(Parameters.Style);
+        FComplexity := Parameters.Complexity;
+        FIntensity := Parameters.Dynamics;
+      end;
+      FSection := LowerCase(Section);
+      SectionName := FSection;
+
+      for BarIdx := 0 to 2 do
+      begin
+        if (Pos('chorus', SectionName) > 0) then
+          Result.Add(GetFlavorChorus(BarIdx))
+        else if (Pos('bridge', SectionName) > 0) or
+                (Pos('pre_chorus', SectionName) > 0) or
+                (Pos('breakdown', SectionName) > 0) then
+          Result.Add(GetFlavorBridge(BarIdx))
+        else
+          Result.Add(GetFlavorVerse(BarIdx));
+      end;
+    except
+      while Result.Count > 0 do
+      begin
+        Result[Result.Count - 1].Free;
+        Result.Delete(Result.Count - 1);
+      end;
+      Result.Free;
+      raise;
+    end;
+  finally
+    FStyle := PreviousStyle;
+    FSection := PreviousSection;
+    FComplexity := PreviousComplexity;
+    FIntensity := PreviousIntensity;
   end;
 end;
 
