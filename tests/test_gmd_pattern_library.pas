@@ -116,16 +116,63 @@ begin
   end;
 end;
 
+function MidiContainsNote(const FileName: string; ExpectedNote: Byte): Boolean;
+var
+  Stream: TFileStream;
+  ChunkId: array[0..3] of Char;
+  TrackEnd: Int64;
+  Status, EventType, Note, Velocity: Byte;
+  Delta, MetaLength: LongWord;
+begin
+  Result := False;
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  try
+    Stream.ReadBuffer(ChunkId, SizeOf(ChunkId));
+    Check(ChunkId = 'MThd', 'exported MIDI must have a header');
+    Stream.Seek(4, soCurrent);
+    Stream.Seek(6, soCurrent);
+    Stream.ReadBuffer(ChunkId, SizeOf(ChunkId));
+    Check(ChunkId = 'MTrk', 'exported MIDI must have a track');
+    TrackEnd := Stream.Position + ReadLongWordBE(Stream);
+    while Stream.Position < TrackEnd do
+    begin
+      Delta := ReadVarLen(Stream);
+      Status := ReadByte(Stream);
+      if Status = $FF then
+      begin
+        EventType := ReadByte(Stream);
+        MetaLength := ReadVarLen(Stream);
+        if EventType = $2F then
+          Break;
+        Stream.Seek(MetaLength, soCurrent);
+      end
+      else if ((Status and $F0) = $90) or ((Status and $F0) = $80) then
+      begin
+        Note := ReadByte(Stream);
+        Velocity := ReadByte(Stream);
+        if ((Status and $F0) = $90) and (Velocity > 0) and
+           (Note = ExpectedNote) then
+          Exit(True);
+      end
+      else
+        raise Exception.CreateFmt('Unexpected MIDI status byte $%.2x', [Status]);
+    end;
+  finally
+    Stream.Free;
+  end;
+end;
+
 procedure CheckComposerFillIntegration(Generator: TDrumGenerator);
 var
   Structure: TSongStructureArray;
   GeneratedSong: TSong;
   Fill: TFill;
-  SourceType, OutputPath: string;
+  SourceType, OutputPath, SignatureOutputPath: string;
   HasGMDOneBarFill, HasGMDTwoBarFill: Boolean;
   HasDrummerSignatureFill: Boolean;
   FillIndex: Integer;
   MultiBarGMDPattern: TPattern;
+  SignaturePattern: TPattern;
 begin
   SetLength(Structure, 1);
   Structure[0].Name := 'verse';
@@ -133,8 +180,11 @@ begin
   GeneratedSong := Generator.CreateSong(
     'funk', 'classic', 110, Structure, nil, 'chambers', 0.5, 0.6, 0.0);
   MultiBarGMDPattern := nil;
+  SignaturePattern := nil;
   OutputPath := IncludeTrailingPathDelimiter(GetTempDir(False)) +
     'chameleon_gmd_fill_' + IntToStr(GetTickCount64) + '.mid';
+  SignatureOutputPath := IncludeTrailingPathDelimiter(GetTempDir(False)) +
+    'chameleon_signature_fill_' + IntToStr(GetTickCount64) + '.mid';
   try
     GeneratedSong.GlobalParameters.FillFrequency := 1.0;
     HasGMDOneBarFill := False;
@@ -155,7 +205,11 @@ begin
     for Fill in GeneratedSong.Sections[0].Fills do
       if Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) and
          (Pos('signature_', Fill.Pattern.Name) = 1) then
+      begin
         HasDrummerSignatureFill := True;
+        if not Assigned(SignaturePattern) then
+          SignaturePattern := Fill.Pattern.Copy;
+      end;
     Check(HasGMDOneBarFill and HasGMDTwoBarFill,
       'composer must include one- and two-bar GMD fill phrases');
     Check(HasDrummerSignatureFill,
@@ -172,11 +226,26 @@ begin
     Generator.SaveSongMidi(GeneratedSong, OutputPath);
     Check(MaxMidiNoteOnTick(OutputPath) <= 4 * 4 * 960,
       'two-bar fill notes must be placed within the four-bar section');
+
+    Check(Assigned(SignaturePattern),
+      'composer must provide a playable drummer signature fill');
+    for FillIndex := GeneratedSong.Sections[0].Fills.Count - 1 downto 0 do
+      GeneratedSong.Sections[0].Fills[FillIndex].Free;
+    GeneratedSong.Sections[0].Fills.Clear;
+    GeneratedSong.Sections[0].Fills.Add(TFill.Create(SignaturePattern));
+    SignaturePattern := nil;
+    Generator.SaveSongMidi(GeneratedSong, SignatureOutputPath);
+    Check(MidiContainsNote(SignatureOutputPath,
+      Byte(Generator.DrumKit.GetMidiNote('tom_4_open_hit'))),
+      'scheduled drummer signature fill must be exported to MIDI');
   finally
     MultiBarGMDPattern.Free;
+    SignaturePattern.Free;
     GeneratedSong.Free;
     if FileExists(OutputPath) then
       DeleteFile(OutputPath);
+    if FileExists(SignatureOutputPath) then
+      DeleteFile(SignatureOutputPath);
   end;
 end;
 

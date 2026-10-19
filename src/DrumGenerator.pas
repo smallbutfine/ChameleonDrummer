@@ -448,7 +448,7 @@ var
   LastTsNum, LastTsDen: Integer;
   BarDurationQuarters, FillOffsetQuarters: Double;
   TickOffset, AbsTick, PrevTick: Int64;
-  I, J, I22, J22: Integer;
+  I, J, I22, J22, FillBars, FillStartBar: Integer;
   Section: TSection;
   EffPattern: TPattern;
   Beat: TBeat;
@@ -603,14 +603,18 @@ begin
         end;
       end;
 
-      { Check for fills at section end }
+      { Add a selected fill, positioned so its last bar reaches this boundary. }
       if Assigned(ASong.GlobalParameters) then
       begin
         Fill := Section.ShouldAddFill(I, ASong.GlobalParameters.FillFrequency);
-        if (Fill <> nil) and (I = Section.Bars - 1) and Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) then
+        if Assigned(Fill) then
         begin
-          FillOffsetQuarters :=
-            BarDurationQuarters * (1.0 - Fill.Pattern.DurationBars);
+          FillBars := Ceil(Fill.Pattern.DurationBars);
+          FillOffsetQuarters := 0;
+          for FillStartBar := I - FillBars + 1 to I - 1 do
+            FillOffsetQuarters :=
+              FillOffsetQuarters -
+              Section.EffectiveTimeSignature(FillStartBar, ASong.TimeSignature).BeatsPerBar;
           for Beat in Fill.Pattern.Beats do
           begin
             AbsTick := TickOffset + Round(

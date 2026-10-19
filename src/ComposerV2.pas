@@ -46,7 +46,8 @@ type
     function GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
   public
     function PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
-      ABars: Integer; SectionName: string): specialize TList<TFill>;
+      ABars: Integer; SectionName: string;
+      out FillBarIndices: specialize TArray<Integer>): specialize TList<TFill>;
   end;
 
   { TGrooveEngine — calculates microtiming offsets per drummer/style }
@@ -159,15 +160,19 @@ end;
 { TFillPicker — Fill placement and type determination }
 
 function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
-  ABars: Integer; SectionName: string): specialize TList<TFill>;
+  ABars: Integer; SectionName: string;
+  out FillBarIndices: specialize TArray<Integer>): specialize TList<TFill>;
 var
   I: Integer;
 begin
   Result := specialize TList<TFill>.Create;
+  FillBarIndices := nil;
   { Place fills at musical boundaries using genre-aware fill selection }
   for I := 0 to ABars - 1 do
     if ShouldPlaceFill(I, ABars, SectionName) then
     begin
+      SetLength(FillBarIndices, Length(FillBarIndices) + 1);
+      FillBarIndices[High(FillBarIndices)] := I;
       Result.Add(TFill.Create(
         GenerateFillPattern(SelectFillType(Genre, SectionName, I), 1)
       ));
@@ -465,6 +470,7 @@ var
   Fills: specialize TList<TFill>;
   SignatureFills: specialize TList<TFill>;
   SignatureFill: TFill;
+  FillBarIndices: specialize TArray<Integer>;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
   PreferredDrummers: specialize TArray<string>;
@@ -665,7 +671,8 @@ begin
         CombineBarPatterns(GeneratedBars, Combined);
 
       { Determine fill placement based on section context }
-      Fills := FFilPicker.PickFillsForSection(Genre, Params, Bars, SectionName);
+      Fills := FFilPicker.PickFillsForSection(
+        Genre, Params, Bars, SectionName, FillBarIndices);
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
         Genre, Style, 'fill', Song.TimeSignature.Numerator,
         Song.TimeSignature.Denominator);
@@ -702,6 +709,7 @@ begin
 
       { Calculate groove timing offsets per bar }
       Section := TSection.Create(SectionName, Combined, Bars);
+      Section.SetFillBars(FillBarIndices);
       Section.Fills.Free;
       Section.Fills := Fills;
       Fills := nil;

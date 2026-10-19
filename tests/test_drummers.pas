@@ -82,6 +82,35 @@ begin
   end;
 end;
 
+procedure CheckFillScheduling;
+var
+  BasePattern, MultiBarFillPattern: TPattern;
+  Section: TSection;
+  Fill: TFill;
+begin
+  BasePattern := TPattern.Create('fill_schedule_base');
+  MultiBarFillPattern := TPattern.Create('two_bar_fill');
+  MultiBarFillPattern.AddBeat(0.0,
+    TInstrumentRegistry.Get('tom_4_open_hit'), 90);
+  MultiBarFillPattern.Metadata.Add('phrase_bars', '2');
+  Section := TSection.Create('fill_schedule_test', BasePattern, 4);
+  Section.SetFillBars([2]);
+  Fill := TFill.Create(MultiBarFillPattern);
+  Section.Fills.Add(Fill);
+  try
+    Check(Section.ShouldAddFill(0, 1.0) = nil,
+      'multi-bar fill cannot be placed before its phrase fits');
+    Check(Section.ShouldAddFill(1, 1.0) = nil,
+      'fill picker must not place a fill on an unscheduled bar');
+    Check(Section.ShouldAddFill(2, 1.0) = Fill,
+      'scheduled fill must be selectable once its phrase fits');
+    Check(Section.ShouldAddFill(3, 1.0) = nil,
+      'scheduled fill must not be selected on another bar');
+  finally
+    Section.Free;
+  end;
+end;
+
 procedure CheckDrummerDynamicsAndFills;
 var
   Source, Precise: TPattern;
@@ -139,6 +168,7 @@ begin
   CheckPedalGrid('burst', 16, 4, 0.25);
   CheckPedalGrid('burst', 32, 8, 0.125);
   CheckRepeatedBarsAndDuplicateKicks;
+  CheckFillScheduling;
   CheckDrummerDynamicsAndFills;
   WriteLn('PASS: double-bass subdivisions, multi-bar templates, drummer dynamics, and signature fills');
 end.

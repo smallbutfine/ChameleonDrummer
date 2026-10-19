@@ -78,6 +78,7 @@ end;
 TSection = class(TObject)
 private
   FBeats: specialize TList<Integer>; { local bar indices for fills }
+  FFillBarsConfigured: Boolean;
 public
   Name: string;
   Pattern: TPattern;
@@ -100,6 +101,7 @@ public
   function ResolvedBarSpecs(ASongTempo: Integer; ASongTimeSignature: TTimeSignature): specialize TList<TSongBarSpec>;
 
   function GetEffectivePattern(ABarNumber: Integer): TPattern;
+  procedure SetFillBars(const ABarNumbers: array of Integer);
   function ShouldAddFill(ABarNumber: Integer; AFillFrequency: Double): TFill;
 end;
 
@@ -199,6 +201,8 @@ begin
   Bars := ABars;
   Variations := specialize TList<TPatternVariation>.Create;
   Fills := specialize TList<TFill>.Create;
+  FBeats := specialize TList<Integer>.Create;
+  FFillBarsConfigured := False;
   SectionParameters := specialize TDictionary<string, string>.Create;
   Segments := specialize TList<TSongSegment>.Create;
   GrooveOffsetsMs := specialize TList<Single>.Create;
@@ -222,6 +226,7 @@ begin
   for Segment in Segments do
     Segment.Free;
   Segments.Free;
+  FBeats.Free;
   GrooveOffsetsMs.Free;
   inherited Destroy;
 end;
@@ -332,6 +337,23 @@ begin
   Result := Pattern;
 end;
 
+procedure TSection.SetFillBars(const ABarNumbers: array of Integer);
+var
+  BarNumber: Integer;
+begin
+  FFillBarsConfigured := True;
+  FBeats.Clear;
+  for BarNumber in ABarNumbers do
+  begin
+    if (BarNumber < 0) or (BarNumber >= Bars) then
+      raise Exception.CreateFmt(
+        'Fill bar index for section %s must be between 0 and %d, got %d',
+        [Name, Bars - 1, BarNumber]);
+    if not FBeats.Contains(BarNumber) then
+      FBeats.Add(BarNumber);
+  end;
+end;
+
 function TSection.ShouldAddFill(ABarNumber: Integer; AFillFrequency: Double): TFill;
 var
   TotalProb: Double;
@@ -339,6 +361,8 @@ var
   Fill: TFill;
 begin
   Result := nil;
+  if FFillBarsConfigured and not FBeats.Contains(ABarNumber) then
+    Exit;
   if Random >= AFillFrequency then
     Exit;
 
@@ -347,7 +371,10 @@ begin
 
   TotalProb := 0;
   for Fill in Fills do
-    TotalProb := TotalProb + Fill.FTriggerProbability;
+    if Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) and
+       (Fill.Pattern.DurationBars <= ABarNumber + 1) and
+       (Fill.FTriggerProbability > 0) then
+      TotalProb := TotalProb + Fill.FTriggerProbability;
 
   if TotalProb > 0 then
   begin
@@ -355,6 +382,10 @@ begin
     CurrentSum := 0;
     for Fill in Fills do
     begin
+      if not Assigned(Fill.Pattern) or (Fill.Pattern.Beats.Count = 0) or
+         (Fill.Pattern.DurationBars > ABarNumber + 1) or
+         (Fill.FTriggerProbability <= 0) then
+        Continue;
       CurrentSum := CurrentSum + Fill.FTriggerProbability;
       if RandVal <= CurrentSum then
         Exit(Fill);
