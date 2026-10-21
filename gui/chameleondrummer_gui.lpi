@@ -33,10 +33,10 @@
         <UnitName Value="ChameleonDrummerGUI"/>
       </Unit0>
       <Unit1>
-        <Filename Value="mainfrm.pas"/>
+        <Filename Value="MainFrm.pas"/>
         <ComponentName Value="MainForm"/>
         <IsPartOfProject Value="True"/>
-        <ResourceFilename Value="mainfrm.lrs"/>
+        <ResourceFilename Value="TMainForm.lrs"/>
         <UnitName Value="MainFrm"/>
       </Unit1>
     </Units>

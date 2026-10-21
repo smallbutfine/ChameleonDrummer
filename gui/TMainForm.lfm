@@ -196,7 +196,7 @@ object MainForm: TMainForm
       Top = 126
       Width = 380
       Height = 72
-      Caption = 'Writes <name>.mid, and depending on the export mode also <name>.rpp (REAPER project) and <name>.ardour\ (an Ardour session folder).'
+      Caption = 'Writes <name>.mid, and with the export mode also <name>.rpp and <name>.ardour\'
       WordWrap = True
     end
   end

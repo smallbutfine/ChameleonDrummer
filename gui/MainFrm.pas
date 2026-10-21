@@ -78,6 +78,11 @@ var
 
 implementation
 
+{ The form file is named after the form class, not after this unit: the LCL
+  looks the form up as a resource named after the class (TMainForm), so the
+  resource has to carry that name. }
+{$R TMainForm.lfm}
+
 const
   ExportMIDI = 0;
   ExportREAPER = 1;
