@@ -49,6 +49,8 @@ type
     FTempo: Integer;
     FTempoNum: Integer;
     FTempoDenom: Integer;
+    FTrackName: String;
+    FMIDILength: Double;
     function EscapeRPPString(const S: String): String;
   public
     constructor Create;
@@ -56,6 +58,7 @@ type
 
     procedure SetTitle(const ATitle: String);
     procedure SetTempo(ABPM, ANumerator, ADenominator: Integer);
+    procedure SetMIDITrack(const AName: String; ALengthSeconds: Double);
     procedure AddMarker(APosition: Double; const AMarkerName: String);
     procedure AddRegion(AStart, AEnd: Double; const ARegionName: String);
     procedure ClearMarkers;
@@ -75,6 +78,38 @@ begin
   FS := DefaultFormatSettings;
   FS.DecimalSeparator := '.';
   Result := FormatFloat('0.000000', Value, FS);
+end;
+
+{ REAPER identifies tracks and items by GUID. Generate stable ones from a
+  seed so that re-exporting the same project keeps the same ids. }
+function MakeGUID(const Seed: String): String;
+var
+  H: QWord;
+  I, K: Integer;
+  B: array[0..15] of Byte;
+  V1, V2, V3, V4, V5: QWord;
+begin
+  H := 14695981039346656037;
+  for I := 1 to Length(Seed) do
+  begin
+    H := H xor QWord(Byte(Seed[I]));
+    H := H * 1099511628211;
+  end;
+  for K := 0 to 15 do
+  begin
+    B[K] := Byte(H and $FF);
+    H := H shr 8;
+    if H = 0 then
+      H := 14695981039346656037;
+  end;
+  V1 := (QWord(B[0]) shl 24) or (QWord(B[1]) shl 16) or (QWord(B[2]) shl 8) or QWord(B[3]);
+  V2 := (QWord(B[4]) shl 8) or QWord(B[5]);
+  V3 := (QWord(B[6]) shl 8) or QWord(B[7]);
+  V4 := (QWord(B[8]) shl 8) or QWord(B[9]);
+  V5 := (QWord(B[10]) shl 24) or (QWord(B[11]) shl 16) or (QWord(B[12]) shl 8) or
+        (QWord(B[13]) shl 32) or (QWord(B[14]) shl 40) or QWord(B[15]);
+  Result := Format('%.8X-%.4X-%.4X-%.4X-%.12X',
+    [Int64(V1 and $FFFFFFFF), Int64(V2), Int64(V3), Int64(V4), Int64(V5)]);
 end;
 
 function ParseRPPFloat(const S: String; out Value: Double): Boolean;
@@ -216,6 +251,8 @@ begin
   FTempo := 120;
   FTempoNum := 4;
   FTempoDenom := 4;
+  FTrackName := '';
+  FMIDILength := 0.0;
 end;
 
 destructor TReaperRPPWriter.Destroy;
@@ -234,6 +271,12 @@ begin
   FTempo := ABPM;
   FTempoNum := ANumerator;
   FTempoDenom := ADenominator;
+end;
+
+procedure TReaperRPPWriter.SetMIDITrack(const AName: String; ALengthSeconds: Double);
+begin
+  FTrackName := AName;
+  FMIDILength := ALengthSeconds;
 end;
 
 procedure TReaperRPPWriter.AddMarker(APosition: Double; const AMarkerName: String);
@@ -278,7 +321,7 @@ var
   Output: TStringList;
   I, Id: Integer;
   M: TReaperMarker;
-  MidiPath: String;
+  MidiPath, MidiName: String;
 
   { REAPER quotes a value only when it contains a space. }
   function Quote(const S: String): String;
@@ -325,6 +368,60 @@ begin
 
     if (FTitle <> '') then
       Output.Add('  NAME ' + Quote(FTitle));
+
+    { A MIDI track holding the generated performance, so the project opens
+      with the drums on it instead of only referencing the file. The field set
+      is the one REAPER itself writes for a track. }
+    if (FTrackName <> '') and (FMIDILength > 0) then
+    begin
+      MidiName := ExtractFileName(MidiPath);
+      Output.Add('  <TRACK ' + MakeGUID('track:' + FTrackName));
+      Output.Add('    NAME ' + Quote(FTrackName));
+      Output.Add('    PEAKCOL 16576');
+      Output.Add('    BEAT -1');
+      Output.Add('    AUTOMODE 0');
+      Output.Add('    VOLPAN 1 0 -1 -1 1');
+      Output.Add('    MUTESOLO 0 0 0');
+      Output.Add('    IPHASE 0');
+      Output.Add('    PLAYOFFS 0 1');
+      Output.Add('    ISBUS 0 0');
+      Output.Add('    BUSCOMP 0 0 0 0 0');
+      Output.Add('    SHOWINMIX 1 0.6667 0.5 1 0.5 -1 -1 -1');
+      Output.Add('    SEL 0');
+      Output.Add('    REC 0 0 1 0 0 0 0 0');
+      Output.Add('    VU 2');
+      Output.Add('    TRACKHEIGHT 0 0 0 0 -1 0');
+      Output.Add('    INQ 0 0 0 0.5 100 0 0 100');
+      Output.Add('    NCHAN 2');
+      Output.Add('    FX 1');
+      Output.Add('    TRACKID ' + MakeGUID('track:' + FTrackName));
+      Output.Add('    PERF 0');
+      Output.Add('    MIDIOUT -1');
+      Output.Add('    MAINSEND 1 0');
+      Output.Add('    <ITEM');
+      Output.Add('      POSITION 0');
+      Output.Add('      SNAPOFFS 0');
+      Output.Add('      LENGTH ' + FormatRPPFloat(FMIDILength));
+      Output.Add('      LOOP 1');
+      Output.Add('      ALLTAKES 0');
+      Output.Add('      FADEIN 1 0.008824 0 1 0 0 0');
+      Output.Add('      FADEOUT 1 0.008824 0 1 0 0 0');
+      Output.Add('      MUTE 0 0');
+      Output.Add('      SEL 0');
+      Output.Add('      IGUID ' + MakeGUID('item:' + FTrackName));
+      Output.Add('      IID 1');
+      Output.Add('      NAME ' + Quote(MidiName));
+      Output.Add('      VOLPAN 1 0 1 -1');
+      Output.Add('      SOFFS 0');
+      Output.Add('      PLAYRATE 1 1 0 -1 0 0.0025');
+      Output.Add('      CHANMODE 0');
+      Output.Add('      GUID ' + MakeGUID('itemguid:' + FTrackName));
+      Output.Add('      <SOURCE MIDI');
+      Output.Add('        FILE ' + Quote(MidiPath));
+      Output.Add('      >');
+      Output.Add('    >');
+      Output.Add('  >');
+    end;
 
     Output.Add('>');
 

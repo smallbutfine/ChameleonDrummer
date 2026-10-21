@@ -150,6 +150,10 @@ begin
   FRPPWriter.SetTempo(ASections[Low(ASections)].BPM, ASections[Low(ASections)].Num,
     ASections[Low(ASections)].Denom);
 
+  { Put the generated MIDI on a MIDI track, so the project opens with the
+    drums on it. }
+  FRPPWriter.SetMIDITrack('Drums', AccumulatedSeconds);
+
   Result := FRPPWriter.SaveToFile(ChangeFileExt(AMIDIFile, '.rpp'), AMIDIFile);
 end;
 
