@@ -122,6 +122,21 @@ function OverlayDoubleBassPedal(const APattern: TPattern;
 
 implementation
 
+{ The complexity the composer was built with, 0..1. This is the density
+  control: a simple groove stays sparse, a complex one gets busier. }
+function TemplateComplexity(const Kwargs: specialize TDictionary<string, string>): Double;
+var
+  S: string;
+begin
+  Result := 0.5;
+  if not Assigned(Kwargs) then
+    Exit;
+  S := Kwargs.Items['complexity'];
+  if (S = '') or not TryStrToFloat(S, Result) then
+    Result := 0.5;
+  Result := EnsureRange(Result, 0.0, 1.0);
+end;
+
 constructor TPatternBuilder.Create(const AName: string);
 begin
   inherited Create;
@@ -236,8 +251,9 @@ begin
 end;
 
 function TBasicGroove.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
-var Pos: Double; Vel: Integer; I: Integer;
+var Pos: Double; Vel: Integer; I: Integer; Complexity: Double; Sub: Double; GhostCount: Integer;
 begin
+  Complexity := TemplateComplexity(Kwargs);
   for Pos in KickPositions do begin 
     Vel := Trunc(Max(Min(Pos * 50.0 + 80.0, 127.0), 1.0)); 
     Builder.Kick(Pos, Vel); 
@@ -246,15 +262,28 @@ begin
     Vel := Trunc(Max(Min(Pos * 50.0 + 90.0, 127.0), 1.0)); 
     Builder.Snare(Pos, Vel); 
   end;
-  // Add hi-hat timekeeping
-  if HiHatSubdivision > 0 then
+  { Add hi-hat timekeeping. A complex groove doubles the timekeeping grid. }
+  Sub := HiHatSubdivision;
+  if (Sub > 0) and (Complexity >= 0.6) then
+    Sub := Sub / 2;
+  if Sub > 0 then
   begin
     I := 0;
-    while I * HiHatSubdivision <= 3.5 do
+    while I * Sub <= 3.5 do
     begin
-      Builder.HiHat(I * HiHatSubdivision, Trunc(80 * Min(Intensity + 0.2, 1.0)));
+      Builder.HiHat(I * Sub, Trunc(80 * Min(Intensity + 0.2, 1.0)));
       Inc(I);
     end;
+  end;
+  { Busy grooves put ghost notes on the backbeat; how many scales with
+    complexity, so the whole range above the default is meaningful. }
+  GhostCount := Trunc((Complexity - 0.5) * 8);
+  if GhostCount > 0 then
+  begin
+    Builder.Snare(0.5, 38);
+    if GhostCount > 1 then Builder.Snare(2.5, 38);
+    if GhostCount > 2 then Builder.Snare(1.5, 32);
+    if GhostCount > 3 then Builder.Snare(3.5, 32);
   end;
   Result := Builder;
 end;
@@ -355,36 +384,55 @@ constructor TSteadyRide.Create;
 begin inherited Create; end;
 
 function TSteadyRide.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
-var I: Integer;
+var I: Integer; Complexity: Double;
 begin
   Result := Builder;
-  // Steady ride pattern (for jazz/fusion metal bridge)
-  for I := 0 to 7 do
-    Builder.Hihat(I * 0.5, Trunc(70));
+  Complexity := TemplateComplexity(Kwargs);
+  { Steady ride pattern (for jazz/fusion metal bridge). A complex pattern
+    doubles the timekeeping to sixteenth notes. }
+  if Complexity >= 0.7 then
+    for I := 0 to 15 do
+      Builder.Hihat(I * 0.25, Trunc(60))
+  else
+    for I := 0 to 7 do
+      Builder.Hihat(I * 0.5, Trunc(70));
 end;
 
 constructor TJazzRidePattern.Create(APatternStyle: string);
 begin inherited Create; PatternStyle := APatternStyle; end;
 
 function TJazzRidePattern.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
-var I: Integer;
+var I: Integer; Complexity: Double;
 begin
   Result := Builder;
-  // Jazz ride pattern - ride cymbal on quarters
+  Complexity := TemplateComplexity(Kwargs);
+  { Jazz ride pattern - ride cymbal on quarters. A complex pattern adds
+    the eighth-note "ding" on top. }
   for I := 0 to 3 do
     Builder.Hihat(I * 1.0, Trunc(75));
+  if Complexity >= 0.7 then
+    for I := 0 to 7 do
+      Builder.Hihat(I * 0.5, Trunc(58));
 end;
 
 constructor TFunkGhostNotes.Create(AStyle: string);
 begin inherited Create; Style := AStyle; end;
 
 function TFunkGhostNotes.Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
-var I: Integer;
+var I: Integer; Complexity: Double;
 begin
   Result := Builder;
-  // Funk ghost notes on snare
-  for I := 0 to 7 do
-    Builder.Snare(I * 0.5, Trunc(50));
+  Complexity := TemplateComplexity(Kwargs);
+  { Funk ghost notes on the snare. A complex funk groove doubles them to
+    sixteenths. }
+  if Complexity >= 0.8 then
+  begin
+    for I := 0 to 15 do
+      Builder.Snare(I * 0.25, Trunc(45));
+  end
+  else
+    for I := 0 to 7 do
+      Builder.Snare(I * 0.5, Trunc(50));
 end;
 
 constructor TFunkGhostNotes.CreateDefault;

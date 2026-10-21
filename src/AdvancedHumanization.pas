@@ -91,6 +91,12 @@ begin
     BaseJitter := FTimingJitter;
   end;
 
+  { A busy part is played more locked in than a simple one, so the timing
+    deviation tightens as the pattern gets denser and loosens as it gets
+    simpler. The default complexity leaves the timing exactly as it was. }
+  BaseJitter := BaseJitter *
+    (1.0 - 0.7 * (EnsureRange(Context.Complexity, 0.0, 1.0) - 0.5));
+
   // Instrument-specific deviations
   if (Pos('hh_', InstrumentName) = 1) or
      (Pos('ride_', InstrumentName) = 1) then

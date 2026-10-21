@@ -450,9 +450,9 @@ begin
     nil,      // AStructure - use genre default
     DrumKit,
     Args.Drummer,
-    0.5,      // AComplexity
-    0.6,      // ADynamics
-    0.3       // AHumanization
+    Args.Complexity,  // AComplexity - pattern complexity from CLI
+    0.6,              // ADynamics
+    0.3               // AHumanization
   );
   try
     { The output is an Ardour session directory; the MIDI file sits next to

@@ -135,7 +135,10 @@ var
   Composer: TTemplateComposer;
   IntensityFactor: Double;
 begin
-  IntensityFactor := FIntensity * (0.8 + FComplexity * 0.2);
+  { Complexity is the density control and dynamics is how hard the part is
+    played. Combining them lets either one open the pattern gates below -
+    with dynamics alone at its default the gates could never be reached. }
+  IntensityFactor := (FIntensity + FComplexity) / 2;
   Composer := TTemplateComposer.Create('metal_' + Style + '_verse_b' + IntToStr(BarIndex));
 
   case Style of
