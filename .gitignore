@@ -28,3 +28,8 @@ src/debug_midi.pas
 reaper_test/
 nul
 regen_all_debug.bat
+
+# Lazarus GUI build artifacts
+gui/lib/
+gui/*.compiled
+gui/*.lrs

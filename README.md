@@ -26,6 +26,24 @@ fpc -Mobjfpc -O2 main.pas
 ./chameleondrummer generate --genre metal --style doom --tempo 75 --mapping ad2 --output song.mid
 ```
 
+### Graphical Front End
+
+`gui/` holds a Lazarus/LCL GUI that links the engine directly - it produces
+exactly what the command line tool produces, without shelling out to it.
+
+```bash
+# Build with Lazarus (the executable lands in the project root, next to
+# ChameleonDrummer.exe, because the engine loads the keymaps relative to it)
+gui\build_gui.bat
+
+# or open it in the IDE
+lazarus gui\chameleondrummer_gui.lpi
+```
+
+Pick a genre, style, drummer, keymap, tempo, complexity and humanization, then
+write a MIDI file - optionally with a REAPER project and an Ardour session next
+to it. See `gui/README.md` for details.
+
 ### Include Path Setup
 
 The `main.cfg` file contains all include paths. If you get "file not found" errors:
