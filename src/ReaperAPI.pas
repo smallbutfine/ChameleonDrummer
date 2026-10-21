@@ -109,8 +109,9 @@ function TReaperBridge.CreateFromSections(const ATitle: String; const AMIDIFile:
   const ASections: specialize TArray<TReaperSection>): Boolean;
 var
   I: Integer;
-  AccumulatedMeasure: Double;
+  AccumulatedSeconds: Double;
   BarLen: Double;
+  SectionEnd: Double;
   M: TReaperMarker;
 begin
   Result := False;
@@ -118,26 +119,36 @@ begin
   FRPPWriter.ClearMarkers;
   FRPPWriter.SetTitle(ATitle);
 
-  AccumulatedMeasure := 0;
+  AccumulatedSeconds := 0.0;
   if (Length(ASections) = 0) then Exit;
 
-  // Use first section's BPM for measure length estimation
   for I := Low(ASections) to High(ASections) do
   begin
     if (ASections[I].BPM <= 0) or (ASections[I].Denom <= 0) then
       raise Exception.CreateFmt('Invalid tempo or time signature in section "%s"',
         [ASections[I].Name]);
+
+    { Length of one bar in seconds at this section's tempo and meter. }
     BarLen := (60.0 / ASections[I].BPM) *
       (ASections[I].Num * 4.0 / ASections[I].Denom);
-    FRPPWriter.AddMarker(AccumulatedMeasure, ASections[I].Name);
-    M.Measure := AccumulatedMeasure;
+    SectionEnd := AccumulatedSeconds + (ASections[I].Bars * BarLen);
+
+    { A marker at the section start, and a region covering the section. }
+    FRPPWriter.AddMarker(AccumulatedSeconds, ASections[I].Name);
+    FRPPWriter.AddRegion(AccumulatedSeconds, SectionEnd, ASections[I].Name);
+
+    M.Position := AccumulatedSeconds;
+    M.EndPosition := SectionEnd;
     M.Name := ASections[I].Name;
     M.IsRegion := False;
     FMarkers.Add(M);
 
-    // Advance by section length in measures (each section = bars * bar_length)
-    AccumulatedMeasure := AccumulatedMeasure + (ASections[I].Bars * BarLen);
+    AccumulatedSeconds := SectionEnd;
   end;
+
+  { The project's base tempo and meter come from the first section. }
+  FRPPWriter.SetTempo(ASections[Low(ASections)].BPM, ASections[Low(ASections)].Num,
+    ASections[Low(ASections)].Denom);
 
   Result := FRPPWriter.SaveToFile(ChangeFileExt(AMIDIFile, '.rpp'), AMIDIFile);
 end;

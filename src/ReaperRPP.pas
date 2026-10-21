@@ -8,17 +8,22 @@ uses
   Classes, SysUtils, Generics.Collections, StrUtils;
 
 // ============================================================================
-// TReaperMarker â€” represents a single marker in an .rpp file
+// TReaperMarker — a marker or a region in a .rpp project.
+//
+// Positions are in SECONDS, which is what REAPER stores in a project file:
+//   MARKER    <id> <position>            "<name>" <color> <flags>
+//   RPR_MARKER <id> <start> <end>        "<name>" <color> <flags>
 // ============================================================================
 type
   TReaperMarker = record
-    Measure: Double;
+    Position: Double;
+    EndPosition: Double;
     Name: String;
     IsRegion: Boolean;
   end;
 
 // ============================================================================
-// TReaperRPPReader â€” parses .rpp files to extract markers and regions
+// TReaperRPPReader — parses .rpp files to extract markers and regions
 // ============================================================================
 type
   TReaperRPPReader = class
@@ -34,21 +39,25 @@ type
   end;
 
 // ============================================================================
-// TReaperRPPWriter â€” writes .rpp files with markers and regions
+// TReaperRPPWriter — writes .rpp project files
 // ============================================================================
 type
   TReaperRPPWriter = class
   private
     FMarkers: specialize TList<TReaperMarker>;
     FTitle: String;
-    FTMPFile: String;
+    FTempo: Integer;
+    FTempoNum: Integer;
+    FTempoDenom: Integer;
     function EscapeRPPString(const S: String): String;
   public
     constructor Create;
     destructor Destroy; override;
 
     procedure SetTitle(const ATitle: String);
-    procedure AddMarker(Measure: Double; const AMarkerName: String);
+    procedure SetTempo(ABPM, ANumerator, ADenominator: Integer);
+    procedure AddMarker(APosition: Double; const AMarkerName: String);
+    procedure AddRegion(AStart, AEnd: Double; const ARegionName: String);
     procedure ClearMarkers;
 
     function SaveToFile(const AFilePath: String; const AMIDIFile: String): Boolean;
@@ -56,6 +65,33 @@ type
   end;
 
 implementation
+
+{ REAPER project files always use a full stop as the decimal separator and
+  positions are plain seconds, regardless of the machine's locale. }
+function FormatRPPFloat(Value: Double): String;
+var
+  FS: TFormatSettings;
+begin
+  FS := DefaultFormatSettings;
+  FS.DecimalSeparator := '.';
+  Result := FormatFloat('0.000000', Value, FS);
+end;
+
+function ParseRPPFloat(const S: String; out Value: Double): Boolean;
+var
+  FS: TFormatSettings;
+  T: String;
+begin
+  FS := DefaultFormatSettings;
+  T := S;
+  if FS.DecimalSeparator <> '.' then
+    T := StringReplace(T, '.', FS.DecimalSeparator, [rfReplaceAll]);
+  Result := TryStrToFloat(T, Value, FS);
+end;
+
+// ============================================================================
+// TReaperRPPReader
+// ============================================================================
 
 constructor TReaperRPPReader.Create;
 begin
@@ -70,50 +106,69 @@ end;
 
 function TReaperRPPReader.ParseMarkerLine(const Line: String): TReaperMarker;
 var
-  MarkerStart, QuoteStart, QuoteEnd: Integer;
-  MeasureStr: String;
+  IsRegion: Boolean;
+  Rest, Token: String;
+  I: Integer;
+  Ch: Char;
+  InQuote: Boolean;
+  Tokens: TStringList;
 begin
-  // Parse MARKER/RPR_MARKER format: MARKER <measure> "name"
   Result.IsRegion := False;
+  Result.Position := 0.0;
+  Result.EndPosition := 0.0;
+  Result.Name := '';
 
-  if (Pos('MARKER', Line) > 0) then
-    MarkerStart := Pos('MARKER', Line) + 6
-  else if (Pos('RPR_MARKER', Line) > 0) then
-    MarkerStart := Pos('RPR_MARKER', Line) + 10
-  else
+  if Pos('RPR_MARKER', Line) > 0 then
   begin
-    Result.Measure := 0;
-    Result.Name := '';
+    IsRegion := True;
+    Rest := Copy(Line, Pos('RPR_MARKER', Line) + Length('RPR_MARKER'), MaxInt);
+  end
+  else if Pos('MARKER', Line) > 0 then
+  begin
+    IsRegion := False;
+    Rest := Copy(Line, Pos('MARKER', Line) + Length('MARKER'), MaxInt);
+  end
+  else
     Exit;
-  end;
 
-  // Extract measure value (skip whitespace after MARKER)
-  while (MarkerStart <= Length(Line)) and (Line[MarkerStart] in [' ', #9]) do
-    Inc(MarkerStart);
+  { Split into whitespace separated tokens, honouring double quotes. }
+  Tokens := TStringList.Create;
+  try
+    Token := '';
+    InQuote := False;
+    for I := 1 to Length(Rest) do
+    begin
+      Ch := Rest[I];
+      if Ch = '"' then
+        InQuote := not InQuote
+      else if (not InQuote) and (Ch in [' ', #9]) then
+      begin
+        if Token <> '' then
+        begin
+          Tokens.Add(Token);
+          Token := '';
+        end;
+      end
+      else
+        Token := Token + Ch;
+    end;
+    if Token <> '' then
+      Tokens.Add(Token);
 
-  MeasureStr := '';
-  while (MarkerStart <= Length(Line)) and (Line[MarkerStart] in ['0'..'9', '.']) do
-  begin
-    MeasureStr := MeasureStr + Line[MarkerStart];
-    Inc(MarkerStart);
-  end;
-
-  if (MeasureStr <> '') then
-    Val(MeasureStr, Result.Measure)
-  else
-    Result.Measure := 0;
-
-  // Find quoted name
-  QuoteStart := PosEx('"', Line, MarkerStart);
-  if (QuoteStart > 0) then
-  begin
-    QuoteEnd := PosEx('"', Line, QuoteStart + 1);
-    if (QuoteEnd > QuoteStart) then
-      Result.Name := Copy(Line, QuoteStart + 1, QuoteEnd - QuoteStart - 1);
-
-    // Check if it's a region
-    if (Pos('REGION', Line) > 0) then
-      Result.IsRegion := True;
+    { MODERN: MARKER <id> <pos> <name> <color> <flags>
+      REGION:  RPR_MARKER <id> <start> <end> <name> <color> <flags>
+      LEGACY:  MARKER <measure> "<name>" }
+    if (Tokens.Count >= 3) and ParseRPPFloat(Tokens[1], Result.Position) then
+    begin
+      if IsRegion and (Tokens.Count >= 4) and
+         ParseRPPFloat(Tokens[2], Result.EndPosition) then
+        Result.Name := Tokens[3]
+      else
+        Result.Name := Tokens[2];
+      Result.IsRegion := IsRegion;
+    end;
+  finally
+    Tokens.Free;
   end;
 end;
 
@@ -135,7 +190,7 @@ begin
     for I := 0 to FileLines.Count - 1 do
     begin
       Marker := ParseMarkerLine(FileLines[I]);
-      if (Marker.Measure > 0) or (Marker.Name <> '') then
+      if (Marker.Position > 0) or (Marker.Name <> '') then
         FMarkers.Add(Marker);
     end;
 
@@ -150,13 +205,17 @@ begin
   Result := FMarkers;
 end;
 
-{ TReaperRPPWriter }
+// ============================================================================
+// TReaperRPPWriter
+// ============================================================================
+
 constructor TReaperRPPWriter.Create;
 begin
-  inherited Create;
   FMarkers := specialize TList<TReaperMarker>.Create;
   FTitle := '';
-  FTMPFile := '';
+  FTempo := 120;
+  FTempoNum := 4;
+  FTempoDenom := 4;
 end;
 
 destructor TReaperRPPWriter.Destroy;
@@ -170,13 +229,32 @@ begin
   FTitle := ATitle;
 end;
 
-procedure TReaperRPPWriter.AddMarker(Measure: Double; const AMarkerName: String);
+procedure TReaperRPPWriter.SetTempo(ABPM, ANumerator, ADenominator: Integer);
+begin
+  FTempo := ABPM;
+  FTempoNum := ANumerator;
+  FTempoDenom := ADenominator;
+end;
+
+procedure TReaperRPPWriter.AddMarker(APosition: Double; const AMarkerName: String);
 var
   Marker: TReaperMarker;
 begin
-  Marker.Measure := Measure;
+  Marker.Position := APosition;
+  Marker.EndPosition := APosition;
   Marker.Name := AMarkerName;
   Marker.IsRegion := False;
+  FMarkers.Add(Marker);
+end;
+
+procedure TReaperRPPWriter.AddRegion(AStart, AEnd: Double; const ARegionName: String);
+var
+  Marker: TReaperMarker;
+begin
+  Marker.Position := AStart;
+  Marker.EndPosition := AEnd;
+  Marker.Name := ARegionName;
+  Marker.IsRegion := True;
   FMarkers.Add(Marker);
 end;
 
@@ -191,55 +269,64 @@ begin
   Result := S;
   ReplaceText(Result, '\', '\\');
   ReplaceText(Result, '"', '\"');
-  ReplaceText(Result, #10, '\n');
-  ReplaceText(Result, #13, '\r');
+  Result := StringReplace(Result, #10, '\n', [rfReplaceAll]);
+  Result := StringReplace(Result, #13, '\r', [rfReplaceAll]);
 end;
 
 function TReaperRPPWriter.SaveToFile(const AFilePath: String; const AMIDIFile: String): Boolean;
 var
   Output: TStringList;
-  I: Integer;
-  BaseName: String;
+  I, Id: Integer;
+  M: TReaperMarker;
+  MidiPath: String;
+
+  { REAPER quotes a value only when it contains a space. }
+  function Quote(const S: String): String;
+  begin
+    if (S = '') or (Pos(' ', S) > 0) then
+      Result := '"' + EscapeRPPString(S) + '"'
+    else
+      Result := S;
+  end;
+
 begin
   Result := False;
 
-  // Extract base name from file path
-  BaseName := ChangeFileExt(ExtractFileName(AFilePath), '');
-
   Output := TStringList.Create;
   try
-    // Write header
-    Output.Add('[Project]');
-    Output.Add('wVersion=1028');
+    { REAPER project file. The format is the one REAPER itself writes: a
+      <REAPER_PROJECT ...> block whose children are "TAG value..." lines.
+      Marker and region positions are in SECONDS. }
+    Output.Add('<REAPER_PROJECT 0.1 7.0 1234567890');
+    Output.Add('  RIPPLE 0');
+    Output.Add('  GROUPOVERRIDE 0 0 0');
+    Output.Add('  AUTOXFADE 1');
+    Output.Add('  TEMPO ' + IntToStr(FTempo) + ' ' + IntToStr(FTempoNum) +
+      ' ' + IntToStr(FTempoDenom));
+    Output.Add('  PLAYRATE 1 0 0.25 4');
+
+    Id := 1;
+    for I := 0 to FMarkers.Count - 1 do
+    begin
+      M := FMarkers[I];
+      if M.IsRegion then
+        Output.Add('  RPR_MARKER ' + IntToStr(Id) + ' ' + FormatRPPFloat(M.Position) +
+          ' ' + FormatRPPFloat(M.EndPosition) + ' ' + Quote(M.Name) + ' 0 0')
+      else
+        Output.Add('  MARKER ' + IntToStr(Id) + ' ' + FormatRPPFloat(M.Position) +
+          ' ' + Quote(M.Name) + ' 0 0');
+      Inc(Id);
+    end;
+
+    { REAPER resolves the media path relative to the project file and
+      expects forward slashes. }
+    MidiPath := StringReplace(AMIDIFile, '\', '/', [rfReplaceAll]);
+    Output.Add('  FILE ' + Quote(MidiPath));
+
     if (FTitle <> '') then
-      Output.Add('sTitle=' + EscapeRPPString(FTitle));
+      Output.Add('  NAME ' + Quote(FTitle));
 
-    // Write file references
-    Output.Add('[File]');
-    Output.Add('f' + ExtractFileName(AMIDIFile));
-
-    // Write markers
-    Output.Add('[Markers]');
-    for I := 0 to FMarkers.Count - 1 do
-    begin
-      Output.Add(Format('MARKER %d %.6f "%s"', [I, FMarkers[I].Measure,
-        EscapeRPPString(FMarkers[I].Name)]));
-    end;
-
-    // Write regions if any
-    Output.Add('[Regions]');
-    for I := 0 to FMarkers.Count - 1 do
-    begin
-      if (FMarkers[I].IsRegion) then
-      begin
-        Output.Add(Format('RPR_MARKER %d %.6f "%s"', [I, FMarkers[I].Measure,
-          EscapeRPPString(FMarkers[I].Name)]));
-      end;
-    end;
-
-    // Write tempo map
-    Output.Add('[TempoMap]');
-    Output.Add('0 0.000000 120.000000 4 4');
+    Output.Add('>');
 
     Output.SaveToFile(AFilePath);
     Result := True;
