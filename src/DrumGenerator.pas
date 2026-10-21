@@ -40,6 +40,8 @@ private
   procedure LoadPlugins;
   procedure SetDrumKit(AValue: TDrumKit);
   function GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
+  function FitDefaultStructureToRadioLength(
+    const AStructure: TSongStructureArray; ATempo: Integer): TSongStructureArray;
 
 
 public
@@ -379,6 +381,75 @@ begin
   Result[6].Bars := 8;
 end;
 
+function TDrumGenerator.FitDefaultStructureToRadioLength(
+  const AStructure: TSongStructureArray; ATempo: Integer): TSongStructureArray;
+var
+  BaseTotal, BarSeconds: Double;
+  TargetSeconds: Integer;
+  MaxBars, TargetBars, BarsPerUnit, TargetUnits, MaxUnits: Integer;
+  RemainingUnits, AssignedUnits, I, BestIndex: Integer;
+  RawUnits, BestRemainder: Double;
+  Units: specialize TArray<Integer>;
+  Remainders: specialize TArray<Double>;
+begin
+  SetLength(Result, Length(AStructure));
+  if Length(AStructure) = 0 then
+    Exit;
+
+  BaseTotal := 0;
+  for I := 0 to High(AStructure) do
+  begin
+    Result[I] := AStructure[I];
+    BaseTotal := BaseTotal + Max(AStructure[I].Bars, 1);
+  end;
+  if (ATempo <= 0) or (BaseTotal <= 0) then
+    Exit;
+
+  { Vary the default arrangement between 3:00 and 3:45 before bar rounding. }
+  TargetSeconds := 180 + Random(46);
+  BarSeconds := 240.0 / ATempo;
+  TargetBars := Max(Length(AStructure), Round(TargetSeconds / BarSeconds));
+  MaxBars := Trunc(Floor(240.0 / BarSeconds));
+  BarsPerUnit := 4;
+  if (TargetBars < Length(AStructure) * BarsPerUnit) or
+     (MaxBars < Length(AStructure) * BarsPerUnit) then
+    BarsPerUnit := 1;
+
+  TargetUnits := Max(Length(AStructure), Round(TargetBars / BarsPerUnit));
+  MaxUnits := Max(Length(AStructure), MaxBars div BarsPerUnit);
+  TargetUnits := Min(TargetUnits, MaxUnits);
+  RemainingUnits := TargetUnits - Length(AStructure);
+  SetLength(Units, Length(AStructure));
+  SetLength(Remainders, Length(AStructure));
+  AssignedUnits := 0;
+
+  for I := 0 to High(AStructure) do
+  begin
+    RawUnits := RemainingUnits * Max(AStructure[I].Bars, 1) / BaseTotal;
+    Units[I] := 1 + Trunc(Floor(RawUnits));
+    Remainders[I] := RawUnits - Floor(RawUnits);
+    Inc(AssignedUnits, Units[I]);
+  end;
+
+  while AssignedUnits < TargetUnits do
+  begin
+    BestIndex := 0;
+    BestRemainder := -1.0;
+    for I := 0 to High(Remainders) do
+      if Remainders[I] > BestRemainder then
+      begin
+        BestIndex := I;
+        BestRemainder := Remainders[I];
+      end;
+    Inc(Units[BestIndex]);
+    Remainders[BestIndex] := -1.0;
+    Inc(AssignedUnits);
+  end;
+
+  for I := 0 to High(Result) do
+    Result[I].Bars := Units[I] * BarsPerUnit;
+end;
+
 function TDrumGenerator.CreateSongV2(const Genre, Style: string; ATempo: Integer = 0;
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
@@ -403,7 +474,8 @@ begin
 
   { Use default structure if none provided. }
   if (AStructure = nil) or (Length(AStructure) = 0) then
-    Structure := GetGenreDefaultStructure(Genre)
+    Structure := FitDefaultStructureToRadioLength(
+      GetGenreDefaultStructure(Genre), Tempo)
   else
     Structure := AStructure;
 

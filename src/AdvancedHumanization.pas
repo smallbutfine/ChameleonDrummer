@@ -20,7 +20,9 @@ type
     Intensity: Double;
     Humanization: Double;
     Tempo: Integer;
+    SourceRandom: TThreadedRandom;
   end;
+
 
 // ============================================================================
 // TAdvancedHumanizer â€” context-aware timing and velocity humanization
@@ -99,8 +101,9 @@ begin
     Result := BaseJitter;
 
   // Apply random jitter within range
-  Result := Result * (Random(200) / 100.0 - 1.0);
+  Result := Result * (Context.SourceRandom.Random(200) / 100.0 - 1.0);
 end;
+
 
 function TAdvancedHumanizer.GetVelocityBias(Instrument: String; BaseVel: Integer; Context: THumanizationContext): Integer;
 var

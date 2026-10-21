@@ -164,6 +164,37 @@ begin
   end;
 end;
 
+procedure CheckDefaultRadioDuration(Generator: TDrumGenerator);
+var
+  GeneratedSong: TSong;
+  Genre, Style: string;
+  I: Integer;
+  Cases: array[0..4] of record Genre, Style: string; Tempo: Integer end;
+begin
+  Cases[0].Genre := 'rock'; Cases[0].Style := 'classic'; Cases[0].Tempo := 120;
+  Cases[1].Genre := 'metal'; Cases[1].Style := 'doom'; Cases[1].Tempo := 70;
+  Cases[2].Genre := 'jazz'; Cases[2].Style := 'bebop'; Cases[2].Tempo := 250;
+  Cases[3].Genre := 'funk'; Cases[3].Style := 'minimal'; Cases[3].Tempo := 100;
+  Cases[4].Genre := 'electronic'; Cases[4].Style := 'drum_and_bass'; Cases[4].Tempo := 174;
+
+  RandSeed := 424242;
+  for I := Low(Cases) to High(Cases) do
+  begin
+    Genre := Cases[I].Genre;
+    Style := Cases[I].Style;
+    GeneratedSong := Generator.CreateSong(
+      Genre, Style, Cases[I].Tempo, nil, nil, '', 0.5, 0.6, 0.0);
+    try
+      Check((GeneratedSong.TotalDurationSeconds >= 174.0) and
+        (GeneratedSong.TotalDurationSeconds <= 240.0),
+        Format('default %s/%s radio duration must be between 174 and 240 seconds, got %.1f',
+          [Genre, Style, GeneratedSong.TotalDurationSeconds]));
+    finally
+      GeneratedSong.Free;
+    end;
+  end;
+end;
+
 procedure ConfigureSection(Section: TSection; Numerator, Denominator: Integer);
 var
   Segment: TSongSegment;
@@ -278,6 +309,7 @@ begin
   try
     CheckGenreTempoResolution(Generator);
     CheckMultiBarComposition(Generator);
+    CheckDefaultRadioDuration(Generator);
     TestSong := TSong.Create('meter_export_test', 120);
     Kick := TInstrumentRegistry.Get('kick');
     Check(Assigned(Kick), 'kick instrument must be registered');
