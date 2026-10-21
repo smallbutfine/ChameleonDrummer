@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Math,
-  Pattern;
+  Pattern, ComposerTypes;
 
 // ============================================================================
 // THumanizationContext â€” holds context for context-aware humanization
@@ -100,8 +100,10 @@ begin
   else
     Result := BaseJitter;
 
-  // Apply random jitter within range
-  Result := Result * (Context.SourceRandom.Random(200) / 100.0 - 1.0);
+  // Apply random jitter within range.
+  // The random factor spans [-1.0, +1.0) symmetrically so the deviation
+  // is centred on zero — a one-sided factor would bias every hit early.
+  Result := Result * (Context.SourceRandom.Random(200) / 99.5 - 1.0);
 end;
 
 

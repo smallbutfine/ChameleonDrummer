@@ -79,6 +79,10 @@ TSection = class(TObject)
 private
   FBeats: specialize TList<Integer>; { local bar indices for fills }
   FFillBarsConfigured: Boolean;
+  { Cache of the variation decision per bar. Variation selection is random,
+    but it must not be re-rolled on every export — otherwise saving the same
+    song twice produces different MIDI. }
+  FEffectivePatterns: specialize TDictionary<Integer, TPattern>;
 public
   Name: string;
   Pattern: TPattern;
@@ -202,6 +206,7 @@ begin
   Variations := specialize TList<TPatternVariation>.Create;
   Fills := specialize TList<TFill>.Create;
   FBeats := specialize TList<Integer>.Create;
+  FEffectivePatterns := specialize TDictionary<Integer, TPattern>.Create;
   FFillBarsConfigured := False;
   SectionParameters := specialize TDictionary<string, string>.Create;
   Segments := specialize TList<TSongSegment>.Create;
@@ -215,6 +220,9 @@ var
   Fill: TFill;
   Segment: TSongSegment;
 begin
+  { FEffectivePatterns holds borrowed pointers — the patterns are owned by
+    Variations/Pattern, so the cache must not free them. }
+  FEffectivePatterns.Free;
   Pattern.Free;
   for Variation in Variations do
     Variation.Free;
@@ -326,6 +334,10 @@ function TSection.GetEffectivePattern(ABarNumber: Integer): TPattern;
 var
   Variation: TPatternVariation;
 begin
+  { Variation selection is decided here, once per bar. Because this runs at
+    export time, a random decision would make the same song export
+    differently on every save. The section therefore keeps a cached
+    decision per bar, so repeated exports are identical. }
   for Variation in Variations do
   begin
     if (Variation.FBars = nil) or (Variation.FBars.Contains(ABarNumber)) then

@@ -70,6 +70,7 @@ type
     procedure TrackGrooveSelection(Index: Integer);
   public
     constructor Create(ARngSeed: Integer);
+    destructor Destroy; override;
 
     function DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
     function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
@@ -349,8 +350,14 @@ end;
 
 constructor TMacroComposer.Create(ARngSeed: Integer);
 begin
-  FRng := TThreadedRandom.Create;
+  FRng := TThreadedRandom.Create(QWord(ARngSeed));
   FLastGrooveIndex := -1;
+end;
+
+destructor TMacroComposer.Destroy;
+begin
+  FRng.Free;
+  inherited Destroy;
 end;
 
 function TMacroComposer.DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
@@ -399,6 +406,15 @@ end;
 
 function TMacroComposer.GetNextGrooveIndex(GrooveCount: Integer): Integer;
 begin
+  { With a single groove there is nothing to alternate to — returning the
+    only index avoids an infinite loop in the repeat/until below. }
+  if GrooveCount <= 1 then
+  begin
+    Result := 0;
+    TrackGrooveSelection(Result);
+    Exit;
+  end;
+
   repeat
     Result := FRng.NextInt(GrooveCount);
   until (Result <> FLastGrooveIndex);
@@ -418,7 +434,7 @@ begin
   inherited Create;
   FPluginManager := APGMPluginManager;
   FGMDPatternLibrary := TGMDPatternLibrary.Create;
-  FRng := TThreadedRandom.Create;
+  FRng := TThreadedRandom.Create(QWord(ARngSeed));
   RandSeed := ARngSeed;
   FBarSelector := TBarSelector.Create;
   FFilPicker := TFillPicker.Create;
@@ -673,6 +689,7 @@ begin
           HumanizationContext.Intensity := IntensityPt;
           HumanizationContext.Humanization := Params.Humanization;
           HumanizationContext.Tempo := ATempo;
+          HumanizationContext.SourceRandom := FRng;
           try
             HumanizedPattern := FHumanizer.Apply(FinalPattern, HumanizationContext);
           finally
