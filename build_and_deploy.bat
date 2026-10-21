@@ -50,6 +50,18 @@ set "VERSION_COMMAS=!DETECTED_VERSION:.=,!"
 
 echo.
 echo ==================================================
+echo   2b. [Sicherheit] Vorhandene Backups niemals ueberschreiben...
+echo ==================================================
+set "BACKUP_TGZ=..\ChameleonDrummer!DETECTED_VERSION!.tgz"
+set "BACKUP_7Z=!APP_NAME!_v!DETECTED_VERSION!.7z"
+set "BACKUP_SETUP=!APP_NAME!_Setup_!DETECTED_VERSION!.exe"
+if exist "%BACKUP_TGZ%" ( echo [FEHLER] Externes Backup existiert bereits: %BACKUP_TGZ% & echo [FEHLER] Abbruch - vorhandenes Backup wird nicht ueberschrieben. & if "!IS_CI!"=="0" pause & exit /b 1 )
+if exist "%BACKUP_7Z%" ( echo [FEHLER] Backup existiert bereits: %BACKUP_7Z% & echo [FEHLER] Abbruch - vorhandenes Backup wird nicht ueberschrieben. & if "!IS_CI!"=="0" pause & exit /b 1 )
+if exist "%BACKUP_SETUP%" ( echo [FEHLER] Installer existiert bereits: %BACKUP_SETUP% & echo [FEHLER] Abbruch - vorhandener Installer wird nicht ueberschrieben. & if "!IS_CI!"=="0" pause & exit /b 1 )
+echo Keine bestehenden Backups - Zieldateinamen sind frei.
+
+echo.
+echo ==================================================
 echo   3. [Clean] Bereinige alte Compiler-Dateien...
 echo ==================================================
 del /q /s *.o *.ppu *.res 2>nul

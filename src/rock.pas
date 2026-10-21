@@ -28,7 +28,6 @@ type
     FComplexity: Double;
     FIntensity: Double;
     function GetRideTimekeeper: String;
-    function GetOpenHHCrashVariant(BarIndex: Integer): String;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -46,6 +45,8 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double;
+      BarIndex: Integer): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
     function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
 
@@ -108,16 +109,16 @@ end;
 function TRockGenrePlugin.GetRideTimekeeper: String;
 begin
   // Classic and hard rock use standard ride pattern
-  Result := 'ride_1_tip_hit';
+  Result := 'ride_1_tip_hit_softer';
 end;
 
-function TRockGenrePlugin.GetOpenHHCrashVariant(BarIndex: Integer): String;
+function TRockGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
 begin
   case (BarIndex mod 2) of
-    0: Result := 'cymbal_1_hit'; // crash 1
-    1: Result := 'cymbal_2_hit'; // crash 2
+    0: Result := TInstrumentRegistry.Get('cymbal_1_hit'); // crash 1
+    1: Result := TInstrumentRegistry.Get('cymbal_2_hit'); // crash 2
   else
-    Result := 'cymbal_3_hit';
+    Result := TInstrumentRegistry.Get('cymbal_3_hit');
   end;
 end;
 
@@ -327,7 +328,11 @@ end;
 function TRockGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   // Rock uses standard ride, no china override
-  Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
+  Result := TInstrumentRegistry.Get(GetRideTimekeeper);
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_bell');
 end;
 
 function TRockGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;

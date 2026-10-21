@@ -185,37 +185,54 @@ end;
 
 function TGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 { Instrument that hi-hat timekeeping is promoted to for high-energy sections.
-  Default = ride cymbal. Subclasses may override (e.g., rock/metal → crash/china). }
+  Default = ride cymbal. Subclasses may override (e.g., rock/metal → crash/china).
+  Must return a keymap-backed instrument (one that exists in
+  mappings/template.json and in the keymaps) — the MIDI exporter silently drops
+  beats whose instrument is nil. }
 begin
-  Result := nil; { Default ride timekeeper. }
+  Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_bell');
 end;
 
 function TGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
-{ Return the crash instrument for an open hi-hat accent. Cycle through variants across bars. }
+{ Return the crash instrument for an open hi-hat accent. Cycle through variants across bars.
+  Must return a keymap-backed instrument — nil means "leave the open hi-hat alone". }
 begin
-  Result := nil; { Default: single crash variant. }
+  Result := TInstrumentRegistry.Get('cymbal_1_hit');
 end;
 
 function TGenrePlugin.ApplyRideHihatLogic(const APattern: TPattern; const Section: string;
   const Parameters: TGenerationParameters): TPattern;
 { Switch hi-hat timekeeping to ride/crash for high-energy sections (chorus/bridge/pre_chorus).
-  Adds hi-hat foot pedal ("chick") on every other beat once switched. }
+  Adds hi-hat foot pedal ("chick") on every other beat once switched.
+
+  Contract: returns APattern itself when the logic does not apply, and a NEW
+  pattern when it does. Callers rely on that to decide whether to swap the
+  section pattern.
+
+  A beat's instrument is never set to nil — the MIDI exporter drops beats whose
+  instrument is nil, so a nil assignment would silently delete the
+  timekeeping. Whenever a target instrument cannot be resolved, the original
+  beat is left untouched instead. }
 var
   IsHighEnergy: boolean;
   Timekeeper: TDrumInstrument;
   Switched: TPattern;
   Beat: TBeat;
-  HHInstrumentNames: TStringArray;
   InstName: string;
   IsDownbeat: boolean;
   BarIndex: Integer;
-  PromotedInst, PromotedCrash: TDrumInstrument;
+  PromotedCrash: TDrumInstrument;
   RideSections: TStringArray;
   RS: string;
   HasHiHat: boolean;
   BeatNum: Double;
   DurationBars: Double;
   BeatsPerBar: Integer;
+  Bell: TDrumInstrument;
+  RideShaft: TDrumInstrument;
+  Pedal: TDrumInstrument;
 begin
   { High-energy if section name in [chorus, bridge, pre_chorus] OR complexity > ride_threshold. }
   SetLength(RideSections, 3);
@@ -231,7 +248,7 @@ begin
       Break;
     end;
 
-  if not IsHighEnergy and (Parameters.RideThreshold > 0) then
+  if not IsHighEnergy and Assigned(Parameters) and (Parameters.RideThreshold > 0) then
     IsHighEnergy := Parameters.Complexity >= Parameters.RideThreshold;
 
   if not IsHighEnergy then
@@ -253,7 +270,23 @@ begin
   if not HasHiHat then
     Exit(APattern); { No hi-hats to promote. }
 
+  { Make sure the keymap-backed instrument registry is populated before any
+    lookup — every instrument we promote to must be keymap-backed. }
+  TInstrumentRegistry.EnsureLoaded;
+
+  { Resolve the timekeeper. It must never be nil, otherwise the downbeat
+    timekeeping would be deleted rather than promoted. }
   Timekeeper := HighEnergyTimekeeper(Section, Parameters);
+  if not Assigned(Timekeeper) then
+    Timekeeper := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if not Assigned(Timekeeper) then
+    Exit(APattern); { Nothing safe to promote to — leave the pattern alone. }
+
+  { Optional promotion targets — resolved once, used only when available. }
+  Bell := TInstrumentRegistry.Get('ride_1_bell');
+  RideShaft := TInstrumentRegistry.Get('ride_1_shaft_hit_stronger');
+  Pedal := TInstrumentRegistry.Get('hihat_pedal_closed');
+
   Switched := APattern.Copy;
 
   for Beat in Switched.Beats do
@@ -275,29 +308,40 @@ begin
     begin
       { Open HH → crash/choke accent (not a timekeeper). }
       PromotedCrash := GetOpenHhCrashVariant(APattern, Beat.Position, BarIndex);
-      Beat.Instrument := PromotedCrash;
+      if Assigned(PromotedCrash) then
+      begin
+        Beat.Instrument := PromotedCrash;
+        Beat.InstrumentPromoted := True;
+      end;
       Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end
     else if IsDownbeat and (BarIndex >= 4) and ((BarIndex - 4) mod 4 = 0) then
     begin
       { Every 4th bar from bar 5 → bell accent for timbral variety. }
-      Beat.Instrument := nil;
+      if Assigned(Bell) then
+      begin
+        Beat.Instrument := Bell;
+        Beat.InstrumentPromoted := True;
+      end;
       Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end
     else if IsDownbeat then
     begin
       { Downbeat → main timekeeper (ride, china, or crash per genre). }
       Beat.Instrument := Timekeeper;
+      Beat.InstrumentPromoted := True;
       Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end
     else
     begin
       { Offbeat → ride shaft / lighter variant. }
-      Beat.Instrument := nil;
+      if Assigned(RideShaft) then
+      begin
+        Beat.Instrument := RideShaft;
+        Beat.InstrumentPromoted := True;
+      end;
       Beat.Velocity := Math.Max(0, Math.Min(127, Beat.Velocity));
     end;
-
-    Beat.InstrumentPromoted := True;
   end;
 
   { Add hi-hat pedal ("chick") on every other beat. }
@@ -308,7 +352,8 @@ begin
     BeatNum := 1.0;
     while BeatNum < BeatsPerBar do
     begin
-      Switched.AddBeat(BarIndex + BeatNum, nil, 80);
+      if Assigned(Pedal) then
+        Switched.AddBeat(BarIndex + BeatNum, Pedal, 80);
       BeatNum := BeatNum + 2.0;
     end;
   end;

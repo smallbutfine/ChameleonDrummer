@@ -2,176 +2,381 @@
 
 {$mode objfpc}{$H+}
 
+{ Repairs patterns that a human drummer could not physically play, by
+  removing the hits that conflict, keeping the accented ones. }
+
 interface
 
 uses
-  Classes, SysUtils, Math,
-  Pattern;
+  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, LimbConstraints;
 
-// ============================================================================
-// TPatternFixer â€” Post-generation pattern repair utilities
-// ============================================================================
 type
-  TPatternFixer = class
+  TPatternFixer = class(TObject)
   private
-    function FixEmptyBars(APattern: TPattern): TPattern;
-    function FixOvercrowdedBars(APattern: TPattern): TPattern;
-    function FixVelocityClipping(APattern: TPattern): TPattern;
-    function FixTimingBounds(APattern: TPattern): TPattern;
+    FEngine: TLimbConstraintEngine;
   public
     constructor Create;
+    destructor Destroy; override;
 
-    function Fix(APattern: TPattern): TPattern;
-    function GetFixSummary(APattern: TPattern): TArray<String>;
+    property Engine: TLimbConstraintEngine read FEngine write FEngine;
+
+    { Repairs the pattern.
+      CONTRACT: the returned pattern is the SAME object as the input when no
+      repair was necessary, and a NEW object when beats were removed. The
+      input is never modified and never freed by this method. }
+    function Fix(const APattern: TPattern): TPattern;
+
+    function NeedsFix(const APattern: TPattern): Boolean;
   end;
 
 implementation
 
+const
+  { Two hits closer than this many quarter-note beats count as simultaneous. }
+  SIMULTANEOUS_TOLERANCE = 0.01;
+
+  { Used when a hit has no predecessor to compare against. }
+  UNLIMITED_GAP = 1.0E+30;
+
+type
+  { A group of simultaneously struck beats, stored as indices into the
+    beat list of a pattern. }
+  TIndexGroup = class
+  public
+    Position: Double;
+    Indices: specialize TList<Integer>;
+    constructor Create(APosition: Double);
+    destructor Destroy; override;
+  end;
+
+  TIndexGroupList = specialize TList<TIndexGroup>;
+
+{ ── TIndexGroup ──────────────────────────────────────────────── }
+
+constructor TIndexGroup.Create(APosition: Double);
+begin
+  inherited Create;
+  Position := APosition;
+  Indices := specialize TList<Integer>.Create;
+end;
+
+destructor TIndexGroup.Destroy;
+begin
+  Indices.Free;
+  inherited Destroy;
+end;
+
+{ ── helpers ──────────────────────────────────────────────────── }
+
+{ Name of the instrument a beat is played on ('' when it has none). }
+function InstrumentNameOf(const ABeat: TBeat): String;
+begin
+  Result := '';
+  if ABeat = nil then
+    Exit;
+  if not Assigned(ABeat.Instrument) then
+    Exit;
+  Result := ABeat.Instrument.Name;
+end;
+
+{ Splits the beats of a pattern into groups of simultaneous hits.
+  This mirrors the grouping used by TLimbConstraintEngine so that the
+  fixer removes beats from exactly the group the engine complained about. }
+function BuildIndexGroups(const APattern: TPattern): TIndexGroupList;
+var
+  Order: specialize TList<Integer>;
+  Used: array of Boolean;
+  Group: TIndexGroup;
+  I, J, K: Integer;
+  SeedPos: Double;
+begin
+  Result := TIndexGroupList.Create;
+  Order := specialize TList<Integer>.Create;
+  try
+    for I := 0 to APattern.Beats.Count - 1 do
+      Order.Add(I);
+
+    { Insertion sort the beat indices by position. }
+    for I := 1 to Order.Count - 1 do
+    begin
+      J := Order[I];
+      K := I - 1;
+      while K >= 0 do
+      begin
+        if APattern.Beats[Order[K]].Position <= APattern.Beats[J].Position then
+          Break;
+        Order[K + 1] := Order[K];
+        Dec(K);
+      end;
+      Order[K + 1] := J;
+    end;
+
+    SetLength(Used, APattern.Beats.Count);
+    for I := 0 to High(Used) do
+      Used[I] := False;
+
+    for I := 0 to Order.Count - 1 do
+    begin
+      if Used[Order[I]] then
+        Continue;
+      SeedPos := APattern.Beats[Order[I]].Position;
+      Group := TIndexGroup.Create(SeedPos);
+      for J := 0 to Order.Count - 1 do
+        if (not Used[Order[J]]) and
+           (Abs(APattern.Beats[Order[J]].Position - SeedPos) <= SIMULTANEOUS_TOLERANCE) then
+        begin
+          Used[Order[J]] := True;
+          Group.Indices.Add(Order[J]);
+        end;
+      Result.Add(Group);
+    end;
+  finally
+    Order.Free;
+  end;
+end;
+
+{ Frees a group list and the groups in it. }
+procedure FreeIndexGroups(const AGroups: TIndexGroupList);
+var
+  Group: TIndexGroup;
+begin
+  for Group in AGroups do
+    Group.Free;
+  AGroups.Free;
+end;
+
+{ Finds the group that was seeded at the given position. }
+function FindGroupAt(const AGroups: TIndexGroupList; APosition: Double): TIndexGroup;
+var
+  Group: TIndexGroup;
+  Best: TIndexGroup;
+  BestDistance: Double;
+  Distance: Double;
+begin
+  Result := nil;
+  Best := nil;
+  BestDistance := UNLIMITED_GAP;
+  for Group in AGroups do
+  begin
+    if Abs(Group.Position - APosition) < 0.000001 then
+      Exit(Group);
+    Distance := Abs(Group.Position - APosition);
+    if Distance < BestDistance then
+    begin
+      BestDistance := Distance;
+      Best := Group;
+    end;
+  end;
+  { Fall back to the closest group when the exact seed is gone. }
+  if (Best <> nil) and (BestDistance <= SIMULTANEOUS_TOLERANCE) then
+    Result := Best;
+end;
+
+{ True when A is the weaker hit of the two and should be removed first.
+  Accented hits survive, ghost notes go before full-velocity hits and
+  lower velocity goes first. }
+function WeakerThan(A, B: TBeat): Boolean;
+begin
+  if A.Accent <> B.Accent then
+    Result := not A.Accent
+  else if A.GhostNote <> B.GhostNote then
+    Result := A.GhostNote
+  else
+    Result := A.Velocity < B.Velocity;
+end;
+
+{ Removes a beat from the pattern: the beat object is freed and taken out
+  of the beat list. }
+procedure RemoveBeat(APattern: TPattern; ABeat: TBeat);
+var
+  I: Integer;
+begin
+  for I := APattern.Beats.Count - 1 downto 0 do
+    if APattern.Beats[I] = ABeat then
+    begin
+      ABeat.Free;
+      APattern.Beats.Delete(I);
+      Exit;
+    end;
+end;
+
+{ Distance in beats to the closest earlier hit of the same instrument.
+  UNLIMITED_GAP when the instrument was not played before. }
+function GapToPrevious(APattern: TPattern; ABeat: TBeat): Double;
+var
+  BestPos: Double;
+  Found: Boolean;
+  B: TBeat;
+begin
+  Result := UNLIMITED_GAP;
+  Found := False;
+  BestPos := 0;
+  for B in APattern.Beats do
+    if (B <> ABeat) and (B.Position < ABeat.Position) and
+       SameText(InstrumentNameOf(B), InstrumentNameOf(ABeat)) then
+    begin
+      if (not Found) or (B.Position > BestPos) then
+      begin
+        BestPos := B.Position;
+        Found := True;
+      end;
+    end;
+  if Found then
+    Result := ABeat.Position - BestPos;
+end;
+
+{ Removes the weakest hit of the group of simultaneous hits that sits at
+  the given position. Returns True when a beat was removed. }
+function RemoveWeakestInGroup(APattern: TPattern; APosition: Double): Boolean;
+var
+  Groups: TIndexGroupList;
+  Group: TIndexGroup;
+  Weakest: Integer;
+  I: Integer;
+begin
+  Result := False;
+  Groups := BuildIndexGroups(APattern);
+  try
+    Group := FindGroupAt(Groups, APosition);
+    if Group = nil then
+      Exit(False);
+    if Group.Indices.Count = 0 then
+      Exit(False);
+
+    Weakest := -1;
+    for I := 0 to Group.Indices.Count - 1 do
+    begin
+      if Weakest < 0 then
+        Weakest := Group.Indices[I]
+      else if WeakerThan(APattern.Beats[Group.Indices[I]],
+                         APattern.Beats[Weakest]) then
+        Weakest := Group.Indices[I];
+    end;
+
+    if Weakest < 0 then
+      Exit(False);
+
+    RemoveBeat(APattern, APattern.Beats[Weakest]);
+    Result := True;
+  finally
+    FreeIndexGroups(Groups);
+  end;
+end;
+
+{ Removes the later of the two hits that repeat too quickly on one limb.
+  Returns True when a beat was removed. }
+function RemoveLaterHit(AEngine: TLimbConstraintEngine; APattern: TPattern;
+  APosition: Double): Boolean;
+var
+  Candidates: specialize TList<TBeat>;
+  Best: TBeat;
+  BestGap, Gap, MaxGap: Double;
+  I: Integer;
+begin
+  Result := False;
+  Candidates := APattern.GetBeatsAtPosition(APosition, SIMULTANEOUS_TOLERANCE);
+  try
+    { Only hits that repeat faster than the loosest limit can be the
+      offending ones. }
+    MaxGap := Max(AEngine.MinLimbGapBeats, AEngine.MinFootGapBeats);
+    Best := nil;
+    BestGap := UNLIMITED_GAP;
+    for I := 0 to Candidates.Count - 1 do
+    begin
+      Gap := GapToPrevious(APattern, Candidates[I]);
+      if (Gap < MaxGap) and ((Best = nil) or (Gap < BestGap)) then
+      begin
+        Best := Candidates[I];
+        BestGap := Gap;
+      end;
+    end;
+
+    if Best = nil then
+    begin
+      { Nothing to compare against - fall back to the latest hit here. }
+      if Candidates.Count = 0 then
+        Exit(False);
+      Best := Candidates[Candidates.Count - 1];
+    end;
+
+    RemoveBeat(APattern, Best);
+    Result := True;
+  finally
+    Candidates.Free;
+  end;
+end;
+
+{ Applies the repair that belongs to one violation. Returns True when a
+  beat was removed. }
+function RemoveViolation(AEngine: TLimbConstraintEngine; APattern: TPattern;
+  const AViolation: TLimbViolation): Boolean;
+begin
+  if AViolation.Kind = 'repeat_speed' then
+    Result := RemoveLaterHit(AEngine, APattern, AViolation.Position)
+  else
+    Result := RemoveWeakestInGroup(APattern, AViolation.Position);
+end;
+
+{ ── TPatternFixer ────────────────────────────────────────────── }
+
 constructor TPatternFixer.Create;
 begin
-  // No initialization needed
+  inherited Create;
+  FEngine := TLimbConstraintEngine.Create;
 end;
 
-function TPatternFixer.FixEmptyBars(APattern: TPattern): TPattern;
+destructor TPatternFixer.Destroy;
+begin
+  FEngine.Free;
+  inherited Destroy;
+end;
+
+function TPatternFixer.NeedsFix(const APattern: TPattern): Boolean;
 var
-  BarIdx, BeatIdx: Integer;
-  MinNotesPerBar: Integer;
+  Violations: specialize TList<TLimbViolation>;
+  I: Integer;
 begin
-  Result := APattern.Copy;
-  MinNotesPerBar := 3; // Minimum notes per bar for a playable pattern
-
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-
-    // Check each beat group within the bar
-    if (Result.Beats[BarIdx].Count < MinNotesPerBar) then
-    begin
-      // Add basic kick/snare/hihat framework to empty bars
-      for BeatIdx := 0 to 3 do
-      begin
-        case BeatIdx of
-          0: Result.Beats[BarIdx].Add(BeatIdx * 1.0, 'kick_hit', 100); // Kick on beat 1
-          1: Result.Beats[BarIdx].Add(BeatIdx * 1.0, 'snare_1_hit', 95); // Snare on beat 2
-          2: Result.Beats[BarIdx].Add((BeatIdx + 0.5) * 1.0, 'hh_closed_1_tip_hit', 80); // HH on off-beat
-          3: Result.Beats[BarIdx].Add(BeatIdx * 1.0, 'hh_closed_1_tip_hit', 80); // HH on beat 4
-        end;
-      end;
-    end;
-  end;
-end;
-
-function TPatternFixer.FixOvercrowdedBars(APattern: TPattern): TPattern;
-var
-  BarIdx, BeatIdx: Integer;
-  MaxNotesPerBeat: Integer;
-begin
-  Result := APattern.Copy;
-  MaxNotesPerBeat := 5; // Reasonable max notes per beat position
-
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-
-    // Check beats within this bar section
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 2 do
-    begin
-      // If too many notes at similar time positions, remove extras
-      if (Result.Beats[BarIdx].Count > MaxNotesPerBeat * 4) then
-      begin
-        // Remove lowest velocity notes first (preserving accents)
-        Result.Beats[BarIdx].Delete(Result.Beats[BarIdx].Count - 1);
-      end;
-    end;
-  end;
-end;
-
-function TPatternFixer.FixVelocityClipping(APattern: TPattern): TPattern;
-var
-  BarIdx, BeatIdx: Integer;
-begin
-  Result := APattern.Copy;
-
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      // Clamp velocities to valid MIDI range
-      if (Result.Beats[BarIdx][BeatIdx].Velocity < 1) then
-        Result.Beats[BarIdx][BeatIdx].Velocity := 1;
-
-      if (Result.Beats[BarIdx][BeatIdx].Velocity > 127) then
-        Result.Beats[BarIdx][BeatIdx].Velocity := 127;
-    end;
-  end;
-end;
-
-function TPatternFixer.FixTimingBounds(APattern: TPattern): TPattern;
-var
-  BarIdx, BeatIdx: Integer;
-begin
-  Result := APattern.Copy;
-
-  for BarIdx := 0 to Result.BarsCount - 1 do
-  begin
-    if (BarIdx >= Result.Beats.Count) then Break;
-
-    for BeatIdx := 0 to Result.Beats[BarIdx].Count - 1 do
-    begin
-      // Ensure timing is within bar bounds [0, 4.0)
-      if (Result.Beats[BarIdx][BeatIdx].Time < 0) then
-        Result.Beats[BarIdx][BeatIdx].Time := 0;
-
-      if (Result.Beats[BarIdx][BeatIdx].Time >= 4.0) then
-        Result.Beats[BarIdx][BeatIdx].Time := Result.Beats[BarIdx][BeatIdx].Time - 4.0;
-    end;
-  end;
-end;
-
-function TPatternFixer.Fix(APattern: TPattern): TPattern;
-begin
-  // Apply all fixes in order
-  Result := FixEmptyBars(APattern);
-  Result := FixOvercrowdedBars(Result);
-  Result := FixVelocityClipping(Result);
-  Result := FixTimingBounds(Result);
-end;
-
-function TPatternFixer.GetFixSummary(APattern: TPattern): TArray<String>;
-var
-  Issues: TStringList;
-  BarIdx, BeatIdx: Integer;
-begin
-  Issues := TStringList.Create;
+  Violations := FEngine.FindViolations(APattern);
   try
-    for BarIdx := 0 to APattern.BarsCount - 1 do
-    begin
-      if (BarIdx >= APattern.Beats.Count) then Break;
-
-      // Check for empty bars
-      if (APattern.Beats[BarIdx].Count = 0) then
-        Issues.Add(Format('Bar %d: Empty â€” would add basic framework', [BarIdx]));
-
-      // Check for velocity issues
-      for BeatIdx := 0 to APattern.Beats[BarIdx].Count - 1 do
-      begin
-        if (APattern.Beats[BarIdx][BeatIdx].Velocity <= 1) then
-          Issues.Add(Format('Bar %d, Beat: Velocity %d is too low',
-            [BarIdx, APattern.Beats[BarIdx][BeatIdx].Velocity]));
-
-        if (APattern.Beats[BarIdx][BeatIdx].Velocity > 127) then
-          Issues.Add(Format('Bar %d, Beat: Velocity %d is clipped (max 127)',
-            [BarIdx, APattern.Beats[BarIdx][BeatIdx].Velocity]));
-      end;
-    end;
-
-    SetLength(Result, Issues.Count);
-    for BarIdx := 0 to Issues.Count - 1 do
-      Result[BarIdx] := Issues[BarIdx];
+    Result := Violations.Count > 0;
   finally
-    Issues.Free;
+    for I := 0 to Violations.Count - 1 do
+      Violations[I].Free;
+    Violations.Free;
+  end;
+end;
+
+function TPatternFixer.Fix(const APattern: TPattern): TPattern;
+var
+  Violations: specialize TList<TLimbViolation>;
+  Progress: Boolean;
+  I: Integer;
+begin
+  { Nothing to repair - hand the very same pattern back to the caller. }
+  if not NeedsFix(APattern) then
+    Exit(APattern);
+
+  Result := APattern.Copy;
+  try
+    repeat
+      Violations := FEngine.FindViolations(Result);
+      try
+        Progress := False;
+        for I := 0 to Violations.Count - 1 do
+          if RemoveViolation(FEngine, Result, Violations[I]) then
+          begin
+            Progress := True;
+            Break;
+          end;
+      finally
+        for I := 0 to Violations.Count - 1 do
+          Violations[I].Free;
+        Violations.Free;
+      end;
+    until not Progress;
+  except
+    Result.Free;
+    raise;
   end;
 end;
 

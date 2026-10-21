@@ -27,7 +27,6 @@ type
     FSection: String;
     FComplexity: Double;
     FIntensity: Double;
-    function GetOpenHHCrashVariant(BarIndex: Integer): String;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -45,6 +44,8 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double;
+      BarIndex: Integer): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
     function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
 
@@ -104,13 +105,13 @@ begin
   else FIntensity := AValue;
 end;
 
-function TFunkGenrePlugin.GetOpenHHCrashVariant(BarIndex: Integer): String;
+function TFunkGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
 begin
   case (BarIndex mod 2) of
-    0: Result := 'cymbal_1_hit';
-    1: Result := 'cymbal_3_hit';
+    0: Result := TInstrumentRegistry.Get('cymbal_1_hit');
+    1: Result := TInstrumentRegistry.Get('cymbal_3_hit');
   else
-    Result := 'cymbal_2_hit';
+    Result := TInstrumentRegistry.Get('cymbal_2_hit');
   end;
 end;
 
@@ -315,7 +316,11 @@ end;
 function TFunkGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   // Funk uses standard ride or crash for high energy
-  Result := TInstrumentRegistry.Register('ride_1_tip_hit', 'Ride cymbal');
+  Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_bell');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('cymbal_1_hit');
 end;
 
 function TFunkGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;

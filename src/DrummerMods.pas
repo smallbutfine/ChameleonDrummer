@@ -365,13 +365,26 @@ constructor TSpeedPrecision.Create;
 begin inherited Create; end;
 
 function TSpeedPrecision.Apply(APattern: TPattern; Intensity: Double): TPattern;
-var BIdx: Integer;
+var
+  BIdx: Integer;
+  Target: Integer;
 begin
   Result := APattern.Copy;
   if (Intensity <= 0) then Exit;
+
+  { A precise player locks to the grid: quantise hard to 1/32. }
+  for BIdx := 0 to Result.Beats.Count - 1 do
+    Result.Beats[BIdx].Position := Max(0.0, Round(Result.Beats[BIdx].Position * 32) / 32.0);
+
+  { Compress the dynamic range towards a consistent target. The accent
+    structure is scaled down, not erased — flattening every hit to a single
+    velocity destroys the groove, which is what the previous implementation
+    of this modifier did. }
+  Target := 100;
   for BIdx := 0 to Result.Beats.Count - 1 do
     if Assigned(Result.Beats[BIdx].Instrument) then
-      Result.Beats[BIdx].Velocity := Min(127, Max(80, Round(105 * Intensity)));
+      Result.Beats[BIdx].Velocity := Trunc(Max(1.0, Min(127.0,
+        Target + (Result.Beats[BIdx].Velocity - Target) * (1.0 - Intensity * 0.5))));
 end;
 
 { TTwistedAccents }

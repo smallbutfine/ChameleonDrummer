@@ -28,7 +28,6 @@ type
     FComplexity: Double;
     FIntensity: Double;
     function GetRideSwingPattern: String;
-    function GetOpenHHCrashVariant(BarIndex: Integer): String;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -46,6 +45,8 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double;
+      BarIndex: Integer): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
     function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
 
@@ -108,16 +109,16 @@ end;
 function TJazzGenrePlugin.GetRideSwingPattern: String;
 begin
   // Jazz uses ride pattern with swing feel
-  Result := 'ride_1_tip_hit';
+  Result := 'ride_1_tip_hit_softer';
 end;
 
-function TJazzGenrePlugin.GetOpenHHCrashVariant(BarIndex: Integer): String;
+function TJazzGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
 begin
   case (BarIndex mod 2) of
-    0: Result := 'cymbal_1_hit';
-    1: Result := 'cymbal_2_hit';
+    0: Result := TInstrumentRegistry.Get('cymbal_1_hit');
+    1: Result := TInstrumentRegistry.Get('cymbal_2_hit');
   else
-    Result := 'ride_1_bell';
+    Result := TInstrumentRegistry.Get('ride_1_bell');
   end;
 end;
 
@@ -318,7 +319,11 @@ end;
 function TJazzGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
   // Jazz uses ride bell for energy
-  Result := TInstrumentRegistry.Register('ride_1_bell', 'Ride bell');
+  Result := TInstrumentRegistry.Get('ride_1_bell');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('cymbal_1_hit');
 end;
 
 function TJazzGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;

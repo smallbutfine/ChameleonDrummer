@@ -373,9 +373,18 @@ var
   Fill: TFill;
 begin
   Result := nil;
-  if FFillBarsConfigured and not FBeats.Contains(ABarNumber) then
-    Exit;
-  if Random >= AFillFrequency then
+  if FFillBarsConfigured then
+  begin
+    { The composer already decided which bars carry a fill — see
+      TComposerV2.CreateSong -> TSection.SetFillBars. That decision is
+      structural (bar 0, every fourth bar, the bar before the section end,
+      the midpoint), so it must not be re-rolled here. Re-rolling it against
+      FillFrequency discarded roughly two thirds of the musically placed
+      fills and made fills almost never appear in the output. }
+    if not FBeats.Contains(ABarNumber) then
+      Exit;
+  end
+  else if Random >= AFillFrequency then
     Exit;
 
   if Fills.Count = 0 then

@@ -459,6 +459,11 @@ var
   Tempo: Integer;
   Structure: specialize TArray<TStructureEntry>;
   Composer: TComposerV2;
+  GenrePlugin: TGenrePlugin;
+  RideParams: TGenerationParameters;
+  Section: TSection;
+  NewPattern: TPattern;
+  SectionIndex: Integer;
 begin
   { Resolve tempo. }
   if ATempo = 0 then
@@ -484,6 +489,35 @@ begin
   try
     Result := Composer.CreateSong(Genre, Style, Tempo, Structure, ADrummer,
       AComplexity, ADynamics, AHumanization);
+
+    { Apply genre-aware hi-hat -> ride/crash promotion for high-energy
+      sections (chorus / bridge / pre_chorus). This runs per section so the
+      internal bar index is section-relative and the every-4th-bar bell accent
+      can actually fire. }
+    GenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
+    if Assigned(GenrePlugin) then
+    begin
+      RideParams := TGenerationParameters.Create(Genre, Style, ADrummer,
+        AComplexity, ADynamics, AHumanization);
+      try
+        for SectionIndex := 0 to Result.Sections.Count - 1 do
+        begin
+          Section := Result.Sections[SectionIndex];
+          if not Assigned(Section.Pattern) then
+            Continue;
+          NewPattern := GenrePlugin.ApplyRideHihatLogic(Section.Pattern,
+            Section.Name, RideParams);
+          { The function returns the input unchanged when it does not apply. }
+          if NewPattern <> Section.Pattern then
+          begin
+            Section.Pattern.Free;
+            Section.Pattern := NewPattern;
+          end;
+        end;
+      finally
+        RideParams.Free;
+      end;
+    end;
 
     { Apply genre-aware groove restraints (snare/velocity). }
     ApplyGrooveRestraints(Result);

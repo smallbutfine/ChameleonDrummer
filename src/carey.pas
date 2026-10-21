@@ -30,19 +30,20 @@ destructor TCareyPlugin.Destroy;
 begin inherited Destroy; end;
 
 function TCareyPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var B: Integer; InstName: String; Result1, Result2: TPattern;
+var B: Integer; InstName: String; Result1, Result2, Result3: TPattern;
 begin
-  // Carey style: polyrhythmic ghost notes + deep tom emphasis
+  // Carey style: polyrhythmic ghost notes + triplet vocabulary + deep tom emphasis
   Result1 := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.6), APattern, 0.7);
-  Result2 := ApplyAndFreeModifier(TPocketStretching.Create, Result1, 0.5, True);
-  for B := 0 to Result2.Beats.Count - 1 do
-    if Assigned(Result2.Beats[B].Instrument) then
+  Result2 := ApplyAndFreeModifier(TTripletVocabulary.Create(0.35), Result1, 0.6, True);
+  Result3 := ApplyAndFreeModifier(TPocketStretching.Create, Result2, 0.5, True);
+  for B := 0 to Result3.Beats.Count - 1 do
+    if Assigned(Result3.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
+      InstName := LowerCase(Result3.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Result2.Beats[B].Velocity := Min(127, Result2.Beats[B].Velocity + 5);
+        Result3.Beats[B].Velocity := Min(127, Result3.Beats[B].Velocity + 5);
     end;
-  Result := Result2;
+  Result := Result3;
 end;
 
 function TCareyPlugin.GetSignatureFills: specialize TList<TFill>;

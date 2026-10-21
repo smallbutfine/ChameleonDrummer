@@ -12,7 +12,7 @@ uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   time_signature, generation_parameters, GenrePlugin,
   DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization,
-  GMDPatternLibrary;
+  GMDPatternLibrary, LimbConstraints, PatternFixer;
 
 type
   { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
@@ -74,7 +74,7 @@ type
 
     function DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
     function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-      ARng: TThreadedRandom): TPattern;
+      const Available: specialize TList<TPattern>; ARng: TThreadedRandom): TPattern;
     function GetNextGrooveIndex(GrooveCount: Integer): Integer;
   end;
 
@@ -88,11 +88,11 @@ private
   FGrooveEngine: TGrooveEngine;
   FHumanizer: TAdvancedHumanizer;
   FGMDPatternLibrary: TGMDPatternLibrary;
+  FFixer: TPatternFixer;
   FPrevIndices: specialize TDictionary<string, specialize TList<Integer>>;
 
   { Helper methods }
   function GetSectionCurveMap(const Structure: array of TSectionDef): specialize TDictionary<string, Integer>;
-  function SelectFlavor(const Available: specialize TList<TPattern>; ABarIndex: Integer): TPattern;
   function ExtractPatternBar(APattern: TPattern; ABarIndex: Integer): TPattern;
   procedure CombineBarPatterns(const GeneratedBars: specialize TList<TPattern>; out Combined: TPattern);
   function GetIntensityPt(CurveMap: specialize TDictionary<string, Integer>; const SectionName: string;
@@ -379,29 +379,51 @@ begin
 end;
 
 function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-  ARng: TThreadedRandom): TPattern;
+  const Available: specialize TList<TPattern>; ARng: TThreadedRandom): TPattern;
+var
+  Idx: Integer;
 begin
-  // Select groove pattern based on phase for purposeful variation.
-  // mpEstablish: use simple/establishing patterns
-  // mpMaintain: use established, consistent grooves
-  // mpBuild: use building/intensifying patterns
-  // mpTurnaround: use turnaround/special patterns
+  { The macro phase decides which groove of the section's library plays, so
+    the song has a purposeful shape (establish -> maintain -> build ->
+    turnaround) instead of a random pick per phrase. }
+  Result := nil;
+  if (Available = nil) or (Available.Count = 0) then
+    Exit;
+
   case Phase of
     mpEstablish:
-      ; // Simple/establishing groove - caller uses basic pattern
+      begin
+        { The opening of a section states the groove plainly, so the listener
+          can lock onto it — always the first flavour. }
+        Idx := 0;
+      end;
     mpMaintain:
-      ; // Established groove - caller rotates through patterns
+      begin
+        { The body of a section rotates through the library and never repeats
+          the groove that was just used. }
+        Idx := GetNextGrooveIndex(Available.Count);
+      end;
     mpBuild:
-      ; // Building groove - caller selects higher-energy patterns
+      begin
+        { The build pushes towards the densest groove in the library. }
+        Idx := Available.Count - 1;
+      end;
     mpTurnaround:
-      ; // Turnaround groove - caller uses transitional pattern
+      begin
+        { A turnaround breaks out of the rotation so the section can change
+          gear. }
+        Idx := ARng.NextInt(Available.Count);
+      end;
   else
-    ; // Unknown phase
+    Idx := GetNextGrooveIndex(Available.Count);
   end;
 
-  // Return nil — actual groove selection handled by genre plugin GetSectionFlavors.
-  // This stub provides phase context for future phase-aware pattern routing.
-  Result := nil;
+  if (Idx < 0) or (Idx >= Available.Count) then
+    Idx := 0;
+
+  { The returned pattern is owned by the caller's list — it must NOT be freed
+    by the macro composer. }
+  Result := Available[Idx];
 end;
 
 function TMacroComposer.GetNextGrooveIndex(GrooveCount: Integer): Integer;
@@ -440,6 +462,7 @@ begin
   FFilPicker := TFillPicker.Create;
   FGrooveEngine := TGrooveEngine.Create;
   FHumanizer := TAdvancedHumanizer.Create;
+  FFixer := TPatternFixer.Create;
   FPrevIndices := specialize TDictionary<string, specialize TList<Integer>>.Create;
 end;
 
@@ -456,6 +479,7 @@ begin
   FGrooveEngine.Free;
   FHumanizer.Free;
   FGMDPatternLibrary.Free;
+  FFixer.Free;
   inherited Destroy;
 end;
 
@@ -475,10 +499,10 @@ var
   IntensityPt: Double;
   Phase: TMacroPhase;
   BasePattern: TPattern;
-  PhaseGroove: TPattern;
   DrummedPattern: TPattern;
   BarSourcePattern: TPattern;
   FinalPattern: TPattern;
+  FixedPattern: TPattern;
   HumanizedPattern: TPattern;
   CurrentPattern: TPattern;
   CurrentPatternOwned: Boolean;
@@ -622,7 +646,6 @@ begin
         { Determine macro-composer phase for purposeful variation }
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
 
-        PhaseGroove := MacroComposer.SelectGroove(Genre, SectionName, Phase, FRng);
         if BarIndex >= NextPhraseBar then
         begin
           if CurrentPatternOwned and Assigned(CurrentPattern) then
@@ -630,10 +653,11 @@ begin
           CurrentPattern := nil;
           CurrentPatternOwned := False;
 
+          { Phase-aware groove selection — the macro phase decides which
+            flavour of the section's library the phrase plays. }
           if Available.Count > 0 then
-            CurrentPattern := SelectFlavor(Available, BarIndex);
-          if not Assigned(CurrentPattern) and Assigned(PhaseGroove) then
-            CurrentPattern := PhaseGroove;
+            CurrentPattern := MacroComposer.SelectGroove(Genre, SectionName,
+              Phase, Available, FRng);
           if not Assigned(CurrentPattern) then
           begin
             CurrentPattern := FGenrePlugin.GeneratePattern(SectionName, Params);
@@ -679,6 +703,16 @@ begin
             Params.Dynamics, ADrummer, GeneratedBars);
         finally
           BarSourcePattern.Free;
+        end;
+        { Physically-playable constraint pass — remove hits a human could not
+          actually play (two hits on the same hand at the same instant, more
+          than three simultaneous hits, impossibly fast repeats on one limb).
+          The fixer returns the same object when nothing had to be removed. }
+        FixedPattern := FFixer.Fix(FinalPattern);
+        if FixedPattern <> FinalPattern then
+        begin
+          FinalPattern.Free;
+          FinalPattern := FixedPattern;
         end;
         if Params.Humanization > 0 then
         begin
@@ -873,30 +907,6 @@ begin
   else
     Result := Ratio;
   end;
-end;
-
-function TComposerV2.SelectFlavor(const Available: specialize TList<TPattern>; ABarIndex: Integer): TPattern;
-var
-  Candidates: specialize TList<Integer>;
-  I: Integer;
-begin
-  { Pick a flavor for this bar, avoiding immediate repeats. }
-  if Available.Count <= 1 then
-    Exit(Available[0]);
-
-  { Filter out flavors used on the immediately previous bar(s) }
-  Candidates := specialize TList<Integer>.Create;
-  try
-    for I := 0 to Available.Count - 1 do
-      Candidates.Add(I);
-
-    if Candidates.Count > 0 then
-      Exit(Available[Candidates[FRng.NextInt(Candidates.Count)]]);
-  finally
-    Candidates.Free;
-  end;
-
-  Exit(Available[0]);
 end;
 
 function TComposerV2.ExtractPatternBar(APattern: TPattern; ABarIndex: Integer): TPattern;

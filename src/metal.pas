@@ -28,8 +28,7 @@ type
     FSection: String;
     FComplexity: Double;
     FIntensity: Double;
-    function GetChinaTimekeeper: String;
-    function GetOpenHHCrashVariant(BarIndex: Integer): String;
+    function GetChinaTimekeeper(const AStyle: String): String;
     function GetFlavorVerseInternal(BarIndex: Integer; const Style: String): TPattern;
     function GetFlavorChorusInternal(BarIndex: Integer; const Style: String): TPattern;
     function GetFlavorBridgeInternal(BarIndex: Integer; const Style: String): TPattern;
@@ -53,6 +52,8 @@ type
     function AdaptExternalPattern(const APattern: TPattern;
       const Parameters: TGenerationParameters): TPattern; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double;
+      BarIndex: Integer): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
 
     // Flavor rotation helpers
@@ -101,24 +102,26 @@ begin
   else FIntensity := AValue;
 end;
 
-function TMetalGenrePlugin.GetChinaTimekeeper: String;
+function TMetalGenrePlugin.GetChinaTimekeeper(const AStyle: String): String;
 begin
-  // Death and thrash metal use china cymbal as high-energy timekeeper
-  if (FStyle = 'death') or (FStyle = 'thrash') then
-    Result := 'cymbal_5_hit'
+  // Death and thrash metal drive the section with a crash-style timekeeper,
+  // everything else uses the ride bell. There is no china cymbal in the
+  // template keymaps, so cymbal_1_hit stands in for it.
+  if (AStyle = 'death') or (AStyle = 'thrash') then
+    Result := 'cymbal_1_hit'
   else
-    Result := '';
+    Result := 'ride_1_bell';
 end;
 
-function TMetalGenrePlugin.GetOpenHHCrashVariant(BarIndex: Integer): String;
+function TMetalGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
 begin
   // Cycle through AD2 crash variants per bar
   case (BarIndex mod 3) of
-    0: Result := 'cymbal_4_hit'; // heavy
-    1: Result := 'cymbal_2_hit'; // light
-    2: Result := 'cymbal_6_hit'; // splash
+    0: Result := TInstrumentRegistry.Get('cymbal_4_hit'); // heavy
+    1: Result := TInstrumentRegistry.Get('cymbal_2_hit'); // light
+    2: Result := TInstrumentRegistry.Get('cymbal_6_hit'); // splash
   else
-    Result := 'cymbal_1_hit';
+    Result := TInstrumentRegistry.Get('cymbal_1_hit');
   end;
 end;
 
@@ -495,8 +498,18 @@ begin
 end;
 
 function TMetalGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
+var
+  StyleName: String;
 begin
-  Result := TInstrumentRegistry.Get(GetChinaTimekeeper);
+  StyleName := FStyle;
+  if Assigned(Parameters) and (Parameters.Style <> '') then
+    StyleName := LowerCase(Parameters.Style);
+
+  Result := TInstrumentRegistry.Get(GetChinaTimekeeper(StyleName));
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('cymbal_1_hit');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_bell');
 end;
 
 function TMetalGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;

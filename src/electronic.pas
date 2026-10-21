@@ -27,7 +27,6 @@ type
     FSection: String;
     FComplexity: Double;
     FIntensity: Double;
-    function GetOpenHHCrashVariant(BarIndex: Integer): String;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -45,6 +44,8 @@ type
     function GetSectionGrooves: specialize TList<TPattern>;
     function GetCommonFills: specialize TList<TFill>; override;
     function HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument; override;
+    function GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double;
+      BarIndex: Integer): TDrumInstrument; override;
     function GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern; override;
     function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; override;
 
@@ -103,13 +104,13 @@ begin
   else FIntensity := AValue;
 end;
 
-function TElectronicGenrePlugin.GetOpenHHCrashVariant(BarIndex: Integer): String;
+function TElectronicGenrePlugin.GetOpenHhCrashVariant(const APattern: TPattern; BeatPos: Double; BarIndex: Integer): TDrumInstrument;
 begin
   case (BarIndex mod 3) of
-    0: Result := 'cymbal_4_hit';
-    1: Result := 'cymbal_2_hit';
+    0: Result := TInstrumentRegistry.Get('cymbal_4_hit');
+    1: Result := TInstrumentRegistry.Get('cymbal_2_hit');
   else
-    Result := 'cymbal_6_hit';
+    Result := TInstrumentRegistry.Get('cymbal_6_hit');
   end;
 end;
 
@@ -252,7 +253,12 @@ end;
 
 function TElectronicGenrePlugin.HighEnergyTimekeeper(const Section: string; const Parameters: TGenerationParameters): TDrumInstrument;
 begin
-  Result := TInstrumentRegistry.Register('crash_1_hit', 'Crash 1');
+  // Electronic drives high-energy sections with a crash-style timekeeper
+  Result := TInstrumentRegistry.Get('cymbal_1_hit');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_tip_hit_softer');
+  if not Assigned(Result) then
+    Result := TInstrumentRegistry.Get('ride_1_bell');
 end;
 
 function TElectronicGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;

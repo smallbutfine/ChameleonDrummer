@@ -30,19 +30,20 @@ destructor TChambersPlugin.Destroy;
 begin inherited Destroy; end;
 
 function TChambersPlugin.ApplyStyle(const APattern: TPattern): TPattern;
-var B: Integer; InstName: String; Result1, Result2: TPattern;
+var B: Integer; InstName: String; Result1, Result2, Result3: TPattern;
 begin
-  // Chambers style: ghost notes + pocket stretching + deep kick
+  // Chambers style: ghost notes + fast chops + pocket stretching + deep kick
   Result1 := ApplyAndFreeModifier(TGhostNoteLayer.Create(0.5), APattern, 0.8);
-  Result2 := ApplyAndFreeModifier(TPocketStretching.Create, Result1, 0.7, True);
-  for B := 0 to Result2.Beats.Count - 1 do
-    if Assigned(Result2.Beats[B].Instrument) then
+  Result2 := ApplyAndFreeModifier(TFastChopsTriplets.Create(0.6), Result1, 0.7, True);
+  Result3 := ApplyAndFreeModifier(TPocketStretching.Create, Result2, 0.7, True);
+  for B := 0 to Result3.Beats.Count - 1 do
+    if Assigned(Result3.Beats[B].Instrument) then
     begin
-      InstName := LowerCase(Result2.Beats[B].Instrument.Name);
+      InstName := LowerCase(Result3.Beats[B].Instrument.Name);
       if Pos('kick', InstName) = 1 then
-        Result2.Beats[B].Velocity := Min(127, Max(85, Result2.Beats[B].Velocity + 5));
+        Result3.Beats[B].Velocity := Min(127, Max(85, Result3.Beats[B].Velocity + 5));
     end;
-  Result := Result2;
+  Result := Result3;
 end;
 
 function TChambersPlugin.GetSignatureFills: specialize TList<TFill>;
