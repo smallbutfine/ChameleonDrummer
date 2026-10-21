@@ -13,7 +13,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, FileCtrl, LCLType, Math, Windows,
+  Dialogs, FileCtrl, LCLType, Math, Windows, ShellApi,
   DrumGenerator, PluginRegistry, Kit, Song, ReaperAPI, ArdourAPI;
 
 type
@@ -324,50 +324,57 @@ begin
   pbProgress.Visible := True;
   Application.ProcessMessages;
 
+  lblStatus.Caption := 'Loading drum kit...';
+  Application.ProcessMessages;
+
   Started := Now;
   try
-    DrumKit := TDrumKit.FromKeymapName(SelectedMapping);
+    // Wir initialisieren das DrumKit über den vom Compiler gefundenen Constructor.
+    // Wir übergeben das ausgewählte Mapping und das Tempo (seTempo.Value).
+    DrumKit := TDrumKit.Create(SelectedMapping, seTempo.Value);
+
     try
       Song := FGenerator.CreateSong(SelectedGenre, SelectedStyle, seTempo.Value,
         nil, DrumKit, SelectedDrummer, tbComplexity.Position / 100, 0.6,
         tbHumanization.Position / 100);
+
+      try
+        MidiFile := ChangeFileExt(Base, '.mid');
+        FGenerator.SaveSongMidi(Song, MidiFile);
+        Log('MIDI written: ' + MidiFile);
+
+        if cbExport.ItemIndex >= ExportREAPER then
+        begin
+          RppFile := ChangeFileExt(MidiFile, '.rpp');
+          Bridge := TReaperBridge.Create;
+          try
+            if Bridge.CreateFromSong(Song, MidiFile) then
+              Log('REAPER project written: ' + RppFile)
+            else
+              Log('[Warning] REAPER export failed.');
+          finally
+            Bridge.Free;
+          end;
+        end;
+
+        if cbExport.ItemIndex >= ExportArdour then
+        begin
+          SessionDir := ChangeFileExt(Base, '.ardour');
+          ArdourBridge := TArdourBridge.Create;
+          try
+            if ArdourBridge.CreateFromSong(Song, MidiFile, SessionDir) then
+              Log('Ardour session written: ' + SessionDir)
+            else
+              Log('[Warning] Ardour export failed.');
+          finally
+            ArdourBridge.Free;
+          end;
+        end;
+      finally
+        Song.Free;
+      end;
     finally
       DrumKit.Free;
-    end;
-    try
-      MidiFile := ChangeFileExt(Base, '.mid');
-      FGenerator.SaveSongMidi(Song, MidiFile);
-      Log('MIDI written: ' + MidiFile);
-
-      if cbExport.ItemIndex >= ExportREAPER then
-      begin
-        RppFile := ChangeFileExt(MidiFile, '.rpp');
-        Bridge := TReaperBridge.Create;
-        try
-          if Bridge.CreateFromSong(Song, MidiFile) then
-            Log('REAPER project written: ' + RppFile)
-          else
-            Log('[Warning] REAPER export failed.');
-        finally
-          Bridge.Free;
-        end;
-      end;
-
-      if cbExport.ItemIndex >= ExportArdour then
-      begin
-        SessionDir := ChangeFileExt(Base, '.ardour');
-        ArdourBridge := TArdourBridge.Create;
-        try
-          if ArdourBridge.CreateFromSong(Song, MidiFile, SessionDir) then
-            Log('Ardour session written: ' + SessionDir)
-          else
-            Log('[Warning] Ardour export failed.');
-        finally
-          ArdourBridge.Free;
-        end;
-      end;
-    finally
-      Song.Free;
     end;
 
     Elapsed := Now - Started;

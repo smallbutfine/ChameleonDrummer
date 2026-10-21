@@ -34,3 +34,10 @@ regen_all_debug.bat
 gui/lib/
 gui/*.compiled
 gui/*.lrs
+tools/__pycache__/
+Midi Drums Python Codebase Exploration.md
+song.ardour/
+song.mid
+song.rpp
+song.ardour.log
+song.ardour.lua

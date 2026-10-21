@@ -7,7 +7,7 @@ REM executable is written to the project root, not into this folder.
 
 setlocal
 
-set "LAZBUILD=%ProgramFiles%\lazarus\lazbuild.exe"
+set "LAZBUILD=C:\lazarus\lazbuild.exe"
 if not exist "%LAZBUILD%" set "LAZBUILD=lazbuild"
 
 if not exist "%~dp0chameleondrummer_gui.lpi" (
