@@ -55,7 +55,7 @@ Or open `main.lpi` in Lazarus IDE and click **Compile**.
 | `utils/` | TPatternFixer | 1 |
 | `export/midi/` | **TMIDIEngine** (raw SMF Format 0 writer) ✅ COMPLETED | 1 |
 | `export/reaper/` | TReaperBridge, .rpp reader/writer | 2 |
-| `export/ardour/` | TArdourSessionExporter — native Ardour session XML generation | 1 |
+| `export/ardour/` | TArdourBridge — builds a real Ardour session headlessly via `ardour9-lua` (`ardour/import_chameleon_song.lua`) | 1 |
 | `api/` | **TCLIInterface** (full CLI) + **TDrumGeneratorAPI** (high-level API) | 2 |
 | `ai/` | **TAIAPI**, backend wrappers, pattern generator, agents, prompts | 6 |
 | `config/` | TVelocity, TTiming, TDefaults, TGenreBPM constants | 1 |
@@ -83,6 +83,31 @@ chameleondrummer list drummers
 # Show system info
 chameleondrummer info
 ```
+
+### Ardour session export
+
+`ardour export` builds a **real Ardour session** — a session directory with a MIDI
+track, the tempo map, one region and one point marker per song section, and the
+generated MIDI imported into the track.
+
+```bash
+# Creates song.ardour/ (a session directory) plus song.mid next to it
+chameleondrummer ardour export --genre rock --style classic --drummer bonham --output song.ardour
+```
+
+The session is built by Ardour itself, through its standalone Lua interpreter
+(`ardour9-lua`, shipped with Ardour 8/9), which the exporter drives with
+`ardour/import_chameleon_song.lua`. No GUI and no manual import step are
+involved. Open the resulting `song.ardour` directory in Ardour and the song is
+there, with the structure marked up.
+
+Positions are carried in **beats**, which is Ardour's own time domain for
+locations, so nothing is converted on Ardour's side. Section names become both a
+region (`IsRangeMarker`, covering the section) and a point marker (`IsMark`, at
+the section start).
+
+If `ardour9-lua` is not found, the exporter says so instead of failing silently;
+install Ardour 8/9 or put it on `PATH`.
 
 ### Keymap Selection
 

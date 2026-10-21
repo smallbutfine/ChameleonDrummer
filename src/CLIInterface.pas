@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Generics.Collections, fpjson,
   Pattern, Song,
   DrumGenerator, ComposerV2, DrumMidiLoader,
-  PluginRegistry, Kit, ReaperAPI;
+  PluginRegistry, Kit, ReaperAPI, ArdourAPI;
 
 // ============================================================================
 // TCLIArgs - command-line arguments structure
@@ -28,7 +28,7 @@ type
     SidecarFile: String;
     SongMapFile: String;
     WriteTimelinePath: String;
-    ReaperPresetOnly: Boolean;
+    PresetOnly: Boolean; // --preset-only (accepted for reaper/ardour export)
     ListType: String; // 'genres', 'styles', 'drummers'
     IsSongCommand: Boolean; // --song flag from regen_all.bat
   end;
@@ -44,6 +44,7 @@ type
     procedure HandleList(const Args: TCLIArgs);
     procedure HandleInfo;
     procedure HandleReaperExport(const Args: TCLIArgs);
+    procedure HandleArdourExport(const Args: TCLIArgs);
     procedure ShowUsage;
   public
     constructor Create;
@@ -140,7 +141,7 @@ begin
     end
     else if (Args[I] = '--preset-only') then
     begin
-      Result.ReaperPresetOnly := True;
+      Result.PresetOnly := True;
     end
     else if (Args[I] = '--song') then
     begin
@@ -186,6 +187,16 @@ begin
         Result.SubCommand := LowerCase(Args[I]);
       if (I >= Length(Args)) then
         raise Exception.Create('reaper requires a sub-command');
+    end
+    else if (Args[I] = 'ardour') then
+    begin
+      Result.Command := 'ardour';
+      { Check for subcommand }
+      Inc(I);
+      if (I < Length(Args)) then
+        Result.SubCommand := LowerCase(Args[I]);
+      if (I >= Length(Args)) then
+        raise Exception.Create('ardour requires a sub-command');
     end;
 
     Inc(I);
@@ -218,6 +229,8 @@ begin
   Writeln('  pattern   Generate a single 1-4 bar pattern');
   Writeln('  list      List available genres, styles, or drummers');
   Writeln('  info      Show system information');
+  Writeln('  reaper    Create a REAPER project (sub-command: export)');
+  Writeln('  ardour    Create an Ardour session (sub-command: export)');
   Writeln;
   Writeln('Options:');
   Writeln('  --genre <name>       Genre (e.g., metal, rock, jazz, funk)');
@@ -416,6 +429,57 @@ begin
   end;
 end;
 
+procedure TCLIInterface.HandleArdourExport(const Args: TCLIArgs);
+var
+  Song: TSong;
+  DrumKit: TDrumKit;
+  MidiFile, SessionDir: string;
+  Bridge: TArdourBridge;
+begin
+  if (Args.Genre = '') then
+    raise Exception.Create('--genre is required for ardour export');
+
+  { Load keymap }
+  DrumKit := TDrumKit.FromKeymapName(Args.Mapping);
+
+  { Generate song with drummer parameter }
+  Song := FGenerator.CreateSong(
+    Args.Genre,
+    Args.Style,
+    Args.Tempo,
+    nil,      // AStructure - use genre default
+    DrumKit,
+    Args.Drummer,
+    0.5,      // AComplexity
+    0.6,      // ADynamics
+    0.3       // AHumanization
+  );
+  try
+    { The output is an Ardour session directory; the MIDI file sits next to
+      it, exactly like the REAPER exporter lays the MIDI next to the .rpp. }
+    if (Args.OutputFile = '') then
+      SessionDir := Format('%s_%s.ardour', [Args.Genre, Args.Style])
+    else
+      SessionDir := Args.OutputFile;
+    MidiFile := ChangeFileExt(SessionDir, '.mid');
+
+    FGenerator.SaveSongMidi(Song, MidiFile);
+
+    { Build the session inside Ardour via its standalone Lua interpreter. }
+    Bridge := TArdourBridge.Create;
+    try
+      if Bridge.CreateFromSong(Song, MidiFile, SessionDir) then
+        Writeln('Ardour session created:', SessionDir)
+      else
+        Writeln('[Warning] Failed to create Ardour session');
+    finally
+      Bridge.Free;
+    end;
+  finally
+    Song.Free;
+  end;
+end;
+
 function TCLIInterface.Run(Argc: Integer; const Argv: specialize TArray<String>): Integer;
 var
   Args: TCLIArgs;
@@ -444,6 +508,17 @@ begin
         else
         begin
           Writeln('[Error] Unknown reaper sub-command: ', Args.SubCommand);
+          ShowUsage;
+          ExitCode := 1;
+          Result := -1;
+          Exit;
+        end;
+      'ardour':
+        if LowerCase(Args.SubCommand) = 'export' then
+          HandleArdourExport(Args)
+        else
+        begin
+          Writeln('[Error] Unknown ardour sub-command: ', Args.SubCommand);
           ShowUsage;
           ExitCode := 1;
           Result := -1;
