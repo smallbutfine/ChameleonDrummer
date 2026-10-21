@@ -912,8 +912,19 @@ end;
 function TComposerV2.ExtractPatternBar(APattern: TPattern; ABarIndex: Integer): TPattern;
 var
   BarLength, PatternBars, BarStart, BarEnd: Double;
-  SourceBar, I: Integer;
+  SourceBar, I, FallbackBar: Integer;
   Beat: TBeat;
+
+  function BarHoldsNotes(ABarStart, ABarEnd: Double): Boolean;
+  var
+    B: TBeat;
+  begin
+    for B in APattern.Beats do
+      if (B.Position >= ABarStart) and (B.Position < ABarEnd) then
+        Exit(True);
+    Result := False;
+  end;
+
 begin
   if not Assigned(APattern) then
     Exit(nil);
@@ -925,6 +936,19 @@ begin
       [APattern.Name]);
 
   SourceBar := ABarIndex mod Trunc(PatternBars);
+
+  { A bar with no notes would be a silent bar in the output. The GMD corpus
+    can capture a phrase whose material starts after the first bar, so the
+    bar this phrase lands on may hold nothing. Fall back to the first bar
+    that does hold notes rather than emitting silence. }
+  if not BarHoldsNotes(SourceBar * BarLength, (SourceBar + 1) * BarLength) then
+    for FallbackBar := 0 to Trunc(PatternBars) - 1 do
+      if BarHoldsNotes(FallbackBar * BarLength, (FallbackBar + 1) * BarLength) then
+      begin
+        SourceBar := FallbackBar;
+        Break;
+      end;
+
   BarStart := SourceBar * BarLength;
   BarEnd := BarStart + BarLength;
   Result := APattern.Copy;

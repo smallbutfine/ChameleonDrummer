@@ -86,6 +86,7 @@ var
   SourceUrl, LicenseName, LicenseUrl: string;
   Numerator, Denominator, SourcePPQ: Integer;
   I, J, SourcePitch, Velocity, PositionTicks: Integer;
+  MaxTick, ActualBars: Integer;
   Signature: TJSONArray;
 
   function InstrumentNameForPitch(APitch: Integer): string;
@@ -158,8 +159,6 @@ begin
       try
         PatternItem.TimeSignature.Free;
         PatternItem.TimeSignature := TTimeSignature.Create(Numerator, Denominator);
-        PatternItem.Metadata.AddOrSetValue('phrase_bars',
-          IntToStr(PatternData.Get('bars', 1)));
         PatternItem.Metadata.AddOrSetValue('gmd_source_id',
           RequiredString(PatternData, 'source_id'));
         PatternItem.Metadata.AddOrSetValue('gmd_source_style',
@@ -171,6 +170,7 @@ begin
         PatternItem.Metadata.AddOrSetValue('gmd_source_url', SourceUrl);
         PatternItem.Metadata.AddOrSetValue('gmd_license', LicenseName);
 
+        MaxTick := 0;
         Notes := PatternData.Arrays['notes'];
         for J := 0 to Notes.Count - 1 do
         begin
@@ -188,7 +188,25 @@ begin
               'GMD pitch %d maps to unregistered instrument "%s"',
               [SourcePitch, InstrumentName]);
           PatternItem.AddBeat(PositionTicks / SourcePPQ, Instrument, Velocity);
+          if PositionTicks > MaxTick then
+            MaxTick := PositionTicks;
         end;
+
+        { The corpus' "bars" field is the length of the source phrase, which
+          can be longer than the material that was actually captured. Taking
+          it at face value lets the composer extract bars that hold no notes
+          at all, and those bars play as silence. Derive the real bar count
+          from the notes; keep the declared value for reference. }
+        if (SourcePPQ > 0) and (PatternItem.TimeSignature.BeatsPerBar > 0) then
+          ActualBars := Trunc(MaxTick / (SourcePPQ * PatternItem.TimeSignature.BeatsPerBar)) + 1
+        else
+          ActualBars := 1;
+        if ActualBars < 1 then
+          ActualBars := 1;
+        PatternItem.Metadata.AddOrSetValue('phrase_bars', IntToStr(ActualBars));
+        PatternItem.Metadata.AddOrSetValue('gmd_source_bars',
+          IntToStr(PatternData.Get('bars', 1)));
+
         FPatterns.Add(PatternItem);
         PatternItem := nil;
       finally
