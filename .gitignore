@@ -18,6 +18,7 @@ src/fix_pattern.py
 *.dylib
 *.dll
 *.lib
+*.res
 src_flat/
 apply_all_composerv2_fixes.py
 check_braces.ps1
