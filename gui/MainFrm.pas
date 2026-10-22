@@ -360,12 +360,17 @@ begin
         if cbExport.ItemIndex >= ExportArdour then
         begin
           SessionDir := ChangeFileExt(Base, '.ardour');
-          ArdourBridge := TArdourBridge.Create;
           try
-            if ArdourBridge.CreateFromSong(Song, MidiFile, SessionDir) then
-              Log('Ardour session written: ' + SessionDir)
-            else
-              Log('[Warning] Ardour export failed.');
+            ArdourBridge := TArdourBridge.Create;
+            try
+              if ArdourBridge.CreateFromSong(Song, MidiFile, SessionDir) then
+                Log('Ardour session written: ' + SessionDir)
+              else
+                Log('[Warning] Ardour export failed.');
+            except
+              on E: Exception do
+                Log('[Error] Ardour export exception: ' + E.ClassName + ': ' + E.Message);
+            end;
           finally
             ArdourBridge.Free;
           end;

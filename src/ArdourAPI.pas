@@ -357,6 +357,7 @@ begin
   if not Assigned(ASong) or (ASong.Sections.Count = 0) then
     Exit;
 
+  DataDir := '';  // Ensure initialized before passing to FindArdourLua
   LuaExe := FindArdourLua(DataDir);
   if LuaExe = '' then
   begin
@@ -366,6 +367,11 @@ begin
   end;
 
   Script := FindLuaScript;
+  if Script = '' then
+  begin
+    WriteLn('[Error] Ardour import script not found (ardour\' + LuaScriptName + ')');
+    Exit;
+  end;
   if Script = '' then
   begin
     WriteLn('[Error] Ardour import script not found (ardour\' + LuaScriptName + ')');
