@@ -2,19 +2,17 @@ unit MainFrm;
 
 {$mode objfpc}{$H+}
 
-{ ChameleonDrummer - graphical front end.
+{ ChameleonDrummer - graphical front end (CLI wrapper).
 
-  Wraps the Engine V2 generator that the command line tool drives. The GUI
-  links the engine directly rather than shelling out to the executable, so
-  the log can be updated live and the parameters come from the widgets
-  instead of an argument vector. }
+  Collects inputs from the UI and passes them to the standalone CLI executable
+  (chameleondrummer.exe) via TProcess. All dropdown values are hardcoded so
+  the GUI never depends on plugin discovery. }
 
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, FileCtrl, LCLType, Math, Windows, ShellApi,
-  DrumGenerator, PluginRegistry, Kit, Song, ReaperAPI, ArdourAPI;
+  Dialogs, LCLType, ShellApi, process;
 
 type
   TMainForm = class(TForm)
@@ -59,16 +57,11 @@ type
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
   private
-    FGenerator: TDrumGenerator;
     procedure Log(const AText: String);
-    procedure FillGenres;
     procedure FillStyles;
-    procedure FillDrummers;
     procedure UpdateValueLabels;
     function SelectedGenre: String;
     function SelectedStyle: String;
-    function SelectedDrummer: String;
-    function SelectedMapping: String;
     function OutputBasePath: String;
     procedure OpenFolder(const APath: String);
   end;
@@ -78,9 +71,7 @@ var
 
 implementation
 
-{ The form file is named after the form class, not after this unit: the LCL
-  looks the form up as a resource named after the class (TMainForm), so the
-  resource has to carry that name. }
+{ The form file is named after the form class, not after this unit }
 {$R TMainForm.lfm}
 
 const
@@ -89,22 +80,38 @@ const
   ExportArdour = 2;
 
 procedure TMainForm.FormCreate(Sender: TObject);
+const
+  Drummers: array[0..16] of String = (
+    'bonham', 'porcaro', 'weckl', 'chambers', 'roeder',
+    'dee', 'hoglan', 'peart', 'rich', 'copeland',
+    'carey', 'smith', 'moon', 'watts', 'haake',
+    'halpern', 'doomblues'
+);
 var
-  Mappings: array[0..3] of String;
   I: Integer;
 begin
-  FGenerator := TDrumGenerator.Create;
-
-  FillGenres;
-
-  Mappings[0] := 'gm';
-  Mappings[1] := 'ad2';
-  Mappings[2] := 'ezd3';
-  Mappings[3] := 'xg';
-  for I := Low(Mappings) to High(Mappings) do
-    cbMapping.Items.Add(Mappings[I]);
+  { Keymaps }
+  cbMapping.Items.Add('gm');
+  cbMapping.Items.Add('ad2');
+  cbMapping.Items.Add('ezd3');
+  cbMapping.Items.Add('xg');
   cbMapping.ItemIndex := 0;
 
+  { Genres - hardcoded from DrumGenerator.pas LoadPlugins() }
+  cbGenre.Items.Add('metal');
+  cbGenre.Items.Add('rock');
+  cbGenre.Items.Add('jazz');
+  cbGenre.Items.Add('funk');
+  cbGenre.Items.Add('electronic');
+  cbGenre.ItemIndex := 0;
+
+  { Drummers - hardcoded from DrumGenerator.pas LoadPlugins() }
+  for I := Low(Drummers) to High(Drummers) do
+    cbDrummer.Items.Add(Drummers[I]);
+
+  FillStyles; { Populates styles for the selected genre }
+
+  { Export options }
   cbExport.Items.Add('MIDI only');
   cbExport.Items.Add('MIDI + REAPER project');
   cbExport.Items.Add('MIDI + REAPER project + Ardour session');
@@ -132,45 +139,34 @@ begin
   lblStatus.Caption := 'Ready';
 end;
 
-procedure TMainForm.FillGenres;
-var
-  Genres: TStringArray;
-  I: Integer;
-begin
-  Genres := FGenerator.PluginManager.Registry.GetAvailableGenres;
-  cbGenre.Clear;
-  for I := 0 to High(Genres) do
-    cbGenre.Items.Add(Genres[I]);
-  if cbGenre.Items.Count > 0 then
-    cbGenre.ItemIndex := 0;
-  FillStyles;
-  FillDrummers;
-end;
-
 procedure TMainForm.FillStyles;
 var
-  Styles: TStringArray;
+  Styles: array of String;
   I: Integer;
 begin
-  Styles := FGenerator.PluginManager.Registry.GetStylesForGenre(SelectedGenre);
   cbStyle.Clear;
-  for I := 0 to High(Styles) do
-    cbStyle.Items.Add(Styles[I]);
-  if cbStyle.Items.Count > 0 then
-    cbStyle.ItemIndex := 0;
-end;
 
-procedure TMainForm.FillDrummers;
-var
-  Drummers: TStringArray;
-  I: Integer;
-begin
-  Drummers := FGenerator.PluginManager.Registry.GetAvailableDrummers;
-  cbDrummer.Clear;
-  for I := 0 to High(Drummers) do
-    cbDrummer.Items.Add(Drummers[I]);
-  if cbDrummer.Items.Count > 0 then
-    cbDrummer.ItemIndex := 0;
+  if SameText(SelectedGenre, 'metal') then begin
+    SetLength(Styles, 7); Styles[0] := 'heavy'; Styles[1] := 'death'; Styles[2] := 'power';
+    Styles[3] := 'progressive'; Styles[4] := 'thrash'; Styles[5] := 'doom'; Styles[6] := 'breakdown';
+  end else if SameText(SelectedGenre, 'rock') then begin
+    SetLength(Styles, 7); Styles[0] := 'classic'; Styles[1] := 'blues'; Styles[2] := 'alternative';
+    Styles[3] := 'progressive'; Styles[4] := 'punk'; Styles[5] := 'hard'; Styles[6] := 'pop';
+  end else if SameText(SelectedGenre, 'jazz') then begin
+    SetLength(Styles, 7); Styles[0] := 'swing'; Styles[1] := 'bebop'; Styles[2] := 'fusion';
+    Styles[3] := 'latin'; Styles[4] := 'ballad'; Styles[5] := 'hard_bop'; Styles[6] := 'contemporary';
+  end else if SameText(SelectedGenre, 'funk') then begin
+    SetLength(Styles, 7); Styles[0] := 'classic'; Styles[1] := 'pfunk'; Styles[2] := 'shuffle';
+    Styles[3] := 'new_orleans'; Styles[4] := 'fusion'; Styles[5] := 'minimal'; Styles[6] := 'heavy';
+  end else if SameText(SelectedGenre, 'electronic') then begin
+    SetLength(Styles, 4); Styles[0] := 'house'; Styles[1] := 'techno'; Styles[2] := 'drum_and_bass'; Styles[3] := 'dubstep';
+  end;
+
+  for I := Low(Styles) to High(Styles) do
+    cbStyle.Items.Add(Styles[I]);
+
+  if Length(Styles) > 0 then
+    cbStyle.ItemIndex := 0;
 end;
 
 procedure TMainForm.UpdateValueLabels;
@@ -195,22 +191,6 @@ begin
     Result := cbStyle.Items[cbStyle.ItemIndex];
 end;
 
-function TMainForm.SelectedDrummer: String;
-begin
-  if cbDrummer.ItemIndex < 0 then
-    Result := ''
-  else
-    Result := cbDrummer.Items[cbDrummer.ItemIndex];
-end;
-
-function TMainForm.SelectedMapping: String;
-begin
-  if cbMapping.ItemIndex < 0 then
-    Result := 'gm'
-  else
-    Result := cbMapping.Items[cbMapping.ItemIndex];
-end;
-
 function TMainForm.OutputBasePath: String;
 begin
   Result := Trim(edOutput.Text);
@@ -227,7 +207,6 @@ end;
 procedure TMainForm.cbGenreChange(Sender: TObject);
 begin
   FillStyles;
-  Log('Genre: ' + SelectedGenre);
 end;
 
 procedure TMainForm.tbComplexityChange(Sender: TObject);
@@ -289,113 +268,121 @@ begin
   ShellExecute(0, 'open', PChar(APath), nil, nil, SW_SHOWNORMAL);
 end;
 
+{ --- CLI WRAPPER IMPLEMENTATION --- }
+
 procedure TMainForm.btnGenerateClick(Sender: TObject);
 var
-  Song: TSong;
-  DrumKit: TDrumKit;
-  Bridge: TReaperBridge;
-  ArdourBridge: TArdourBridge;
-  Base, MidiFile, RppFile, SessionDir: String;
-  Started: TDateTime;
-  Elapsed: Double;
+  OutputFile: String;
+  Proc: TProcess;
+  Buffer: array[0..4095] of AnsiChar;
+  BytesRead: LongInt;
 begin
-  if SelectedGenre = '' then
-  begin
-    Log('Pick a genre first.');
-    Exit;
-  end;
-  if SelectedStyle = '' then
-  begin
-    Log('Pick a style first.');
-    Exit;
-  end;
+  { Validation }
+  if cbGenre.ItemIndex < 0 then begin Log('Pick a genre first.'); Exit; end;
+  if cbStyle.ItemIndex < 0 then begin Log('Pick a style first.'); Exit; end;
 
-  Base := OutputBasePath;
-  if Base = '' then
-  begin
-    Log('Choose an output file name first.');
-    Exit;
-  end;
+  OutputFile := ChangeFileExt(OutputBasePath, '.mid');
 
-  Log('--- generating ' + SelectedGenre + '/' + SelectedStyle + ' with ' +
-    SelectedDrummer + ' ---');
-  lblStatus.Caption := 'Generating...';
-  pbProgress.Style := pbstMarquee;
-  pbProgress.Visible := True;
+  Log('--- initiating CLI generation: ' + SelectedGenre + '/' + SelectedStyle + ' ---');
+  lblStatus.Caption := 'Building command...';
   Application.ProcessMessages;
 
-  lblStatus.Caption := 'Loading drum kit...';
-  Application.ProcessMessages;
-
-  Started := Now;
+  Proc := TProcess.Create(nil);
   try
-    // Wir initialisieren das DrumKit über den vom Compiler gefundenen Constructor.
-    // Wir übergeben das ausgewählte Mapping und das Tempo (seTempo.Value).
-    DrumKit := TDrumKit.Create(SelectedMapping, seTempo.Value);
+    { Configure Process for execution and piping }
+    Proc.Executable := 'chameleondrummer.exe'; { Assumes CLI is in PATH or working dir }
+    Proc.Options := [poUsePipes, poStderrToOutput, poNoConsole]; { Capture stdout/stderr, hide console window }
 
-    try
-      Song := FGenerator.CreateSong(SelectedGenre, SelectedStyle, seTempo.Value,
-        nil, DrumKit, SelectedDrummer, tbComplexity.Position / 100, 0.6,
-        tbHumanization.Position / 100);
+    { Add arguments to the process (avoids shell escaping issues) }
+    Proc.Parameters.Add('--song');
+    Proc.Parameters.Add('--genre');
+    Proc.Parameters.Add(SelectedGenre);
+    Proc.Parameters.Add('--style');
+    Proc.Parameters.Add(SelectedStyle);
 
-      try
-        MidiFile := ChangeFileExt(Base, '.mid');
-        FGenerator.SaveSongMidi(Song, MidiFile);
-        Log('MIDI written: ' + MidiFile);
-
-        if cbExport.ItemIndex >= ExportREAPER then
-        begin
-          RppFile := ChangeFileExt(MidiFile, '.rpp');
-          Bridge := TReaperBridge.Create;
-          try
-            if Bridge.CreateFromSong(Song, MidiFile) then
-              Log('REAPER project written: ' + RppFile)
-            else
-              Log('[Warning] REAPER export failed.');
-          finally
-            Bridge.Free;
-          end;
-        end;
-
-        if cbExport.ItemIndex >= ExportArdour then
-        begin
-          SessionDir := ChangeFileExt(Base, '.ardour');
-          try
-            ArdourBridge := TArdourBridge.Create;
-            try
-              if ArdourBridge.CreateFromSong(Song, MidiFile, SessionDir) then
-                Log('Ardour session written: ' + SessionDir)
-              else
-                Log('[Warning] Ardour export failed.');
-            except
-              on E: Exception do
-                Log('[Error] Ardour export exception: ' + E.ClassName + ': ' + E.Message);
-            end;
-          finally
-            ArdourBridge.Free;
-          end;
-        end;
-      finally
-        Song.Free;
-      end;
-    finally
-      DrumKit.Free;
+    if cbDrummer.ItemIndex >= 0 then begin
+      Proc.Parameters.Add('--drummer');
+      Proc.Parameters.Add(cbDrummer.Items[cbDrummer.ItemIndex]);
     end;
 
-    Elapsed := Now - Started;
-    Log(Format('Done in %.2f seconds.', [Elapsed]));
-    lblStatus.Caption := Format('Done in %.2f seconds.', [Elapsed]);
-  except
-    on E: Exception do
+    { Mapping }
+    if cbMapping.ItemIndex >= 0 then
     begin
-      Log('[Error] ' + E.ClassName + ': ' + E.Message);
-      lblStatus.Caption := 'Failed';
+      Proc.Parameters.Add('--mapping');
+      Proc.Parameters.Add(Trim(cbMapping.Text));
     end;
-  end;
-  pbProgress.Visible := False;
 
-  if chkOpenFolder.Checked then
-    OpenFolder(ExtractFilePath(ExpandFileName(Base)));
+    { Tempo (if user set it manually) }
+    if seTempo.Value > 0 then
+    begin
+      Proc.Parameters.Add('--tempo');
+      Proc.Parameters.Add(IntToStr(seTempo.Value));
+    end;
+
+    { Complexity and Humanization (as decimals matching CLIInterface.pas defaults) }
+    Proc.Parameters.Add('--complexity');
+    Proc.Parameters.Add(FloatToStr(tbComplexity.Position / 100));
+
+    Proc.Parameters.Add('--humanization');
+    Proc.Parameters.Add(FloatToStr(tbHumanization.Position / 100));
+
+    { Output file }
+    Proc.Parameters.Add('--output');
+    Proc.Parameters.Add(OutputFile);
+
+    { Export Flags based on UI selection }
+    case cbExport.ItemIndex of
+      ExportREAPER: Proc.Parameters.Add('--reaper');
+      ExportArdour: Proc.Parameters.Add('--ardour');
+    end;
+
+    { Execute }
+    Log('Executing CLI...');
+    lblStatus.Caption := 'Running CLI...';
+    Application.ProcessMessages;
+
+    Proc.Execute;
+    Application.ProcessMessages;
+
+    { Pipe Output Loop - Real-time logging }
+    pbProgress.Style := pbstMarquee;
+    pbProgress.Visible := True;
+
+    { Read output line by line }
+    while Proc.Running and (Proc.Output.NumBytesAvailable > 0) do
+    begin
+      BytesRead := Proc.Output.Read(Buffer[0], SizeOf(Buffer));
+      if BytesRead > 0 then
+        Log(Copy(AnsiString(Buffer), 1, BytesRead));
+
+      Application.ProcessMessages; { Keep UI responsive }
+      Sleep(50); { Prevent CPU spinning }
+    end;
+
+    { Read any remaining output }
+    while Proc.Output.NumBytesAvailable > 0 do
+    begin
+      BytesRead := Proc.Output.Read(Buffer[0], SizeOf(Buffer));
+      if BytesRead > 0 then
+        Log(Copy(AnsiString(Buffer), 1, BytesRead));
+    end;
+
+    pbProgress.Visible := False;
+
+    if Proc.ExitCode = 0 then
+      Log('CLI finished successfully.')
+    else
+      Log('[Error] CLI exited with code: ' + IntToStr(Proc.ExitCode));
+
+    lblStatus.Caption := 'Ready';
+
+  finally
+    Proc.Free;
+  end;
+
+  { Post-generation tasks }
+  if chkOpenFolder.Checked and FileExists(OutputFile) then
+    OpenFolder(ExtractFilePath(OutputFile));
 end;
 
 end.
