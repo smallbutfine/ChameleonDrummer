@@ -12,19 +12,23 @@ if not exist "%LAZBUILD%" set "LAZBUILD=lazbuild"
 
 if not exist "%~dp0chameleondrummer_gui.lpi" (
   echo [Fehler] Projektdatei nicht gefunden: %~dp0chameleondrummer_gui.lpi
+  pause
   exit /b 1
 )
 
 "%LAZBUILD%" --build-all --build-mode=Default "%~dp0chameleondrummer_gui.lpi"
 if errorlevel 1 (
   echo [Fehler] Lazarus-Build fehlgeschlagen.
+  pause
   exit /b 1
 )
 
 if not exist "%~dp0..\chameleondrummer_gui.exe" (
   echo [Fehler] Executable wurde nicht erzeugt.
+  pause
   exit /b 1
 )
 
 echo [OK] GUI gebaut: %~dp0..\chameleondrummer_gui.exe
-exit /b 0
+cd..
+build_and_deploy.bat
