@@ -43,13 +43,12 @@ type
   { TFillPicker — determines fill placement and type }
   TFillPicker = class
   private
-    function ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string): Boolean;
-    function SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer): String;
+    function ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
+    function SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer; IntensityPt: Double): String;
     function GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
   public
     function PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
-      ABars: Integer; SectionName: string;
-      out FillBarIndices: specialize TArray<Integer>): specialize TList<TFill>;
+      ABars: Integer; SectionName: string; out FillBarIndices: specialize TArray<Integer>; const IntensityValues: specialize TArray<Double>): specialize TList<TFill>;
   end;
 
   { TGrooveEngine — calculates microtiming offsets per drummer/style }
@@ -163,8 +162,8 @@ end;
 { TFillPicker — Fill placement and type determination }
 
 function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
-  ABars: Integer; SectionName: string;
-  out FillBarIndices: specialize TArray<Integer>): specialize TList<TFill>;
+  ABars: Integer; SectionName: string; out FillBarIndices: specialize TArray<Integer>;
+  const IntensityValues: specialize TArray<Double>): specialize TList<TFill>;
 var
   I: Integer;
 begin
@@ -172,55 +171,121 @@ begin
   FillBarIndices := nil;
   { Place fills at musical boundaries using genre-aware fill selection }
   for I := 0 to ABars - 1 do
-    if ShouldPlaceFill(I, ABars, SectionName) then
+  begin
+    if ShouldPlaceFill(I, ABars, SectionName, IntensityValues[I]) then
     begin
       SetLength(FillBarIndices, Length(FillBarIndices) + 1);
       FillBarIndices[High(FillBarIndices)] := I;
       Result.Add(TFill.Create(
-        GenerateFillPattern(SelectFillType(Genre, SectionName, I), 1)
+        GenerateFillPattern(SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1)
       ));
     end;
+  end;
 end;
 
-function TFillPicker.ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string): Boolean;
+function TFillPicker.ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
 begin
-  // Place fills at natural musical boundaries
-  if (ASectionName = 'outro') then Exit(false); // No fill at end of song
+  // No fills at the end of an outro section — that would interrupt the fade-out
+  if (ASectionName = 'outro') then Exit(false);
 
-  // Common fill placement points
-  Result :=
-    (ABarIndex = ABars - 2) or      // Before section end
-    ((ABarIndex mod 4) = 0) or      // Every 4 bars
-    (ABarIndex = ABars div 2) or    // Midpoint
-    (RandomRange(0, 100) < 30);        // Random 30% chance
-end;
+  // Fills belong at phrase boundaries, not at bar 0 or arbitrary midpoints
+  // Bar N-1: last bar before section ends — universal fill location
+  if (ABarIndex = ABars - 1) then Exit(true);
+  
+  // Bar N-2: second-to-last bar — common transition point to final fill
+  if (ABarIndex = ABars - 2) then Exit(true);
 
-function TFillPicker.SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer): String;
-begin
-  // Select fill type based on genre and section context
-  if (Genre = 'metal') then
+  // Mid-section fills only at phrase boundaries (every 4 bars) AND at high intensity
+  // This is where a drummer might place a "fill within the verse" before the chorus builds
+  if ((ABars >= 8) and ((ABarIndex mod 4) = 3)) then
   begin
-    case (ABarIndex mod 3) of
-      0: Exit('tom_downfill');
-      1: Exit('blast_beat');
-      2: Exit('ride_bell_sweep');
+    // Only place mid-phrase fills when intensity justifies it (>0.6)
+    Result := (IntensityPt > 0.6);
+    Exit;
+  end;
+
+  // Intensity-gated random chance for jazz/funk — these genres use reactive fills
+  // At high intensity (>0.75), jazz and funk drummers place fills reactively ~10% of the time
+  if ((IntensityPt > 0.75) and (ABarIndex >= 2) and (ABarIndex < ABars - 1)) then
+  begin
+    case LowerCase(ASectionName) of
+      'verse': Result := RandomRange(0, 100) < 8;   // 8% at high intensity for verse
+      'chorus': Result := RandomRange(0, 100) < 5;  // 5% for chorus (already dense)
+    else
+      Result := false;
+    end;
+    Exit;
+  end;
+
+  Result := false;
+end;
+
+function TFillPicker.SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer; IntensityPt: Double): String;
+var
+  LowerGenre, LowerSection: string;
+begin
+  LowerGenre := LowerCase(Genre);
+  LowerSection := LowerCase(SectionName);
+
+  // High-intensity fills get more aggressive types regardless of genre
+  if (IntensityPt > 0.8) then
+  begin
+    case LowerGenre of
+      'metal': Exit('blast_beat');
+      'rock', 'punk': Exit('cymbal_crash');
+      'jazz': Exit('snare_roll');
+      'funk': Exit('tom_downfill');
+      'electronic': Exit('cymbal_crash');
     end;
   end;
 
-  if (Genre = 'rock') then
-  begin
-    case (ABarIndex mod 3) of
-      0: Exit('tom_downfill');
-      1: Exit('snare_roll');
-      2: Exit('cymbal_crash');
-    end;
-  end;
-
-  // Default fill type
-  if (Pos('chorus', LowerCase(SectionName)) > 0) then
-    Exit('tom_upfill')
+  // Genre-specific fill selection
+  case LowerGenre of
+    'metal':
+      begin
+        // Metal uses aggressive fills that match section context
+        if (Pos('chorus', LowerSection) > 0) then
+          Exit('blast_beat')
+        else if (Pos('bridge', LowerSection) > 0) then
+          Exit('ride_bell_sweep')
+        else
+          Exit('tom_downfill');
+      end;
+    'rock':
+      begin
+        // Rock fills are more traditional and contextual
+        if (Pos('chorus', LowerSection) > 0) then
+          Exit('snare_roll')
+        else if (Pos('bridge', LowerSection) > 0) then
+          Exit('tom_downfill')
+        else
+          Exit('cymbal_crash');
+      end;
+    'jazz':
+      begin
+        // Jazz uses subtler fills — ride bell sweeps and snare rolls
+        if (Pos('chorus', LowerSection) > 0) then
+          Exit('ride_bell_sweep')
+        else
+          Exit('snare_roll');
+      end;
+    'funk':
+      begin
+        // Funk uses tom fills and crash accents for the "one"
+        if (Pos('chorus', LowerSection) > 0) then
+          Exit('tom_downfill')
+        else
+          Exit('cymbal_crash');
+      end;
+    'electronic':
+      begin
+        // Electronic uses crash accents for impact
+        Exit('cymbal_crash');
+      end;
   else
+    // Default — tom downfill is universally applicable
     Exit('tom_downfill');
+  end;
 end;
 
 function TFillPicker.GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
@@ -515,6 +580,7 @@ var
   SignatureFills: specialize TList<TFill>;
   SignatureFill: TFill;
   FillBarIndices: specialize TArray<Integer>;
+  SectionIntensities: specialize TArray<Double>;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
   PreferredDrummers: specialize TArray<string>;
@@ -739,9 +805,15 @@ begin
       if GeneratedBars.Count > 0 then
         CombineBarPatterns(GeneratedBars, Combined);
 
-      { Determine fill placement based on section context }
+      { Precompute per-bar intensity values for the fill picker }
+      SetLength(SectionIntensities, Bars);
+      for JBar := 0 to Bars - 1 do
+        SectionIntensities[JBar] := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
+      {
+        Determine fill placement based on section context using precomputed intensities
+      }
       Fills := FFilPicker.PickFillsForSection(
-        Genre, Params, Bars, SectionName, FillBarIndices);
+        Genre, Params, Bars, SectionName, FillBarIndices, SectionIntensities);
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
         Genre, Style, 'fill', Song.TimeSignature.Numerator,
         Song.TimeSignature.Denominator);
