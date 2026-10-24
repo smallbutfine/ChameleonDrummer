@@ -134,7 +134,7 @@ set "FPC_BIN_DIR=%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64"
 if not exist "%FPC_BIN_DIR%\windres.exe" ( echo [Fehler] windres.exe fehlt! & exit /b 1 )
 "%FPC_BIN_DIR%\windres.exe" --preprocessor="type" -i version.rc -o version.res
 
-e
+echo
 echo.
 echo ==================================================
 echo   7. Kompiliere mit FPC...

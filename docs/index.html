@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Dynamic MIDI Drum Generation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>ChameleonDrummer</h1>
+    <p class="subtitle">Dynamic MIDI Drum Generation — Pascal Translation</p>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="concepts.html">Concepts</a>
+      <a href="docs.html">Manual</a>
+      <a href="download.html">Download</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h2>Generate Realistic Drum Tracks</h2>
+    <p>5 genres · 38 styles · 17 drummers · Multiple keymaps · REAPER &amp; Ardour export</p>
+    <div class="cta">
+      <a href="docs.html" class="btn">Read the Manual</a>
+      <a href="concepts.html" class="btn btn-secondary">How It Works</a>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>Features</h2>
+    <div class="grid">
+      <article>
+        <h3>Multi-Genre</h3>
+        <p>Metal, Rock, Jazz, Funk, Electronic — each with 7 authentic styles.</p>
+      </article>
+      <article>
+        <h3>Drummer Imitation</h3>
+        <p>Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart, Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues.</p>
+      </article>
+      <article>
+        <h3>Engine V2</h3>
+        <p>Bar-by-bar pattern evolution with intensity curves, macro phases, and context-aware fills.</p>
+      </article>
+      <article>
+        <h3>DAW Integration</h3>
+        <p>Export MIDI with REAPER .rpp projects or Ardour .ardour sessions.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="concepts-preview">
+  <div class="container">
+    <h2>The Principles Behind MIDI Generation</h2>
+    <p>From <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, and <code>MidiIO.pas</code> — the source code reveals a structured pipeline:</p>
+    <ol>
+      <li><strong>Pattern Model</strong> — Beats with position, instrument, velocity, ghost/accent flags.</li>
+      <li><strong>Song Structure</strong> — Sections with patterns, fills, segments, and groove offsets.</li>
+      <li><strong>Bar-by-Bar Evolution</strong> — Intensity curves, macro phases, groove selection, drummer style.</li>
+      <li><strong>Physical Constraints</strong> — Pattern fixer removes impossible hits.</li>
+      <li><strong>Humanization</strong> — Timing and velocity variance for realism.</li>
+      <li><strong>MIDI Export</strong> — VLQ-encoded events with BPM/PPQ metadata.</li>
+    </ol>
+    <a href="concepts.html" class="btn">Read Full Explanation</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — Pascal Translation of the Python MIDI Drum System.</p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>
