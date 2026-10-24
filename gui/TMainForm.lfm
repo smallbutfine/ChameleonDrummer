@@ -2,7 +2,7 @@ object MainForm: TMainForm
   Left = 160
   Top = 120
   Caption = 'ChameleonDrummer'
-  ClientHeight = 670
+  ClientHeight = 655
   ClientWidth = 960
   Menu = MainMenu
   OnCreate = FormCreate
@@ -24,13 +24,13 @@ object MainForm: TMainForm
   end
   object gbSong: TGroupBox
     Left = 12
-    Top = 36
+    Top = 21
     Width = 396
     Height = 560
     Caption = 'Song'
     object rbPattern: TRadioButton
       Left = 12
-      Top = 24
+      Top = 9
       Width = 180
       Height = 20
       Caption = 'Pattern (single pattern)'
@@ -39,7 +39,7 @@ object MainForm: TMainForm
     end
     object rbSong: TRadioButton
       Left = 200
-      Top = 24
+      Top = 9
       Width = 180
       Height = 20
       Caption = 'Song (full structure)'
@@ -48,94 +48,94 @@ object MainForm: TMainForm
     end
     object lblGenre: TLabel
       Left = 12
-      Top = 60
+      Top = 45
       Width = 60
       Height = 14
       Caption = 'Genre'
     end
     object cbGenre: TComboBox
       Left = 80
-      Top = 56
+      Top = 41
       Width = 180
       Height = 24
       OnChange = cbGenreChange
     end
     object lblStyle: TLabel
       Left = 12
-      Top = 92
+      Top = 77
       Width = 60
       Height = 14
       Caption = 'Style'
     end
     object cbStyle: TComboBox
       Left = 80
-      Top = 88
+      Top = 73
       Width = 180
       Height = 24
     end
     object lblDrummer: TLabel
       Left = 12
-      Top = 124
+      Top = 109
       Width = 60
       Height = 14
       Caption = 'Drummer'
     end
     object cbDrummer: TComboBox
       Left = 80
-      Top = 120
+      Top = 105
       Width = 180
       Height = 24
     end
     object lblMapping: TLabel
       Left = 12
-      Top = 160
+      Top = 145
       Width = 60
       Height = 14
       Caption = 'Keymap'
     end
     object cbMapping: TComboBox
       Left = 80
-      Top = 156
+      Top = 141
       Width = 180
       Height = 24
     end
   end
   object gbOutput: TGroupBox
     Left = 420
-    Top = 36
+    Top = 21
     Width = 396
     Height = 210
     Caption = 'Output'
     object lblExport: TLabel
       Left = 12
-      Top = 28
+      Top = 13
       Width = 60
       Height = 14
       Caption = 'Export'
     end
     object cbExport: TComboBox
       Left = 80
-      Top = 24
+      Top = 9
       Width = 300
       Height = 24
     end
     object lblFile: TLabel
       Left = 12
-      Top = 62
+      Top = 47
       Width = 60
       Height = 14
       Caption = 'File'
     end
     object edOutput: TEdit
       Left = 80
-      Top = 58
+      Top = 43
       Width = 248
       Height = 26
       Text = 'song'
     end
     object btnBrowse: TButton
       Left = 336
-      Top = 56
+      Top = 41
       Width = 48
       Height = 28
       Caption = '...'
@@ -143,14 +143,14 @@ object MainForm: TMainForm
     end
     object chkOpenFolder: TCheckBox
       Left = 12
-      Top = 96
+      Top = 81
       Width = 370
       Height = 18
       Caption = 'Open the output folder when finished'
     end
     object lblHint: TLabel
       Left = 12
-      Top = 126
+      Top = 111
       Width = 370
       Height = 72
       Caption = 'Writes <name>.mid, and with the export mode also <name>.rpp and <name>.ardour\'
@@ -159,20 +159,20 @@ object MainForm: TMainForm
   end
   object gbPerformance: TGroupBox
     Left = 420
-    Top = 260
+    Top = 245
     Width = 396
     Height = 152
     Caption = 'Performance'
     object lblTempo: TLabel
       Left = 12
-      Top = 28
+      Top = 13
       Width = 60
       Height = 14
       Caption = 'Tempo'
     end
     object seTempo: TSpinEdit
       Left = 80
-      Top = 24
+      Top = 9
       Width = 80
       Height = 24
       MaxValue = 300
@@ -181,21 +181,21 @@ object MainForm: TMainForm
     end
     object lblTempoHint: TLabel
       Left = 170
-      Top = 28
+      Top = 13
       Width = 210
       Height = 14
       Caption = 'BPM  (0 = style default)'
     end
     object lblComplexity: TLabel
       Left = 12
-      Top = 66
+      Top = 51
       Width = 64
       Height = 14
       Caption = 'Complexity'
     end
     object tbComplexity: TTrackBar
       Left = 80
-      Top = 62
+      Top = 47
       Width = 180
       Height = 24
       Max = 100
@@ -205,21 +205,21 @@ object MainForm: TMainForm
     end
     object lblComplexityValue: TLabel
       Left = 268
-      Top = 66
+      Top = 51
       Width = 50
       Height = 14
       Caption = '0.50'
     end
     object lblHumanization: TLabel
       Left = 12
-      Top = 102
+      Top = 87
       Width = 64
       Height = 14
       Caption = 'Humanization'
     end
     object tbHumanization: TTrackBar
       Left = 80
-      Top = 98
+      Top = 83
       Width = 180
       Height = 24
       Max = 100
@@ -229,7 +229,7 @@ object MainForm: TMainForm
     end
     object lblHumanizationValue: TLabel
       Left = 268
-      Top = 102
+      Top = 87
       Width = 50
       Height = 14
       Caption = '0.30'
@@ -237,7 +237,7 @@ object MainForm: TMainForm
   end
   object btnGenerate: TButton
     Left = 420
-    Top = 428
+    Top = 413
     Width = 196
     Height = 40
     Caption = 'Generate'
@@ -245,7 +245,7 @@ object MainForm: TMainForm
   end
   object btnOpenFolder: TButton
     Left = 628
-    Top = 428
+    Top = 413
     Width = 188
     Height = 40
     Caption = 'Open output folder'
@@ -253,7 +253,7 @@ object MainForm: TMainForm
   end
   object gbLog: TGroupBox
     Left = 12
-    Top = 480
+    Top = 465
     Width = 804
     Height = 140
     Caption = 'Log'
@@ -269,7 +269,7 @@ object MainForm: TMainForm
   end
   object lblStatus: TLabel
     Left = 16
-    Top = 624
+    Top = 609
     Width = 560
     Height = 16
     Alignment = taLeftJustify
@@ -281,7 +281,7 @@ object MainForm: TMainForm
   end
   object pbProgress: TProgressBar
     Left = 700
-    Top = 624
+    Top = 609
     Width = 120
     Height = 16
     Visible = False
