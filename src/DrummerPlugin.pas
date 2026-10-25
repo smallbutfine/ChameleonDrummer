@@ -46,8 +46,14 @@ public
   function ApplyStyleForContext(const APattern: TPattern; const AGenre,
     AStyle: string; ATempo: Integer): TPattern; virtual;
 
-  { Signature fills — characteristic fills of this drummer. }
+  { Signature fills — characteristic fills of this drummer, as built into the
+    drummer's unit. }
   function GetSignatureFills: specialize TList<TFill>; virtual;
+
+  { The fills the composer uses: config/fills/<AKey>.tab when that file exists
+    and is valid, else GetSignatureFills. AKey is the name the drummer is
+    registered under (--drummer). The caller owns the list and the fills. }
+  function GetFillVocabulary(const AKey: string): specialize TList<TFill>;
 
   { Helper methods. }
   function IsPreferredForGenre(const Genre: string): boolean; virtual;
@@ -68,7 +74,7 @@ function CreateSignatureFillPattern(const AFillName: string): TPattern;
 implementation
 
 uses
-  patterns_templates;
+  patterns_templates, FillLibrary;
 
 { DrummerPlugin base class }
 
@@ -138,6 +144,13 @@ end;
 function TDrummerPlugin.GetSignatureFills: specialize TList<TFill>;
 begin
   Result := specialize TList<TFill>.Create;
+end;
+
+function TDrummerPlugin.GetFillVocabulary(const AKey: string): specialize TList<TFill>;
+begin
+  Result := FileFills(AKey);
+  if Result = nil then
+    Result := GetSignatureFills;
 end;
 
 function CreateSignatureFillPattern(const AFillName: string): TPattern;

@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin, DrummerPlugin,
-  config_constants, MetalGrooves;
+  config_constants, MetalGrooves, GrooveLibrary;
 
 type
   // Context blending for metal styles
@@ -134,9 +134,8 @@ function TMetalGenrePlugin.MakeGroove(const AKind, AStyle: String;
 begin
   { Grooves are drum tabs in MetalGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
-  Result := BuildTaggedGroove(
-    'metal_' + AStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
-    AVariant, MetalGrooveLines(AStyle, AKind, AVariant), FComplexity);
+  Result := BuildGroove('metal', AStyle, AKind, AVariant, FComplexity,
+    MetalGrooveLines(AStyle, AKind, AVariant mod 3));
 end;
 
 function TMetalGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -222,8 +221,8 @@ end;
 
 function TMetalGenrePlugin.GetSupportedStyles: TStringArray;
 begin
-  Result := ['heavy', 'death', 'power', 'progressive', 'thrash', 'doom',
-    'breakdown'];
+  Result := WithFileStyles('metal', ['heavy', 'death', 'power', 'progressive', 'thrash', 'doom',
+    'breakdown']);
 end;
 
 function TMetalGenrePlugin.GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>;
@@ -251,7 +250,7 @@ begin
       FIntensity := Parameters.Dynamics;
     end;
 
-    for BarIdx := 0 to 2 do
+    for BarIdx := 0 to GrooveVariantCount('metal', StyleForVerse, GrooveKindOfSection(Section)) - 1 do
       GrooveList.Add(MakeGroove(GrooveKindOfSection(Section), StyleForVerse, BarIdx));
 
     Result := GrooveList;

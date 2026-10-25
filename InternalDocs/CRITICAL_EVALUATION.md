@@ -565,13 +565,17 @@ The real extensibility need: allow users to define custom drummer profiles and p
 
 | Priority | Fix/Feature | Scope | Effort | Notes |
 |----------|-------------|-------|--------|-------|
-| **P0** | Drummer profiles from INI | Create `config/drummer_profiles.ini`; add drummer INI loader to `ModularityLoader.pas`; replace hardcoded `GetDrummerGrooveBias()` with file lookup | Medium | Per-drummer per-family timing bias, groove characteristics. |
-| **P1** | Pattern templates as JSON | Convert existing 8 templates to JSON in `patterns/` directory; add template loader; keep Pascal as fallback | Medium | Each template: name, beats array, metadata, intensity range |
-| **P2** | Fill patterns as JSON | Convert hardcoded fills to JSON in `fills/` directory; add drummer fill vocabulary loading | Medium | Drummer-specific fills + generic fallback |
-| **P2** | Section structures as JSON | Convert genre default structures to JSON in `sections/`; add loader for CLI `--structure` flag | Low | Metal, rock, jazz, funk, electronic defaults |
-| **P3** | GUI dropdown loading from registry | Replace hardcoded arrays in `MainFrm.pas` with `GetAvailableDrummers()` and `GetAvailableGenres()` calls | Trivial | Quick win — ensures GUI syncs with engine |
-| **P3** | GUI error handling for missing CLI | Add check before spawning; show message box if executable not found; provide path instructions | Trivial | Prevents silent failure |
-| **P4** | Genre defaults from INI | Create `config/genre_defaults.ini` with style/BPM/preferred drummer mappings per genre; replace hardcoded arrays in `LoadPlugins()` | Low | Quick win for extensibility |
+**Design decision (with the user):** external content lives in text files *named after its genre or drummer* (`grooves/metal.tab`, `fills/weckl.tab`, `defaults/jazz.ini`, `sections/rock.json`), so it is easy to recognise and the user can add grooves, fills and styles without recompiling. Grooves and fills use a drum-tab text format, not JSON (`config/README.md`). The compiled-in content stays as the fallback; a file with a mistake is ignored and reported with file and line. Files are looked up in `CHAMELEON_CONFIG`, `%APPDATA%\ChameleonDrummer\config`, `config\` next to the exe, `..\config`; the first hit wins.
+
+| Priority | Fix/Feature | Status |
+|----------|-------------|--------|
+| ~~**P0**~~ | Drummer profiles from INI | **DONE** (`config/drummer_profiles.ini`, `DrummerProfiles.pas`). |
+| ~~**P1**~~ | Pattern templates / grooves as files | **DONE** as `config/grooves/<genre>.tab` (`GrooveLibrary.pas`, `TabFiles.pas`): all 35 styles x 3 kinds x 3 variants, with `intensity=` bands; a variant can be added, and a new style name makes a new style. 864 groove builds from the files equal the built-in ones (`tests/test_groove_files.pas`). The old Pascal template classes (`TBasicGroove` etc.) are not file-driven; they are not used by the genre plugins any more. |
+| ~~**P2**~~ | Fill patterns as files | **DONE** as `config/fills/<drummer>.tab` (`FillLibrary.pas`): 17 drummers x 3 fills, `energy=` per fill. 51 fills equal the built-in ones (`tests/test_fill_files.pas`). The generic fills of the genre plugins (`GetCommonFills`) are still built in. |
+| ~~**P2**~~ | Section structures as files | **DONE** as `config/sections/<genre>.json`, in the `--structure` format (`GenreDefaults.pas`). |
+| ~~**P3**~~ | GUI dropdown loading | **DONE**: genres, styles and drummers come from `ChameleonDrummer.exe list ...`, keymaps from `mappings\`. |
+| ~~**P3**~~ | GUI error handling for missing CLI | **DONE**: dialog with the expected path, Generate disabled. |
+| ~~**P4**~~ | Genre defaults | **DONE** as `config/defaults/<genre>.ini` (tempo per style, preferred drummers), replacing the lists in `LoadPlugins` and `GetDefaultBpm` (they remain as fallback). `tests/test_genre_defaults.pas`. |
 
 ---
 

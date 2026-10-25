@@ -1,0 +1,13 @@
+{
+  "_comment": "Default song structure of metal, used when --section and --structure are not given. Same format as --structure; the total length is fitted to a radio-length song.",
+  "sections": [
+    { "name": "intro", "bars": 4 },
+    { "name": "verse", "bars": 8 },
+    { "name": "chorus", "bars": 8 },
+    { "name": "verse", "bars": 8 },
+    { "name": "chorus", "bars": 8 },
+    { "name": "bridge", "bars": 4 },
+    { "name": "chorus", "bars": 8 },
+    { "name": "outro", "bars": 4 }
+  ]
+}

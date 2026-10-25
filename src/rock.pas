@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants, RockGrooves;
+  config_constants, RockGrooves, GrooveLibrary;
 
 type
   TRockContext = record
@@ -66,8 +66,8 @@ end;
 
 function TRockGenrePlugin.GetSupportedStyles: TStringArray;
 begin
-  Result := ['classic', 'blues', 'alternative', 'progressive', 'punk',
-    'hard', 'pop'];
+  Result := WithFileStyles('rock', ['classic', 'blues', 'alternative', 'progressive', 'punk',
+    'hard', 'pop']);
 end;
 
 constructor TRockGenrePlugin.Create;
@@ -128,9 +128,8 @@ function TRockGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TP
 begin
   { Grooves are drum tabs in RockGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
-  Result := BuildTaggedGroove(
-    'rock_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
-    AVariant, RockGrooveLines(FStyle, AKind, AVariant), FComplexity);
+  Result := BuildGroove('rock', FStyle, AKind, AVariant, FComplexity,
+    RockGrooveLines(FStyle, AKind, AVariant mod 3));
 end;
 
 function TRockGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -257,7 +256,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to 2 do
+      for BarIdx := 0 to GrooveVariantCount('rock', FStyle, GrooveKindOfSection(Section)) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

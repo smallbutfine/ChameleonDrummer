@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants, JazzGrooves;
+  config_constants, JazzGrooves, GrooveLibrary;
 
 type
   TJazzContext = record
@@ -66,8 +66,8 @@ end;
 
 function TJazzGenrePlugin.GetSupportedStyles: TStringArray;
 begin
-  Result := ['swing', 'bebop', 'fusion', 'latin', 'ballad', 'hard_bop',
-    'contemporary'];
+  Result := WithFileStyles('jazz', ['swing', 'bebop', 'fusion', 'latin', 'ballad', 'hard_bop',
+    'contemporary']);
 end;
 
 constructor TJazzGenrePlugin.Create;
@@ -128,9 +128,8 @@ function TJazzGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TP
 begin
   { Grooves are drum tabs in JazzGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
-  Result := BuildTaggedGroove(
-    'jazz_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
-    AVariant, JazzGrooveLines(FStyle, AKind, AVariant), FComplexity);
+  Result := BuildGroove('jazz', FStyle, AKind, AVariant, FComplexity,
+    JazzGrooveLines(FStyle, AKind, AVariant mod 3));
 end;
 
 function TJazzGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -250,7 +249,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to 2 do
+      for BarIdx := 0 to GrooveVariantCount('jazz', FStyle, GrooveKindOfSection(Section)) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

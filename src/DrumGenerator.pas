@@ -11,7 +11,7 @@ interface
 
 uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
-  time_signature, generation_parameters, ComposerV2,
+  time_signature, generation_parameters, ComposerV2, GenreDefaults, ConfigFiles,
   PluginRegistry, GenrePlugin, Metal, Rock, Jazz, Funk, Electronic, { genre plugins }
     Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
     Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, doom_blues, { drummer plugins }
@@ -66,6 +66,10 @@ public
     ADynamics: Double = 0.6; AHumanization: Double = 0.5;
     ASwing: Double = 0.0): TSong;
 
+  { The default song structure of a genre as it is before it is fitted to a
+    song length: config/sections/<genre>.json, else the built-in one. }
+  function DefaultStructure(const Genre: string): specialize TArray<TStructureEntry>;
+
   { Export a Song to a MIDI file. }
   procedure SaveSongMidi(const ASong: TSong; const AOutputPath: string);
 
@@ -91,6 +95,10 @@ end;
 
 function GetDefaultBpm(const Genre, Style: string): Integer;
 
+{ The tempos compiled into the program, which config/defaults/<genre>.ini
+  overrides. }
+function BuiltInBpm(const Genre, Style: string): Integer;
+
 procedure ApplyGrooveRestraints(Song: TSong);
 { Groove restraints - per-genre velocity adjustments. }
 
@@ -99,9 +107,10 @@ implementation
 
 {  GetDefaultBpm  genre/style-aware default BPM. }
 
-function GetDefaultBpm(const Genre, Style: string): Integer;
+{ The tempos built into the program, used when config/defaults/<genre>.ini
+  has no value for the style. }
+function BuiltInBpm(const Genre, Style: string): Integer;
 begin
-  { Simplified defaults from the bpm_ranges config. }
   case LowerCase(Genre) of
     'metal':
       case LowerCase(Style) of
@@ -157,6 +166,13 @@ begin
       end;
   else Result := 120; { default. }
   end;
+end;
+
+function GetDefaultBpm(const Genre, Style: string): Integer;
+begin
+  Result := FileDefaultBpm(Genre, Style);
+  if Result = 0 then
+    Result := BuiltInBpm(Genre, Style);
 end;
 
 {  ApplyGrooveRestraints per-genre velocity adjustments for musicality. }
@@ -244,52 +260,46 @@ end;
 
 procedure TDrumGenerator.LoadPlugins;
 var
-  GS: specialize TArray<string>; { Genre Styles }
   PD: specialize TArray<string>; { Pref Drummers }
   DG: specialize TArray<string>; { Drummer Genres }
+
+  { The preferred drummers of a genre: config/defaults/<genre>.ini when it
+    names some, else the built-in list. Names of drummers that do not exist
+    are dropped and reported. }
+  procedure RegisterGenre(const AName: string; APlugin: TGenrePlugin;
+    const APreferred: array of string);
+  var
+    FromFile, Chosen: specialize TArray<string>;
+    Name: string;
+    I: Integer;
+  begin
+    FromFile := FilePreferredDrummers(AName);
+    if Length(FromFile) = 0 then
+    begin
+      SetLength(Chosen, Length(APreferred));
+      for I := 0 to High(APreferred) do
+        Chosen[I] := APreferred[I];
+    end
+    else
+    begin
+      Chosen := nil;
+      for Name in FromFile do
+        if Assigned(FPluginManager.Registry.GetDrummerPlugin(Name)) then
+        begin
+          SetLength(Chosen, Length(Chosen) + 1);
+          Chosen[High(Chosen)] := Name;
+        end
+        else
+          AddConfigWarning(Format('%s.ini [drummers]: there is no drummer "%s" - ignored',
+            [LowerCase(AName), Name]));
+    end;
+    FPluginManager.Registry.RegisterGenrePlugin(AName, APlugin,
+      APlugin.GetSupportedStyles, Chosen);
+  end;
+
 begin
-  {  Register genre plugins }
-
-  { Metal  7 styles, preferred drummers reflect their genre metadata below. }
-  SetLength(GS, 7); GS[0] := 'heavy'; GS[1] := 'death'; GS[2] := 'power';
-  GS[3] := 'progressive'; GS[4] := 'thrash'; GS[5] := 'doom'; GS[6] := 'breakdown';
-  SetLength(PD, 9); PD[0] := 'bonham'; PD[1] := 'roeder'; PD[2] := 'dee';
-  PD[3] := 'hoglan'; PD[4] := 'peart'; PD[5] := 'carey';
-  PD[6] := 'watts'; PD[7] := 'haake'; PD[8] := 'doomblues';
-  FPluginManager.Registry.RegisterGenrePlugin('metal', TMetalGenrePlugin.Create, GS, PD);
-
-  { Rock 7 styles. }
-  SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'classic'; GS[1] := 'blues';
-  GS[2] := 'alternative'; GS[3] := 'progressive'; GS[4] := 'punk';
-  GS[5] := 'hard'; GS[6] := 'pop';
-  SetLength(PD, 0); SetLength(PD, 11); PD[0] := 'bonham';
-  PD[1] := 'porcaro'; PD[2] := 'weckl'; PD[3] := 'chambers';
-  PD[4] := 'dee'; PD[5] := 'rich'; PD[6] := 'copeland';
-  PD[7] := 'smith'; PD[8] := 'moon'; PD[9] := 'watts'; PD[10] := 'doomblues';
-  FPluginManager.Registry.RegisterGenrePlugin('rock', TRockGenrePlugin.Create, GS, PD);
-
-  { Jazz  7 styles. }
-  SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'swing'; GS[1] := 'bebop';
-  GS[2] := 'fusion'; GS[3] := 'latin'; GS[4] := 'ballad';
-  GS[5] := 'hard_bop'; GS[6] := 'contemporary';
-  SetLength(PD, 0); SetLength(PD, 4); PD[0] := 'weckl'; PD[1] := 'chambers';
-  PD[2] := 'rich'; PD[3] := 'halpern';
-  FPluginManager.Registry.RegisterGenrePlugin('jazz', TJazzGenrePlugin.Create, GS, PD);
-
-  { Funk  7 styles. }
-  SetLength(GS, 0); SetLength(GS, 7); GS[0] := 'classic'; GS[1] := 'pfunk';
-  GS[2] := 'shuffle'; GS[3] := 'new_orleans'; GS[4] := 'fusion';
-  GS[5] := 'minimal'; GS[6] := 'heavy';
-  SetLength(PD, 0); SetLength(PD, 5); PD[0] := 'porcaro'; PD[1] := 'chambers';
-  PD[2] := 'copeland'; PD[3] := 'smith'; PD[4] := 'moon';
-  FPluginManager.Registry.RegisterGenrePlugin('funk', TFunkGenrePlugin.Create, GS, PD);
-
-  { Electronic  4 styles, no preferred drummers }
-  SetLength(GS, 0); SetLength(GS, 4); GS[0] := 'house'; GS[1] := 'techno';
-  GS[2] := 'drum_and_bass'; GS[3] := 'dubstep';
-  FPluginManager.Registry.RegisterGenrePlugin('electronic', TElectronicGenrePlugin.Create, GS, []);
-
-  {  Register drummer plugins }
+  {  Register drummer plugins first, so the genres can check their preferred
+     drummers against them. }
   SetLength(DG, 0);
 
   { bonham  rock, metal, blues }
@@ -359,12 +369,41 @@ begin
   { doomblues metal, rock, blues }
   SetLength(DG, 0); SetLength(DG, 3); DG[0] := 'metal'; DG[1] := 'rock'; DG[2] := 'blues';
   FPluginManager.Registry.RegisterDrummerPlugin('doomblues', TDoomBluesPlugin.Create, DG);
+
+  {  Register genre plugins. The styles come from the plugin itself, so a
+     style that only a groove file defines is registered too. }
+  PD := ['bonham', 'roeder', 'dee', 'hoglan', 'peart', 'carey', 'watts',
+    'haake', 'doomblues'];
+  RegisterGenre('metal', TMetalGenrePlugin.Create, PD);
+
+  PD := ['bonham', 'porcaro', 'weckl', 'chambers', 'dee', 'rich', 'copeland',
+    'smith', 'moon', 'watts', 'doomblues'];
+  RegisterGenre('rock', TRockGenrePlugin.Create, PD);
+
+  PD := ['weckl', 'chambers', 'rich', 'halpern'];
+  RegisterGenre('jazz', TJazzGenrePlugin.Create, PD);
+
+  PD := ['porcaro', 'chambers', 'copeland', 'smith', 'moon'];
+  RegisterGenre('funk', TFunkGenrePlugin.Create, PD);
+
+  { Electronic has no preferred drummers. }
+  PD := [];
+  RegisterGenre('electronic', TElectronicGenrePlugin.Create, PD);
+end;
+
+function TDrumGenerator.DefaultStructure(const Genre: string): specialize TArray<TStructureEntry>;
+begin
+  Result := GetGenreDefaultStructure(Genre);
 end;
 
 function TDrumGenerator.GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
 var
   I, J: Integer;
 begin
+  { config/sections/<genre>.json first. }
+  Result := FileDefaultStructure(Genre);
+  if Length(Result) > 0 then
+    Exit;
   Result := nil;
   for I := Low(GENRE_ARCHETYPES) to High(GENRE_ARCHETYPES) do
     if SameText(GENRE_ARCHETYPES[I].Genre, LowerCase(Genre)) then

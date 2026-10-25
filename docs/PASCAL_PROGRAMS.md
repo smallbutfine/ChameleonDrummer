@@ -442,6 +442,20 @@ After execution, the form displays the child process output in the log memo.
 
 Both programs share the same core engine layer. Here is how the pieces fit together:
 
+### External Content (`config\`)
+
+Grooves, fills, default tempos and default structures are read from text files named after their genre or drummer; the compiled-in content is the fallback.
+
+| Unit | Reads | Falls back to |
+|------|-------|---------------|
+| `ConfigFiles.pas` | finds files: `CHAMELEON_CONFIG`, then `%APPDATA%\ChameleonDrummer\config`, then `config\` next to the exe, then `..\config`; collects mistakes in `ConfigWarnings` | |
+| `TabFiles.pas` | splits a `.tab` file into `[header]` blocks of drum-tab lines | |
+| `GrooveLibrary.pas` | `grooves\<genre>.tab`; `BuildGroove` is used by the five genre plugins; `WithFileStyles` adds styles that only the file has | `MetalGrooves.pas` ... `ElectronicGrooves.pas` |
+| `FillLibrary.pas` | `fills\<drummer>.tab`; `TDrummerPlugin.GetFillVocabulary` is what `ComposerV2` calls | `GetSignatureFills` in each drummer unit |
+| `GenreDefaults.pas` | `defaults\<genre>.ini` (tempo per style, preferred drummers), `sections\<genre>.json` (via `LoadStructureFile`) | `BuiltInBpm`, `GENRE_ARCHETYPES`, the lists in `LoadPlugins` |
+
+A file with a mistake is ignored as a whole and the message (file, line) goes to `ConfigWarnings`; the CLI prints it as `[Warning]`. The shipped files are generated from the built-in content by `tools/export_grooves.pas`, `tools/export_fills.py` and `tools/export_defaults.pas`; `tests/test_groove_files.pas`, `test_fill_files.pas` and `test_genre_defaults.pas` check that they equal it.
+
 ### Plugin System
 
 The `TDrumGenerator.LoadPlugins()` method registers all plugins at construction time:

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Generics.Collections, fpjson,
   Pattern, Song,
   DrumGenerator, ComposerV2, DrumMidiLoader, SongStructure,
-  PluginRegistry, Kit, ReaperAPI, ArdourAPI;
+  PluginRegistry, Kit, ReaperAPI, ArdourAPI, ConfigFiles;
 
 // ============================================================================
 // TCLIArgs - command-line arguments structure
@@ -52,6 +52,7 @@ type
     procedure HandleReaperExport(const Args: TCLIArgs);
     procedure HandleArdourExport(const Args: TCLIArgs);
     procedure PrintGeneratorWarnings;
+    procedure PrintConfigWarnings;
     procedure WriteReaperProject(ASong: TSong; const AMidiFile: string);
     procedure WriteArdourSession(ASong: TSong; const AMidiFile, ASessionDir: string);
     procedure ShowUsage;
@@ -324,6 +325,17 @@ begin
   finally
     Bridge.Free;
   end;
+end;
+
+procedure TCLIInterface.PrintConfigWarnings;
+var
+  I: Integer;
+begin
+  { Mistakes in the user's groove, fill, section and defaults files. The
+    engine ignored the file and used what is built in. }
+  for I := 0 to ConfigWarnings.Count - 1 do
+    Writeln('[Warning] ', ConfigWarnings[I]);
+  ConfigWarnings.Clear;
 end;
 
 procedure TCLIInterface.PrintGeneratorWarnings;
@@ -669,10 +681,12 @@ begin
       Exit;
     end;
 
+    PrintConfigWarnings;
     Result := 0;
   except
     on E: Exception do
     begin
+      PrintConfigWarnings;
       Writeln('[Error] ', E.ClassName, ': ', E.Message);
       ExitCode := 2;
       Result := -2;

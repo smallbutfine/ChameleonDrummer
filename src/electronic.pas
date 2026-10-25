@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants, ElectronicGrooves;
+  config_constants, ElectronicGrooves, GrooveLibrary;
 
 type
   TElectronicContext = record
@@ -65,7 +65,7 @@ end;
 
 function TElectronicGenrePlugin.GetSupportedStyles: TStringArray;
 begin
-  Result := ['house', 'techno', 'drum_and_bass', 'dubstep'];
+  Result := WithFileStyles('electronic', ['house', 'techno', 'drum_and_bass', 'dubstep']);
 end;
 
 constructor TElectronicGenrePlugin.Create;
@@ -120,9 +120,8 @@ function TElectronicGenrePlugin.MakeGroove(const AKind: String; AVariant: Intege
 begin
   { Grooves are drum tabs in ElectronicGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
-  Result := BuildTaggedGroove(
-    'electronic_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
-    AVariant, ElectronicGrooveLines(FStyle, AKind, AVariant), FComplexity);
+  Result := BuildGroove('electronic', FStyle, AKind, AVariant, FComplexity,
+    ElectronicGrooveLines(FStyle, AKind, AVariant mod 3));
 end;
 
 function TElectronicGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -243,7 +242,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to 2 do
+      for BarIdx := 0 to GrooveVariantCount('electronic', FStyle, GrooveKindOfSection(Section)) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

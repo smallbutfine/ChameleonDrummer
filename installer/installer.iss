@@ -30,6 +30,11 @@ Source: "..\Assets\GMD\gmd_patterns.json"; DestDir: "{app}\Assets\GMD"; Flags: i
 Source: "..\Assets\GMD\ATTRIBUTION.txt"; DestDir: "{app}\Assets\GMD"; Flags: ignoreversion
 Source: "..\ardour\*.lua"; DestDir: "{app}\ardour"; Flags: ignoreversion
 Source: "..\config\*.ini"; DestDir: "{app}\config"; Flags: ignoreversion
+Source: "..\config\*.json"; DestDir: "{app}\config"; Flags: ignoreversion
+Source: "..\config\grooves\*.tab"; DestDir: "{app}\config\grooves"; Flags: ignoreversion
+Source: "..\config\fills\*.tab"; DestDir: "{app}\config\fills"; Flags: ignoreversion
+Source: "..\config\defaults\*.ini"; DestDir: "{app}\config\defaults"; Flags: ignoreversion
+Source: "..\config\sections\*.json"; DestDir: "{app}\config\sections"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\Readme.txt"; Description: "View Readme (How to use in DAW)"; Flags: postinstall shellexec skipifsilent unchecked

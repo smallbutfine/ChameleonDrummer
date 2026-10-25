@@ -157,6 +157,7 @@ var
   ExistingIdx: Integer;
   NewIdx: Integer;
   OldPlugin: TObject;
+  CopyIdx: Integer;
 begin
   if not Assigned(APugin) then Exit;
 
@@ -178,12 +179,12 @@ begin
   begin
     // Update existing record
     SetLength(FGenreStyles[ExistingIdx].Styles, Length(ASupportedStyles));
-    if Length(ASupportedStyles) > 0 then
-      Move(ASupportedStyles[0], FGenreStyles[ExistingIdx].Styles[0], Length(ASupportedStyles) * SizeOf(string));
+    for CopyIdx := 0 to High(ASupportedStyles) do
+      FGenreStyles[ExistingIdx].Styles[CopyIdx] := ASupportedStyles[CopyIdx];
 
     SetLength(FGenreStyles[ExistingIdx].PreferredDrummers, Length(APrefDrummers));
-    if Length(APrefDrummers) > 0 then
-      Move(APrefDrummers[0], FGenreStyles[ExistingIdx].PreferredDrummers[0], Length(APrefDrummers) * SizeOf(string));
+    for CopyIdx := 0 to High(APrefDrummers) do
+      FGenreStyles[ExistingIdx].PreferredDrummers[CopyIdx] := APrefDrummers[CopyIdx];
   end
   else
   begin
@@ -193,12 +194,12 @@ begin
     FGenreStyles[NewIdx].GenreName := GenreKey;
 
     SetLength(FGenreStyles[NewIdx].Styles, Length(ASupportedStyles));
-    if Length(ASupportedStyles) > 0 then
-      Move(ASupportedStyles[0], FGenreStyles[NewIdx].Styles[0], Length(ASupportedStyles) * SizeOf(string));
+    for CopyIdx := 0 to High(ASupportedStyles) do
+      FGenreStyles[NewIdx].Styles[CopyIdx] := ASupportedStyles[CopyIdx];
 
     SetLength(FGenreStyles[NewIdx].PreferredDrummers, Length(APrefDrummers));
-    if Length(APrefDrummers) > 0 then
-      Move(APrefDrummers[0], FGenreStyles[NewIdx].PreferredDrummers[0], Length(APrefDrummers) * SizeOf(string));
+    for CopyIdx := 0 to High(APrefDrummers) do
+      FGenreStyles[NewIdx].PreferredDrummers[CopyIdx] := APrefDrummers[CopyIdx];
   end;
 end;
 
@@ -208,6 +209,7 @@ var
   ExistingIdx: Integer;
   OldPlugin: TObject;
   NewIdx: Integer;
+  CopyIdx: Integer;
 begin
   if not Assigned(APugin) then Exit;
 
@@ -228,8 +230,8 @@ begin
   if ExistingIdx >= 0 then
   begin
     SetLength(FDrummerPrefs[ExistingIdx].PreferredGenres, Length(APrefGenres));
-    if Length(APrefGenres) > 0 then
-      Move(APrefGenres[0], FDrummerPrefs[ExistingIdx].PreferredGenres[0], Length(APrefGenres) * SizeOf(string));
+    for CopyIdx := 0 to High(APrefGenres) do
+      FDrummerPrefs[ExistingIdx].PreferredGenres[CopyIdx] := APrefGenres[CopyIdx];
   end
   else
   begin
@@ -238,8 +240,8 @@ begin
     FDrummerPrefs[NewIdx].DrummerName := DrummerKey;
 
     SetLength(FDrummerPrefs[NewIdx].PreferredGenres, Length(APrefGenres));
-    if Length(APrefGenres) > 0 then
-      Move(APrefGenres[0], FDrummerPrefs[NewIdx].PreferredGenres[0], Length(APrefGenres) * SizeOf(string));
+    for CopyIdx := 0 to High(APrefGenres) do
+      FDrummerPrefs[NewIdx].PreferredGenres[CopyIdx] := APrefGenres[CopyIdx];
   end;
 end;
 

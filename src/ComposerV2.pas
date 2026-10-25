@@ -1037,7 +1037,7 @@ begin
       begin
         DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
         if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
-          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetSignatureFills;
+          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetFillVocabulary(ADrummer);
       end;
       HasVocabulary := Assigned(SignatureFills) and (SignatureFills.Count > 0);
       if HasVocabulary then

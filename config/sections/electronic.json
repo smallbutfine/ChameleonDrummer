@@ -1,0 +1,11 @@
+{
+  "_comment": "Default song structure of electronic, used when --section and --structure are not given. Same format as --structure; the total length is fitted to a radio-length song.",
+  "sections": [
+    { "name": "intro", "bars": 8 },
+    { "name": "verse", "bars": 8 },
+    { "name": "chorus", "bars": 8 },
+    { "name": "verse", "bars": 8 },
+    { "name": "chorus", "bars": 8 },
+    { "name": "outro", "bars": 8 }
+  ]
+}

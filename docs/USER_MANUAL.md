@@ -382,6 +382,28 @@ chameleondrummer generate --genre rock --style classic --tempo 120 \
 
 **Timeline (`--write-timeline`)**: Writes a flat timeline JSON after generation, resolving tempo points and region boundaries.
 
+### Your Own Grooves, Fills and Defaults
+
+Grooves, fills, default tempos and default song structures are plain text files in `config\`, each named after what it describes:
+
+| File | Describes |
+|---|---|
+| `config\grooves\<genre>.tab` | the grooves of a genre: every style, verse / chorus / bridge |
+| `config\fills\<drummer>.tab` | the fills of one drummer |
+| `config\defaults\<genre>.ini` | tempo per style, the drummers that suit the genre |
+| `config\sections\<genre>.json` | the default song structure of the genre |
+
+The tab format is a drum tab:
+
+```
+[heavy verse intensity=0.4-0.8]
+K  x... ..x. x... ..x. | x... ....
+S  .... x... .... x... | .... x...
+H  x.x. x.x. x.x. x.x.
+```
+
+`x` hits, `X` accents, `o` is soft, `g` a ghost note, `.` a rest; one row per instrument, bars separated by `|`. To add a groove, add a block; to add a style, use a new style name; to give a drummer another fill, add a block to the file named after the drummer. Copy a file to `%APPDATA%\ChameleonDrummer\config\...` and edit the copy - it is used instead of the installed one, and survives a reinstall. A mistake in a file prints a `[Warning]` with the file and line and that file is ignored. `config\README.md` describes the format and the instrument names in full.
+
 ### REAPER Integration
 
 The `reaper/create_song_sections.lua` script provides bi-directional integration:

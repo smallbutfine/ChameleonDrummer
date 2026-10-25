@@ -329,7 +329,7 @@ begin
     begin
       Item := Root.Items[I];
       case LowerCase(Root.Names[I]) of
-        'source', 'title', 'name', 'sections': ;
+        'source', 'title', 'name', 'sections', '_comment', 'comment': ;
         'genre': Result.Genre := LowerCase(Text0(Item, '', 'genre'));
         'style': Result.Style := LowerCase(Text0(Item, '', 'style'));
         'tempo': Result.Tempo := WholeNumber(Item, '', 'tempo',

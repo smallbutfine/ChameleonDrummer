@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants, FunkGrooves;
+  config_constants, FunkGrooves, GrooveLibrary;
 
 type
   TFunkContext = record
@@ -65,8 +65,8 @@ end;
 
 function TFunkGenrePlugin.GetSupportedStyles: TStringArray;
 begin
-  Result := ['classic', 'pfunk', 'shuffle', 'new_orleans', 'fusion',
-    'minimal', 'heavy'];
+  Result := WithFileStyles('funk', ['classic', 'pfunk', 'shuffle', 'new_orleans', 'fusion',
+    'minimal', 'heavy']);
 end;
 
 constructor TFunkGenrePlugin.Create;
@@ -121,9 +121,8 @@ function TFunkGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TP
 begin
   { Grooves are drum tabs in FunkGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
-  Result := BuildTaggedGroove(
-    'funk_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
-    AVariant, FunkGrooveLines(FStyle, AKind, AVariant), FComplexity);
+  Result := BuildGroove('funk', FStyle, AKind, AVariant, FComplexity,
+    FunkGrooveLines(FStyle, AKind, AVariant mod 3));
 end;
 
 function TFunkGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -243,7 +242,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to 2 do
+      for BarIdx := 0 to GrooveVariantCount('funk', FStyle, GrooveKindOfSection(Section)) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except
