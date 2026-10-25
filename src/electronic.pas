@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants;
+  config_constants, ElectronicGrooves;
 
 type
   TElectronicContext = record
@@ -27,6 +27,7 @@ type
     FSection: String;
     FComplexity: Double;
     FIntensity: Double;
+    function MakeGroove(const AKind: String; AVariant: Integer): TPattern;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -115,98 +116,28 @@ begin
   end;
 end;
 
-function TElectronicGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
+function TElectronicGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TPattern;
 begin
-  Composer := TTemplateComposer.Create('electronic_' + FStyle + '_verse_b' + IntToStr(BarIndex));
-  case FStyle of
-    'house':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'techno':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-    'drum_and_bass':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
-      end;
-    'dubstep':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create);
-  end;
-  Result := Composer.Build(2, FComplexity);
-  { Tag verse patterns as lower-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.25');
-  Result.Metadata.Add('valid_intensity_max', '0.65');
+  { Grooves are drum tabs in ElectronicGrooves.pas: three per style and section
+    kind, tagged with overlapping intensity bands. }
+  Result := BuildTaggedGroove(
+    'electronic_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
+    AVariant, ElectronicGrooveLines(FStyle, AKind, AVariant), FComplexity);
+end;
+
+function TElectronicGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
+begin
+  Result := MakeGroove('verse', BarIndex mod 3);
 end;
 
 function TElectronicGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('electronic_' + FStyle + '_chorus_b' + IntToStr(BarIndex));
-  case FStyle of
-    'house':
-      begin
-        Composer.Add(TBasicGroove.Create);
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'techno':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-    'drum_and_bass':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
-      end;
-    'dubstep':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-  else
-    Composer.Add(TBasicGroove.Create);
-  end;
-  Result := Composer.Build(2, FComplexity);
-  { Tag chorus (drop) patterns as higher-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.65');
-  Result.Metadata.Add('valid_intensity_max', '0.95');
+  Result := MakeGroove('chorus', BarIndex mod 3);
 end;
 
 function TElectronicGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('electronic_' + FStyle + '_bridge_b' + IntToStr(BarIndex));
-  case FStyle of
-    'house':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'techno':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-    'drum_and_bass':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
-      end;
-    'dubstep':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-  else
-    Composer.Add(TBasicGroove.Create);
-  end;
-  Result := Composer.Build(2, FComplexity);
-  { Tag bridge patterns with variable intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.35');
-  Result.Metadata.Add('valid_intensity_max', '0.8');
+  Result := MakeGroove('bridge', BarIndex mod 3);
 end;
 
 function TElectronicGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -270,19 +201,20 @@ end;
 
 function TElectronicGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Patterns: specialize TList<TPattern>;
-  PatternItem: TPattern;
+  PreviousStyle: String;
+  PreviousComplexity: Double;
 begin
-  Patterns := GetSectionFlavors(Section, Parameters);
+  PreviousStyle := FStyle;
+  PreviousComplexity := FComplexity;
   try
-    if Patterns.Count = 0 then
-      raise Exception.CreateFmt(
-        'No electronic patterns available for section %s', [Section]);
-    Result := Patterns[0].Copy;
+    if (Parameters <> nil) and (Parameters.Style <> '') then
+      FStyle := LowerCase(Parameters.Style);
+    if Parameters <> nil then
+      FComplexity := Parameters.Complexity;
+    Result := MakeGroove(GrooveKindOfSection(Section), 1);
   finally
-    for PatternItem in Patterns do
-      PatternItem.Free;
-    Patterns.Free;
+    FStyle := PreviousStyle;
+    FComplexity := PreviousComplexity;
   end;
 end;
 
@@ -312,16 +244,8 @@ begin
       SectionName := FSection;
 
       for BarIdx := 0 to 2 do
-      begin
-        if (Pos('chorus', SectionName) > 0) then
-          Result.Add(GetFlavorChorus(BarIdx))
-        else if (Pos('bridge', SectionName) > 0) or
-                (Pos('pre_chorus', SectionName) > 0) or
-                (Pos('breakdown', SectionName) > 0) then
-          Result.Add(GetFlavorBridge(BarIdx))
-        else
-          Result.Add(GetFlavorVerse(BarIdx));
-      end;
+        Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
+
     except
       while Result.Count > 0 do
       begin

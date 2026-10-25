@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants;
+  config_constants, FunkGrooves;
 
 type
   TFunkContext = record
@@ -27,6 +27,7 @@ type
     FSection: String;
     FComplexity: Double;
     FIntensity: Double;
+    function MakeGroove(const AKind: String; AVariant: Integer): TPattern;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -116,160 +117,28 @@ begin
   end;
 end;
 
-function TFunkGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
+function TFunkGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TPattern;
 begin
-  Composer := TTemplateComposer.Create('funk_' + FStyle + '_verse_b' + IntToStr(BarIndex));
+  { Grooves are drum tabs in FunkGrooves.pas: three per style and section
+    kind, tagged with overlapping intensity bands. }
+  Result := BuildTaggedGroove(
+    'funk_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
+    AVariant, FunkGrooveLines(FStyle, AKind, AVariant), FComplexity);
+end;
 
-  case FStyle of
-    'classic':
-      begin
-        // James Brown "the one" emphasis
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'pfunk':
-      begin
-        // Parliament-Funkadelic grooves
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'shuffle':
-      begin
-        // Bernard Purdie shuffle
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'new_orleans':
-      begin
-        // Second line funk patterns
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'fusion':
-      begin
-        // Jazz-funk fusion
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'minimal':
-      begin
-        // Stripped-down pocket grooves
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'heavy':
-      begin
-        // Heavy funk with rock influence
-        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create);
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag verse patterns as lower-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.2');
-  Result.Metadata.Add('valid_intensity_max', '0.6');
+function TFunkGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
+begin
+  Result := MakeGroove('verse', BarIndex mod 3);
 end;
 
 function TFunkGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('funk_' + FStyle + '_chorus_b' + IntToStr(BarIndex));
-
-  case FStyle of
-    'classic':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
-      end;
-    'pfunk':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'shuffle':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'new_orleans':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'fusion':
-      begin
-        Composer.Add(TBasicGroove.Create);
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'minimal':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'heavy':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
-      end;
-  else
-    Composer.Add(TBasicGroove.Create);
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag chorus patterns as higher-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.5');
-  Result.Metadata.Add('valid_intensity_max', '0.85');
+  Result := MakeGroove('chorus', BarIndex mod 3);
 end;
 
 function TFunkGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('funk_' + FStyle + '_bridge_b' + IntToStr(BarIndex));
-
-  case FStyle of
-    'classic':
-      begin
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TBasicGroove.Create)
-        else
-          Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'pfunk':
-      begin
-        Composer.Add(TBasicGroove.Create);
-        Composer.Add(TFunkGhostNotes.CreateDefault);
-      end;
-    'shuffle':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'new_orleans':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'fusion':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'minimal':
-      begin
-        Composer.Add(TBasicGroove.Create);
-      end;
-    'heavy':
-      begin
-        Composer.Add(TDoubleBassPedal.Create('burst', 16));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create);
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag bridge patterns with variable intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.3');
-  Result.Metadata.Add('valid_intensity_max', '0.7');
+  Result := MakeGroove('bridge', BarIndex mod 3);
 end;
 
 function TFunkGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -332,18 +201,20 @@ end;
 
 function TFunkGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Patterns: specialize TList<TPattern>;
-  PatternItem: TPattern;
+  PreviousStyle: String;
+  PreviousComplexity: Double;
 begin
-  Patterns := GetSectionFlavors(Section, Parameters);
+  PreviousStyle := FStyle;
+  PreviousComplexity := FComplexity;
   try
-    if Patterns.Count = 0 then
-      raise Exception.CreateFmt('No funk patterns available for section %s', [Section]);
-    Result := Patterns[0].Copy;
+    if (Parameters <> nil) and (Parameters.Style <> '') then
+      FStyle := LowerCase(Parameters.Style);
+    if Parameters <> nil then
+      FComplexity := Parameters.Complexity;
+    Result := MakeGroove(GrooveKindOfSection(Section), 1);
   finally
-    for PatternItem in Patterns do
-      PatternItem.Free;
-    Patterns.Free;
+    FStyle := PreviousStyle;
+    FComplexity := PreviousComplexity;
   end;
 end;
 
@@ -373,16 +244,8 @@ begin
       SectionName := FSection;
 
       for BarIdx := 0 to 2 do
-      begin
-        if (Pos('chorus', SectionName) > 0) then
-          Result.Add(GetFlavorChorus(BarIdx))
-        else if (Pos('bridge', SectionName) > 0) or
-                (Pos('pre_chorus', SectionName) > 0) or
-                (Pos('breakdown', SectionName) > 0) then
-          Result.Add(GetFlavorBridge(BarIdx))
-        else
-          Result.Add(GetFlavorVerse(BarIdx));
-      end;
+        Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
+
     except
       while Result.Count > 0 do
       begin
