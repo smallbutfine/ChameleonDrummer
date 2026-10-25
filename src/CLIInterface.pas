@@ -49,7 +49,9 @@ type
     procedure HandleInfo;
     procedure HandleReaperExport(const Args: TCLIArgs);
     procedure HandleArdourExport(const Args: TCLIArgs);
+    procedure PrintGeneratorWarnings;
     procedure ShowUsage;
+
   public
     constructor Create;
     destructor Destroy; override;
@@ -285,7 +287,22 @@ begin
   inherited Destroy;
 end;
 
+procedure TCLIInterface.PrintGeneratorWarnings;
+
+var
+  I: Integer;
+
+begin
+
+  for I := 0 to FGenerator.LastWarnings.Count - 1 do
+
+    Writeln('[Warning] ', FGenerator.LastWarnings[I]);
+
+end;
+
+
 procedure TCLIInterface.ShowUsage;
+
 begin
   Writeln('ChameleonDrummer - Dynamic MIDI Drumming System');
   Writeln;
@@ -356,7 +373,11 @@ begin
     0.6,              // ADynamics - default dynamics
     Args.Humanization, // AHumanization - humanization intensity from CLI
     Args.Swing        // ASwing - swing feel from CLI
+
   );
+
+  PrintGeneratorWarnings;
+
   try
     { Save MIDI output and optionally timeline JSON }
     if (Args.OutputFile = '') then
@@ -480,7 +501,10 @@ begin
     0.6,      // ADynamics
     0.3,      // AHumanization
     Args.Swing // ASwing
+
   );
+  PrintGeneratorWarnings;
+
 
   { Determine output paths }
   if (Args.OutputFile = '') then
@@ -533,8 +557,13 @@ begin
     0.6,              // ADynamics
     0.3,              // AHumanization
     Args.Swing        // ASwing
+
   );
+
+  PrintGeneratorWarnings;
+
   try
+
     { The output is an Ardour session directory; the MIDI file sits next to
       it, exactly like the REAPER exporter lays the MIDI next to the .rpp. }
     if (Args.OutputFile = '') then

@@ -37,6 +37,9 @@ private
   // MIDIEngine replaced by DrumMidiLoader (MidiIO + MidiParser)
   FComposerEngine: string;
 
+  FLastWarnings: TStringList;
+
+
   procedure LoadPlugins;
   procedure SetDrumKit(AValue: TDrumKit);
   function GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
@@ -73,6 +76,12 @@ public
   function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit;
     const AStyle: string = ''): TPattern;
 
+  { Problems the pattern check found in the song made by the last CreateSong
+
+    call, one line each (e.g. a beat beyond its pattern's length). Empty when
+    the song is clean. }
+
+  property LastWarnings: TStringList read FLastWarnings;
   property PluginManager: TPluginManager read FPluginManager;
   property DrumKit: TDrumKit read FDrumKit write SetDrumKit;
   property ComposerEngine: string read FComposerEngine write FComposerEngine;
@@ -206,6 +215,8 @@ constructor TDrumGenerator.Create(AComposerEngine: string = 'v2');
 begin
   inherited Create;
   FComposerEngine := AComposerEngine;
+
+  FLastWarnings := TStringList.Create;
   FPluginManager := TPluginManager.Create();
   FDrumKit := TDrumKit.FromKeymapName('gm'); { Default GM keymap. }
 
@@ -215,7 +226,11 @@ end;
 destructor TDrumGenerator.Destroy;
 begin
   FDrumKit.Free;
+
   FPluginManager.Free;
+
+  FLastWarnings.Free;
+
   inherited Destroy;
 end;
 
@@ -529,9 +544,26 @@ begin
 
     { Apply genre-aware groove restraints (snare/velocity). }
     ApplyGrooveRestraints(Result);
+
+
+    { Report what is wrong with the patterns; nothing is changed or raised. }
+
+    FLastWarnings.Clear;
+
+    for SectionIndex := 0 to Result.Sections.Count - 1 do
+
+    begin
+      Section := Result.Sections[SectionIndex];
+      if Assigned(Section.Pattern) then
+
+        Section.Pattern.Validate(FLastWarnings);
+    end;
   finally
+
     Composer.Free;
+
   end;
+
 end;
 
 function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer = 0;

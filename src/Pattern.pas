@@ -77,6 +77,18 @@ public
     pattern was swung before, when the meter is not x/4, or when the pattern
     already sits on a triplet grid (shuffles, jazz ride patterns). }
   function ApplySwing(AAmount: Double): Boolean;
+
+
+
+  { Checks the pattern against its declared length and appends one readable
+    line per problem to AWarnings (it can be nil). Nothing is raised and the
+    pattern is not changed: a pattern cut out of a larger one may well have
+    a beat near its edge, and the caller decides what to do with the lines.
+    Returns the number of problems found.
+    Checked: beats at or after the end of the declared length (phrase_bars
+    bars of the pattern's meter) - the exporter would play them in a bar the
+    pattern was never meant to have - and beats without an instrument. }
+  function Validate(AWarnings: TStrings = nil): Integer;
 end;
 
 { Reads the valid_intensity_min/max metadata tags of a pattern. Parsing is
@@ -226,7 +238,73 @@ begin
   Result := Trunc(MaxPos / FTimeSignature.BeatsPerBar) + 1;
 end;
 
+function TPattern.Validate(AWarnings: TStrings = nil): Integer;
+var
+  Beat: TBeat;
+
+  Declared: string;
+  Bars: Integer;
+  LengthQuarters, FirstLate: Double;
+
+  LateCount, NoInstrument: Integer;
+
+
+
+  procedure Report(const AText: string);
+
+  begin
+
+    Inc(Result);
+    if AWarnings <> nil then
+      AWarnings.Add(Format('pattern "%s": %s', [FName, AText]));
+  end;
+
+
+begin
+  Result := 0;
+  LateCount := 0;
+  NoInstrument := 0;
+
+  FirstLate := 0.0;
+
+
+  { Without phrase_bars the length is taken from the last beat, so no beat can
+    lie beyond it. }
+
+  if FMetadata.TryGetValue('phrase_bars', Declared) and
+
+     TryStrToInt(Declared, Bars) and (Bars > 0) then
+  begin
+    LengthQuarters := Bars * FTimeSignature.BeatsPerBar;
+
+    for Beat in FBeats do
+      if Beat.Position >= LengthQuarters then
+      begin
+        if LateCount = 0 then
+
+          FirstLate := Beat.Position;
+        Inc(LateCount);
+
+      end;
+
+    if LateCount > 0 then
+
+      Report(Format('%d beat(s) lie beyond its %d bar(s) (%.2f quarter notes); the first is at %.3f',
+        [LateCount, Bars, LengthQuarters, FirstLate]));
+  end;
+
+  for Beat in FBeats do
+    if Beat.Instrument = nil then
+      Inc(NoInstrument);
+  if NoInstrument > 0 then
+
+    Report(Format('%d beat(s) have no instrument and are never played', [NoInstrument]));
+
+end;
+
+
 function TPattern.Humanize(ATimingVariance: Double = 0.02; AVelocityVariance: Integer = 10): TPattern;
+
 var
   Beat: TBeat;
   HumanizedBeats: TBeatList;
