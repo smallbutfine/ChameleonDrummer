@@ -73,7 +73,7 @@ type
 
     function DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
     function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-      const Available: specialize TList<TPattern; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
+      const Available: specialize TList<TPattern>; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
     function GetNextGrooveIndex(GrooveCount: Integer): Integer;
   end;
 
