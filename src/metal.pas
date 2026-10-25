@@ -453,11 +453,7 @@ begin
 
   for I := 0 to BaseFlavors.Count - 1 do
   begin
-    PMin := 0.0; PMax := 1.0; PMinStr := ''; PMaxStr := '';
-    if BaseFlavors[I].Metadata.TryGetValue('valid_intensity_min', PMinStr) then
-      PMin := StrToFloat(PMinStr);
-    if BaseFlavors[I].Metadata.TryGetValue('valid_intensity_max', PMaxStr) then
-      PMax := StrToFloat(PMaxStr);
+    TryGetIntensityRange(BaseFlavors[I], PMin, PMax);
     PMid := (PMin + PMax) / 2.0;
 
     { Include if pattern midpoint overlaps the section intensity band. }

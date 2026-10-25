@@ -50,6 +50,13 @@ type
     function IsPlayable(const APattern: TPattern): Boolean;
     { Caller owns the returned list and must free the violations in it. }
     function FindViolations(const APattern: TPattern): specialize TList<TLimbViolation>;
+    { For a simultaneous-hit group at APosition, returns True and sets
+      RemoveIdx to the index of the beat that should be removed when there
+      is a same-limb conflict.  Returns False when all hits can be assigned
+      to distinct limbs (physically valid).  The indices are into the beat
+      list of the caller's pattern. }
+    function FindConflictHitToDiscard(const APattern: TPattern;
+      APosition: Double; out RemoveIdx: Integer): Boolean;
   end;
 
 implementation
@@ -281,6 +288,89 @@ begin
     for I := 0 to Violations.Count - 1 do
       Violations[I].Free;
     Violations.Free;
+  end;
+end;
+
+{ True when beat A should be sacrificed before beat B: accents survive,
+  ghost notes go before full hits, then lower velocity goes first. }
+function IsLessImportant(A, B: TBeat): Boolean;
+begin
+  if A.Accent <> B.Accent then
+    Result := not A.Accent
+  else if A.GhostNote <> B.GhostNote then
+    Result := A.GhostNote
+  else
+    Result := A.Velocity < B.Velocity;
+end;
+
+function TLimbConstraintEngine.FindConflictHitToDiscard(const APattern: TPattern;
+  APosition: Double; out RemoveIdx: Integer): Boolean;
+var
+  Groups: TBeatGroupList;
+  Group, Found: TBeatGroup;
+  LimbSets: TLimbSetList;
+  I, J: Integer;
+  Best: TBeat;
+  Resolves: Boolean;
+begin
+  Result := False;
+  RemoveIdx := -1;
+  Groups := BuildGroups(APattern);
+  try
+    Found := nil;
+    for Group in Groups do
+      if Abs(Group.Position - APosition) <= SIMULTANEOUS_TOLERANCE then
+      begin
+        Found := Group;
+        Break;
+      end;
+    if (Found = nil) or (Found.Beats.Count < 2) then
+      Exit;
+
+    { Hits on distinct limbs and within the simultaneous limit are
+      playable - nothing may be removed (this protects ghost notes). }
+    LimbSets := TLimbSetList.Create;
+    try
+      for I := 0 to Found.Beats.Count - 1 do
+        LimbSets.Add(LimbsFor(InstrumentNameOf(Found.Beats[I])));
+      if (Found.Beats.Count <= FMaxSimultaneousHits) and CanAssignDistinct(LimbSets) then
+        Exit;
+    finally
+      LimbSets.Free;
+    end;
+
+    { Conflict: pick the least important beat whose removal resolves it. }
+    Best := nil;
+    for I := 0 to Found.Beats.Count - 1 do
+    begin
+      LimbSets := TLimbSetList.Create;
+      try
+        for J := 0 to Found.Beats.Count - 1 do
+          if J <> I then
+            LimbSets.Add(LimbsFor(InstrumentNameOf(Found.Beats[J])));
+        Resolves := (LimbSets.Count <= FMaxSimultaneousHits) and CanAssignDistinct(LimbSets);
+      finally
+        LimbSets.Free;
+      end;
+      if Resolves and ((Best = nil) or IsLessImportant(Found.Beats[I], Best)) then
+        Best := Found.Beats[I];
+    end;
+
+    { No single removal resolves it: fall back to the least important hit. }
+    if Best = nil then
+      for I := 0 to Found.Beats.Count - 1 do
+        if (Best = nil) or IsLessImportant(Found.Beats[I], Best) then
+          Best := Found.Beats[I];
+
+    for I := 0 to APattern.Beats.Count - 1 do
+      if APattern.Beats[I] = Best then
+      begin
+        RemoveIdx := I;
+        Result := True;
+        Break;
+      end;
+  finally
+    FreeGroups(Groups);
   end;
 end;
 

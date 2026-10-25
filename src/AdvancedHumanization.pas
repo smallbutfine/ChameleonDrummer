@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Math,
-  Pattern, ComposerTypes;
+  Pattern, ComposerTypes, DrummerProfiles;
 
 // ============================================================================
 // THumanizationContext â€” holds context for context-aware humanization
@@ -20,6 +20,7 @@ type
     Intensity: Double;
     Humanization: Double;
     Tempo: Integer;
+    Drummer: String;
     SourceRandom: TThreadedRandom;
   end;
 
@@ -152,8 +153,15 @@ begin
     if not Assigned(Beat.Instrument) then
       Continue;
 
+    { Random jitter plus the drummer's constant per-family bias. The bias
+      is stored in ms; positions are in quarter-note beats. }
     Deviation := GetTimingDeviation(Beat.Instrument.Name, Context) *
       HumanizationAmount;
+    if (Context.Tempo > 0) and (Context.Drummer <> '') then
+      Deviation := Deviation +
+        GetDrummerProfile(Context.Drummer).TimingMs[
+          InstrumentFamilyOf(Beat.Instrument.Name)] *
+        Context.Tempo / 60000.0 * HumanizationAmount;
     Beat.Position := Max(0.0, Beat.Position + Deviation);
 
     NewVel := GetVelocityBias(Beat.Instrument.Name, Beat.Velocity, Context);

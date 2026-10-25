@@ -12,7 +12,7 @@ uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   time_signature, generation_parameters, GenrePlugin,
   DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization,
-  GMDPatternLibrary, LimbConstraints, PatternFixer;
+  GMDPatternLibrary, LimbConstraints, PatternFixer, DrummerProfiles;
 
 type
   { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
@@ -32,9 +32,11 @@ type
   private
     function ApplyParameterModifications(APattern: TPattern; IntensityPt,
       Complexity, Dynamics: Double): TPattern;
-    { function SelectKickPattern - not implemented in this translation. }
     function GetSectionGrooveContext(const ASectionName: string; ABars: Integer): String;
   public
+    function SelectPatternForPhrase(const Available: specialize TList<TPattern>;
+      PhraseIndex: Integer; IntensityPt: Double; Phase: TMacroPhase;
+      PreviousPattern: TPattern): TPattern;
     function GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
       IntensityPt, Complexity, Dynamics: Double; const ADrummer: string;
       PreviousBars: specialize TList<TPattern>): TPattern;
@@ -113,6 +115,64 @@ end;
 implementation
 
 { TBarSelector — Bar-level pattern selection and modulation }
+
+function TBarSelector.SelectPatternForPhrase(const Available: specialize TList<TPattern>;
+  PhraseIndex: Integer; IntensityPt: Double; Phase: TMacroPhase;
+  PreviousPattern: TPattern): TPattern;
+var
+  Compatible: specialize TList<TPattern>;
+  I: Integer;
+  PMin, PMax, PMid: Double;
+  SelectedIdx: Integer;
+begin
+  Result := nil;
+  if not Assigned(Available) or (Available.Count = 0) then
+    Exit;
+
+  Compatible := specialize TList<TPattern>.Create;
+  try
+    for I := 0 to Available.Count - 1 do
+    begin
+      TryGetIntensityRange(Available[I], PMin, PMax);
+      PMid := (PMin + PMax) / 2.0;
+
+      { Check if the pattern's intensity midpoint is compatible with the phrase's intensity }
+      if (PMid >= IntensityPt - 0.25) and (PMid <= IntensityPt + 0.25) then
+        Compatible.Add(Available[I]);
+    end;
+
+    { Fallback if no exact match within tolerance }
+    if Compatible.Count = 0 then
+      for I := 0 to Available.Count - 1 do
+        Compatible.Add(Available[I]);
+
+    { Phase-aware and phrase-index cycling for per-bar/per-phrase variation }
+    case Phase of
+      mpEstablish:
+        SelectedIdx := 0;
+      mpMaintain:
+        begin
+          SelectedIdx := PhraseIndex mod Compatible.Count;
+          { Avoid repeating the exact previous phrase pattern if possible }
+          if (Compatible.Count > 1) and (Compatible[SelectedIdx] = PreviousPattern) then
+            SelectedIdx := (SelectedIdx + 1) mod Compatible.Count;
+        end;
+      mpBuild:
+        SelectedIdx := Compatible.Count - 1;
+      mpTurnaround:
+        SelectedIdx := PhraseIndex mod Compatible.Count;
+    else
+      SelectedIdx := PhraseIndex mod Compatible.Count;
+    end;
+
+    if (SelectedIdx < 0) or (SelectedIdx >= Compatible.Count) then
+      SelectedIdx := 0;
+
+    Result := Compatible[SelectedIdx];
+  finally
+    Compatible.Free;
+  end;
+end;
 
 function TBarSelector.GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
   IntensityPt, Complexity, Dynamics: Double; const ADrummer: string;
@@ -377,22 +437,10 @@ begin
 end;
 
 function TGrooveEngine.GetDrummerGrooveBias(const ADrummer: string): Single;
-var
-  DrummerLower: AnsiString;
 begin
-  // Return groove bias value per drummer style
-  DrummerLower := LowerCase(ADrummer);
-  case DrummerLower of
-    'bonham': Exit(0.025);
-    'porcaro': Exit(-0.010);
-    'weckl': Exit(0.005);
-    'chambers': Exit(-0.005);
-    'carey': Exit(0.015);
-    'peart': Exit(0.0);
-    'hoglan': Exit(-0.002);
-    'copeland': Exit(0.020);
-    else Exit(0.005);
-  end;
+  { Per-drummer bias comes from config/drummer_profiles.ini; the loader
+    falls back to built-in values when the file is missing. }
+  Result := GetDrummerProfile(ADrummer).GrooveBias;
 end;
 
 function TGrooveEngine.GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
@@ -460,8 +508,7 @@ begin
     for CI := 0 to Available.Count - 1 do
     begin
       PMin := 0.0; PMax := 1.0; PMid := 0.5;
-      if Available[CI].Metadata.TryGetValue('valid_intensity_min', AnsiString(PMin)) and
-         Available[CI].Metadata.TryGetValue('valid_intensity_max', AnsiString(PMax)) then
+      if TryGetIntensityRange(Available[CI], PMin, PMax) then
       begin
         PMid := (PMin + PMax) / 2.0;
         { Check overlap with bar intensity using a tolerance band. }
@@ -470,47 +517,50 @@ begin
       end;
     end;
 
-  { The macro phase decides which groove of the section's library plays, so
-    the song has a purposeful shape (establish -> maintain -> build ->
-    turnaround) instead of a random pick per phrase. }
-  Result := nil;
-  if (Compatible = nil) or (Compatible.Count = 0) then
-    Exit;
-
-  case Phase of
-    mpEstablish:
-      begin
-        { The opening of a section states the groove plainly, so the listener
-          can lock onto it — always the first flavour. }
-        Idx := 0;
-      end;
-    mpMaintain:
-      begin
-        { The body of a section rotates through the library and never repeats
-          the groove that was just used. }
+    { The macro phase decides which groove of the section's library plays, so
+      the song has a purposeful shape (establish -> maintain -> build ->
+      turnaround) instead of a random pick per phrase. }
+    Result := nil;
+    if Compatible.Count > 0 then
+    begin
+      case Phase of
+        mpEstablish:
+          begin
+            { The opening of a section states the groove plainly, so the listener
+              can lock onto it — always the first flavour. }
+            Idx := 0;
+          end;
+        mpMaintain:
+          begin
+            { The body of a section rotates through the library and never repeats
+              the groove that was just used. }
+            Idx := GetNextGrooveIndex(Compatible.Count);
+          end;
+        mpBuild:
+          begin
+            { The build pushes towards the densest groove in the library. }
+            Idx := Compatible.Count - 1;
+          end;
+        mpTurnaround:
+          begin
+            { A turnaround breaks out of the rotation so the section can change
+              gear. }
+            Idx := ARng.NextInt(Compatible.Count);
+          end;
+      else
         Idx := GetNextGrooveIndex(Compatible.Count);
       end;
-    mpBuild:
-      begin
-        { The build pushes towards the densest groove in the library. }
-        Idx := Compatible.Count - 1;
-      end;
-    mpTurnaround:
-      begin
-        { A turnaround breaks out of the rotation so the section can change
-          gear. }
-        Idx := ARng.NextInt(Compatible.Count);
-      end;
-  else
-    Idx := GetNextGrooveIndex(Compatible.Count);
-  end;
 
-  if (Idx < 0) or (Idx >= Compatible.Count) then
-    Idx := 0;
+      if (Idx < 0) or (Idx >= Compatible.Count) then
+        Idx := 0;
+    end
+    else
+      Idx := -1;
 
-  { The returned pattern is owned by the caller's list — it must NOT be freed
-    by the macro composer. }
-  Result := Compatible[Idx];
+    { The returned pattern is owned by the caller's list — it must NOT be freed
+      by the macro composer. }
+    if Idx >= 0 then
+      Result := Compatible[Idx];
   finally
     Compatible.Free;
   end;
@@ -595,10 +645,12 @@ var
   FixedPattern: TPattern;
   HumanizedPattern: TPattern;
   CurrentPattern: TPattern;
+  PreviousPhrasePattern: TPattern;
   CurrentPatternOwned: Boolean;
   CurrentPhraseStartBar: Integer;
   NextPhraseBar: Integer;
   PhraseBars: Integer;
+  PhraseIndex: Integer;
   HumanizationContext: THumanizationContext;
   Combined: TPattern;
   Fills: specialize TList<TFill>;
@@ -687,6 +739,7 @@ begin
     Available := nil;
     Fills := nil;
     CurrentPattern := nil;
+    PreviousPhrasePattern := nil;
     CurrentPatternOwned := False;
     MacroComposer := nil;
     try
@@ -743,6 +796,7 @@ begin
       MacroComposer := TMacroComposer.Create(FRng.NextInt(10000));
       NextPhraseBar := 0;
       CurrentPhraseStartBar := 0;
+      PhraseIndex := 0;
 
       for BarIndex := 0 to Bars - 1 do
       begin
@@ -754,18 +808,26 @@ begin
 
         if BarIndex >= NextPhraseBar then
         begin
+          { Remember the phrase that just ended so the selector can avoid
+            repeating it. Only borrowed patterns are kept: an owned one is
+            freed below. }
+          if CurrentPatternOwned then
+            PreviousPhrasePattern := nil
+          else
+            PreviousPhrasePattern := CurrentPattern;
           if CurrentPatternOwned and Assigned(CurrentPattern) then
             CurrentPattern.Free;
           CurrentPattern := nil;
           CurrentPatternOwned := False;
 
-          { Phase-aware groove selection — the macro phase decides which
-            flavour of the section's library the phrase plays. The intensity
-            point for this specific bar is used to filter by pattern metadata.
-            Only patterns compatible with this bar's intensity are eligible. }
+          { Select once per phrase, not once per bar: this preserves multi-bar
+            source patterns while varying successive phrases by intensity and
+            phrase position. The selector returns a borrowed pattern from
+            Available; only the fallback generated pattern is owned here. }
           if Available.Count > 0 then
-            CurrentPattern := MacroComposer.SelectGroove(Genre, SectionName,
-              Phase, Available, IntensityPt, FRng);
+            CurrentPattern := FBarSelector.SelectPatternForPhrase(
+              Available, PhraseIndex, IntensityPt, Phase, PreviousPhrasePattern);
+          Inc(PhraseIndex);
           if not Assigned(CurrentPattern) then
           begin
             CurrentPattern := FGenrePlugin.GeneratePattern(SectionName, Params);
@@ -831,6 +893,7 @@ begin
           HumanizationContext.Intensity := IntensityPt;
           HumanizationContext.Humanization := Params.Humanization;
           HumanizationContext.Tempo := ATempo;
+          HumanizationContext.Drummer := ADrummer;
           HumanizationContext.SourceRandom := FRng;
           try
             HumanizedPattern := FHumanizer.Apply(FinalPattern, HumanizationContext);

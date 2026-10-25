@@ -29,6 +29,7 @@ Source: "..\src\mappings\*.json"; DestDir: "{app}\mappings"; Flags: ignoreversio
 Source: "..\Assets\GMD\gmd_patterns.json"; DestDir: "{app}\Assets\GMD"; Flags: ignoreversion
 Source: "..\Assets\GMD\ATTRIBUTION.txt"; DestDir: "{app}\Assets\GMD"; Flags: ignoreversion
 Source: "..\ardour\*.lua"; DestDir: "{app}\ardour"; Flags: ignoreversion
+Source: "..\config\*.ini"; DestDir: "{app}\config"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\Readme.txt"; Description: "View Readme (How to use in DAW)"; Flags: postinstall shellexec skipifsilent unchecked

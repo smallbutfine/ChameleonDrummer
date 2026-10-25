@@ -227,39 +227,19 @@ end;
 
 { Removes the weakest hit of the group of simultaneous hits that sits at
   the given position. Returns True when a beat was removed. }
-function RemoveWeakestInGroup(APattern: TPattern; APosition: Double): Boolean;
+function RemoveWeakestInGroup(AEngine: TLimbConstraintEngine; APattern: TPattern;
+  APosition: Double): Boolean;
 var
-  Groups: TIndexGroupList;
-  Group: TIndexGroup;
   Weakest: Integer;
-  I: Integer;
 begin
+  { Limb-aware removal: only a real conflict removes a beat, and the beat
+    removed is the one whose removal makes the group playable. A snare
+    ghost note next to a kick is valid and survives. }
   Result := False;
-  Groups := BuildIndexGroups(APattern);
-  try
-    Group := FindGroupAt(Groups, APosition);
-    if Group = nil then
-      Exit(False);
-    if Group.Indices.Count = 0 then
-      Exit(False);
-
-    Weakest := -1;
-    for I := 0 to Group.Indices.Count - 1 do
-    begin
-      if Weakest < 0 then
-        Weakest := Group.Indices[I]
-      else if WeakerThan(APattern.Beats[Group.Indices[I]],
-                         APattern.Beats[Weakest]) then
-        Weakest := Group.Indices[I];
-    end;
-
-    if Weakest < 0 then
-      Exit(False);
-
+  if AEngine.FindConflictHitToDiscard(APattern, APosition, Weakest) then
+  begin
     RemoveBeat(APattern, APattern.Beats[Weakest]);
     Result := True;
-  finally
-    FreeIndexGroups(Groups);
   end;
 end;
 
@@ -314,7 +294,7 @@ begin
   if AViolation.Kind = 'repeat_speed' then
     Result := RemoveLaterHit(AEngine, APattern, AViolation.Position)
   else
-    Result := RemoveWeakestInGroup(APattern, AViolation.Position);
+    Result := RemoveWeakestInGroup(AEngine, APattern, AViolation.Position);
 end;
 
 { ── TPatternFixer ────────────────────────────────────────────── }

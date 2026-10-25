@@ -69,10 +69,42 @@ public
   function Copy: TPattern;
 end;
 
+{ Reads the valid_intensity_min/max metadata tags of a pattern. Parsing is
+  locale independent ('0.25' works under a German locale too). AMin/AMax are
+  0.0/1.0 when a tag is missing or malformed; the result is True only when
+  both tags were present and valid. }
+function TryGetIntensityRange(APattern: TPattern; out AMin, AMax: Double): Boolean;
+
 implementation
 
 type
   TBeatList = specialize TList<TBeat>;
+
+function TryGetIntensityRange(APattern: TPattern; out AMin, AMax: Double): Boolean;
+var
+  Fmt: TFormatSettings;
+  S: string;
+  HasMin, HasMax: Boolean;
+begin
+  AMin := 0.0;
+  AMax := 1.0;
+  Result := False;
+  if APattern = nil then
+    Exit;
+  Fmt := DefaultFormatSettings;
+  Fmt.DecimalSeparator := '.';
+  S := '';
+  HasMin := APattern.Metadata.TryGetValue('valid_intensity_min', S) and
+    TryStrToFloat(Trim(S), AMin, Fmt);
+  if not HasMin then
+    AMin := 0.0;
+  S := '';
+  HasMax := APattern.Metadata.TryGetValue('valid_intensity_max', S) and
+    TryStrToFloat(Trim(S), AMax, Fmt);
+  if not HasMax then
+    AMax := 1.0;
+  Result := HasMin and HasMax;
+end;
 
 { â”€â”€ Beat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
 
