@@ -10,6 +10,9 @@ uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song;
 
 type
+  { Lines of a drum tab (see TDrumTab). }
+  TTabLines = array of string;
+
   { Stub TPatternBuilder � full implementation in .pas file below }
   TPatternBuilder = class(TObject)
   private
@@ -17,10 +20,12 @@ type
     FBeats: specialize TList<TBeat>;
     FPositionOffset: Double;
     procedure AddDrumHit(const AInstrumentName: string; AtPos: Double;
-      AVelocity: Integer);
+      AVelocity: Integer; AGhost: Boolean = False; AAccent: Boolean = False);
   public
     constructor Create(const AName: string);
     destructor Destroy; override;
+    function Hit(const AInstrumentName: string; AtPos: Double; AVel: Integer;
+      AGhost, AAccent: Boolean): TPatternBuilder; virtual;
     function Kick(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Snare(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
     function Crash(AtPos: Double; AVel: Integer): TPatternBuilder; virtual;
@@ -105,6 +110,29 @@ type
     function Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
   end;
 
+  { A groove written as a drum tab. Each line is
+        <instrument>[@<min complexity>] <bar 1>|<bar 2>|...
+    A bar is a row of steps; its length sets the grid (16 = sixteenths,
+    12 = triplet eighths, 8 = eighths, 32 = thirty-seconds). Spaces inside a
+    bar are ignored, so steps can be grouped by beat. Step characters:
+        .  rest        x  normal hit     X  accent
+        o  soft hit    g  ghost note
+    Instruments: K kick, S snare, RS rimshot, SS side stick, H closed hat,
+    HO open hat, HP pedal hat, R ride, RB ride bell, C crash, C2 crash 2,
+    CH china-style cymbal, SP splash, T1..T4 toms.
+    A line with @0.6 only plays when the song complexity is at least 0.6.
+    A line with fewer bars than the tab repeats its bars. }
+  TDrumTab = class(TPatternTemplate)
+  private
+    FLines: TStringList;
+    FBarCount: Integer;
+  public
+    constructor Create(const ALines: array of string);
+    destructor Destroy; override;
+    function Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
+    property BarCount: Integer read FBarCount;
+  end;
+
   TTemplateComposer = class(TObject)
   private
     FPName: string;
@@ -119,6 +147,26 @@ type
 function OverlayDoubleBassPedal(const APattern: TPattern;
   const APatternType: string; ASubdivision: Integer;
   AIntensity: Double = 0.7): TPattern;
+
+{ Section kind used to pick a groove set: 'verse', 'chorus' or 'bridge'.
+  intro/outro/unknown sections play the verse grooves. }
+function GrooveKindOfSection(const ASection: string): string;
+
+{ Intensity band of groove variant AVariant (0 = lightest) for a section kind.
+  The bands overlap on purpose, so neighbouring intensities share a groove
+  and the selector can still rotate between them. }
+procedure GrooveBand(const AKind: string; AVariant: Integer; out AMin, AMax: Double);
+
+{ Writes valid_intensity_min/max metadata (locale independent). }
+procedure TagIntensityBand(APattern: TPattern; AMin, AMax: Double);
+
+{ Builds a groove from drum-tab lines and tags its intensity band. }
+function BuildTaggedGroove(const AName, AKind: string; AVariant: Integer;
+  const ALines: array of string; AComplexity: Double): TPattern;
+
+{ Builds a pattern from drum-tab lines (see TDrumTab). }
+function BuildDrumTabPattern(const AName: string; const ALines: array of string;
+  AComplexity: Double; AMinBars: Integer = 2): TPattern;
 
 implementation
 
@@ -155,7 +203,7 @@ begin
 end;
 
 procedure TPatternBuilder.AddDrumHit(const AInstrumentName: string;
-  AtPos: Double; AVelocity: Integer);
+  AtPos: Double; AVelocity: Integer; AGhost: Boolean; AAccent: Boolean);
 var
   Instrument: TDrumInstrument;
   Beat: TBeat;
@@ -168,10 +216,25 @@ begin
        SameText(Beat.Instrument.Name, Instrument.Name) and
        (Abs(Beat.Position - (AtPos + FPositionOffset)) < 0.000001) then
     begin
-      Beat.Velocity := Max(Beat.Velocity, AVelocity);
+      if AVelocity > Beat.Velocity then
+      begin
+        Beat.Velocity := AVelocity;
+        Beat.GhostNote := AGhost;
+      end;
+      Beat.Accent := Beat.Accent or AAccent;
       Exit;
     end;
-  FBeats.Add(TBeat.Create(AtPos + FPositionOffset, Instrument, AVelocity));
+  Beat := TBeat.Create(AtPos + FPositionOffset, Instrument, AVelocity);
+  Beat.GhostNote := AGhost;
+  Beat.Accent := AAccent;
+  FBeats.Add(Beat);
+end;
+
+function TPatternBuilder.Hit(const AInstrumentName: string; AtPos: Double;
+  AVel: Integer; AGhost, AAccent: Boolean): TPatternBuilder;
+begin
+  Result := Self;
+  AddDrumHit(AInstrumentName, AtPos, AVel, AGhost, AAccent);
 end;
 
 function TPatternBuilder.Kick(AtPos: Double; AVel: Integer): TPatternBuilder;
@@ -215,6 +278,8 @@ begin
   begin
     Item := FBeats[I];
     LPattern.AddBeat(Item.Position, Item.Instrument, Item.Velocity);
+    LPattern.Beats[LPattern.Beats.Count - 1].GhostNote := Item.GhostNote;
+    LPattern.Beats[LPattern.Beats.Count - 1].Accent := Item.Accent;
   end;
   Result := LPattern;
 end;
@@ -437,6 +502,220 @@ end;
 
 constructor TFunkGhostNotes.CreateDefault;
 begin inherited Create; Style := 'default'; end;
+
+{ Drum-tab instrument alias -> keymap instrument name ('' when unknown). }
+function TabInstrument(const AAlias: string): string;
+begin
+  case UpperCase(AAlias) of
+    'K': Result := 'kick';
+    'S': Result := 'snare_open_hit_open_lateral_hit';
+    'RS': Result := 'snare_rimshot_open_hit';
+    'SS': Result := 'snare_side_stick';
+    'H': Result := 'hihat_closed_1_tip_closed_1_hit';
+    'HO': Result := 'hihat_open_a';
+    'HP': Result := 'hihat_pedal_closed';
+    'R': Result := 'ride_1_tip_hit_softer';
+    'RB': Result := 'ride_1_bell';
+    'C': Result := 'cymbal_1_hit';
+    'C2': Result := 'cymbal_2_hit';
+    'CH': Result := 'cymbal_4_hit';
+    'SP': Result := 'cymbal_6_hit';
+    'T1': Result := 'tom_1_open_hit';
+    'T2': Result := 'tom_2_open_hit';
+    'T3': Result := 'tom_3_open_hit';
+    'T4': Result := 'tom_4_open_hit';
+  else
+    Result := '';
+  end;
+end;
+
+function CountBars(const ABody: string): Integer;
+var
+  I: Integer;
+begin
+  Result := 1;
+  for I := 1 to Length(ABody) do
+    if ABody[I] = '|' then
+      Inc(Result);
+end;
+
+constructor TDrumTab.Create(const ALines: array of string);
+var
+  I, P: Integer;
+  Line: string;
+begin
+  inherited Create;
+  FLines := TStringList.Create;
+  FBarCount := 1;
+  for I := 0 to High(ALines) do
+  begin
+    Line := Trim(ALines[I]);
+    if Line = '' then
+      Continue;
+    P := Pos(' ', Line);
+    if P < 2 then
+      raise Exception.CreateFmt('Drum tab line has no steps: "%s"', [Line]);
+    FLines.Add(Line);
+    FBarCount := Max(FBarCount, CountBars(Copy(Line, P + 1, MaxInt)));
+  end;
+end;
+
+destructor TDrumTab.Destroy;
+begin
+  FLines.Free;
+  inherited Destroy;
+end;
+
+function TDrumTab.Generate(Builder: TPatternBuilder;
+  const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
+var
+  FS: TFormatSettings;
+  Bars: TStringList;
+  Line, Token, Seg, InstName: string;
+  P, AtPos, I, StepCount, BarIdx: Integer;
+  MinComplexity, Complexity: Double;
+  Vel: Integer;
+  Ghost, Accent: Boolean;
+begin
+  Result := Builder;
+  FS := DefaultFormatSettings;
+  FS.DecimalSeparator := '.';
+  Complexity := TemplateComplexity(Kwargs);
+  BarIdx := StrToIntDef(Kwargs.Items['bar'], 0);
+  Bars := TStringList.Create;
+  try
+    Bars.StrictDelimiter := True;
+    Bars.Delimiter := '|';
+    for I := 0 to FLines.Count - 1 do
+    begin
+      Line := FLines[I];
+      P := Pos(' ', Line);
+      Token := Copy(Line, 1, P - 1);
+      MinComplexity := 0.0;
+      AtPos := Pos('@', Token);
+      if AtPos > 0 then
+      begin
+        MinComplexity := StrToFloatDef(Copy(Token, AtPos + 1, MaxInt), 0.0, FS);
+        Token := Copy(Token, 1, AtPos - 1);
+      end;
+      if Complexity < MinComplexity then
+        Continue;
+      InstName := TabInstrument(Token);
+      if InstName = '' then
+        raise Exception.CreateFmt('Unknown drum tab instrument "%s" in "%s"',
+          [Token, Line]);
+
+      Bars.DelimitedText := Copy(Line, P + 1, MaxInt);
+      Seg := StringReplace(Bars[BarIdx mod Bars.Count], ' ', '', [rfReplaceAll]);
+      StepCount := Length(Seg);
+      case StepCount of
+        4, 8, 12, 16, 24, 32: ;
+      else
+        raise Exception.CreateFmt(
+          'Drum tab bar must have 4, 8, 12, 16, 24 or 32 steps, got %d in "%s"',
+          [StepCount, Line]);
+      end;
+
+      for P := 1 to StepCount do
+      begin
+        Ghost := False;
+        Accent := False;
+        case Seg[P] of
+          '.', '-': Continue;
+          'x': Vel := 96;
+          'X': begin Vel := 118; Accent := True; end;
+          'o': Vel := 70;
+          'g': begin Vel := 34; Ghost := True; end;
+        else
+          raise Exception.CreateFmt('Unknown drum tab step "%s" in "%s"',
+            [Seg[P], Line]);
+        end;
+        Builder.Hit(InstName, (P - 1) * 4.0 / StepCount, Vel, Ghost, Accent);
+      end;
+    end;
+  finally
+    Bars.Free;
+  end;
+end;
+
+function BuildDrumTabPattern(const AName: string; const ALines: array of string;
+  AComplexity: Double; AMinBars: Integer): TPattern;
+var
+  Tab: TDrumTab;
+  Composer: TTemplateComposer;
+  Bars: Integer;
+begin
+  Tab := TDrumTab.Create(ALines);
+  Bars := Max(Tab.BarCount, AMinBars);
+  Composer := TTemplateComposer.Create(AName);
+  try
+    Composer.Add(Tab);
+    Result := Composer.Build(Bars, AComplexity);
+    Result.Metadata.AddOrSetValue('phrase_bars', IntToStr(Bars));
+  finally
+    Composer.Free;
+  end;
+end;
+
+function GrooveKindOfSection(const ASection: string): string;
+var
+  S: string;
+begin
+  S := LowerCase(ASection);
+  if (Pos('chorus', S) > 0) and (Pos('pre', S) = 0) then
+    Result := 'chorus'
+  else if (Pos('bridge', S) > 0) or (Pos('breakdown', S) > 0) or
+          (Pos('solo', S) > 0) or (Pos('pre', S) > 0) then
+    Result := 'bridge'
+  else
+    Result := 'verse';
+end;
+
+procedure GrooveBand(const AKind: string; AVariant: Integer; out AMin, AMax: Double);
+const
+  VerseMin: array[0..2] of Double = (0.20, 0.40, 0.60);
+  VerseMax: array[0..2] of Double = (0.60, 0.80, 1.00);
+  ChorusMin: array[0..2] of Double = (0.40, 0.60, 0.75);
+  ChorusMax: array[0..2] of Double = (0.80, 0.95, 1.00);
+  BridgeMin: array[0..2] of Double = (0.10, 0.30, 0.50);
+  BridgeMax: array[0..2] of Double = (0.50, 0.70, 0.90);
+var
+  V: Integer;
+begin
+  V := EnsureRange(AVariant, 0, 2);
+  if AKind = 'chorus' then
+  begin
+    AMin := ChorusMin[V]; AMax := ChorusMax[V];
+  end
+  else if AKind = 'bridge' then
+  begin
+    AMin := BridgeMin[V]; AMax := BridgeMax[V];
+  end
+  else
+  begin
+    AMin := VerseMin[V]; AMax := VerseMax[V];
+  end;
+end;
+
+procedure TagIntensityBand(APattern: TPattern; AMin, AMax: Double);
+var
+  FS: TFormatSettings;
+begin
+  FS := DefaultFormatSettings;
+  FS.DecimalSeparator := '.';
+  APattern.Metadata.AddOrSetValue('valid_intensity_min', FormatFloat('0.00', AMin, FS));
+  APattern.Metadata.AddOrSetValue('valid_intensity_max', FormatFloat('0.00', AMax, FS));
+end;
+
+function BuildTaggedGroove(const AName, AKind: string; AVariant: Integer;
+  const ALines: array of string; AComplexity: Double): TPattern;
+var
+  Lo, Hi: Double;
+begin
+  Result := BuildDrumTabPattern(AName, ALines, AComplexity);
+  GrooveBand(AKind, AVariant, Lo, Hi);
+  TagIntensityBand(Result, Lo, Hi);
+end;
 
 constructor TTemplateComposer.Create(const AName: string);
 begin

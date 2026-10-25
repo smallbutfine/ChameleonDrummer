@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin, DrummerPlugin,
-  config_constants;
+  config_constants, MetalGrooves;
 
 type
   // Context blending for metal styles
@@ -29,6 +29,7 @@ type
     FComplexity: Double;
     FIntensity: Double;
     function GetChinaTimekeeper(const AStyle: String): String;
+    function MakeGroove(const AKind, AStyle: String; AVariant: Integer): TPattern;
     function GetFlavorVerseInternal(BarIndex: Integer; const Style: String): TPattern;
     function GetFlavorChorusInternal(BarIndex: Integer; const Style: String): TPattern;
     function GetFlavorBridgeInternal(BarIndex: Integer; const Style: String): TPattern;
@@ -128,75 +129,24 @@ begin
   end;
 end;
 
+function TMetalGenrePlugin.MakeGroove(const AKind, AStyle: String;
+  AVariant: Integer): TPattern;
+begin
+  { Grooves are drum tabs in MetalGrooves.pas: three per style and section
+    kind, tagged with overlapping intensity bands. }
+  Result := BuildTaggedGroove(
+    'metal_' + AStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
+    AVariant, MetalGrooveLines(AStyle, AKind, AVariant), FComplexity);
+end;
+
 function TMetalGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
 begin
   Result := GetFlavorVerseInternal(BarIndex, FStyle);
 end;
 
 function TMetalGenrePlugin.GetFlavorVerseInternal(BarIndex: Integer; const Style: String): TPattern;
-var
-  Composer: TTemplateComposer;
-  IntensityFactor: Double;
 begin
-  { Complexity is the density control and dynamics is how hard the part is
-    played. Combining them lets either one open the pattern gates below -
-    with dynamics alone at its default the gates could never be reached. }
-  IntensityFactor := (FIntensity + FComplexity) / 2;
-  Composer := TTemplateComposer.Create('metal_' + Style + '_verse_b' + IntToStr(BarIndex));
-
-  case Style of
-    'heavy':
-      begin
-        // Classic heavy metal — Sabbath/Iron Maiden style
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('continuous', 8));
-      end;
-    'death':
-      begin
-        // Death metal â€” blast beats, double bass
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-        if (IntensityFactor > 0.7) then
-          Composer.Add(TBlastBeat.Create('traditional', IntensityFactor));
-      end;
-    'power':
-      begin
-        // Power metal — anthemic, driving
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
-      end;
-    'progressive':
-      begin
-        // Progressive â€" complex syncopation
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 3 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('continuous', 8));
-      end;
-    'thrash':
-      begin
-        // Thrash â€” fast aggressive
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-        if (IntensityFactor > 0.6) then
-          Composer.Add(TBlastBeat.Create('hammer', IntensityFactor * 0.9));
-      end;
-    'doom':
-      begin
-        // Doom â€" slow, heavy, crushing
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'breakdown':
-      begin
-        // Breakdown â€” syncopated chugs
-        Composer.Add(TDoubleBassPedal.Create('burst', 32));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag verse patterns with high minimum intensity for metal — even verses are intense. }
-  Result.Metadata.Add('valid_intensity_min', '0.4');
-  Result.Metadata.Add('valid_intensity_max', '0.75');
+  Result := MakeGroove('verse', Style, BarIndex mod 3);
 end;
 
 function TMetalGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
@@ -205,61 +155,8 @@ begin
 end;
 
 function TMetalGenrePlugin.GetFlavorChorusInternal(BarIndex: Integer; const Style: String): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('metal_' + Style + '_chorus_b' + IntToStr(BarIndex));
-
-  case Style of
-    'heavy':
-      begin
-        // Heavy chorus â€" bigger crash accents
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'death':
-      begin
-        // Death chorus â€” extended blast
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-        Composer.Add(TBlastBeat.Create('gravity', FIntensity));
-      end;
-    'power':
-      begin
-        // Power chorus â€” gallop drive
-        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'progressive':
-      begin
-        // Progressive chorus â€" odd meter feel
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-    'thrash':
-      begin
-        // Thrash chorus â€” relentless double bass
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-    'doom':
-      begin
-        // Doom chorus â€" crushing sustained hits
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'breakdown':
-      begin
-        // Breakdown chorus â€” half-time chugs
-        Composer.Add(TDoubleBassPedal.Create('burst', 32));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag chorus patterns as maximum-intensity for metal (blast beats, crash accents). }
-  Result.Metadata.Add('valid_intensity_min', '0.75');
-  Result.Metadata.Add('valid_intensity_max', '1.0');
+  Result := MakeGroove('chorus', Style, BarIndex mod 3);
 end;
 
 function TMetalGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -268,60 +165,8 @@ begin
 end;
 
 function TMetalGenrePlugin.GetFlavorBridgeInternal(BarIndex: Integer; const Style: String): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('metal_' + Style + '_bridge_b' + IntToStr(BarIndex));
-
-  case Style of
-    'heavy':
-      begin
-        // Heavy bridge â€" build up with tom fill
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TTomFill.Create('descending'));
-      end;
-    'death':
-      begin
-        // Death bridge â€” sparse blast
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TBlastBeat.Create('traditional', FIntensity * 0.8));
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-      end;
-    'power':
-      begin
-        // Power bridge â€” melodic ride pattern
-        Composer.Add(TSteadyRide.Create);
-      end;
-    'progressive':
-      begin
-        // Progressive bridge â€" complex layering
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TDoubleBassPedal.Create('gallop', 16));
-      end;
-    'thrash':
-      begin
-        // Thrash bridge â€” half-time chug
-        Composer.Add(TDoubleBassPedal.Create('burst', 32));
-      end;
-    'doom':
-      begin
-        // Doom bridge â€" minimal crushing
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'breakdown':
-      begin
-        // Breakdown bridge â€” stop-time feel
-        Composer.Add(TDoubleBassPedal.Create('burst', 32));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag bridge patterns with variable intensity for metal builds and breakdowns. }
-  Result.Metadata.Add('valid_intensity_min', '0.3');
-  Result.Metadata.Add('valid_intensity_max', '0.6');
+  Result := MakeGroove('bridge', Style, BarIndex mod 3);
 end;
 
 function TMetalGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -407,22 +252,7 @@ begin
     end;
 
     for BarIdx := 0 to 2 do
-      GrooveList.Add(GetFlavorVerseInternal(BarIdx, StyleForVerse));
-
-    case StyleForVerse of
-      'heavy', 'power', 'doom':
-        begin
-          GrooveList.Add(GetFlavorChorusInternal(0, StyleForVerse));
-          GrooveList.Add(GetFlavorChorusInternal(1, StyleForVerse));
-          GrooveList.Add(GetFlavorChorusInternal(2, StyleForVerse));
-        end;
-    else
-      GrooveList.Add(GetFlavorChorusInternal(0, StyleForVerse));
-      GrooveList.Add(GetFlavorChorusInternal(1, StyleForVerse));
-    end;
-
-    for BarIdx := 0 to 1 do
-      GrooveList.Add(GetFlavorBridgeInternal(BarIdx, StyleForVerse));
+      GrooveList.Add(MakeGroove(GrooveKindOfSection(Section), StyleForVerse, BarIdx));
 
     Result := GrooveList;
     GrooveList := nil;
@@ -554,53 +384,14 @@ end;
 
 function TMetalGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Composer: TTemplateComposer;
   Style: String;
 begin
-  // Read style from parameters (FStyle is set once in constructor, but params override it)
-  if Parameters <> nil then
+  { Params override the style the plugin was created with. }
+  if (Parameters <> nil) and (Parameters.Style <> '') then
     Style := LowerCase(Parameters.Style)
   else
     Style := FStyle;
-  
-  { Generate default metal pattern using template system } 
-  Composer := TTemplateComposer.Create(Section + '_metal_' + Style);
-  try
-    if SameText(Style, 'heavy') then
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TDoubleBassPedal.Create('continuous', 8));
-      end
-    else if SameText(Style, 'power') then
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TDoubleBassPedal.Create('gallop', 16));
-      end
-    else if SameText(Style, 'death') or SameText(Style, 'thrash') then
-      begin
-        Composer.Add(TDoubleBassPedal.Create('continuous', 16));
-        Composer.Add(TBlastBeat.Create('traditional', 0.9));
-      end
-    else if SameText(Style, 'doom') then
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end
-    else if SameText(Style, 'breakdown') then
-      Composer.Add(TDoubleBassPedal.Create('burst', 32))
-    else if SameText(Style, 'progressive') then
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TDoubleBassPedal.Create('continuous', 8));
-      end
-    else
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    Result := Composer.Build(2, FComplexity);
-  finally
-    Composer.Free;
-  end;
+  Result := MakeGroove(GrooveKindOfSection(Section), Style, 1);
 end;
 
 end.
