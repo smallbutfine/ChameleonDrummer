@@ -405,3 +405,13 @@ body {
     padding: 60px 0;
   }
 }
+/* Link visibility fix for sci-fi theme */
+a {
+  color: #00ffaa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a:hover {
+  color: #00ffcc;
+  text-decoration: none;
+}
