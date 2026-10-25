@@ -340,6 +340,14 @@ header h1 {
   display: inline-block;
 }
 
+.tagline {
+  font-size: 1em;
+  color: #00ffaa;
+  font-style: italic;
+  margin-top: 5px;
+  letter-spacing: 1px;
+}
+
 header h1::after {
   content: '◉';
   color: #00ffaa;
