@@ -87,6 +87,38 @@ begin
   end;
 end;
 
+{ Number of note-offs that do not land exactly on the tick of the next note-on
+  of the same pitch. The last hit of a pitch is not counted. }
+function CountEarlyStops(const AEvents: specialize TArray<TNoteEvent>): Integer;
+var
+  OnTick: array[0..127] of Int64;
+  Sounding: array[0..127] of Boolean;
+  OffTick: array[0..127] of Int64;
+  HasOff: array[0..127] of Boolean;
+  I: Integer;
+begin
+  Result := 0;
+  FillChar(Sounding, SizeOf(Sounding), 0);
+  FillChar(HasOff, SizeOf(HasOff), 0);
+  FillChar(OnTick, SizeOf(OnTick), 0);
+  FillChar(OffTick, SizeOf(OffTick), 0);
+  for I := 0 to High(AEvents) do
+    if AEvents[I].IsOn then
+    begin
+      if HasOff[AEvents[I].Note] and (OffTick[AEvents[I].Note] <> AEvents[I].Tick) then
+        Inc(Result);
+      HasOff[AEvents[I].Note] := False;
+      OnTick[AEvents[I].Note] := AEvents[I].Tick;
+      Sounding[AEvents[I].Note] := True;
+    end
+    else if Sounding[AEvents[I].Note] then
+    begin
+      OffTick[AEvents[I].Note] := AEvents[I].Tick;
+      HasOff[AEvents[I].Note] := True;
+      Sounding[AEvents[I].Note] := False;
+    end;
+end;
+
 function CountOverlaps(const AEvents: specialize TArray<TNoteEvent>): Integer;
 var
   Open: array[0..127] of Boolean;
@@ -118,18 +150,22 @@ begin
     Kick := TInstrumentRegistry.Get('kick');
     Hat := TInstrumentRegistry.Get('hihat_closed_1_tip_closed_1_hit');
 
-    { 32nd-note kick roll: each hit is only 120 ticks after the last one, a
-      default note length (192) would run into the next hit. }
+    { 32nd-note kick roll: each hit is only 120 ticks after the last one and
+      must stop its predecessor. The hi-hat at 0.0 has no later hit of its
+      own pitch and rings to the end. }
     P := TPattern.Create('roll');
     for I := 0 to 15 do
       P.AddBeat(I * 0.125, Kick, 100);
     P.AddBeat(0.0, Hat, 90);
+    P.AddBeat(2.0, Hat, 90);
     Gen.SavePatternMidi(P, '_note_off_test.mid', 120);
     P.Free;
 
     Events := ReadNotes('_note_off_test.mid', Ppq);
     Check(Ppq = 960, Format('pattern export must use 960 ppq, got %d', [Ppq]));
     Check(CountOverlaps(Events) = 0, 'no note may still sound when the next hit of its pitch starts');
+    Check(CountEarlyStops(Events) = 0,
+      'a note rings until the next hit of the same pitch stops it');
     I := 0;
     for I := 0 to High(Events) do
       if Events[I].IsOn and (Events[I].Note = 35) then

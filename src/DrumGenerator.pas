@@ -854,10 +854,12 @@ begin
     end;
   end;
 
-  { A note-off never arrives after the next hit of the same pitch, so a fast
-    repeat (double bass on the one kick, a hi-hat roll) is never cut short by
-    a player that honours note-off. Every note-on is stored directly before
-    its own note-off. }
+  { Drum-machine behaviour: a note rings until the next hit of the same pitch
+    stops it, and the last hit of a pitch rings until the end of the song.
+    There is no per-note length - a fast repeat (double bass on the one kick,
+    a hi-hat roll) simply retriggers, and the note-off lands on the tick of
+    the retrigger (sorted before the note-on). Every note-on is stored
+    directly before its own note-off. }
   for Pitch := 0 to 127 do
   begin
     SetLength(PairOn, 0);
@@ -878,8 +880,9 @@ begin
         if (Events[PairOn[Q]].Tick > Events[PairOn[P]].Tick) and
            (Events[PairOn[Q]].Tick < NextOnTick) then
           NextOnTick := Events[PairOn[Q]].Tick;
-      if Events[PairOn[P] + 1].Tick > NextOnTick then
-        Events[PairOn[P] + 1].Tick := NextOnTick;
+      if NextOnTick = High(Int64) then
+        NextOnTick := Max(TickOffset, Events[PairOn[P]].Tick + 1);
+      Events[PairOn[P] + 1].Tick := NextOnTick;
     end;
   end;
 
