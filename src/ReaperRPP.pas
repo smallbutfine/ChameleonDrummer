@@ -167,7 +167,7 @@ var
   Rest, Token: String;
   I: Integer;
   Ch: Char;
-  InQuote: Boolean;
+  InQuote, Quoted: Boolean;
   Tokens: TStringList;
 begin
   Result.IsRegion := False;
@@ -193,30 +193,43 @@ begin
   try
     Token := '';
     InQuote := False;
+    Quoted := False;
     for I := 1 to Length(Rest) do
     begin
       Ch := Rest[I];
       if Ch = '"' then
-        InQuote := not InQuote
+      begin
+        InQuote := not InQuote;
+        Quoted := True;
+      end
       else if (not InQuote) and (Ch in [' ', #9]) then
       begin
-        if Token <> '' then
+        { An empty quoted string ("") is still a token. }
+        if (Token <> '') or Quoted then
         begin
           Tokens.Add(Token);
           Token := '';
+          Quoted := False;
         end;
       end
       else
         Token := Token + Ch;
     end;
-    if Token <> '' then
+    if (Token <> '') or Quoted then
       Tokens.Add(Token);
 
-    { MODERN: MARKER <id> <pos> <name> <color> <flags>
-      REGION:  RPR_MARKER <id> <start> <end> <name> <color> <flags>
-      LEGACY:  MARKER <measure> "<name>" }
-    if (Tokens.Count >= 3) and ParseRPPFloat(Tokens[1], Result.Position) then
+    { REAPER's own format:  MARKER <index> <position> "<name>" <flags> ...
+      flags bit 1 = region; a region is a pair of lines with the same index,
+      the second one (empty name) giving the end. }
+    if (Tokens.Count >= 4) and ParseRPPFloat(Tokens[1], Result.Position) then
     begin
+      Result.Name := Tokens[2];
+      Result.EndPosition := Result.Position;
+      Result.IsRegion := (StrToIntDef(Tokens[3], 0) and 1) <> 0;
+    end
+    else if (Tokens.Count >= 3) and ParseRPPFloat(Tokens[1], Result.Position) then
+    begin
+      { older exports of this program: RPR_MARKER <id> <start> <end> <name> }
       if IsRegion and (Tokens.Count >= 4) and
          ParseRPPFloat(Tokens[2], Result.EndPosition) then
         Result.Name := Tokens[3]
@@ -248,7 +261,18 @@ begin
     begin
       Marker := ParseMarkerLine(FileLines[I]);
       if (Marker.Position > 0) or (Marker.Name <> '') then
-        FMarkers.Add(Marker);
+      begin
+        { The second line of a region has no name; it only gives the end. }
+        if Marker.IsRegion and (Marker.Name = '') and (FMarkers.Count > 0) and
+           FMarkers[FMarkers.Count - 1].IsRegion then
+        begin
+          Marker := FMarkers[FMarkers.Count - 1];
+          Marker.EndPosition := ParseMarkerLine(FileLines[I]).Position;
+          FMarkers[FMarkers.Count - 1] := Marker;
+        end
+        else
+          FMarkers.Add(Marker);
+      end;
     end;
 
     Result := FMarkers.Count > 0;
@@ -351,17 +375,18 @@ end;
 function TReaperRPPWriter.EscapeRPPString(const S: String): String;
 begin
   // Escape special characters for .rpp format
-  Result := S;
-  ReplaceText(Result, '\', '\\');
-  ReplaceText(Result, '"', '\"');
-  Result := StringReplace(Result, #10, '\n', [rfReplaceAll]);
-  Result := StringReplace(Result, #13, '\r', [rfReplaceAll]);
+  { The project format documents no escape sequence for a double quote, so
+    names are made safe instead: a quote becomes an apostrophe and line
+    breaks become blanks. Nothing here can end the quoted name early. }
+  Result := StringReplace(S, '"', '''', [rfReplaceAll]);
+  Result := StringReplace(Result, #13, ' ', [rfReplaceAll]);
+  Result := StringReplace(Result, #10, ' ', [rfReplaceAll]);
 end;
 
 function TReaperRPPWriter.SaveToFile(const AFilePath: String; const AMIDIFile: String): Boolean;
 var
   Output: TStringList;
-  I, Id: Integer;
+  I, MarkerId, RegionId: Integer;
   M: TReaperMarker;
   MidiPath, MidiName: String;
 
@@ -390,17 +415,32 @@ begin
       ' ' + IntToStr(FTempoDenom));
     Output.Add('  PLAYRATE 1 0 0.25 4');
 
-    Id := 1;
+    { Markers and regions are MARKER lines:
+        MARKER <index> <position> "<name>" <flags> <color> 1 B {<guid>} 0
+      flags bit 1 marks a region, which is a pair of lines with the same index:
+      the first carries the name and the start, the second only the end.
+      Markers and regions are numbered separately. }
+    MarkerId := 0;
+    RegionId := 0;
     for I := 0 to FMarkers.Count - 1 do
     begin
       M := FMarkers[I];
       if M.IsRegion then
-        Output.Add('  RPR_MARKER ' + IntToStr(Id) + ' ' + FormatRPPFloat(M.Position) +
-          ' ' + FormatRPPFloat(M.EndPosition) + ' ' + Quote(M.Name) + ' 0 0')
+      begin
+        Inc(RegionId);
+        Output.Add('  MARKER ' + IntToStr(RegionId) + ' ' + FormatRPPFloat(M.Position) +
+          ' "' + EscapeRPPString(M.Name) + '" 1 0 1 B {' +
+          MakeGUID('region:' + IntToStr(RegionId) + ':' + M.Name) + '} 0');
+        Output.Add('  MARKER ' + IntToStr(RegionId) + ' ' + FormatRPPFloat(M.EndPosition) +
+          ' "" 1');
+      end
       else
-        Output.Add('  MARKER ' + IntToStr(Id) + ' ' + FormatRPPFloat(M.Position) +
-          ' ' + Quote(M.Name) + ' 0 0');
-      Inc(Id);
+      begin
+        Inc(MarkerId);
+        Output.Add('  MARKER ' + IntToStr(MarkerId) + ' ' + FormatRPPFloat(M.Position) +
+          ' "' + EscapeRPPString(M.Name) + '" 0 0 1 B {' +
+          MakeGUID('marker:' + IntToStr(MarkerId) + ':' + M.Name) + '} 0');
+      end;
     end;
 
     { Tempo envelope. A "PT" line is: position (seconds), bpm, shape, meter,
@@ -432,10 +472,6 @@ begin
     { REAPER resolves the media path relative to the project file and
       expects forward slashes. }
     MidiPath := StringReplace(AMIDIFile, '\', '/', [rfReplaceAll]);
-    Output.Add('  FILE ' + Quote(MidiPath));
-
-    if (FTitle <> '') then
-      Output.Add('  NAME ' + Quote(FTitle));
 
     { A MIDI track holding the generated performance, so the project opens
       with the drums on it instead of only referencing the file. The field set
