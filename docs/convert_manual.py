@@ -83,7 +83,12 @@ for line in lines:
         # Strip inline markdown for heading text
         text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
         text = re.sub(r'`([^`]+)`', r'<code>\1</code>', text)
-        out_lines.append(f'<h{level}>{text}</h{level}>')
+        # Generate id from heading text
+        slug = re.sub(r'[^a-z0-9\- ]', '', text.lower())
+        slug = re.sub(r'\s+', '-', slug.strip())
+        slug = re.sub(r'-+', '-', slug)
+        slug = slug.strip('-')
+        out_lines.append(f'<h{level} id="{slug}">{text}</h{level}>')
         continue
 
     # Paragraphs / inline content
@@ -96,7 +101,17 @@ for line in lines:
     content = stripped
     content = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', content)
     content = re.sub(r'`([^`]+)`', r'<code>\1</code>', content)
-    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', content)
+    def inline_link(m):
+        text = m.group(1)
+        url = m.group(2)
+        if url.startswith('#'):
+            slug = re.sub(r'[^a-z0-9\- ]', '', text.lower())
+            slug = re.sub(r'\s+', '-', slug.strip())
+            slug = re.sub(r'-+', '-', slug)
+            slug = slug.strip('-')
+            return f'<a href="#{slug}">{text}</a>'
+        return f'<a href="{url}">{text}</a>'
+    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', inline_link, content)
 
     # List items
     if content.startswith('- '):
