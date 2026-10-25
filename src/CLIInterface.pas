@@ -497,10 +497,10 @@ begin
     Args.Sections, // AStructure - from --section, nil = genre default
     DrumKit,
     Args.Drummer,
-    0.5,      // AComplexity
-    0.6,      // ADynamics
-    0.3,      // AHumanization
-    Args.Swing // ASwing
+    Args.Complexity,   // AComplexity
+    0.6,               // ADynamics
+    Args.Humanization, // AHumanization
+    Args.Swing         // ASwing
 
   );
   PrintGeneratorWarnings;
@@ -554,9 +554,9 @@ begin
     DrumKit,
     Args.Drummer,
     Args.Complexity,  // AComplexity - pattern complexity from CLI
-    0.6,              // ADynamics
-    0.3,              // AHumanization
-    Args.Swing        // ASwing
+    0.6,               // ADynamics
+    Args.Humanization, // AHumanization
+    Args.Swing         // ASwing
 
   );
 
