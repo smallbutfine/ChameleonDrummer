@@ -543,9 +543,9 @@ The real extensibility need: allow users to define custom drummer profiles and p
 
 | Priority | Fix | Scope | Effort | Notes |
 |----------|-----|-------|--------|-------|
-| **P1** | Per-instrument default durations from keymap JSON | Load duration profiles from keymap JSON per instrument family; apply in `TBeat.Create()` as default instead of hardcoded 0.25 | Low | Each keymap declares natural decay per instrument type. |
-| **P2** | PPQ configurability | Add `--ppq` CLI flag; configurable via `TDrumGenerator.CreateSong()` parameter; default to 480, range 120-960 | Low | Only matters for very dense patterns (>24 subdivisions). Default is fine. |
-| **P2** | Remove dead `SwingRatio` field or implement it | If swing isn't implemented in Phase 2, remove the dead code to avoid confusion | Trivial | Clean up unused fields. |
+| ~~P1~~ | ~~Per-instrument default durations from keymap JSON~~ | **DROPPED.** A drum hit is a trigger and the sample decays by itself; a table of per-family lengths is invented data. What matters is that a note-off never arrives after the next hit of the same pitch (done: the exporter clamps it, so double-bass and hi-hat rolls are not cut short). Choked cymbals are patterns that use the keymap's explicit `*_choke` instruments; mappings without them simply have no choke. No extra handling. | - | Decision: drum-machine behaviour, note-off just before the next same-pitch note-on. |
+| ~~P2~~ | ~~PPQ configurability~~ | **DROPPED.** The fixed 960 ppq is the standard (divisible by 3, 4, 5 and 8, so triplets, 16ths, 32nds and quintuplets land on whole ticks; REAPER and Logic default to it). A `--ppq` flag would only invite grids that no longer fit. The single-pattern export, which wrongly wrote 16 ppq, now goes through the song exporter at 960. | - | Decision: no flag. |
+| ~~P2~~ | ~~Remove dead `SwingRatio` field or implement it~~ | **DONE** - implemented as `TPattern.ApplySwing`, `--swing` and the GUI slider. | - | - |
 
 ---
 

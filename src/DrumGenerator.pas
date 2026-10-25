@@ -583,6 +583,24 @@ var
   BarStartIdx: array of Integer;
   GlobalBar, CutFromBar, FirstCutIdx, Src, Dst: Integer;
   FillMinTick: Int64;
+  Pitch, PairCount, P, Q: Integer;
+  PairOn: array of Integer;
+  NextOnTick: Int64;
+
+  { Sort key of an event: by tick, and at the same tick meta events first,
+    then note-offs, then note-ons. A note-off that falls on the tick of the
+    next hit of the same pitch must reach the player before that hit. }
+  function EventKey(const E: TSongEvent): Int64;
+  begin
+    Result := E.Tick * 4;
+    if E.IsMeta then
+      { first at its tick }
+    else if E.Velocity = 0 then
+      Inc(Result)
+    else
+      Inc(Result, 2);
+  end;
+
 begin
   if not Assigned(ASong) or (ASong.Sections.Count = 0) then Exit;
 
@@ -836,12 +854,41 @@ begin
     end;
   end;
 
+  { A note-off never arrives after the next hit of the same pitch, so a fast
+    repeat (double bass on the one kick, a hi-hat roll) is never cut short by
+    a player that honours note-off. Every note-on is stored directly before
+    its own note-off. }
+  for Pitch := 0 to 127 do
+  begin
+    SetLength(PairOn, 0);
+    PairCount := 0;
+    for J := Low(Events) to High(Events) - 1 do
+      if (not Events[J].IsMeta) and (Events[J].Velocity > 0) and
+         (Events[J].Note = Pitch) and (not Events[J + 1].IsMeta) and
+         (Events[J + 1].Velocity = 0) and (Events[J + 1].Note = Pitch) then
+      begin
+        SetLength(PairOn, PairCount + 1);
+        PairOn[PairCount] := J;
+        Inc(PairCount);
+      end;
+    for P := 0 to PairCount - 1 do
+    begin
+      NextOnTick := High(Int64);
+      for Q := 0 to PairCount - 1 do
+        if (Events[PairOn[Q]].Tick > Events[PairOn[P]].Tick) and
+           (Events[PairOn[Q]].Tick < NextOnTick) then
+          NextOnTick := Events[PairOn[Q]].Tick;
+      if Events[PairOn[P] + 1].Tick > NextOnTick then
+        Events[PairOn[P] + 1].Tick := NextOnTick;
+    end;
+  end;
+
   { Sort all events (notes + meta) by absolute tick }
   if Length(Events) > 1 then
   begin
     for I22 := High(Events) downto Low(Events) do
       for J22 := Low(Events) to I22 - 1 do
-        if Events[J22].Tick > Events[J22 + 1].Tick then
+        if EventKey(Events[J22]) > EventKey(Events[J22 + 1]) then
         begin
           TmpEvtRec := Events[J22];
           Events[J22] := Events[J22 + 1];
@@ -960,65 +1007,27 @@ begin
 end;
 
 procedure TDrumGenerator.SavePatternMidi(const APattern: TPattern; const AOutputPath: string; ATempo: Integer = 120);
+{ A single pattern is exported as a one-section song, so it goes through the
+  same exporter as a full song: 960 ticks per quarter note, the same note
+  lengths and the same note-off handling. }
 var
-  Events: TMidiEventArray;
-  Beat: TBeat;
-  Tick, AbsTick: Int64;
-  MidiNote: Integer;
-  I, J: Integer;
-  DurTicks: Integer;
-  PrevTick: Int64;
-  TempEvent: TMidiEvent;
+  PatternSong: TSong;
 begin
   if not Assigned(APattern) then Exit;
-  SetLength(Events, 0);
-  for Beat in APattern.Beats do
-  begin
-    if not Assigned(Beat.Instrument) then
-      Continue;
-    AbsTick := Round(Beat.Position * APattern.Subdivision);
-
-    MidiNote := FDrumKit.GetMidiNote(Beat.Instrument.Name);
-    if MidiNote <= 0 then Continue;
-    SetLength(Events, Length(Events) + 1);
-    with Events[High(Events)] do
-    begin
-      DeltaTick := AbsTick;
-      Status := $99; { channel 10 note-on }
-      Note := Byte(MidiNote);
-      Velocity := Byte(Min(Max(Beat.Velocity, 0), 127));
-    end;
-
-    { Add note_off with duration }
-    DurTicks := Max(Round(Min(Beat.Duration, 0.2) * APattern.Subdivision), 1);
-    SetLength(Events, Length(Events) + 1);
-    with Events[High(Events)] do
-    begin
-      DeltaTick := AbsTick + DurTicks;
-      Status := $89; { channel 10 note-off }
-      Note := Byte(MidiNote);
-      Velocity := 0;
-    end;
+  PatternSong := TSong.Create('pattern', 120);
+  try
+    if ATempo > 0 then
+      PatternSong.Tempo := ATempo;
+    PatternSong.TimeSignature.Free;
+    PatternSong.TimeSignature := TTimeSignature.Create(
+      APattern.TimeSignature.Numerator, APattern.TimeSignature.Denominator);
+    { The section owns (and frees) its pattern, so it gets a copy. }
+    PatternSong.AddSection(TSection.Create('pattern', APattern.Copy,
+      Max(1, Ceil(APattern.DurationBars))));
+    SaveSongMidi(PatternSong, AOutputPath);
+  finally
+    PatternSong.Free;
   end;
-
-  for I := High(Events) downto Low(Events) do
-    for J := Low(Events) to I - 1 do
-      if Events[J].DeltaTick > Events[J + 1].DeltaTick then
-      begin
-        TempEvent := Events[J];
-        Events[J] := Events[J + 1];
-        Events[J + 1] := TempEvent;
-      end;
-
-  PrevTick := 0;
-  for I := Low(Events) to High(Events) do
-  begin
-    Tick := Events[I].DeltaTick;
-    Events[I].DeltaTick := Tick - PrevTick;
-    PrevTick := Tick;
-  end;
-
-  SaveMidi(AOutputPath, Events, APattern.Subdivision, ATempo);
 end;
 
 {  V1 helpers  pattern generation, variations, fills. â”€â”€ }
