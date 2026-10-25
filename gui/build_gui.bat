@@ -30,5 +30,8 @@ if not exist "%~dp0..\chameleondrummer_gui.exe" (
 )
 
 echo [OK] GUI gebaut: %~dp0..\chameleondrummer_gui.exe
-cd..
-build_and_deploy.bat
+REM Continue with the CLI build and the installer; they work from the project root.
+
+cd /d "%~dp0.."
+
+call build_and_deploy.bat

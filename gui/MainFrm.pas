@@ -5,14 +5,18 @@ unit MainFrm;
 { ChameleonDrummer - graphical front end (CLI wrapper).
 
   Collects inputs from the UI and passes them to the standalone CLI executable
-  (chameleondrummer.exe) via TProcess. All dropdown values are hardcoded so
-  the GUI never depends on plugin discovery. }
+
+  (ChameleonDrummer.exe, next to this program) via TProcess. The genre, style
+  and drummer lists are read from that executable (`list genres|styles|
+  drummers`), so the GUI offers exactly what the engine has, and the keymaps
+  come from the mappings folder. Without the executable nothing can be
+  generated, and the GUI says so. }
 
 interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, ShellApi, process, StrUtils, menus;
+  Dialogs, LCLType, ShellApi, process, StrUtils, menus, CliLookup;
 
 type
   TIntDynArray = array of Integer;
@@ -73,8 +77,15 @@ type
   private
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
+    FCliTool: String;
     procedure Log(const AText: String);
+
     procedure FillStyles;
+
+    procedure FillLists;
+    function RunTool(const AArgs: array of String): Boolean;
+
+    procedure CommonOptions(AArgs: TStrings);
     procedure ResetToDefaultStructure;
     procedure UpdateValueLabels;
     function SwingAmount: Double;
@@ -83,6 +94,7 @@ type
     function OutputBasePath: String;
     procedure OpenFolder(const APath: String);
     procedure BuildSectionControls;
+    procedure ClearSectionControls;
     procedure SyncSectionArraysFromControls;
   public
     procedure BtnAddSectionClick(Sender: TObject);
@@ -115,35 +127,8 @@ const
   ExportArdour = 2;
 
 procedure TMainForm.FormCreate(Sender: TObject);
-const
-  Drummers: array[0..16] of String = (
-    'bonham', 'porcaro', 'weckl', 'chambers', 'roeder',
-    'dee', 'hoglan', 'peart', 'rich', 'copeland',
-    'carey', 'smith', 'moon', 'watts', 'haake',
-    'halpern', 'doomblues'
-  );
-var
-  I: Integer;
 begin
-  { Keymaps }
-  cbMapping.Items.Add('gm');
-  cbMapping.Items.Add('ad2');
-  cbMapping.Items.Add('ezd3');
-  cbMapping.Items.Add('xg');
-  cbMapping.ItemIndex := 0;
-
-  { Genres - hardcoded from DrumGenerator.pas LoadPlugins() }
-  cbGenre.Items.Add('metal');
-  cbGenre.Items.Add('rock');
-  cbGenre.Items.Add('jazz');
-  cbGenre.Items.Add('funk');
-  cbGenre.Items.Add('electronic');
-  cbGenre.ItemIndex := 0;
-
-  { Drummers - hardcoded from DrumGenerator.pas LoadPlugins() }
-  for I := Low(Drummers) to High(Drummers) do
-    cbDrummer.Items.Add(Drummers[I]);
-
+  FillLists;
   FillStyles;
 
   { Export options }
@@ -179,31 +164,106 @@ begin
   lblStatus.Caption := 'Ready';
 end;
 
-procedure TMainForm.FillStyles;
-const
-  MetalStyles: array[0..6] of String = ('heavy','death','power','progressive','thrash','doom','breakdown');
-  RockStyles: array[0..6] of String = ('classic','blues','alternative','progressive','punk','hard','pop');
-  JazzStyles: array[0..6] of String = ('swing','bebop','fusion','latin','ballad','hard_bop','contemporary');
-  FunkStyles: array[0..6] of String = ('classic','pfunk','shuffle','new_orleans','fusion','minimal','heavy');
-  ElectronicStyles: array[0..3] of String = ('house','techno','drum_and_bass','dubstep');
+{ The command line tool is the only source of genres, styles and drummers. If
+  it is missing, the lists stay empty, Generate is off, and the log says where
+  the tool is expected. }
+procedure TMainForm.FillLists;
 var
-  I: Integer;
+  Err: String;
+  Items: TStringList;
 begin
-  if rbPattern.Checked then Exit;
+  FCliTool := FindCliTool;
+  cbGenre.Clear;
+  cbDrummer.Clear;
+  cbMapping.Clear;
+
+  Items := TStringList.Create;
+  try
+    ListKeymaps(Items);
+    cbMapping.Items.Assign(Items);
+    if cbMapping.Items.IndexOf('gm') >= 0 then
+      cbMapping.ItemIndex := cbMapping.Items.IndexOf('gm')
+    else if cbMapping.Items.Count > 0 then
+      cbMapping.ItemIndex := 0;
+
+    if FCliTool = '' then begin
+      btnGenerate.Enabled := False;
+      lblStatus.Caption := 'ChameleonDrummer.exe not found';
+      Log('ChameleonDrummer.exe was not found. It must sit in the same folder as this program:');
+      Log('  ' + CliToolPath);
+      Log('Copy it there (or reinstall), then restart this program.');
+      MessageDlg('ChameleonDrummer', 'ChameleonDrummer.exe was not found.' + LineEnding + LineEnding +
+        'It must be in the same folder as this program:' + LineEnding + CliToolPath +
+        LineEnding + LineEnding + 'Without it nothing can be generated.',
+        mtError, [mbOK], 0);
+      Exit;
+    end;
+
+    if QueryList(FCliTool, ['list', 'genres'], Items, Err) then begin
+      cbGenre.Items.Assign(Items);
+      cbGenre.ItemIndex := 0;
+    end else begin
+      btnGenerate.Enabled := False;
+      Log('Could not read the genres from the command line tool: ' + Err);
+    end;
+
+    if QueryList(FCliTool, ['list', 'drummers'], Items, Err) then
+      cbDrummer.Items.Assign(Items)
+    else
+      Log('Could not read the drummers from the command line tool: ' + Err);
+  finally
+    Items.Free;
+  end;
+end;
+
+procedure TMainForm.FillStyles;
+var
+  Items: TStringList;
+  Err: String;
+begin
   cbStyle.Clear;
-  if SameText(SelectedGenre, 'metal') then
-    for I := Low(MetalStyles) to High(MetalStyles) do cbStyle.Items.Add(MetalStyles[I])
-  else if SameText(SelectedGenre, 'rock') then
-    for I := Low(RockStyles) to High(RockStyles) do cbStyle.Items.Add(RockStyles[I])
-  else if SameText(SelectedGenre, 'jazz') then
-    for I := Low(JazzStyles) to High(JazzStyles) do cbStyle.Items.Add(JazzStyles[I])
-  else if SameText(SelectedGenre, 'funk') then
-    for I := Low(FunkStyles) to High(FunkStyles) do cbStyle.Items.Add(FunkStyles[I])
-  else if SameText(SelectedGenre, 'electronic') then
-    for I := Low(ElectronicStyles) to High(ElectronicStyles) do cbStyle.Items.Add(ElectronicStyles[I]);
+  if (FCliTool = '') or (SelectedGenre = '') then Exit;
+
+  Items := TStringList.Create;
+  try
+    if QueryList(FCliTool, ['list', 'styles', '--genre', SelectedGenre], Items, Err) then
+      cbStyle.Items.Assign(Items)
+    else
+      Log('Could not read the styles of ' + SelectedGenre + ': ' + Err);
+  finally
+    Items.Free;
+  end;
 
   if cbStyle.Items.Count > 0 then
     cbStyle.ItemIndex := 0;
+end;
+
+{ Runs the command line tool, logs what it says, and tells whether it worked. }
+function TMainForm.RunTool(const AArgs: array of String): Boolean;
+var
+  Output: String;
+  Code: Integer;
+  Lines: TStringList;
+  I: Integer;
+begin
+  Result := False;
+  if FCliTool = '' then begin
+    Log('ChameleonDrummer.exe was not found next to this program: ' + CliToolPath);
+    Exit;
+  end;
+  Code := RunCli(FCliTool, AArgs, Output);
+  Lines := TStringList.Create;
+  try
+    Lines.Text := Output;
+    for I := 0 to Lines.Count - 1 do
+      if Trim(Lines[I]) <> '' then
+        Log('  ' + Trim(Lines[I]));
+  finally
+    Lines.Free;
+  end;
+  Result := Code = 0;
+  if not Result then
+    Log(Format('The command line tool failed (exit code %d).', [Code]));
 end;
 
 procedure TMainForm.UpdateValueLabels;
@@ -291,16 +351,11 @@ begin
   BuildSectionControls;
 end;
 
-procedure TMainForm.BuildSectionControls;
+procedure TMainForm.ClearSectionControls;
 var
-  I, Y: Integer;
+  I: Integer;
   C: TComponent;
-  lblName: TLabel;
-  cmbSection: TComboBox;
-  seBars: TSpinEdit;
-  btnDelete: TButton;
 begin
-  { Remove old dynamic controls }
   for I := gbSong.ComponentCount - 1 downto 0 do begin
     C := gbSong.Components[I];
     if (C is TLabel) and AnsiStartsStr('Section ', TLabel(C).Caption) then
@@ -312,6 +367,18 @@ begin
     else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure')) then
       gbSong.Components[I].Free;
   end;
+end;
+
+procedure TMainForm.BuildSectionControls;
+var
+  I, Y: Integer;
+  C: TComponent;
+  lblName: TLabel;
+  cmbSection: TComboBox;
+  seBars: TSpinEdit;
+  btnDelete: TButton;
+begin
+  ClearSectionControls;
 
   SetLength(FSectionBars, Length(FSectionNames));
 
@@ -365,31 +432,12 @@ end;
 { ---- Mode switching ---- }
 
 procedure TMainForm.rgModeChange(Sender: TObject);
-var
-  I: Integer;
-  C: TComponent;
 begin
   if rbPattern.Checked then begin
-    lblStyle.Caption := 'Pattern';
-    cbStyle.Items.Clear;
-    cbStyle.Items.Add('BasicGroove');
-    cbStyle.Items.Add('DoubleBassPedal');
-    cbStyle.Items.Add('BlastBeat');
-    cbStyle.Items.Add('JazzRidePattern');
-    cbStyle.Items.Add('FunkGhostNotes');
-    cbStyle.Items.Add('CrashAccents');
-    cbStyle.Items.Add('TomFill');
-    cbStyle.ItemIndex := 0;
-    { Hide dynamic section controls }
-    for I := gbSong.ComponentCount - 1 downto 0 do begin
-      C := gbSong.Components[I];
-      if (C is TLabel) or (C is TComboBox) or (C is TSpinEdit) or ((C is TButton) and AnsiStartsStr('secDel', C.Name)) then
-        (C as TControl).Visible := False;
-    end;
+    { One pattern of the chosen genre and style: no section list. }
+    ClearSectionControls;
   end
   else begin
-    lblStyle.Caption := 'Style';
-    FillStyles;
     { Suspend redraw during control recreation to prevent flash }
     gbSong.DoubleBuffered := True;
     ResetToDefaultStructure;
@@ -397,78 +445,81 @@ begin
   end;
 end;
 
+{ Options that both modes pass on. }
+procedure TMainForm.CommonOptions(AArgs: TStrings);
+begin
+  AArgs.Add('--genre'); AArgs.Add(SelectedGenre);
+  AArgs.Add('--style'); AArgs.Add(SelectedStyle);
+  AArgs.Add('--output'); AArgs.Add(ChangeFileExt(OutputBasePath, '.mid'));
+  if cbMapping.ItemIndex >= 0 then begin
+    AArgs.Add('--mapping'); AArgs.Add(Trim(cbMapping.Text));
+  end;
+  if seTempo.Value > 0 then begin
+    AArgs.Add('--tempo'); AArgs.Add(IntToStr(seTempo.Value));
+  end;
+end;
+
 procedure TMainForm.btnGenerateClick(Sender: TObject);
 var
-  Mode, Genre, Style, OutputFile: String;
-  TempoVal, SecIdx: Integer;
+  Args: TStringList;
+  SecIdx: Integer;
+  Ok: Boolean;
 begin
   if cbGenre.ItemIndex < 0 then begin Log('Pick a genre first.'); Exit; end;
-  if cbStyle.ItemIndex < 0 then begin Log('Pick a style/first.'); Exit; end;
+  if cbStyle.ItemIndex < 0 then begin Log('Pick a style first.'); Exit; end;
+  if OutputBasePath = '' then begin Log('Choose an output file name first.'); Exit; end;
 
-  Mode := 'Pattern (single pattern)';
-  Genre := SelectedGenre;
-  Style := SelectedStyle;
-
-  OutputFile := ChangeFileExt(OutputBasePath, '.mid');
-  TempoVal := seTempo.Value;
-
-  Log(Format('--- initiating generation: mode=%s genre=%s style=%s ---', [Mode, Genre, Style]));
-
-  if rbPattern.Checked then begin
-    { Pattern mode }
-    Log(Format('Pattern mode: %s / %s', [Genre, Style]));
-    with TProcess.Create(nil) do try
-      Executable := ExtractFilePath(ParamStr(0)) + 'chameleondrummer.exe';
-      Options := [poUsePipes, poStderrToOutput, poNoConsole];
-      Parameters.Add('pattern');
-      Parameters.Add('--genre'); Parameters.Add(Genre);
-      Parameters.Add('--style'); Parameters.Add(Style);
-      Parameters.Add('--output'); Parameters.Add(OutputFile);
-      if TempoVal > 0 then begin Parameters.Add('--tempo'); Parameters.Add(IntToStr(TempoVal)); end;
-      Execute;
-    finally Free; end;
-    Log('Pattern generated.');
-  end
-  else
-  begin
-    { Song mode }
-    SyncSectionArraysFromControls;
-    Log(Format('Song mode: %d sections, genre=%s style=%s', [Length(FSectionNames), Genre, Style]));
-
-    with TProcess.Create(nil) do try
-      Executable := ExtractFilePath(ParamStr(0)) + 'chameleondrummer.exe';
-      Options := [poUsePipes, poStderrToOutput, poNoConsole];
-      Parameters.Add('generate');
-      Parameters.Add('--genre'); Parameters.Add(Genre);
-      Parameters.Add('--style'); Parameters.Add(Style);
-      Parameters.Add('--output'); Parameters.Add(OutputFile);
+  Args := TStringList.Create;
+  try
+    if rbPattern.Checked then begin
+      Log(Format('Pattern mode: %s / %s', [SelectedGenre, SelectedStyle]));
+      Args.Add('pattern');
+      CommonOptions(Args);
+    end
+    else begin
+      SyncSectionArraysFromControls;
+      Log(Format('Song mode: %d sections, genre=%s style=%s',
+        [Length(FSectionNames), SelectedGenre, SelectedStyle]));
+      Args.Add('generate');
+      CommonOptions(Args);
       if cbDrummer.ItemIndex >= 0 then begin
-        Parameters.Add('--drummer'); Parameters.Add(Trim(cbDrummer.Text));
+        Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
       end;
-      if cbMapping.ItemIndex >= 0 then begin
-        Parameters.Add('--mapping'); Parameters.Add(Trim(cbMapping.Text));
-      end;
-      if TempoVal > 0 then begin
-        Parameters.Add('--tempo'); Parameters.Add(IntToStr(TempoVal));
-      end;
-      Parameters.Add('--complexity'); Parameters.Add(CliNumber(tbComplexity.Position / 100));
-      Parameters.Add('--humanization'); Parameters.Add(CliNumber(tbHumanization.Position / 100));
+      Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
+      Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
       { The section list on screen is the song structure. }
       for SecIdx := 0 to High(FSectionNames) do begin
-        Parameters.Add('--section');
-        Parameters.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
+        Args.Add('--section');
+        Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
       end;
       if tbSwing.Position > 0 then begin
-        Parameters.Add('--swing'); Parameters.Add(CliNumber(SwingAmount));
+        Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
       end;
-      case cbExport.ItemIndex of
-        ExportREAPER: Parameters.Add('--reaper');
-        ExportArdour: Parameters.Add('--ardour');
-      end;
-      Execute;
-    finally Free; end;
-    Log('Song generated.');
+      { The REAPER project goes with the Ardour session too. }
+      if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
+      if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
+    end;
+
+    lblStatus.Caption := 'Working...';
+    btnGenerate.Enabled := False;
+    Application.ProcessMessages;
+    try
+      Ok := RunTool(Args.ToStringArray);
+    finally
+      btnGenerate.Enabled := True;
+    end;
+  finally
+    Args.Free;
   end;
+
+  if Ok then begin
+    lblStatus.Caption := 'Done';
+    Log('Done.');
+    if chkOpenFolder.Checked then
+      OpenFolder(ExtractFilePath(ExpandFileName(OutputBasePath)));
+  end
+  else
+    lblStatus.Caption := 'Failed - see the log';
 end;
 
 procedure TMainForm.Log(const AText: String);

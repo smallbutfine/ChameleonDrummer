@@ -1,8 +1,12 @@
 # ChameleonDrummer GUI
 
-A Lazarus/LCL front end for the Engine V2 generator. It links the engine
-units in `../src` directly, so it produces exactly what the command line
-tool produces - it does not shell out to `ChameleonDrummer.exe`.
+A Lazarus/LCL front end for the command line tool. It starts
+`ChameleonDrummer.exe` (which must sit in the same folder) for every
+Generate, and reads the genre, style and drummer lists from it
+(`list genres`, `list styles --genre ...`, `list drummers`), so it always
+offers what the engine really has. The keymap list is the `.json` files in
+`mappings\`. If the tool is missing, the GUI says where it expects it and
+Generate stays off.
 
 ## Building
 
@@ -18,11 +22,14 @@ or build it from the command line:
 gui\build_gui.bat
 ```
 
-which is a thin wrapper around:
+which builds the GUI with:
 
 ```
 lazbuild --build-all --build-mode=Default gui\chameleondrummer_gui.lpi
 ```
+
+and then continues with `build_and_deploy.bat` (the CLI build and the
+installer).
 
 The executable is written to the **project root** (`..\chameleondrummer_gui.exe`),
 next to `ChameleonDrummer.exe`. That is deliberate: the engine loads

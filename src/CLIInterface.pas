@@ -33,6 +33,8 @@ type
     WriteTimelinePath: String;
     Sections: specialize TArray<TSectionDef>; // --section name:bars[@tempo], in order; empty = genre default
     PresetOnly: Boolean; // --preset-only (accepted for reaper/ardour export)
+    ExportReaper: Boolean; // generate --reaper: also write <output>.rpp
+    ExportArdour: Boolean; // generate --ardour: also write the <output>.ardour session
     ListType: String; // 'genres', 'styles', 'drummers'
     IsSongCommand: Boolean; // --song flag from regen_all.bat
   end;
@@ -50,6 +52,8 @@ type
     procedure HandleReaperExport(const Args: TCLIArgs);
     procedure HandleArdourExport(const Args: TCLIArgs);
     procedure PrintGeneratorWarnings;
+    procedure WriteReaperProject(ASong: TSong; const AMidiFile: string);
+    procedure WriteArdourSession(ASong: TSong; const AMidiFile, ASessionDir: string);
     procedure ShowUsage;
 
   public
@@ -188,6 +192,10 @@ begin
     begin
       Result.PresetOnly := True;
     end
+    else if (Args[I] = '--reaper') then
+      Result.ExportReaper := True
+    else if (Args[I] = '--ardour') then
+      Result.ExportArdour := True
     else if (Args[I] = '--song') then
     begin
       { --song flag from regen_all.bat - implies 'generate' command }
@@ -287,6 +295,37 @@ begin
   inherited Destroy;
 end;
 
+procedure TCLIInterface.WriteReaperProject(ASong: TSong; const AMidiFile: string);
+var
+  Bridge: TReaperBridge;
+begin
+  { The project is written next to the MIDI file, with the extension .rpp. }
+  Bridge := TReaperBridge.Create;
+  try
+    if Bridge.CreateFromSong(ASong, AMidiFile) then
+      Writeln('REAPER project exported to:', ChangeFileExt(AMidiFile, '.rpp'))
+    else
+      Writeln('[Warning] Failed to create REAPER project from song sections');
+  finally
+    Bridge.Free;
+  end;
+end;
+
+procedure TCLIInterface.WriteArdourSession(ASong: TSong; const AMidiFile, ASessionDir: string);
+var
+  Bridge: TArdourBridge;
+begin
+  Bridge := TArdourBridge.Create;
+  try
+    if Bridge.CreateFromSong(ASong, AMidiFile, ASessionDir) then
+      Writeln('Ardour session created:', ASessionDir)
+    else
+      Writeln('[Warning] Failed to create Ardour session');
+  finally
+    Bridge.Free;
+  end;
+end;
+
 procedure TCLIInterface.PrintGeneratorWarnings;
 
 var
@@ -328,6 +367,7 @@ begin
   Writeln('                       (without --section the genre default structure is used)');
   Writeln('  --drummer <name>     Drummer style (e.g., bonham, peart, carey)');
   Writeln('  --output <file>      Output MIDI file path');
+  Writeln('  --reaper, --ardour   With generate: also write <output>.rpp / the <output>.ardour session');
   Writeln('  --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg');
   Writeln('  --structure <file>   Song structure from a JSON file (sections with bars, tempo,');
   Writeln('                       complexity; optional genre, style, tempo). Command-line');
@@ -389,6 +429,12 @@ begin
     Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
     if Length(Args.Sections) > 0 then
       Writeln(Format('Structure   : %s', [DescribeStructure(Args.Sections)]));
+
+    { The same song goes into the project and the session, so all three agree. }
+    if Args.ExportReaper then
+      WriteReaperProject(Song, OutputFile);
+    if Args.ExportArdour then
+      WriteArdourSession(Song, OutputFile, ChangeFileExt(OutputFile, '.ardour'));
 
     { Write timeline JSON if requested }
     if (Args.WriteTimelinePath <> '') then
@@ -481,7 +527,6 @@ var
   Song: TSong;
   DrumKit: TDrumKit;
   MidiFile, RppFile: string;
-  Bridge: TReaperBridge;
 begin
   if (Args.Genre = '') then
     raise Exception.Create('--genre is required for reaper export');
@@ -518,15 +563,7 @@ begin
     FGenerator.SaveSongMidi(Song, MidiFile);
 
     { Create REAPER project from song sections — use CreateFromSong to pass actual data }
-    Bridge := TReaperBridge.Create;
-    try
-      if Bridge.CreateFromSong(Song, MidiFile) then
-        Writeln('REAPER project exported to:', RppFile)
-      else
-        Writeln('[Warning] Failed to create REAPER project from song sections');
-    finally
-      Bridge.Free;
-    end;
+    WriteReaperProject(Song, MidiFile);
   finally
     Song.Free;
   end;
@@ -537,7 +574,6 @@ var
   Song: TSong;
   DrumKit: TDrumKit;
   MidiFile, SessionDir: string;
-  Bridge: TArdourBridge;
 begin
   if (Args.Genre = '') then
     raise Exception.Create('--genre is required for ardour export');
@@ -575,15 +611,7 @@ begin
     FGenerator.SaveSongMidi(Song, MidiFile);
 
     { Build the session inside Ardour via its standalone Lua interpreter. }
-    Bridge := TArdourBridge.Create;
-    try
-      if Bridge.CreateFromSong(Song, MidiFile, SessionDir) then
-        Writeln('Ardour session created:', SessionDir)
-      else
-        Writeln('[Warning] Failed to create Ardour session');
-    finally
-      Bridge.Free;
-    end;
+    WriteArdourSession(Song, MidiFile, SessionDir);
   finally
     Song.Free;
   end;
