@@ -578,10 +578,15 @@ var
   HeaderSize, FormatWord, TrackCount, PPQWord, DummySize, FinalSize: Cardinal;
   PrevBpm: Integer;
   TmpEvtRec: TSongEvent;
+  BarStartIdx: array of Integer;
+  GlobalBar, CutFromBar, FirstCutIdx, Src, Dst: Integer;
+  FillMinTick: Int64;
 begin
   if not Assigned(ASong) or (ASong.Sections.Count = 0) then Exit;
 
   SetLength(Events, 0);
+  SetLength(BarStartIdx, 0);
+  GlobalBar := -1;
   TickOffset := 0;
   PPQ := 960;
 
@@ -599,6 +604,9 @@ begin
   begin
     for I := 0 to Section.Bars - 1 do
     begin
+      Inc(GlobalBar);
+      SetLength(BarStartIdx, GlobalBar + 1);
+      BarStartIdx[GlobalBar] := Length(Events);
       EffTs := Section.EffectiveTimeSignature(I, ASong.TimeSignature);
       EffTs.Validate;
       BarDurationQuarters := EffTs.BeatsPerBar;
@@ -731,6 +739,41 @@ begin
             FillOffsetQuarters :=
               FillOffsetQuarters -
               Section.EffectiveTimeSignature(FillNoteBar, ASong.TimeSignature).BeatsPerBar;
+
+          { A drummer's hands leave the groove when the fill starts, so the
+            groove is cut at the first fill hit instead of playing under it. }
+          FillMinTick := High(Int64);
+          for Beat in Fill.Pattern.Beats do
+            if Assigned(Beat.Instrument) then
+              FillMinTick := Min(FillMinTick, TickOffset + Round(
+                (FillOffsetQuarters + Beat.Position) * PPQ));
+          CutFromBar := Max(GlobalBar - (FillBars - 1), 0);
+          if (FillMinTick < High(Int64)) and (CutFromBar <= GlobalBar) then
+          begin
+            { An earlier cut may have shortened the event list below the
+              index recorded for this bar. }
+            FirstCutIdx := Min(BarStartIdx[CutFromBar], Length(Events));
+            Dst := FirstCutIdx;
+            Src := FirstCutIdx;
+            { Note-on and note-off are stored as adjacent pairs. }
+            while Src <= High(Events) do
+            begin
+              if (not Events[Src].IsMeta) and (Events[Src].Velocity > 0) and
+                 (Events[Src].Tick >= FillMinTick) and (Src < High(Events)) then
+                Inc(Src, 2)
+              else
+              begin
+                if Dst <> Src then
+                  Events[Dst] := Events[Src];
+                Inc(Dst);
+                Inc(Src);
+              end;
+            end;
+            SetLength(Events, Dst);
+            for Src := CutFromBar + 1 to GlobalBar do
+              BarStartIdx[Src] := Min(BarStartIdx[Src], Dst);
+          end;
+
           for Beat in Fill.Pattern.Beats do
           begin
             FillNoteBar := FillStartBar + Trunc(

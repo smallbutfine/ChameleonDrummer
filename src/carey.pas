@@ -47,13 +47,27 @@ begin
 end;
 
 function TCareyPlugin.GetSignatureFills: specialize TList<TFill>;
-var FillList: specialize TList<TFill>; LFill: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-  LFill := TFill.Create('carey_polyrhythmic_fill', 'Danny Carey polyrhythmic fill');
-  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill);
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Odd groupings across the toms.
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('carey_fill_short', 0.3, [
+    'T3 .... .... ..x. x..x',
+    'T2 .... .... .... .x..'
+  ]));
+  Result.Add(MakeTabFill('carey_fill_half', 0.6, [
+    'T1 .... x..x ..x. ....',
+    'T2 .... .... ...x ..x.',
+    'T3 .... .... .... ...x'
+  ]));
+  Result.Add(MakeTabFill('carey_fill_big', 0.9, [
+    'T1 x..x ..x. .... ....',
+    'T2 .... .... x..x ..x.',
+    'T4 .... .... .... ...x',
+    'K x... .... .... ....'
+  ]));
 end;
 
 function TCareyPlugin.GetDrummerName: String;

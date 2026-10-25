@@ -47,13 +47,26 @@ begin
 end;
 
 function TPeartPlugin.GetSignatureFills: specialize TList<TFill>;
-var FillList: specialize TList<TFill>; LFill: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-  LFill := TFill.Create('peart_polyrhythmic_fill', 'Neil Peart polyrhythmic fill');
-  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill);
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Polyrhythmic tom runs.
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('peart_fill_short', 0.3, [
+    'T1 .... .... .... x.x.',
+    'T2 .... .... .... .x.x'
+  ]));
+  Result.Add(MakeTabFill('peart_fill_half', 0.6, [
+    'T1 ... ... x.. x..',
+    'T2 ... ... .x. .x.',
+    'T3 ... ... ..x ..x'
+  ]));
+  Result.Add(MakeTabFill('peart_fill_big', 0.9, [
+    'T1 x..x ..x. .x.. x..x',
+    'T2 .x.. .... ..x. ....',
+    'K x... .... x... ....'
+  ]));
 end;
 
 function TPeartPlugin.GetDrummerName: String;

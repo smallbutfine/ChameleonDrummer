@@ -14,7 +14,8 @@ program fill_audit;
 
 uses
   SysUtils, Classes, Generics.Collections, Math, jsonparser,
-  Kit, Pattern, Song, generation_parameters, ComposerV2;
+  Kit, Pattern, Song, generation_parameters, ComposerV2,
+  LimbConstraints, DrummerPlugin, PluginRegistry, DrumGenerator;
 
 const
   RUNS = 400;
@@ -71,10 +72,72 @@ begin
     [AGenre, ASection, AIntensity, ABars, Adjacent, Bar0, Short, Line]));
 end;
 
+{ Every fill a drummer plugin offers must be one bar, non-empty and playable
+  by one drummer. }
+procedure AuditVocabulary;
+var
+  Generator: TDrumGenerator;
+  Names: TStringArray;
+  D: String;
+  Plugin: TObject;
+  Fills: specialize TList<TFill>;
+  Fill: TFill;
+  J, Bad, Total, Drummers, Short: Integer;
+  Engine: TLimbConstraintEngine;
+  V: specialize TList<TLimbViolation>;
+  MaxPos: Double;
+  B: TBeat;
+begin
+  Generator := TDrumGenerator.Create;
+  Engine := TLimbConstraintEngine.Create;
+  Bad := 0; Total := 0; Drummers := 0; Short := 0;
+  Names := Generator.PluginManager.Registry.GetAvailableDrummers;
+  for D in Names do
+  begin
+    Plugin := Generator.PluginManager.Registry.GetDrummerPlugin(D);
+    if not (Plugin is TDrummerPlugin) then
+      Continue;
+    Inc(Drummers);
+    Fills := (Plugin as TDrummerPlugin).GetSignatureFills;
+    if Fills.Count < 3 then
+    begin
+      WriteLn('FEW fills: ', D, ' has ', Fills.Count);
+      Inc(Short);
+    end;
+    for Fill in Fills do
+    begin
+      Inc(Total);
+      MaxPos := 0;
+      for B in Fill.Pattern.Beats do
+        if B.Position > MaxPos then MaxPos := B.Position;
+      V := Engine.FindViolations(Fill.Pattern);
+      if (V.Count > 0) or (Fill.Pattern.Beats.Count = 0) or (MaxPos >= 4.0) or
+         (Fill.Pattern.DurationBars > 1.0) then
+      begin
+        WriteLn(Format('BAD fill %s %s: beats=%d violations=%d maxpos=%.2f',
+          [D, Fill.Pattern.Name, Fill.Pattern.Beats.Count, V.Count, MaxPos]));
+        for J := 0 to V.Count - 1 do
+          WriteLn('    ', V[J].Description);
+        Inc(Bad);
+      end;
+      for J := 0 to V.Count - 1 do V[J].Free;
+      V.Free;
+    end;
+    for J := Fills.Count - 1 downto 0 do
+      Fills[J].Free;
+    Fills.Free;
+  end;
+  Engine.Free;
+  Generator.Free;
+  WriteLn(Format('drummer vocabulary: %d drummers, %d fills checked, %d bad, %d drummers with fewer than 3 fills',
+    [Drummers, Total, Bad, Short]));
+end;
+
 var
   G: String;
   L: Integer;
 begin
+  AuditVocabulary;
   WriteLn('percent of ', RUNS, ' runs with a fill, per bar index');
   for G in Genres do
   begin

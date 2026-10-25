@@ -220,6 +220,33 @@ begin
   Exit('standard');
 end;
 
+{ How well a fill suits the energy of its bar: 1.2 for a perfect match down
+  to 0.2. A fill without a declared energy suits every bar equally. }
+function FillEnergyWeight(AFill: TFill; ABarIntensity: Double): Double;
+begin
+  if AFill.Energy < 0 then
+    Exit(0.7);
+  Result := 0.2 + (1.0 - Abs(AFill.Energy - ABarIntensity));
+end;
+
+{ Relative weight of a drummer's fill slot for a section kind and energy:
+  slot 0 short, slot 1 half bar, slot 2 big. }
+function DrummerFillSlotWeight(ASlot: Integer; const AKind: string;
+  AIntensity: Double): Double;
+begin
+  case ASlot of
+    0: if AIntensity < 0.5 then Result := 3.0 else Result := 1.5;
+    1: Result := 2.0;
+  else
+    if (AKind = 'chorus') or (AIntensity > 0.8) then
+      Result := 3.0
+    else if AIntensity > 0.6 then
+      Result := 1.5
+    else
+      Result := 0.5;
+  end;
+end;
+
 { TFillPicker — Fill placement and type determination }
 
 function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
@@ -255,6 +282,7 @@ begin
       Result.Add(TFill.Create(GenerateFillPattern(
         SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1,
         IntensityValues[I] > 0.8)));
+      Result[Result.Count - 1].TargetBar := I;
     end;
 end;
 
@@ -451,7 +479,9 @@ begin
     Result.AddBeat(3.0, TInstrumentRegistry.Get('snare_rimshot_open_hit'), 110);
   end;
 
-  if not AFullBar then
+  { A crash belongs on the next downbeat, never on the first beat of the
+    bar before it. }
+  if (not AFullBar) or (FillType = 'cymbal_crash') then
     ShortenFillToLastBeats(Result, FillType);
 
   Result.Metadata.Add('bars_to_fill', IntToStr(ABarsToFill));
@@ -719,6 +749,10 @@ var
   JBar: Integer;
   Idx: Integer;
   Section: TSection;
+  GmdCount: Integer;
+  HasVocabulary: Boolean;
+  GenericWeight, GmdShare, VocabShare, WeightSum: Double;
+  NewFill: TFill;
 begin
   if not Assigned(FPluginManager.Registry.GetGenrePlugin(Genre)) then
     raise Exception.CreateFmt('Unsupported genre: %s', [Genre]);
@@ -964,38 +998,88 @@ begin
       }
       Fills := FFilPicker.PickFillsForSection(
         Genre, Params, Bars, SectionName, FillBarIndices, SectionIntensities);
+
+      { Where a fill comes from, by weight: the drummer's own vocabulary
+        (GetSignatureFills of the drummer plugin) first, recorded GMD fills
+        second, the generic fill the picker chose for that bar as the
+        fallback. The generic fills are tied to their bar; the others compete
+        for every placed bar. }
+      SignatureFills := nil;
+      if ADrummer <> '' then
+      begin
+        DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
+        if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
+          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetSignatureFills;
+      end;
+      HasVocabulary := Assigned(SignatureFills) and (SignatureFills.Count > 0);
+      if HasVocabulary then
+      begin
+        GenericWeight := 0.15; GmdShare := 0.25; VocabShare := 0.6;
+      end
+      else
+      begin
+        GenericWeight := 0.4; GmdShare := 0.6; VocabShare := 0.0;
+      end;
+      for Idx := 0 to Fills.Count - 1 do
+        Fills[Idx].TriggerProbability := GenericWeight;
+
+      try
+        if HasVocabulary then
+          for J := 0 to Length(FillBarIndices) - 1 do
+          begin
+            WeightSum := 0;
+            for SignatureFill in SignatureFills do
+              if Assigned(SignatureFill.Pattern) and
+                 (SignatureFill.Pattern.Beats.Count > 0) and
+                 (SignatureFill.Pattern.DurationBars <= FillBarIndices[J] + 1) then
+                WeightSum := WeightSum + FillEnergyWeight(
+                  SignatureFill, SectionIntensities[FillBarIndices[J]]);
+            if WeightSum <= 0 then
+              Continue;
+            for SignatureFill in SignatureFills do
+              if Assigned(SignatureFill.Pattern) and
+                 (SignatureFill.Pattern.Beats.Count > 0) and
+                 (SignatureFill.Pattern.DurationBars <= FillBarIndices[J] + 1) then
+              begin
+                NewFill := TFill.Create(SignatureFill.Pattern.Copy);
+                NewFill.Energy := SignatureFill.Energy;
+                NewFill.TargetBar := FillBarIndices[J];
+                NewFill.TriggerProbability := VocabShare * FillEnergyWeight(
+                  SignatureFill, SectionIntensities[FillBarIndices[J]]) / WeightSum;
+                Fills.Add(NewFill);
+              end;
+          end;
+      finally
+        if Assigned(SignatureFills) then
+        begin
+          for Idx := SignatureFills.Count - 1 downto 0 do
+            SignatureFills[Idx].Free;
+          SignatureFills.Free;
+        end;
+      end;
+
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
         Genre, Style, 'fill', Song.TimeSignature.Numerator,
         Song.TimeSignature.Denominator);
       try
+        GmdCount := 0;
         for FlavorItem in GMDFlavors do
           if (FlavorItem.DurationBars <= Bars) and
              (FlavorItem.Beats.Count > 0) then
-            Fills.Add(TFill.Create(FlavorItem.Copy));
+            Inc(GmdCount);
+        for FlavorItem in GMDFlavors do
+          if (FlavorItem.DurationBars <= Bars) and
+             (FlavorItem.Beats.Count > 0) then
+          begin
+            NewFill := TFill.Create(FlavorItem.Copy);
+            NewFill.TriggerProbability := GmdShare / GmdCount;
+            Fills.Add(NewFill);
+          end;
       finally
         for FlavorItem in GMDFlavors do
           FlavorItem.Free;
         GMDFlavors.Free;
         GMDFlavors := nil;
-      end;
-      if ADrummer <> '' then
-      begin
-        DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
-        if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
-        begin
-          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetSignatureFills;
-          if Assigned(SignatureFills) then
-            try
-              for SignatureFill in SignatureFills do
-                if Assigned(SignatureFill.Pattern) and
-                   (SignatureFill.Pattern.Beats.Count > 0) then
-                  Fills.Add(TFill.Create(SignatureFill.Pattern.Copy));
-            finally
-              for Idx := SignatureFills.Count - 1 downto 0 do
-                SignatureFills[Idx].Free;
-              SignatureFills.Free;
-            end;
-        end;
       end;
 
       { Calculate groove timing offsets per bar }

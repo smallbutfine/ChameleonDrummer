@@ -19,6 +19,8 @@ private
   FPattern: TPattern;
   FTriggerProbability: Double;
   FSectionPosition: string;
+  FTargetBar: Integer;
+  FEnergy: Double;
 public
   constructor Create(APattern: TPattern);
   constructor Create(AName, ADescription: string); overload;
@@ -27,6 +29,11 @@ public
   property Pattern: TPattern read FPattern write FPattern;
   property TriggerProbability: Double read FTriggerProbability write FTriggerProbability;
   property SectionPosition: string read FSectionPosition write FSectionPosition;
+  { Bar of the section this fill was written for; -1 = usable in any bar.
+    TriggerProbability is the selection weight among the fills usable in a bar. }
+  property TargetBar: Integer read FTargetBar write FTargetBar;
+  { Bar intensity (0..1) this fill suits best; -1 = suits any bar. }
+  property Energy: Double read FEnergy write FEnergy;
 end;
 
 { â”€â”€ PatternVariation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ }
@@ -144,6 +151,8 @@ begin
   FPattern := APattern;
   FTriggerProbability := 1.0;
   FSectionPosition := 'end';
+  FTargetBar := -1;
+  FEnergy := -1;
 end;
 
 constructor TFill.Create(AName, ADescription: string); overload;
@@ -152,6 +161,8 @@ begin
   FPattern := nil;
   FTriggerProbability := 1.0;
   FSectionPosition := AName;
+  FTargetBar := -1;
+  FEnergy := -1;
 end;
 
 destructor TFill.Destroy;
@@ -394,6 +405,7 @@ begin
   for Fill in Fills do
     if Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) and
        (Fill.Pattern.DurationBars <= ABarNumber + 1) and
+       ((Fill.FTargetBar < 0) or (Fill.FTargetBar = ABarNumber)) and
        (Fill.FTriggerProbability > 0) then
       TotalProb := TotalProb + Fill.FTriggerProbability;
 
@@ -405,6 +417,7 @@ begin
     begin
       if not Assigned(Fill.Pattern) or (Fill.Pattern.Beats.Count = 0) or
          (Fill.Pattern.DurationBars > ABarNumber + 1) or
+         ((Fill.FTargetBar >= 0) and (Fill.FTargetBar <> ABarNumber)) or
          (Fill.FTriggerProbability <= 0) then
         Continue;
       CurrentSum := CurrentSum + Fill.FTriggerProbability;

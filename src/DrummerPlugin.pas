@@ -55,13 +55,30 @@ public
 protected
   { Virtual helpers for subclasses. }
   procedure ApplyTechnique(APattern: TPattern; const TechniqueName: string; Intensity: Double); virtual;
+
+  { Builds a one-bar fill from drum-tab lines (see TDrumTab in
+    patterns_templates) for GetSignatureFills. AEnergy is the bar intensity
+    (0..1) the fill suits best: a short fill ~0.3, a big one ~0.9. }
+  function MakeTabFill(const AName: string; AEnergy: Double;
+    const ALines: array of string): TFill;
 end;
 
 function CreateSignatureFillPattern(const AFillName: string): TPattern;
 
 implementation
 
+uses
+  patterns_templates;
+
 { DrummerPlugin base class }
+
+function TDrummerPlugin.MakeTabFill(const AName: string; AEnergy: Double;
+  const ALines: array of string): TFill;
+begin
+  { Complexity 1.0 so no line is gated away; a fill is exactly one bar. }
+  Result := TFill.Create(BuildDrumTabPattern(AName, ALines, 1.0, 1));
+  Result.Energy := AEnergy;
+end;
 
 constructor TDrummerPlugin.Create;
 begin

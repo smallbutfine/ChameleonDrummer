@@ -68,13 +68,28 @@ begin
 end;
 
 function THalpernPlugin.GetSignatureFills: specialize TList<TFill>;
-var FillList: specialize TList<TFill>; LFill: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-  LFill := TFill.Create('halpern_jazz_fill', 'Eric Halpern jazz fill');
-  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill);
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Jazz fusion: triplet runs around the kit (12 steps).
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('halpern_fill_short', 0.3, [
+    'S ... ... ... ..x',
+    'T2 ... ... ... x..'
+  ]));
+  Result.Add(MakeTabFill('halpern_fill_half', 0.6, [
+    'S ... ... x.x ..x',
+    'T2 ... ... ... x..',
+    'K ... ... x.. ...'
+  ]));
+  Result.Add(MakeTabFill('halpern_fill_big', 0.9, [
+    'S ... xx. x.x ..x',
+    'T1 ... ... ... x..',
+    'T2 ... ... .x. ...',
+    'T3 ... ... ... .x.',
+    'K x.. ... ... ...'
+  ]));
 end;
 
 function THalpernPlugin.GetDrummerName: String;

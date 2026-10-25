@@ -78,13 +78,25 @@ begin
 end;
 
 function THaakePlugin.GetSignatureFills: specialize TList<TFill>;
-var FillList: specialize TList<TFill>; LFill: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-  LFill := TFill.Create('haake_polyrhythm_fill', 'Fabio Haake polyrhythm fill');
-  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill);
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Progressive metal: fast bursts and syncopated kick/snare.
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('haake_fill_short', 0.3, [
+    'S .... .... .... x.xx',
+    'K .... .... .... .x..'
+  ]));
+  Result.Add(MakeTabFill('haake_fill_half', 0.6, [
+    'T1 .... .... x..x ..x.',
+    'T2 .... .... ...x ..x.'
+  ]));
+  Result.Add(MakeTabFill('haake_fill_big', 0.9, [
+    'K x.x. ..x. x.x. ..x.',
+    'S .... x... .... x...',
+    'T3 .... .... .... .xx.'
+  ]));
 end;
 
 function THaakePlugin.GetDrummerName: String;

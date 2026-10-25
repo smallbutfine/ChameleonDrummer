@@ -49,13 +49,23 @@ begin
 end;
 
 function TDeePlugin.GetSignatureFills: specialize TList<TFill>;
-var FillList: specialize TList<TFill>; LFill: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-  LFill := TFill.Create('dee_power_fill', 'Mikkey Dee power fill');
-  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill);
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Power metal: double-bass rolls under snare accents.
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('dee_fill_short', 0.3, [
+    'K .... .... xxxx xxxx'
+  ]));
+  Result.Add(MakeTabFill('dee_fill_half', 0.6, [
+    'S .... .... x... x...',
+    'K .... .... .xxx .xxx'
+  ]));
+  Result.Add(MakeTabFill('dee_fill_big', 0.9, [
+    'K .... xxxx xxxx xxxx',
+    'S .... x... x... x...'
+  ]));
 end;
 
 function TDeePlugin.GetDrummerName: String;

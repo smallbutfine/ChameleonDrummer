@@ -44,13 +44,28 @@ begin
 end;
 
 function TWecklPlugin.GetSignatureFills: specialize TList<TFill>;
-var FillList: specialize TList<TFill>; LFill: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-  LFill := TFill.Create('weckl_linear_fill', 'Dave Weckl linear fill');
-  LFill.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill);
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Linear fills: hands and feet take turns, never two hits on one step.
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('weckl_fill_short', 0.3, [
+    'S .... .... .... x.x.',
+    'K .... .... .... .x.x'
+  ]));
+  Result.Add(MakeTabFill('weckl_fill_half', 0.6, [
+    'S .... .... x..x ....',
+    'K .... .... .x.. x...',
+    'T1 .... .... .... ..xx'
+  ]));
+  Result.Add(MakeTabFill('weckl_fill_big', 0.9, [
+    'S .... x..x ..x. ....',
+    'K .... .x.. ...x x...',
+    'T3 .... .... x... ....',
+    'T1 .... .... .... .xx.',
+    'T2 .... .... .... ...x'
+  ]));
 end;
 
 function TWecklPlugin.GetDrummerName: String;

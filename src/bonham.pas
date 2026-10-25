@@ -142,21 +142,28 @@ begin
 end;
 
 function TBonhamPlugin.GetSignatureFills: specialize TList<TFill>;
-var
-  FillList: specialize TList<TFill>;
-  LFill1, LFill2: TFill;
 begin
-  FillList := specialize TList<TFill>.Create;
-
-  LFill1 := TFill.Create('bonham_moby_dick_fill', 'Moby Dick solo fill');
-  LFill1.Pattern := CreateSignatureFillPattern('tom_fill');
-  FillList.Add(LFill1);
-
-  LFill2 := TFill.Create('bonham_triplet_fill', 'Bonham triplet fill');
-  LFill2.Pattern := CreateSignatureFillPattern('blast_beat');
-  FillList.Add(LFill2);
-
-  Result := FillList;
+  { Fill vocabulary as one-bar drum tabs (see TDrumTab in patterns_templates).
+    Triplet fills (12 steps per bar): the Moby Dick triplets.
+    The energy is the bar intensity a fill suits best; edit the tabs to
+    change how this drummer fills. }
+  Result := specialize TList<TFill>.Create;
+  Result.Add(MakeTabFill('bonham_fill_short', 0.3, [
+    'S ... ... ... xxx'
+  ]));
+  Result.Add(MakeTabFill('bonham_fill_half', 0.6, [
+    'S ... ... xxx ...',
+    'T1 ... ... ... x..',
+    'T2 ... ... ... .x.',
+    'T3 ... ... ... ..x'
+  ]));
+  Result.Add(MakeTabFill('bonham_fill_big', 0.9, [
+    'S ... xxx ... ...',
+    'T1 ... ... xxx ...',
+    'T2 ... ... ... x.x',
+    'T3 ... ... ... .x.',
+    'K ... ... ... x..'
+  ]));
 end;
 
 function TBonhamPlugin.GetDrummerName: String;
