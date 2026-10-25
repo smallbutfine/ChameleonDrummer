@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChameleonDrummer — MIDI Generation Principles</title>
-<link rel="stylesheet" href="../style.css">
+<title>ChameleonDrummer — Concepts</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
   <div class="container">
-    <h1>ChameleonDrummer — MIDI Generation Principles</h1>
+    <h1>ChameleonDrummer</h1>
+    <p class="subtitle">Dynamic MIDI Drum Generation</p>
     <nav>
       <a href="index.html">Home</a>
       <a href="concepts.html">Concepts</a>
@@ -20,189 +21,47 @@
   </div>
 </header>
 
-<section class="main-content">
+<section class="hero">
   <div class="container">
-    <h2>How ChameleonDrummer Generates MIDI Drum Patterns</h2>
-    <p>This document explains the underlying concepts and architecture of the MIDI generation pipeline, derived from the Pascal source code in <code>ChameleonDrummer/src/</code>.</p>
+    <h2>The Principles Behind MIDI Generation</h2>
+    <p>From <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, and <code>MidiIO.pas</code> — the source code reveals a structured pipeline:</p>
+    <ol>
+      <li><strong>Pattern Model</strong> — Beats with position, instrument, velocity, ghost/accent flags.</li>
+      <li><strong>Song Structure</strong> — Sections with patterns, fills, segments, and groove offsets.</li>
+      <li><strong>Bar-by-Bar Evolution</strong> — Weighted random pattern selection with intensity bands, macro phases, context-aware fills.</li>
+      <li><strong>Physical Constraints</strong> — Pattern fixer removes impossible hits.</li>
+      <li><strong>Humanization</strong> — Timing and velocity variance for realism.</li>
+      <li><strong>MIDI Export</strong> — VLQ-encoded events with BPM/PPQ metadata.</li>
+    </ol>
+    <a href="docs.html" class="btn">Read the Manual</a>
+  </div>
+</section>
 
-    <section>
-      <h3>1. The Pattern Model (<code>Pattern.pas</code>)</h3>
-      <p>A drum pattern is represented as a <code>TPattern</code> object containing a list of <code>TBeat</code> objects. Each beat encodes:</p>
-      <ul>
-        <li><strong>Position</strong> — Time in beats (e.g., 0.0, 0.5, 1.0, 1.5). Fractional positions allow subdivision beyond quarter notes.</li>
-        <li><strong>Instrument</strong> — A <code>TDrumInstrument</code> from the instrument registry (kick, snare, hi-hat, tom, cymbal, etc.). All note mappings are loaded dynamically from JSON keymap files.</li>
-        <li><strong>Velocity</strong> — MIDI velocity 0–127. Higher values = harder hits.</li>
-        <li><strong>Duration</strong> — Note length in beats (default 0.25 = sixteenth note).</li>
-        <li><strong>GhostNote</strong> — When true, indicates a subtle, low-velocity ghost note for groove feel.</li>
-        <li><strong>Accent</strong> — When true, indicates an emphasized hit.</li>
-        <li><strong>InstrumentPromoted</strong> — Provenance flag: true when a genre plugin promotes an existing hi-hat beat to a higher-energy cymbal for high-energy sections.</li>
-      </ul>
-      <p>The <code>TPattern</code> also holds:</p>
-      <ul>
-        <li><code>TimeSignature</code> — Numerator/denominator (default 4/4).</li>
-        <li><code>Subdivision</code> — Grid resolution (default 16 = sixteenth-note grid).</li>
-        <li><code>SwingRatio</code> — Swing feel (0.0 = straight, >0 = swung).</li>
-        <li><code>Metadata</code> — Key-value tags like <code>bars_to_fill</code>, <code>phrase_bars</code>.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>2. Song and Section Model (<code>Song.pas</code>)</h3>
-      <p>A complete song is a <code>TSong</code> object containing a list of <code>TSection</code> objects. Each section represents a musical part: verse, chorus, bridge, intro, outro, breakdown.</p>
-      <p>A <code>TSection</code> contains:</p>
-      <ul>
-        <li><strong>Name</strong> — Section identifier.</li>
-        <li><strong>Pattern</strong> — The base drum pattern for this section.</li>
-        <li><strong>Bars</strong> — Duration in bars.</li>
-        <li><strong>Variations</strong> — List of <code>TPatternVariation</code> objects for variation selection per phrase.</li>
-        <li><strong>Fills</strong> — List of <code>TFill</code> objects for fill placement.</li>
-        <li><strong>Segments</strong> — <code>TSongSegment</code> objects allowing mid-section tempo or time-signature changes.</li>
-        <li><strong>GrooveOffsetsMs</strong> — Per-bar microtiming offsets (in milliseconds) from the groove engine.</li>
-      </ul>
-      <p>A <code>TSongSegment</code> allows a section to contain a mid-section tempo or meter change. This mirrors the <code>song_creator</code> REAPER tool's region-segment shape: <code>{bars, bpm, num, denom}</code>. A tempo of -1 means "inherit the parent song's global value."</li>
-    </section>
-
-    <section>
-      <h3>3. Bar-by-Bar Evolution (<code>ComposerV2.pas</code>)</h3>
-      <p>The core of the system is <code>TComposerV2</code>, which implements Engine V2: full per-bar pattern generation with intensity curves, groove selection, drummer style application, and context-aware fills.</p>
-      <p>The pipeline for each bar:</p>
-      <ol>
-        <li><strong>Intensity Point</strong> — Calculate intensity based on the section's intensity curve (<code>icAscending</code>, <code>icDescending</code>, <code>icPlateau</code>, <code>icDipRise</code>, <code>icSteps</code>).</li>
-        <li><strong>Macro Phase</strong> — Determine the macro-composer phase (<code>mpEstablish</code>, <code>mpMaintain</code>, <code>mpBuild</code>, <code>mpTurnaround</code>). This ensures the song has a purposeful shape (establish → maintain → build → turnaround) rather than random picks per phrase.</li>
-        <li><strong>Groove Selection</strong> — Select a groove from the genre plugin's flavor library based on the macro phase.</li>
-        <li><strong>Drummer Style</strong> — Apply drummer modifications (behind-beat timing, triplet vocabulary, ghost notes, heavy accents, etc.).</li>
-        <li><strong>Bar Extraction</strong> — Extract the current bar from the multi-bar phrase pattern.</li>
-        <li><strong>Parameter Modulation</strong> — Apply velocity bias and dynamics scaling based on intensity and complexity.</li>
-        <li><strong>Physical Constraints</strong> — Remove hits that are physically impossible (no two hits on same hand simultaneously, max 3 simultaneous hits, no impossibly fast repeats).</li>
-        <li><strong>Humanization</strong> — Apply timing and velocity variations for realism.</li>
-        <li><strong>Fill Placement</strong> — Insert fills at musical boundaries (before section end, every 4 bars, midpoint, or random 30% chance).</li>
-        <li><strong>Combine Bars</strong> — Combine all generated bars into the final section pattern.</li>
-      </ol>
-    </section>
-
-    <section>
-      <h3>4. Intensity Curves</h3>
-      <p>Each section is assigned an intensity curve based on its musical context:</p>
-      <ul>
-        <li><strong>icAscending</strong> — Intro sections (build up energy).</li>
-        <li><strong>icDescending</strong> — Outro sections (wind down).</li>
-        <li><strong>icPlateau</strong> — Chorus sections (maintain energy).</li>
-        <li><strong>icDipRise</strong> — Bridge sections (dip then rise).</li>
-        <li><strong>icSteps</strong> — Step-wise intensity changes.</li>
-      </ul>
-      <p>The intensity point (<code>IntensityPt</code>) is a value between 0.0 and 1.0 that drives velocity bias, dynamics scaling, and groove selection.</li>
-    </section>
-
-    <section>
-      <h3>5. Macro Composer</h3>
-      <p>The <code>TMacroComposer</code> manages groove library phase cycling:</p>
-      <ul>
-        <li><code>mpEstablish</code> (first 25%): Always the first groove flavor — the opening of a section states the groove plainly.</li>
-        <li><code>mpMaintain</code> (middle 50%): Rotates through the library without repeating the previous groove.</li>
-        <li><code>mpBuild</code> (75–95%): Pushes toward the densest groove in the library.</li>
-        <li><code>mpTurnaround</code> (last 5%): Random selection for transition.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>6. Groove Engine</h3>
-      <p>The <code>TGrooveEngine</code> calculates microtiming offsets per bar:</p>
-      <ul>
-        <li><strong>Drummer Bias</strong> — Per-drummer timing offset (e.g., Bonham = +25ms behind beat, Porcaro = -10ms ahead, Weckl = +5ms, Chambers = -5ms, Carey = +15ms, Hoglan = -2ms, Copeland = +20ms).</li>
-        <li><strong>Section Context</strong> — Per-section adjustments (intro = -15ms, chorus = +10ms, breakdown = +5ms, bridge = -20ms).</li>
-        <li><strong>Intensity Modulation</strong> — Intensity-based modulation of the offset.</li>
-      </ul>
-      <p>Offsets are bounded to ±25ms and converted from fractional beat values to milliseconds at the given tempo.</p>
-    </section>
-
-    <section>
-      <h3>7. Fill System</h3>
-      <p>The <code>TFillPicker</code> determines fill placement and type:</p>
-      <ul>
-        <li>Fills are placed at natural musical boundaries: <code>ABars - 2</code> (before section end), every 4 bars, midpoint, or with 30% random probability.</li>
-        <li>Fill types: <code>tom_downfill</code>, <code>tom_upfill</code>, <code>blast_beat</code>, <code>ride_bell_sweep</code>, <code>snare_roll</code>, <code>cymbal_crash</code>.</li>
-        <li>Signature fills from drummer plugins are added when a drummer is specified.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>8. Humanization</h3>
-      <p>The <code>TAdvancedHumanizer</code> applies context-aware timing and velocity variations:</p>
-      <ul>
-        <li><strong>Timing Variance</strong> — Small random offsets to beat positions (simulates human imperfection).</li>
-        <li><strong>Velocity Variance</strong> — Small adjustments to velocities (simulates dynamic playing).</li>
-        <li>Context parameters: genre, style, section, complexity, intensity, tempo, and source random seed.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>9. Physical Constraints</h3>
-      <p>The <code>TPatternFixer</code> ensures patterns are physically playable:</p>
-      <ul>
-        <li>No two hits on the same hand at the same instant.</li>
-        <li>Maximum 3 simultaneous hits.</li>
-        <li>No impossibly fast repeats on one limb.</li>
-        <li>Removes or adjusts hits that violate these rules.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>10. Plugin Architecture</h3>
-      <p>The system uses a plugin registry pattern:</p>
-      <ul>
-        <li><strong>TPluginRegistry</strong> — Stores genre and drummer plugins in dictionaries keyed by lowercase name.</li>
-        <li><strong>TPluginManager</strong> — Manages plugin discovery and loading from the <code>src/</code> directory.</li>
-        <li><strong>Genre Plugins</strong> — Provide supported styles, pattern generation methods per section, common fills, and preferred drummers.</li>
-        <li><strong>Drummer Plugins</strong> — Provide compatible genres, style application (modifies patterns with drummer-specific techniques), and signature fills.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>11. Keymap System</h3>
-      <p>The <code>TDrumKit</code> class loads MIDI note mappings from JSON files in <code>midi_drums/mappings/</code>:</p>
-      <ul>
-        <li><code>gm</code> — General MIDI mapping.</li>
-        <li><code>ad2</code> — Addictive Drums 2 mapping.</li>
-        <li><code>ezd3</code> — EZDrummer 3 mapping.</li>
-        <li><code>xg</code> — XG Standard mapping.</li>
-      </ul>
-      <p>All instrument names and MIDI notes are data-driven. No instrument names are hardcoded.</p>
-    </section>
-
-    <section>
-      <h3>12. MIDI Export</h3>
-      <p>The <code>MidiIO.pas</code> unit writes standard MIDI files with:</p>
-      <ul>
-        <li>Variable Length Quantity (VLQ) encoding for delta ticks.</li>
-        <li>Proper byte ordering (little-endian for MIDI headers).</li>
-        <li>Note events with absolute time basis.</li>
-        <li>BPM and PPQ (pulses per quarter note) metadata.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h3>13. REAPER and Ardour Integration</h3>
-      <p>The <code>reaper/create_song_sections.lua</code> script provides bi-directional integration between REAPER and the Python/midi_drums module. It has four modes:</p>
-      <ul>
-        <li><strong>REAPER Mode</strong> — Reads <code>REAPER_SECTIONS</code> table and writes <code>midi_drums_sections.json</code> sidecar.</li>
-        <li><strong>Python Sidecar Mode</strong> — Reads existing sidecar JSON.</li>
-        <li><strong>AI Agent Mode</strong> — Uses AI to choose song structure.</li>
-        <li><strong>Song Map Mode</strong> — Reads song map JSON for per-bar tempo/meter.</li>
-      </ul>
-      <p>The script calls Python via <code>io.popen()</subprocess and writes markers and regions in the REAPER project.</p>
-    </section>
-
-    <section>
-      <h3>14. Summary: The Generation Pipeline</h3>
-      <p>Putting it all together, the generation pipeline flows:</p>
-      <pre>
-Genre Plugin → Section Flavors → GMD Pattern Library → Bar Selection →
-Drummer Style → Groove Engine → Intensity Modulation → Physical Constraints →
-Humanization → Fill Placement → Combine Bars → Section Assembly →
-Groove Offsets → Song Assembly → MIDI Export
-</pre>
-      <p>Each stage adds a layer of musicality and realism, from the base pattern selection to the final humanized, physically-constrained MIDI output.</p>
-    </section>
+<section class="features">
+  <div class="container">
+    <h2>Architecture Highlights</h2>
+    <div class="grid">
+      <article>
+        <h3>MIDI Engine (Zero Dependencies)</h3>
+        <p>Direct binary SMF Format 0 writer • VLQ encoding • Proper tempo/section handling • Compatible with all DAWs and drum VSTs</p>
+      </article>
+      <article>
+        <h3>Pattern Generation</h3>
+        <p>TemplateComposer fluent API for declarative pattern building • 8 templates • Full genre-specific style definitions (5 genres × 26 styles)</p>
+      </article>
+      <article>
+        <h3>Drummer Plugins</h3>
+        <p>All 17 drummers translated with full composable modification support • Each drummer applies 2–4 modifications</p>
+      </article>
+      <article>
+        <h3>AI Integration</h3>
+        <p>Backend abstraction for OpenAI/LangChain providers • Prompt template system with placeholder resolution • Agent-based brainstorming and pattern suggestion • Full integration with drummer/style parameters</p>
+      </article>
+      <article>
+        <h3>Dynamic Keymap System</h3>
+        <p>No hardcoded MIDI notes anywhere in the Pascal code • All note resolution flows through template JSON → keymap JSON → InstrumentRegistry at runtime</p>
+      </article>
+    </div>
   </div>
 </section>
 

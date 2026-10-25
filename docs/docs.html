@@ -28,7 +28,7 @@
     <div class="docs-grid">
       <article class="doc-card">
         <h3>User Manual</h3>
-        <p>The complete user manual with installation instructions, quick start guide, CLI and GUI references, and troubleshooting.</p>
+        <p>The complete user manual with installation instructions, quick start guide, CLI and GUI references, advanced features, external data files, MIDI → tab conversion, and troubleshooting.</p>
         <a href="USER_MANUAL.md" class="btn">Read Manual</a>
       </article>
       
@@ -54,6 +54,8 @@
         <li><strong>CODEBASE_ANALYSIS.md</strong> — Codebase analysis and refactoring progress</li>
         <li><strong>docs/DDD_ARCHITECTURE.md</strong> — Domain-driven design architecture rules</li>
         <li><strong>docs/MIGRATION_GUIDE.md</strong> — Migration guide from original Python version</li>
+        <li><strong>config/README.md</strong> — Groove/fill tab format</li>
+        <li><strong>tools/midi_to_tab.py</strong> — MIDI → tab converter</li>
       </ul>
     </div>
     
@@ -64,6 +66,7 @@
         <li><strong>CLI Commands</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li>
         <li><strong>GUI Usage</strong> — Select genre, style, drummer, mapping, then click Generate</li>
         <li><strong>Available Options</strong> — <code>chameleondrummer list genres</code>, <code>chameleondrummer list styles --genre jazz</code>, <code>chameleondrummer list drummers</code></li>
+        <li><strong>Odd Meters</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
       </ul>
     </div>
   </div>
@@ -71,7 +74,7 @@
 
 <footer>
   <div class="container">
-    <p>ChameleonDrummer — Pascal Translation of the Python MIDI Drum System.</p>
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
     <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
   </div>
 </footer>

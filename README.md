@@ -1,248 +1,125 @@
-# ChameleonDrummer — FreePascal/Lazarus Translation (COMPLETE)
+# ChameleonDrummer
 
-## Overview
+**Dynamic MIDI drum generation** — a FreePascal/Lazarus project that turns a
+genre, style, drummer and meter into a realistic, human-feeling drum track and
+exports it as MIDI (plus REAPER / Ardour sessions).
 
-This is the complete FreePascal (FPC) translation of the Python `midi-drums` project. All core generation logic, genre/drummer plugins, dynamic keymap resolution, and MIDI export have been ported to Pascal with **zero external dependencies** beyond the FPC base library + `Generics.Collections`.
+## What it does
 
-## Compilation
+- **5 genres** — Metal, Rock, Jazz, Funk, Electronic — with **26 styles** each
+- **17 drummers** — Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
+  Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues
+- **Multi-keymap** — GM, AD2, EZDrummer 3, Yamaha XG, or user-defined JSON keymaps
+- **Odd meters** — 2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … up to 32/16
+- **External data** — grooves, fills, defaults and song structures are plain
+  text/JSON files you can edit without recompiling
+- **DAW export** — MIDI with REAPER `.rpp` markers or Ardour `.ardour` sessions
+- **Humanization** — timing/velocity jitter, ghost notes, swing, physical
+  playability constraints
+
+## Installation / Build
 
 ### Prerequisites
-- FreePascal Compiler (FPC) 3.2.2+ or Lazarus IDE 3.0+
-- Windows: Install via [fpc-laz.org](https://www.freepascal.org/)
-- Linux/macOS: `sudo apt install fpc` (Debian/Ubuntu)
 
-### Command-Line Build
+- FreePascal Compiler (FPC) 3.2.2+ or Lazarus IDE 3.0+
+- Lazarus/LCL for the GUI
+
+### CLI build
 
 ```bash
 cd B:\dev\github\ChameleonDrummer
-
-# Compile with FPC
-fpc -Mobjfpc -O2 main.pas
-
-# This produces: midi_drums.exe (Windows) or midi_drums (Linux/macOS)
-
-# Run
-./chameleondrummer --help
-./chameleondrummer generate --genre metal --style doom --tempo 75 --mapping ad2 --output song.mid
+"%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
 ```
 
-### Graphical Front End
-
-`gui/` holds a Lazarus/LCL GUI that links the engine directly - it produces
-exactly what the command line tool produces, without shelling out to it.
+### GUI build
 
 ```bash
-# Build with Lazarus (the executable lands in the project root, next to
-# ChameleonDrummer.exe, because the engine loads the keymaps relative to it)
-gui\build_gui.bat
-
-# or open it in the IDE
-lazarus gui\chameleondrummer_gui.lpi
+cd gui
+cmd /c "build_gui.bat < NUL"
 ```
 
-Pick a genre, style, drummer, keymap, tempo, complexity and humanization, then
-write a MIDI file - optionally with a REAPER project and an Ardour session next
-to it. See `gui/README.md` for details.
-
-### Include Path Setup
-
-The `main.cfg` file contains all include paths. If you get "file not found" errors:
+### Run
 
 ```bash
-fpc -Mobjfpc -I../core/models;../core/value_objects;../generation;../export;../plugins;../patterns;../modifications;../humanization;../validation;../utils;../api;../ai;../config main.pas
+ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid
+ChameleonDrummer.exe generate --genre rock --style classic --time-sig 7/8 --output rock.mid
+ChameleonDrummer.exe list genres
+ChameleonDrummer.exe list styles --genre jazz
+ChameleonDrummer.exe list drummers
 ```
 
-Or open `main.lpi` in Lazarus IDE and click **Compile**.
+## CLI Reference
 
-## Project Structure (54 Units Complete)
+```
+chameleondrummer <command> [options]
 
-| Directory | Contents | Files |
-|-----------|----------|-------|
-| `core/models/` | DrumInstrument, TPattern, TBeat, TSong, TSection, TFill | 5 |
-| `core/value_objects/` | TTimeSignature, TGenerationParameters | 2 |
-| `generation/engines/` | TD rumGenerator, bar selector/composer | 3 |
-| `generation/builders/` | TPatternBuilder | 1 |
-| `patterns/` | All pattern templates (BasicGroove, BlastBeat, etc.) | 1 |
-| `plugins/interfaces/` | TGenrePlugin, TDrummerPlugin abstract base classes | 2 |
-| `plugins/registry/` | TPluginRegistry, auto-discovery | 1 |
-| `plugins/genres/` | **5 genre plugins** (metal, rock, jazz, funk, electronic) | 5 |
-| `plugins/drummers/` | **17 drummer plugins** (Bonham → Watts + DoomBlues composite) | 17 |
-| `modifications/` | 12 composable modifications (BehindBeat, GhostNotes, etc.) | 3 |
-| `humanization/` | TAdvancedHumanizer, TLimbConstraintEngine | 2 |
-| `validation/` | TPhysicalConstraintChecker | 1 |
-| `utils/` | TPatternFixer | 1 |
-| `export/midi/` | **TMIDIEngine** (raw SMF Format 0 writer) ✅ COMPLETED | 1 |
-| `export/reaper/` | TReaperBridge, .rpp reader/writer | 2 |
-| `export/ardour/` | TArdourBridge — builds a real Ardour session headlessly via `ardour9-lua` (`ardour/import_chameleon_song.lua`) | 1 |
-| `api/` | **TCLIInterface** (full CLI) + **TDrumGeneratorAPI** (high-level API) | 2 |
-| `ai/` | **TAIAPI**, backend wrappers, pattern generator, agents, prompts | 6 |
-| `config/` | TVelocity, TTiming, TDefaults, TGenreBPM constants | 1 |
-| **TOTAL** | | **56 units** ✅ (~98% complete) |
+Commands:
+  generate   Generate a complete song (multi-bar pattern)
+  pattern    Generate a single 1-4 bar pattern
+  list       List available genres, styles, or drummers
+  info       Show system information
+  reaper     Create a REAPER project (sub-command: export)
+  ardour     Create an Ardour session (sub-command: export)
 
-## Status: CORE TRANSLATION COMPLETE
+Options:
+  --genre <name>       Genre (metal, rock, jazz, funk, electronic)
+  --style <name>       Style within genre (heavy, classic, swing, ...)
+  --tempo <bpm>        Tempo in BPM (default: genre/style value)
+  --complexity <0-1>   Pattern complexity (default: 0.5)
+  --humanization <0-1> Humanization intensity (default: 0.3)
+  --swing <0-1>        Swing feel (0 = straight, 0.67 = classic 2:1, 1 = 3:1)
+  --time-sig <n/d>     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8
+  --segment <n:bars:bpm:n/d>  Section with its own tempo and meter
+  --section <n:bars[@bpm]>    Song structure (repeat per section)
+  --drummer <name>     Drummer style (e.g., bonham, peart, carey)
+  --output <file>      Output MIDI file path
+  --mapping <name>     Keymap: gm (default), ad2, ezd3, xg
+  --structure <file>   Song structure JSON file
+  --sidecar <file>     Same as --structure (REAPER sidecar format works)
+  --song-map <file>    Read song map JSON for per-bar tempo/meter
+  --write-timeline     Write timeline JSON after generation
+  --list <type>        List: genres, styles, drummers
+```
 
-All core generation logic, genre/drummer plugins, dynamic keymap resolution, MIDI export, REAPER bridge, and Ardour timeline export have been translated. Remaining work:
-- Build verification (compile the project to check for errors)
-- Expanded test suite (skeleton created in tests/)
-- Minor documentation polish
+## External Data Files
+
+Grooves, fills, defaults and structures are plain files in `config/`:
+
+| File | Describes |
+|------|-----------|
+| `config/grooves/<genre>.tab` | Grooves of a genre: every style, verse/chorus/bridge |
+| `config/fills/<drummer>.tab` | Fills of one drummer |
+| `config/defaults/<genre>.ini` | Tempo per style, preferred drummers |
+| `config/sections/<genre>.json` | Default song structure of a genre |
+| `config/drummer_profiles.ini` | Timing feel of each drummer |
+
+Lookup order: `CHAMELEON_CONFIG` env var → `%APPDATA%\ChameleonDrummer\config` →
+`config` next to the program → `..\config` (dev builds).
+
+## MIDI → Tab Conversion
+
+`tools/midi_to_tab.py` converts a MIDI file to the `.tab` groove/fill format:
 
 ```bash
-# Generate a complete song
-chameleondrummer generate --genre metal --style doom --tempo 75 --mapping ad2 --output doom.mid
-
-# Generate with different mapping
-chameleondrummer generate --genre rock --style classic --drummer bonham --mapping gm --output rock_gm.mid
-
-# List available options
-chameleondrummer list genres
-chameleondrummer list styles --genre metal
-chameleondrummer list drummers
-
-# Show system info
-chameleondrummer info
+python tools/midi_to_tab.py song.mid --meter 7/8 --resolution 16 --output groove.tab
+python tools/midi_to_tab.py song.mid --fill --name my_fill --energy 0.6 --output fill.tab
 ```
 
-### Ardour session export
+## Status
 
-`ardour export` builds a **real Ardour session** — a session directory with a MIDI
-track, the tempo map, one region and one point marker per song section, and the
-generated MIDI imported into the track.
+- ✅ Core generation engine (ComposerV2, Pattern, Song, DrumGenerator)
+- ✅ All 5 genres × 26 styles, 17 drummers
+- ✅ Odd meters (2/4 … 32/16) with meter-aware grooves/fills
+- ✅ External data files (grooves/fills/defaults/sections)
+- ✅ REAPER + Ardour export
+- ✅ Humanization, swing, physical constraints
+- ✅ Weighted random pattern selection (intensity bands, thread-safe RNG)
+- ✅ MIDI → tab conversion tool
 
-```bash
-# Creates song.ardour/ (a session directory) plus song.mid next to it
-chameleondrummer ardour export --genre rock --style classic --drummer bonham --output song.ardour
-```
+## Documentation
 
-The session is built by Ardour itself, through its standalone Lua interpreter
-(`ardour9-lua`, shipped with Ardour 8/9), which the exporter drives with
-`ardour/import_chameleon_song.lua`. No GUI and no manual import step are
-involved. Open the resulting `song.ardour` directory in Ardour and the song is
-there, with the structure marked up.
-
-Positions are carried in **beats**, which is Ardour's own time domain for
-locations, so nothing is converted on Ardour's side. Section names become both a
-region (`IsRangeMarker`, covering the section) and a point marker (`IsMark`, at
-the section start).
-
-If `ardour9-lua` is not found, the exporter says so instead of failing silently;
-install Ardour 8/9 or put it on `PATH`.
-
-### Keymap Selection
-
-Mappings are loaded **dynamically** from JSON files in `chameleondrummer/mappings/`. The keymap filename stem becomes the CLI parameter:
-
-| Mapping File | CLI Parameter | Notes |
-|-------------|---------------|-------|
-| `gm.json` | `--mapping gm` (default) | General MIDI drum map |
-| `ad2.json` | `--mapping ad2` | Addictive Drums 2 master keymap |
-| `ezd3.json` | `--mapping ezd3` | EZDrummer 3 |
-| `xg.json` | `--mapping xg` | Yamaha XG |
-| Custom file | `--mapping my_kit` | User-created custom mapping |
-
-## DAW Integration (REAPER + Ardour)
-
-### REAPER Bridge
-- `.rpp` file parsing for markers/regions
-- Direct .rpp writing with song section markers
-- Bi-directional sync between Python/Pascal and REAPER
-
-### Ardour Export
-- **Native .ardour session XML generation**
-- Creates complete Ardour project structure with MIDI track pre-configured
-- Preserves all markers from source .rpp files
-- Compatible with Ardour 8/9 via C++ engine integration
-- Automatic MIDI file copy to session interchange directory
-
-## Dynamic Keymap System
-
-**There are no hardcoded MIDI notes anywhere in the Pascal code.** All note resolution flows through:
-
-1. **Template (master vocabulary)**: `chameleondrummer/mappings/template.json` defines ALL possible instruments
-2. **Keymap JSON files**: Each `.json` maps instrument names to MIDI notes for a specific drum kit
-3. **InstrumentRegistry**: Resolves `"kick"` → MIDI note at runtime based on selected keymap
-
-If a user omits a note in their custom mapping, that instrument simply produces no output (no fallback/remapping).
-
-## Architecture Highlights
-
-### MIDI Engine (Zero Dependencies)
-- Direct binary SMF Format 0 writer
-- VLQ (Variable Length Quantity) encoding for MIDI events
-- Proper tempo/section handling
-- Compatible with all DAWs and drum VSTs
-
-### Pattern Generation
-- TemplateComposer fluent API for declarative pattern building
-- 8 composable templates: BasicGroove, DoubleBassPedal, BlastBeat, SteadyRide, JazzRide, FunkGhostNotes, CrashAccents, TomFill
-- Full genre-specific style definitions (5 genres × 26 styles)
-
-### Drummer Plugins
-- All 17 drummers translated with full composable modification support
-- Each drummer applies 2-4 modifications: BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, etc.
-
-### AI Integration
-- Backend abstraction for OpenAI/LangChain providers
-- Prompt template system with placeholder resolution
-- Agent-based brainstorming and pattern suggestion
-- Full integration with drummer/style parameters
-
-## What's Complete ✅ (54/61 units)
-
-| Category | Status | Details |
-|----------|--------|---------|
-| Core models & value objects | ✅ | DrumInstrument, TBeat, TPattern, TSong, time signatures |
-| Generators & engines | ✅ | TD rumGenerator, ComposerV2, bar selector |
-| Pattern builder & templates | ✅ | All 8 templates with fluent API |
-| **Genre plugins** | ✅ | 5 genres: metal, rock, jazz, funk, electronic |
-| **Drummer plugins** | ✅ | 17 drummers + DoomBlues composite |
-| Modifications | ✅ | 12 composable modifiers |
-| Humanization | ✅ | Context-aware timing/velocity humanization |
-| Validation | ✅ | Physical playability constraints |
-| Utils | ✅ | Pattern fixer utilities |
-| MIDI engine | ✅ | Raw SMF writer — zero dependencies |
-| REAPER bridge | ✅ | .rpp read/write, marker sync |
-| **Ardour export** | ✅ | Native session XML generation |
-| CLI/API | ✅ | Full CLI + DrumGeneratorAPI wrapper |
-| AI module | ✅ | Backends, agents, prompts, pattern generator |
-| Config constants | ✅ | TVelocity, TTiming, TDefaults, BPM values |
-| Main entry point | ✅ | Program compilation unit |
-
-## What Remains (~7 units)
-
-### Optional / Low Priority
-- **Test suite translation** — Python tests cover the same logic; Pascal tests not required for functionality
-- **Minor utility stubs** — Documentation examples, additional AI agents if needed
-
-No critical functionality is missing. All core generation, export, and DAW integration features are complete.
-
-## Compilation Verification Steps
-
-```bash
-# 1. Check include paths
-cat main.cfg
-
-# 2. Compile with verbose output
-fpc -Mobjfpc -O2 -vi main.pas
-
-# 3. Test CLI help
-./chameleondrummer --help
-
-# 4. Generate test song (requires midi_drums/mappings/ directory)
-./chameleondrummer generate --genre metal --style doom --tempo 75 --mapping gm --output test.mid
-```
-
-## Summary
-
-The Pascal translation is **88% complete** with all critical functionality implemented:
-
-✅ Full pattern generation engine  
-✅ All 5 genres × 26 styles  
-✅ All 17 drummer plugins + composite  
-✅ Dynamic keymap system (no hardcoded notes)  
-✅ Raw SMF MIDI export (zero dependencies)  
-✅ REAPER integration (.rpp read/write)  
-✅ Ardour session XML generation  
-✅ Complete CLI interface  
-✅ AI backend abstraction with prompts  
-
-The remaining ~7 units are non-critical test/documentation files. The project is ready for compilation and testing with FreePascal/Lazarus.
+- `docs/USER_MANUAL.md` — full user manual
+- `docs/concepts.html` — concepts / how it works
+- `docs/download.html` — download page
+- `docs/docs.html` — manual page
+- `config/README.md` — groove/fill tab format

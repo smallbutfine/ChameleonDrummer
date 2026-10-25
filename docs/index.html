@@ -11,7 +11,7 @@
 <header>
   <div class="container">
     <h1>ChameleonDrummer</h1>
-    <p class="subtitle">Dynamic MIDI Drum Generation — Pascal Translation</p>
+    <p class="subtitle">Dynamic MIDI Drum Generation — FreePascal / Lazarus</p>
     <nav>
       <a href="index.html">Home</a>
       <a href="concepts.html">Concepts</a>
@@ -24,7 +24,7 @@
 <section class="hero">
   <div class="container">
     <h2>Generate Realistic Drum Tracks</h2>
-    <p>5 genres · 38 styles · 17 drummers · Multiple keymaps · REAPER &amp; Ardour export</p>
+    <p>5 genres · 26 styles · 17 drummers · Odd meters · External grooves/fills · REAPER &amp; Ardour export</p>
     <div class="cta">
       <a href="docs.html" class="btn">Read the Manual</a>
       <a href="concepts.html" class="btn btn-secondary">How It Works</a>
@@ -38,19 +38,27 @@
     <div class="grid">
       <article>
         <h3>Multi-Genre</h3>
-        <p>Metal, Rock, Jazz, Funk, Electronic — each with 7 authentic styles.</p>
+        <p>Metal, Rock, Jazz, Funk, Electronic — each with 26 authentic styles.</p>
       </article>
       <article>
         <h3>Drummer Imitation</h3>
         <p>Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart, Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues.</p>
       </article>
       <article>
-        <h3>Engine V2</h3>
-        <p>Bar-by-bar pattern evolution with intensity curves, macro phases, and context-aware fills.</p>
+        <h3>Odd Meters</h3>
+        <p>2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … up to 32/16. Per-section meter changes supported.</p>
+      </article>
+      <article>
+        <h3>External Data</h3>
+        <p>Grooves, fills, defaults and structures are plain text/JSON files — edit without recompiling.</p>
       </article>
       <article>
         <h3>DAW Integration</h3>
         <p>Export MIDI with REAPER .rpp projects or Ardour .ardour sessions.</p>
+      </article>
+      <article>
+        <h3>Humanization</h3>
+        <p>Timing/velocity jitter, ghost notes, swing, physical playability constraints.</p>
       </article>
     </div>
   </div>
@@ -63,7 +71,7 @@
     <ol>
       <li><strong>Pattern Model</strong> — Beats with position, instrument, velocity, ghost/accent flags.</li>
       <li><strong>Song Structure</strong> — Sections with patterns, fills, segments, and groove offsets.</li>
-      <li><strong>Bar-by-Bar Evolution</strong> — Intensity curves, macro phases, groove selection, drummer style.</li>
+      <li><strong>Bar-by-Bar Evolution</strong> — Weighted random pattern selection with intensity bands, macro phases, context-aware fills.</li>
       <li><strong>Physical Constraints</strong> — Pattern fixer removes impossible hits.</li>
       <li><strong>Humanization</strong> — Timing and velocity variance for realism.</li>
       <li><strong>MIDI Export</strong> — VLQ-encoded events with BPM/PPQ metadata.</li>
@@ -74,8 +82,8 @@
 
 <footer>
   <div class="container">
-    <p>ChameleonDrummer — Pascal Translation of the Python MIDI Drum System.</p>
-    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Groove format: <code>config/README.md</code></p>
   </div>
 </footer>
 
