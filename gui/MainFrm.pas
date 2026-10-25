@@ -17,7 +17,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
   Dialogs, LCLType, ShellApi, process, StrUtils, menus, CliLookup,
-  time_signature;
+  time_signature, DarkTheme;
 
 type
   TIntDynArray = array of Integer;
@@ -27,6 +27,10 @@ type
     gbSong: TGroupBox;
     MainMenu: TMainMenu;
     mnuFile: TMenuItem;
+    mnuView: TMenuItem;
+    mnuThemeSystem: TMenuItem;
+    mnuThemeLight: TMenuItem;
+    mnuThemeDark: TMenuItem;
     rbPattern: TRadioButton;
     rbSong: TRadioButton;
     lblGenre: TLabel;
@@ -77,12 +81,18 @@ type
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mnuQuitClick(Sender: TObject);
+    procedure mnuThemeClick(Sender: TObject);
     procedure mnuAboutClick(Sender: TObject);
   private
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
     FCliTool: String;
+    FThemeChoice: TThemeChoice;
+    FDark: Boolean;
     procedure Log(const AText: String);
+    procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
+    procedure SystemThemeChanged(Sender: TObject);
+    procedure ThemeMenuChecks;
 
     procedure FillStyles;
 
@@ -169,6 +179,44 @@ begin
 
   Log('Choose a genre and style, pick a drummer, then press Generate.');
   lblStatus.Caption := 'Ready';
+
+  { Colours last, when every control exists. }
+  OnSystemThemeChange := @SystemThemeChanged;
+  SetTheme(LoadThemeChoice, False);
+end;
+
+procedure TMainForm.ThemeMenuChecks;
+begin
+  mnuThemeSystem.Checked := FThemeChoice = tcSystem;
+  mnuThemeLight.Checked := FThemeChoice = tcLight;
+  mnuThemeDark.Checked := FThemeChoice = tcDark;
+end;
+
+procedure TMainForm.SetTheme(AChoice: TThemeChoice; ASave: Boolean);
+begin
+  FThemeChoice := AChoice;
+  FDark := ResolveDark(AChoice);
+  ThemeMenuChecks;
+  ApplyTheme(Self, FDark);
+  if ASave then
+    SaveThemeChoice(AChoice);
+end;
+
+procedure TMainForm.SystemThemeChanged(Sender: TObject);
+begin
+  { Windows switched between light and dark apps: follow it when asked to. }
+  if FThemeChoice = tcSystem then
+    SetTheme(tcSystem, False);
+end;
+
+procedure TMainForm.mnuThemeClick(Sender: TObject);
+begin
+  if Sender = mnuThemeDark then
+    SetTheme(tcDark, True)
+  else if Sender = mnuThemeLight then
+    SetTheme(tcLight, True)
+  else
+    SetTheme(tcSystem, True);
 end;
 
 { The command line tool is the only source of genres, styles and drummers. If
@@ -395,6 +443,8 @@ begin
     seBars := TSpinEdit.Create(gbSong); with seBars do begin Parent := gbSong; Name := Format('secSpn%d', [I]); Left := 270; Top := Y; Width := 60; Height := 24; MinValue := 1; MaxValue := 64; Value := FSectionBars[I]; end;
     btnDelete := TButton.Create(gbSong); with btnDelete do begin Parent := gbSong; Name := Format('secDel%d', [I]); Left := 340; Top := Y; Width := 28; Height := 24; Caption := '-'; OnClick := @BtnSectionDeleteClick; end;
     Inc(Y, 28); end;
+  { the controls made here are new: give them the current colours }
+  ThemeControlTree(gbSong, FDark);
 end;
 
 procedure TMainForm.SyncSectionArraysFromControls;
