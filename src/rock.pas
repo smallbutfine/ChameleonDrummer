@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants;
+  config_constants, RockGrooves;
 
 type
   TRockContext = record
@@ -28,6 +28,7 @@ type
     FComplexity: Double;
     FIntensity: Double;
     function GetRideTimekeeper: String;
+    function MakeGroove(const AKind: String; AVariant: Integer): TPattern;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -123,158 +124,28 @@ begin
   end;
 end;
 
-function TRockGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
+function TRockGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TPattern;
 begin
-  Composer := TTemplateComposer.Create('rock_' + FStyle + '_verse_b' + IntToStr(BarIndex));
+  { Grooves are drum tabs in RockGrooves.pas: three per style and section
+    kind, tagged with overlapping intensity bands. }
+  Result := BuildTaggedGroove(
+    'rock_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
+    AVariant, RockGrooveLines(FStyle, AKind, AVariant), FComplexity);
+end;
 
-  case FStyle of
-    'classic':
-      begin
-        // Led Zeppelin/Deep Purple style
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TTomFill.Create('descending'));
-      end;
-    'blues':
-      begin
-        // Blues rock with shuffle feel
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'alternative':
-      begin
-        // 90s alternative syncopation
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 3 = 0) then
-          Composer.Add(TTomFill.Create('descending'));
-      end;
-    'progressive':
-      begin
-        // Complex progressive rock
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'punk':
-      begin
-        // Fast aggressive punk
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'hard':
-      begin
-        // Hard rock heavy emphasis
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
-      end;
-    'pop':
-      begin
-        // Clean pop rock
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag verse patterns as lower-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.15');
-  Result.Metadata.Add('valid_intensity_max', '0.55');
+function TRockGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
+begin
+  Result := MakeGroove('verse', BarIndex mod 3);
 end;
 
 function TRockGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('rock_' + FStyle + '_chorus_b' + IntToStr(BarIndex));
-
-  case FStyle of
-    'classic':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'blues':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'alternative':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
-      end;
-    'progressive':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'punk':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'hard':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'pop':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-  else
-    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag chorus patterns as higher-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.55');
-  Result.Metadata.Add('valid_intensity_max', '0.95');
+  Result := MakeGroove('chorus', BarIndex mod 3);
 end;
 
 function TRockGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('rock_' + FStyle + '_bridge_b' + IntToStr(BarIndex));
-
-  case FStyle of
-    'classic':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TTomFill.Create('descending'));
-      end;
-    'blues':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'alternative':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'progressive':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'punk':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'hard':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-        Composer.Add(TCrashAccents.Create);
-      end;
-    'pop':
-      begin
-        Composer.Add(TSteadyRide.Create);
-      end;
-  else
-    Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag bridge patterns — variable intensity (can bridge between bands). }
-  Result.Metadata.Add('valid_intensity_min', '0.3');
-  Result.Metadata.Add('valid_intensity_max', '0.7');
+  Result := MakeGroove('bridge', BarIndex mod 3);
 end;
 
 function TRockGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -344,18 +215,20 @@ end;
 
 function TRockGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Patterns: specialize TList<TPattern>;
-  PatternItem: TPattern;
+  PreviousStyle: String;
+  PreviousComplexity: Double;
 begin
-  Patterns := GetSectionFlavors(Section, Parameters);
+  PreviousStyle := FStyle;
+  PreviousComplexity := FComplexity;
   try
-    if Patterns.Count = 0 then
-      raise Exception.CreateFmt('No rock patterns available for section %s', [Section]);
-    Result := Patterns[0].Copy;
+    if (Parameters <> nil) and (Parameters.Style <> '') then
+      FStyle := LowerCase(Parameters.Style);
+    if Parameters <> nil then
+      FComplexity := Parameters.Complexity;
+    Result := MakeGroove(GrooveKindOfSection(Section), 1);
   finally
-    for PatternItem in Patterns do
-      PatternItem.Free;
-    Patterns.Free;
+    FStyle := PreviousStyle;
+    FComplexity := PreviousComplexity;
   end;
 end;
 
@@ -385,16 +258,8 @@ begin
       SectionName := FSection;
 
       for BarIdx := 0 to 2 do
-      begin
-        if (Pos('chorus', SectionName) > 0) then
-          Result.Add(GetFlavorChorus(BarIdx))
-        else if (Pos('bridge', SectionName) > 0) or
-                (Pos('pre_chorus', SectionName) > 0) or
-                (Pos('breakdown', SectionName) > 0) then
-          Result.Add(GetFlavorBridge(BarIdx))
-        else
-          Result.Add(GetFlavorVerse(BarIdx));
-      end;
+        Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
+
     except
       while Result.Count > 0 do
       begin

@@ -57,6 +57,7 @@ var
   I, J, Violations, Removed: Integer;
   PMin, PMax: Double;
   Rhythm, WithVel: TStringList;
+  FS: TFormatSettings;
   Engine: TLimbConstraintEngine;
   Fixer: TPatternFixer;
   V: specialize TList<TLimbViolation>;
@@ -67,7 +68,11 @@ begin
   for Style in AStyles do
     for Section in Sections do
     begin
-      Params := TGenerationParameters.Create(AGenre, Style, '', 0.5, 0.6, 0.0);
+      FS := DefaultFormatSettings;
+      FS.DecimalSeparator := '.';
+      Params := TGenerationParameters.Create(AGenre, Style, '',
+        StrToFloatDef(GetEnvironmentVariable('AUDIT_COMPLEXITY'), 0.5, FS),
+        0.6, 0.0);
       L := APlugin.GetSectionFlavors(Section, Params);
       Rhythm := TStringList.Create;
       WithVel := TStringList.Create;

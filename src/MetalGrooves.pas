@@ -113,7 +113,7 @@ begin
     case V of
       0: Result := ['K x... .... ..x. .... | x... .... ..x. ..x.', SNARE_3, RIDE_8];
       1: Result := ['K x... .... x... .... | x... .... x... ..x.', SNARE_24, RIDE_8,
-           'T3@0.6 .... .... .... .... | .... .... ..xx xxxx'];
+           'T3@0.6 .... .... .... .... | .... .... .... .x.x'];
     else
       Result := ['K x... .... x... .... | x.xx x.xx x.xx x.xx', SNARE_24, HAT_8, CRASH_1A];
     end
