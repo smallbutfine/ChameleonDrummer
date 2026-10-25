@@ -15,7 +15,7 @@
         title        = "metal_death_bonham",
         midi_file    = "C:/out/MySong.mid",
         total_beats  = 415.5,
-        tempo_points = { { beat = 0, bpm = 180, beats_per_bar = 4 } },
+        tempo_points = { { beat = 0, bpm = 180, num = 4, den = 4 } },
         sections     = { { name = "intro", start_beat = 0, end_beat = 16 } },
       }
 
@@ -96,8 +96,10 @@ end
 if d.tempo_points and #d.tempo_points > 0 then
   local tm = Temporal.TempoMap.write_copy()
   for _, tp in ipairs(d.tempo_points) do
-    tm:set_tempo(Temporal.Tempo(tp.bpm, tp.bpm, tp.beats_per_bar or 4),
-                 beatpos(tp.beat))
+    -- bpm is in quarter notes per minute, whatever the meter (note type 4);
+    -- the meter is its own thing: 7/8 is 7 beats of an eighth note.
+    tm:set_tempo(Temporal.Tempo(tp.bpm, tp.bpm, 4), beatpos(tp.beat))
+    tm:set_meter(Temporal.Meter(tp.num or 4, tp.den or 4), beatpos(tp.beat))
   end
   Temporal.TempoMap.update(tm)
   print("chameleon: tempo map written (" .. #d.tempo_points .. " points)")

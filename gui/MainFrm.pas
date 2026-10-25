@@ -16,7 +16,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, ShellApi, process, StrUtils, menus, CliLookup;
+  Dialogs, LCLType, ShellApi, process, StrUtils, menus, CliLookup,
+  time_signature;
 
 type
   TIntDynArray = array of Integer;
@@ -36,6 +37,9 @@ type
     cbDrummer: TComboBox;
     lblMapping: TLabel;
     cbMapping: TComboBox;
+    lblMeter: TLabel;
+    cbMeter: TComboBox;
+    lblMeterHint: TLabel;
     gbPerformance: TGroupBox;
     lblTempo: TLabel;
     seTempo: TSpinEdit;
@@ -86,6 +90,7 @@ type
     function RunTool(const AArgs: array of String): Boolean;
 
     procedure CommonOptions(AArgs: TStrings);
+    function MeterOption(out AText: String): Boolean;
     procedure ResetToDefaultStructure;
     procedure UpdateValueLabels;
     function SwingAmount: Double;
@@ -128,6 +133,8 @@ const
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
+  cbMeter.ItemIndex := 0;
   FillLists;
   FillStyles;
 
@@ -445,9 +452,40 @@ begin
   end;
 end;
 
+{ The meter box: '4/4' (or empty) needs no option. False, with a message in
+  the log, when what was typed is not a meter the engine can play. }
+function TMainForm.MeterOption(out AText: String): Boolean;
+var
+  Num, Den: Integer;
+  Problem: String;
+begin
+  AText := '';
+  Result := True;
+  if (Trim(cbMeter.Text) = '') or (Trim(cbMeter.Text) = '4/4') then
+    Exit;
+  if not TryParseMeter(cbMeter.Text, Num, Den) then
+  begin
+    Log('The meter "' + cbMeter.Text + '" is not like 7/8.');
+    Exit(False);
+  end;
+  Problem := MeterProblem(Num, Den);
+  if Problem <> '' then
+  begin
+    Log(Format('The meter %d/%d cannot be played: %s.', [Num, Den, Problem]));
+    Exit(False);
+  end;
+  AText := Format('%d/%d', [Num, Den]);
+end;
+
 { Options that both modes pass on. }
 procedure TMainForm.CommonOptions(AArgs: TStrings);
+var
+  Meter: String;
 begin
+  if MeterOption(Meter) and (Meter <> '') then
+  begin
+    AArgs.Add('--time-sig'); AArgs.Add(Meter);
+  end;
   AArgs.Add('--genre'); AArgs.Add(SelectedGenre);
   AArgs.Add('--style'); AArgs.Add(SelectedStyle);
   AArgs.Add('--output'); AArgs.Add(ChangeFileExt(OutputBasePath, '.mid'));
@@ -464,8 +502,10 @@ var
   Args: TStringList;
   SecIdx: Integer;
   Ok: Boolean;
+  MeterText: String;
 begin
   if cbGenre.ItemIndex < 0 then begin Log('Pick a genre first.'); Exit; end;
+  if not MeterOption(MeterText) then Exit;
   if cbStyle.ItemIndex < 0 then begin Log('Pick a style first.'); Exit; end;
   if OutputBasePath = '' then begin Log('Choose an output file name first.'); Exit; end;
 

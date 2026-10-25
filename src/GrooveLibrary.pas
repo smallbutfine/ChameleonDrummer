@@ -9,6 +9,7 @@ unit GrooveLibrary;
       S  .... x... .... x... | .... x...
 
       [heavy verse intensity=0.4-0.8]        optional: when this groove suits
+      [heavy verse 7/8]                      a groove for 7/8; without a meter it is 4/4
 
   A block is one groove. The blocks of one style and kind are its variants,
   lightest first; the composer picks among those whose intensity band fits the
@@ -17,6 +18,12 @@ unit GrooveLibrary;
   grooves you add.
   Kinds: verse, chorus, bridge (intro/outro/solo/... play verse or bridge
   grooves, see GrooveKindOfSection).
+
+  Meters: any meter can have its own grooves (2/4, 3/4, 5/4, 7/8, 9/8, 11/8,
+  13/8 ...). A song in 7/8 plays the 7/8 grooves of its style; when the style
+  has none, the 7/8 grooves of any style of that genre; when the genre has
+  none, a plain groove the engine builds (kick, snare on the group starts,
+  hi-hat) and a warning that names the file to add one to.
 
   A file replaces the built-in grooves of the genre for the styles it has; a
   style it does not mention keeps the built-in grooves. A style the engine
@@ -50,18 +57,22 @@ procedure GrooveFileStyles(const AGenre: string; AStyles: TStrings);
 
 { The variants of a style and kind from the file; empty when the file does not
   have them. }
-function FileGrooveVariants(const AGenre, AStyle, AKind: string): TGrooveVariants;
+function FileGrooveVariants(const AGenre, AStyle, AKind: string;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TGrooveVariants;
 
-{ How many variants a style has for a kind: from the file when it has the
-  style, else ABuiltIn. A kind the file lacks counts as 'verse'. }
+{ How many variants a style has for a kind and meter: from the file when it
+  has them, else ABuiltIn for 4/4 and 1 (the plain groove) for any other
+  meter. A kind the file lacks counts as 'verse'. }
 function GrooveVariantCount(const AGenre, AStyle, AKind: string;
-  ABuiltIn: Integer = 3): Integer;
+  ABuiltIn: Integer = 3; AMeterNum: Integer = 4; AMeterDen: Integer = 4): Integer;
 
 { Builds variant AVariant (counted modulo the variant count) as a tagged
-  groove. ABuiltIn are the lines of the compiled-in groove, used when the file
-  has none for this style. }
+  groove. ABuiltIn are the lines of the compiled-in 4/4 groove, used when the
+  file has none for this style. For another meter without a groove in any file
+  the plain meter groove is built and ConfigWarnings says which block to add. }
 function BuildGroove(const AGenre, AStyle, AKind: string; AVariant: Integer;
-  AComplexity: Double; const ABuiltIn: TTabLines): TPattern;
+  AComplexity: Double; const ABuiltIn: TTabLines;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
 
 { The styles of a genre: the built-in ones, then those only the file has. }
 function WithFileStyles(const AGenre: string;
@@ -157,7 +168,10 @@ begin
         Format('intensity must look like 0.2-0.6 (between 0 and 1, low first), not "%s"', [Value])));
     { Building it checks the instruments, the step characters and grid sizes. }
     try
-      Pattern := BuildDrumTabPattern('check', B.Lines, 1.0);
+      if B.MeterNum = 0 then
+        Pattern := BuildDrumTabPattern('check', B.Lines, 1.0)
+      else
+        Pattern := BuildDrumTabPattern('check', B.Lines, 1.0, 2, B.MeterNum, B.MeterDen);
       Pattern.Free;
     except
       on E: Exception do
@@ -165,6 +179,15 @@ begin
           Format('[%s %s]: %s', [B.Words[0], B.Words[1], E.Message])));
     end;
   end;
+end;
+
+{ 'num/den', a header without a meter is 4/4. }
+function MeterKey(ANum, ADen: Integer): string;
+begin
+  if ANum = 0 then
+    Result := '4/4'
+  else
+    Result := IntToStr(ANum) + '/' + IntToStr(ADen);
 end;
 
 procedure AddBlocks(AGenre: TGenreGrooves; const ABlocks: TTabBlocks);
@@ -186,7 +209,7 @@ begin
     V.HasBand := BlockKey(B, 'intensity', Value);
     if V.HasBand then
       ParseBand(Value, V.BandMin, V.BandMax);
-    Key := B.Words[0] + '|' + B.Words[1];
+    Key := B.Words[0] + '|' + B.Words[1] + '|' + MeterKey(B.MeterNum, B.MeterDen);
     if not AGenre.Kinds.TryGetValue(Key, List) then
       List := nil;
     SetLength(List, Length(List) + 1);
@@ -298,37 +321,56 @@ begin
     AStyles.AddStrings(G.Styles);
 end;
 
-function FileGrooveVariants(const AGenre, AStyle, AKind: string): TGrooveVariants;
+function FileGrooveVariants(const AGenre, AStyle, AKind: string;
+  AMeterNum, AMeterDen: Integer): TGrooveVariants;
 var
   G: TGenreGrooves;
+  Meter, Style: string;
+  I: Integer;
+
+  { The grooves of one style for the kind, else its verse grooves. }
+  function OfStyle(const AStyleName: string; out AVariants: TGrooveVariants): Boolean;
+  begin
+    Result := G.Kinds.TryGetValue(AStyleName + '|' + AKind + '|' + Meter, AVariants) or
+      G.Kinds.TryGetValue(AStyleName + '|verse|' + Meter, AVariants);
+  end;
+
 begin
   EnsureLoaded;
   Result := nil;
   if not GGenres.TryGetValue(LowerCase(AGenre), G) then
     Exit;
-  if G.Styles.IndexOf(LowerCase(AStyle)) < 0 then
-    Exit;
-  if G.Kinds.TryGetValue(LowerCase(AStyle) + '|' + AKind, Result) then
-    Exit;
-  { A style that has no grooves for this kind plays its verse grooves. }
-  if not G.Kinds.TryGetValue(LowerCase(AStyle) + '|verse', Result) then
-    Result := nil;
+  Meter := MeterKey(AMeterNum, AMeterDen);
+  Style := LowerCase(AStyle);
+  if G.Styles.IndexOf(Style) >= 0 then
+    if OfStyle(Style, Result) then
+      Exit;
+  { For a meter other than 4/4 the genre may have grooves for it in another
+    style: that is closer than a plain groove. 4/4 keeps the built-ins. }
+  if Meter <> '4/4' then
+    for I := 0 to G.Styles.Count - 1 do
+      if OfStyle(G.Styles[I], Result) then
+        Exit;
+  Result := nil;
 end;
 
 function GrooveVariantCount(const AGenre, AStyle, AKind: string;
-  ABuiltIn: Integer): Integer;
+  ABuiltIn: Integer; AMeterNum, AMeterDen: Integer): Integer;
 var
   V: TGrooveVariants;
 begin
-  V := FileGrooveVariants(AGenre, AStyle, AKind);
+  V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen);
   if Length(V) > 0 then
     Result := Length(V)
+  else if MeterKey(AMeterNum, AMeterDen) = '4/4' then
+    Result := ABuiltIn
   else
-    Result := ABuiltIn;
+    Result := 1;
 end;
 
 function BuildGroove(const AGenre, AStyle, AKind: string; AVariant: Integer;
-  AComplexity: Double; const ABuiltIn: TTabLines): TPattern;
+  AComplexity: Double; const ABuiltIn: TTabLines;
+  AMeterNum, AMeterDen: Integer): TPattern;
 var
   V: TGrooveVariants;
   Item: TGrooveVariant;
@@ -336,12 +378,25 @@ var
   Kind: string;
   Index: Integer;
 begin
-  V := FileGrooveVariants(AGenre, AStyle, AKind);
+  V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen);
   if Length(V) = 0 then
   begin
-    Result := BuildTaggedGroove(
-      Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, AVariant]), AKind, AVariant,
-      ABuiltIn, AComplexity);
+    if MeterKey(AMeterNum, AMeterDen) = '4/4' then
+    begin
+      Result := BuildTaggedGroove(
+        Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, AVariant]), AKind, AVariant,
+        ABuiltIn, AComplexity);
+      Exit;
+    end;
+    { No groove for this meter in any file: a plain one keeps the song
+      going, and the warning says where to add a real one. }
+    AddConfigWarning(Format(
+      'no %d/%d groove for %s %s (%s): a plain groove is played. Add a block like [%s %s %d/%d] to config\grooves\%s.tab',
+      [AMeterNum, AMeterDen, AGenre, AStyle, AKind, AStyle, AKind, AMeterNum, AMeterDen,
+       AGenre]));
+    Result := BuildMeterFallbackGroove(
+      Format('%s_%s_%s_%d_%d_plain', [AGenre, AStyle, AKind, AMeterNum, AMeterDen]),
+      AMeterNum, AMeterDen, AComplexity);
     Exit;
   end;
   Index := AVariant mod Length(V);
@@ -351,7 +406,7 @@ begin
   Kind := AKind;
   Result := BuildDrumTabPattern(
     Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, Index]), Item.Lines,
-    AComplexity);
+    AComplexity, 2, AMeterNum, AMeterDen);
   if Item.HasBand then
     TagIntensityBand(Result, Item.BandMin, Item.BandMax)
   else

@@ -217,3 +217,16 @@ K x... .... ..x. .... | x... .... ..x. ....
 RS .... .... X... .... | .... .... X... ....
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 RS@0.5 .... .... .... .... | .... .... .... xxxx
+
+# ---- odd meters (hand written, tools/write_meter_grooves.py) ----
+# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+
+[house verse 7/8 intensity=0.20-0.80]
+K   x.. x. x.
+S   ... x. x.
+H   xxx xx xx
+
+[techno verse 5/4 intensity=0.20-0.80]
+K   x. x. x. x. x.
+RS  .. .. .. x. ..
+H   .x .x .x .x .x

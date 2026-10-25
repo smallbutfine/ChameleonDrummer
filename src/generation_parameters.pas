@@ -25,6 +25,8 @@ private
   FSongGenreContext: string;
   FContextBlend: Double;
   FCustomParameters: specialize TDictionary<string, string>;
+  FMeterNum: Integer;
+  FMeterDen: Integer;
 public
   constructor Create(AGenre, AStyle: string; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6; AHumanization: Double = 0.5;
@@ -45,6 +47,10 @@ public
   property SongGenreContext: string read FSongGenreContext write FSongGenreContext;
   property ContextBlend: Double read FContextBlend write FContextBlend;
   property CustomParameters: specialize TDictionary<string, string> read FCustomParameters;
+  { The meter of the section being generated (4/4 unless the song says
+    otherwise); grooves, fills and the pedal pattern follow it. }
+  property MeterNum: Integer read FMeterNum write FMeterNum;
+  property MeterDen: Integer read FMeterDen write FMeterDen;
 end;
 
 implementation
@@ -69,6 +75,8 @@ begin
   FRideThreshold := ARideThreshold;
   FSongGenreContext := '';
   FContextBlend := 0.0;
+  FMeterNum := 4;
+  FMeterDen := 4;
   FCustomParameters := specialize TDictionary<string, string>.Create;
 
   { Validate }

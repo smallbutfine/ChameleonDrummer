@@ -44,7 +44,8 @@ private
   procedure SetDrumKit(AValue: TDrumKit);
   function GetGenreDefaultStructure(const Genre: string): TSongStructureArray;
   function FitDefaultStructureToRadioLength(
-    const AStructure: TSongStructureArray; ATempo: Integer): TSongStructureArray;
+    const AStructure: TSongStructureArray; ATempo: Integer;
+    ABarQuarters: Double = 4.0): TSongStructureArray;
 
 
 public
@@ -57,14 +58,15 @@ public
   function CreateSongV2(const Genre, Style: string; ATempo: Integer = 0;
     const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
     ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
-    AHumanization: Double = 0.5; ASwing: Double = 0.0): TSong;
+    AHumanization: Double = 0.5; ASwing: Double = 0.0;
+    AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
 
   { Create a complete song — always uses V2 (bar-by-bar evolution). }
   function CreateSong(const Genre, Style: string; ATempo: Integer = 0;
     const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
     ADrummer: string = ''; AComplexity: Double = 0.5;
     ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-    ASwing: Double = 0.0): TSong;
+    ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
 
   { The default song structure of a genre as it is before it is fitted to a
     song length: config/sections/<genre>.json, else the built-in one. }
@@ -78,7 +80,7 @@ public
 
   { Generate a single pattern for a genre/section. }
   function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit;
-    const AStyle: string = ''): TPattern;
+    const AStyle: string = ''; AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
 
   { Problems the pattern check found in the song made by the last CreateSong
 
@@ -437,7 +439,8 @@ begin
 end;
 
 function TDrumGenerator.FitDefaultStructureToRadioLength(
-  const AStructure: TSongStructureArray; ATempo: Integer): TSongStructureArray;
+  const AStructure: TSongStructureArray; ATempo: Integer;
+  ABarQuarters: Double): TSongStructureArray;
 var
   BaseTotal, BarSeconds: Double;
   TargetSeconds: Integer;
@@ -462,7 +465,8 @@ begin
 
   { Vary the default arrangement between 3:00 and 3:45 before bar rounding. }
   TargetSeconds := 180 + Random(46);
-  BarSeconds := 240.0 / ATempo;
+  { A bar of ABarQuarters quarter notes lasts ABarQuarters * 60 / tempo seconds. }
+  BarSeconds := ABarQuarters * 60.0 / ATempo;
   TargetBars := Max(Length(AStructure), Round(TargetSeconds / BarSeconds));
   MaxBars := Trunc(Floor(240.0 / BarSeconds));
   BarsPerUnit := 4;
@@ -508,7 +512,8 @@ end;
 function TDrumGenerator.CreateSongV2(const Genre, Style: string; ATempo: Integer = 0;
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
-  AHumanization: Double = 0.5; ASwing: Double = 0.0): TSong;
+  AHumanization: Double = 0.5; ASwing: Double = 0.0;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
 { Bar-by-bar pattern evolution (Engine V2). }
 var
   Tempo: Integer;
@@ -535,7 +540,7 @@ begin
   { Use default structure if none provided. }
   if (AStructure = nil) or (Length(AStructure) = 0) then
     Structure := FitDefaultStructureToRadioLength(
-      GetGenreDefaultStructure(Genre), Tempo)
+      GetGenreDefaultStructure(Genre), Tempo, AMeterNum * 4.0 / AMeterDen)
   else
     Structure := AStructure;
 
@@ -543,7 +548,7 @@ begin
   Composer := TComposerV2.Create(FPluginManager, Random(MaxInt));
   try
     Result := Composer.CreateSong(Genre, Style, Tempo, Structure, ADrummer,
-      AComplexity, ADynamics, AHumanization, ASwing);
+      AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen);
 
     { Apply genre-aware hi-hat -> ride/crash promotion for high-energy
       sections (chorus / bridge / pre_chorus). This runs per section so the
@@ -562,6 +567,8 @@ begin
             Continue;
           { The ride switch looks at complexity, so it must see the
             section's own value when the structure gave one. }
+          RideParams.MeterNum := AMeterNum;
+          RideParams.MeterDen := AMeterDen;
           if (SectionIndex < Length(Structure)) and
              Structure[SectionIndex].HasComplexity then
             RideParams.Complexity := Structure[SectionIndex].Complexity
@@ -609,10 +616,10 @@ function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer =
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   ADrummer: string = ''; AComplexity: Double = 0.5;
   ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-  ASwing: Double = 0.0): TSong;
+  ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
 begin
   Exit(CreateSongV2(Genre, Style, ATempo, AStructure, ADrumKit, ADrummer,
-    AComplexity, ADynamics, AHumanization, ASwing));
+    AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen));
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
@@ -1114,7 +1121,7 @@ end;
 {  V1 helpers  pattern generation, variations, fills. â”€â”€ }
 
 function TDrumGenerator.GeneratePattern(const Genre, SectionName: string;
-  const ADk: TDrumKit; const AStyle: string): TPattern;
+  const ADk: TDrumKit; const AStyle: string; AMeterNum, AMeterDen: Integer): TPattern;
 var
   GenrePlugin: TObject;
   Params: TGenerationParameters;
@@ -1147,9 +1154,20 @@ begin
   if Assigned(ADk) then
     SetDrumKit(ADk);
 
+  EffectiveStyle := LowerCase(EffectiveStyle);
+  if MeterProblem(AMeterNum, AMeterDen) <> '' then
+    raise Exception.CreateFmt('Time signature %d/%d: %s',
+      [AMeterNum, AMeterDen, MeterProblem(AMeterNum, AMeterDen)]);
   Params := TGenerationParameters.Create(Genre, EffectiveStyle);
   try
-    Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
+    Params.MeterNum := AMeterNum;
+    Params.MeterDen := AMeterDen;
+    (GenrePlugin as TGenrePlugin).SetMeter(AMeterNum, AMeterDen);
+    try
+      Result := (GenrePlugin as TGenrePlugin).GeneratePattern(SectionName, Params);
+    finally
+      (GenrePlugin as TGenrePlugin).SetMeter(4, 4);
+    end;
   finally
     Params.Free;
   end;

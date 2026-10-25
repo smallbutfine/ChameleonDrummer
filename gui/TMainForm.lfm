@@ -99,6 +99,26 @@ object MainForm: TMainForm
       Width = 180
       Height = 24
     end
+    object lblMeter: TLabel
+      Left = 12
+      Top = 177
+      Width = 60
+      Height = 14
+      Caption = 'Meter'
+    end
+    object cbMeter: TComboBox
+      Left = 80
+      Top = 173
+      Width = 80
+      Height = 24
+    end
+    object lblMeterHint: TLabel
+      Left = 170
+      Top = 177
+      Width = 220
+      Height = 14
+      Caption = 'e.g. 7/8 - type any, 2/4 to 32/16'
+    end
   end
   object gbOutput: TGroupBox
     Left = 420

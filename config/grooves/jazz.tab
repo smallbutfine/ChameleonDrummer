@@ -392,3 +392,30 @@ K x..x .... ..x. ..x. | x... ..x. x... ....
 S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 T1@0.5 .... .... .... .... | .... .... .... .xx.
+
+# ---- odd meters (hand written, tools/write_meter_grooves.py) ----
+# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+
+[swing verse 3/4 intensity=0.20-0.70]
+R   x. xx xx
+HP  .. x. x.
+K   x. .. ..
+S   .. .. .x
+
+[swing chorus 3/4 intensity=0.40-1.00]
+R   x. xx xx
+HP  .. x. x.
+K   x. .. x.
+S   .. x. .x
+
+[swing verse 5/4 intensity=0.20-0.70]
+R   x. xx xx x. xx
+HP  .. x. .. x. ..
+K   x. .. .. .. ..
+SS  .. .. x. .. x.
+
+[swing verse 7/8 intensity=0.20-0.70]
+R   xx xx xxx
+HP  .x .. .x.
+K   x. .. ...
+S   .. .x ..x

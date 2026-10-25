@@ -7,7 +7,7 @@ unit patterns_templates;
 interface
 
 uses
-  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song;
+  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song, time_signature;
 
 type
   { Lines of a drum tab (see TDrumTab). }
@@ -121,7 +121,12 @@ type
     HO open hat, HP pedal hat, R ride, RB ride bell, C crash, C2 crash 2,
     CH china-style cymbal, SP splash, T1..T4 toms.
     A line with @0.6 only plays when the song complexity is at least 0.6.
-    A line with fewer bars than the tab repeats its bars. }
+    A line with fewer bars than the tab repeats its bars.
+
+    In a meter other than 4/4 the steps still divide the whole bar: a bar of
+    N/D has N units (1/D notes), and k steps per unit, k = 1, 2, 3, 4, 6 or 8.
+    7/8 therefore takes 7 (eighths), 14 (sixteenths), 21, 28, 42 or 56 steps;
+    4/4 takes 4, 8, 12, 16, 24 or 32. }
   TDrumTab = class(TPatternTemplate)
   private
     FLines: TStringList;
@@ -137,10 +142,13 @@ type
   private
     FPName: string;
     FTemplates: specialize TList<TPatternTemplate>;
+    FMeterNum, FMeterDen: Integer;
   public
     constructor Create(const AName: string);
     destructor Destroy; override;
     function Add(APattern: TPatternTemplate): TTemplateComposer;
+    { The meter of the bars that are built (4/4 unless set). }
+    procedure SetMeter(ANum, ADen: Integer);
     function Build(ABars: Integer; AComplexity: Double): TPattern;
   end;
 
@@ -162,11 +170,28 @@ procedure TagIntensityBand(APattern: TPattern; AMin, AMax: Double);
 
 { Builds a groove from drum-tab lines and tags its intensity band. }
 function BuildTaggedGroove(const AName, AKind: string; AVariant: Integer;
-  const ALines: array of string; AComplexity: Double): TPattern;
+  const ALines: array of string; AComplexity: Double;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
 
-{ Builds a pattern from drum-tab lines (see TDrumTab). }
+{ Builds a pattern from drum-tab lines (see TDrumTab), in the given meter. }
 function BuildDrumTabPattern(const AName: string; const ALines: array of string;
-  AComplexity: Double; AMinBars: Integer = 2): TPattern;
+  AComplexity: Double; AMinBars: Integer = 2;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
+
+{ A plain groove for a meter that has no groove in the files: kick on the
+  downbeat, snare at the start of every later beat group, hi-hat on every
+  unit. AVariant 0..2 grows it from sparse to busy. The point is to keep the
+  song playing until a groove for the meter is added to config\grooves. }
+function BuildMeterFallbackGroove(const AName: string; AMeterNum, AMeterDen: Integer;
+  AComplexity: Double): TPattern;
+
+{ A short fill for a meter that has no fill in the files: a tom run down the
+  last units of the bar. }
+function BuildMeterFallbackFill(const AName: string; AMeterNum, AMeterDen: Integer;
+  AFullBar: Boolean): TPattern;
+
+{ The step counts a bar of the meter may have, e.g. '7, 14, 21, 28, 42 or 56'. }
+function TabStepCountsText(AMeterNum: Integer): string;
 
 implementation
 
@@ -576,12 +601,21 @@ var
   MinComplexity, Complexity: Double;
   Vel: Integer;
   Ghost, Accent: Boolean;
+  MeterNum, MeterDen, PerUnit: Integer;
+  BarQuarters: Double;
 begin
   Result := Builder;
   FS := DefaultFormatSettings;
   FS.DecimalSeparator := '.';
   Complexity := TemplateComplexity(Kwargs);
   BarIdx := StrToIntDef(Kwargs.Items['bar'], 0);
+  MeterNum := 4;
+  MeterDen := 4;
+  if Kwargs.ContainsKey('meter_num') then
+    MeterNum := StrToIntDef(Kwargs.Items['meter_num'], 4);
+  if Kwargs.ContainsKey('meter_den') then
+    MeterDen := StrToIntDef(Kwargs.Items['meter_den'], 4);
+  BarQuarters := MeterNum * 4.0 / MeterDen;
   Bars := TStringList.Create;
   try
     Bars.StrictDelimiter := True;
@@ -608,13 +642,11 @@ begin
       Bars.DelimitedText := Copy(Line, P + 1, MaxInt);
       Seg := StringReplace(Bars[BarIdx mod Bars.Count], ' ', '', [rfReplaceAll]);
       StepCount := Length(Seg);
-      case StepCount of
-        4, 8, 12, 16, 24, 32: ;
-      else
+      PerUnit := StepCount div MeterNum;
+      if (StepCount mod MeterNum <> 0) or not (PerUnit in [1, 2, 3, 4, 6, 8]) then
         raise Exception.CreateFmt(
-          'Drum tab bar must have 4, 8, 12, 16, 24 or 32 steps, got %d in "%s"',
-          [StepCount, Line]);
-      end;
+          'A %d/%d drum tab bar must have %s steps, got %d in "%s"',
+          [MeterNum, MeterDen, TabStepCountsText(MeterNum), StepCount, Line]);
 
       for P := 1 to StepCount do
       begin
@@ -630,7 +662,7 @@ begin
           raise Exception.CreateFmt('Unknown drum tab step "%s" in "%s"',
             [Seg[P], Line]);
         end;
-        Builder.Hit(InstName, (P - 1) * 4.0 / StepCount, Vel, Ghost, Accent);
+        Builder.Hit(InstName, (P - 1) * BarQuarters / StepCount, Vel, Ghost, Accent);
       end;
     end;
   finally
@@ -638,8 +670,25 @@ begin
   end;
 end;
 
+function TabStepCountsText(AMeterNum: Integer): string;
+const
+  PerUnit: array[0..5] of Integer = (1, 2, 3, 4, 6, 8);
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 0 to High(PerUnit) do
+  begin
+    if I = High(PerUnit) then
+      Result := Result + ' or '
+    else if I > 0 then
+      Result := Result + ', ';
+    Result := Result + IntToStr(AMeterNum * PerUnit[I]);
+  end;
+end;
+
 function BuildDrumTabPattern(const AName: string; const ALines: array of string;
-  AComplexity: Double; AMinBars: Integer): TPattern;
+  AComplexity: Double; AMinBars: Integer; AMeterNum, AMeterDen: Integer): TPattern;
 var
   Tab: TDrumTab;
   Composer: TTemplateComposer;
@@ -649,6 +698,7 @@ begin
   Bars := Max(Tab.BarCount, AMinBars);
   Composer := TTemplateComposer.Create(AName);
   try
+    Composer.SetMeter(AMeterNum, AMeterDen);
     Composer.Add(Tab);
     Result := Composer.Build(Bars, AComplexity);
     Result.Metadata.AddOrSetValue('phrase_bars', IntToStr(Bars));
@@ -708,13 +758,87 @@ begin
 end;
 
 function BuildTaggedGroove(const AName, AKind: string; AVariant: Integer;
-  const ALines: array of string; AComplexity: Double): TPattern;
+  const ALines: array of string; AComplexity: Double;
+  AMeterNum, AMeterDen: Integer): TPattern;
 var
   Lo, Hi: Double;
 begin
-  Result := BuildDrumTabPattern(AName, ALines, AComplexity);
+  Result := BuildDrumTabPattern(AName, ALines, AComplexity, 2, AMeterNum, AMeterDen);
   GrooveBand(AKind, AVariant, Lo, Hi);
   TagIntensityBand(Result, Lo, Hi);
+end;
+
+function BuildMeterFallbackGroove(const AName: string; AMeterNum, AMeterDen: Integer;
+  AComplexity: Double): TPattern;
+var
+  Groups: TMeterGroups;
+  Unit_, G, I, Start: Integer;
+  UnitQ: Double;
+  Pat: TPattern;
+begin
+  Pat := TPattern.Create(AName);
+  Result := Pat;
+  Groups := MeterGrouping(AMeterNum, AMeterDen);
+  UnitQ := MeterUnitQuarters(AMeterDen);
+  { kick on the downbeat }
+  Pat.AddBeat(0.0, TInstrumentRegistry.Get('kick'), 105);
+  { snare where each later group starts }
+  Start := 0;
+  for G := 0 to High(Groups) do
+  begin
+    if G > 0 then
+      Pat.AddBeat(Start * UnitQ, TInstrumentRegistry.Get('snare_open_hit_open_lateral_hit'), 100);
+    Inc(Start, Groups[G]);
+  end;
+  { hi-hat on every unit, the group starts a little louder; at higher
+    complexity the kick also marks the second group }
+  for Unit_ := 0 to AMeterNum - 1 do
+  begin
+    Start := 0;
+    I := 0;
+    for G := 0 to High(Groups) do
+    begin
+      if Unit_ = Start then
+        I := 1;
+      Inc(Start, Groups[G]);
+    end;
+    Pat.AddBeat(Unit_ * UnitQ, TInstrumentRegistry.Get('hihat_closed_1_tip_closed_1_hit'),
+      IfThen(I = 1, 86, 68));
+  end;
+  Pat.Metadata.AddOrSetValue('phrase_bars', '1');
+  Pat.Metadata.AddOrSetValue('meter_fallback', 'true');
+  Pat.TimeSignature.Free;
+  Pat.TimeSignature := TTimeSignature.Create(AMeterNum, AMeterDen);
+end;
+
+function BuildMeterFallbackFill(const AName: string; AMeterNum, AMeterDen: Integer;
+  AFullBar: Boolean): TPattern;
+const
+  Toms: array[0..3] of string = ('tom_1_open_hit', 'tom_2_open_hit', 'tom_3_open_hit', 'tom_4_open_hit');
+var
+  UnitQ: Double;
+  First, U, N: Integer;
+  Pat: TPattern;
+begin
+  Pat := TPattern.Create(AName);
+  Result := Pat;
+  UnitQ := MeterUnitQuarters(AMeterDen);
+  { a full-energy fill runs over the second half of the bar, a short one
+    over the last two units }
+  if AFullBar then
+    First := AMeterNum div 2
+  else
+    First := Max(AMeterNum - 2, 1);
+  N := 0;
+  for U := First to AMeterNum - 1 do
+  begin
+    Pat.AddBeat(U * UnitQ, TInstrumentRegistry.Get(Toms[Min(N, 3)]), 88 + Min(N, 5) * 5);
+    Inc(N);
+  end;
+  Pat.Metadata.AddOrSetValue('phrase_bars', '1');
+  Pat.Metadata.AddOrSetValue('meter_fallback', 'true');
+  Pat.TimeSignature.Free;
+  Pat.TimeSignature := TTimeSignature.Create(AMeterNum, AMeterDen);
 end;
 
 constructor TTemplateComposer.Create(const AName: string);
@@ -722,6 +846,19 @@ begin
   inherited Create;
   FPName := AName;
   FTemplates := specialize TList<TPatternTemplate>.Create;
+  FMeterNum := 4;
+  FMeterDen := 4;
+end;
+
+procedure TTemplateComposer.SetMeter(ANum, ADen: Integer);
+var
+  Problem: string;
+begin
+  Problem := MeterProblem(ANum, ADen);
+  if Problem <> '' then
+    raise Exception.CreateFmt('Meter %d/%d: %s', [ANum, ADen, Problem]);
+  FMeterNum := ANum;
+  FMeterDen := ADen;
 end;
 
 destructor TTemplateComposer.Destroy;
@@ -746,7 +883,9 @@ var
   Template: TPatternTemplate;
   Kwargs: specialize TDictionary<string, string>;
   BarIndex: Integer;
+  BarQuarters: Double;
 begin
+  BarQuarters := FMeterNum * 4.0 / FMeterDen;
   if ABars <= 0 then
     raise Exception.CreateFmt('Template pattern bars must be positive, got %d',
       [ABars]);
@@ -755,14 +894,21 @@ begin
   try
     Kwargs.Add('bars', IntToStr(ABars));
     Kwargs.Add('complexity', FloatToStr(AComplexity));
+    Kwargs.Add('meter_num', IntToStr(FMeterNum));
+    Kwargs.Add('meter_den', IntToStr(FMeterDen));
     for BarIndex := 0 to ABars - 1 do
     begin
-      Builder.PositionOffset := BarIndex * 4.0;
+      Builder.PositionOffset := BarIndex * BarQuarters;
       Kwargs.AddOrSetValue('bar', IntToStr(BarIndex));
       for Template in FTemplates do
         Template.Generate(Builder, Kwargs);
     end;
     Result := Builder.Build;
+    if (FMeterNum <> 4) or (FMeterDen <> 4) then
+    begin
+      Result.TimeSignature.Free;
+      Result.TimeSignature := TTimeSignature.Create(FMeterNum, FMeterDen);
+    end;
   finally
     Kwargs.Free;
     Builder.Free;

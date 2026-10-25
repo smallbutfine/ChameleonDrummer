@@ -386,3 +386,30 @@ K x.x. ..x. x... .x.. | x.xx x.xx x.xx x.xx
 S .... .... x... .... | .... x... .... x...
 R x... x... x... x... | x... x... x... x...
 C X... .... .... .... | .... .... .... ....
+
+# ---- odd meters (hand written, tools/write_meter_grooves.py) ----
+# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+
+[heavy verse 7/8 intensity=0.20-0.80]
+K   x.x xx xx
+S   ... x. x.
+H   x.x x. x.
+C   X.. .. ..
+
+[heavy chorus 7/8 intensity=0.40-1.00]
+K   xxx xx xx
+S   ... x. x.
+R   xxx xx xx
+C   X.. .. ..
+
+[heavy verse 5/4 intensity=0.20-0.80]
+K   x. .x x. x. ..
+S   .. .. .. x. ..
+H   x. x. x. x. x.
+C   X. .. .. .. ..
+
+[doom verse 3/4 intensity=0.10-0.60]
+K   x. .. ..
+S   .. .. x.
+R   x. x. x.
+C@0.5 X. .. ..

@@ -129,7 +129,8 @@ begin
   { Grooves are drum tabs in RockGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('rock', FStyle, AKind, AVariant, FComplexity,
-    RockGrooveLines(FStyle, AKind, AVariant mod 3));
+    RockGrooveLines(FStyle, AKind, AVariant mod 3),
+    MeterNum, MeterDen);
 end;
 
 function TRockGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -256,7 +257,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to GrooveVariantCount('rock', FStyle, GrooveKindOfSection(Section)) - 1 do
+      for BarIdx := 0 to GrooveVariantCount('rock', FStyle, GrooveKindOfSection(Section), 3, MeterNum, MeterDen) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

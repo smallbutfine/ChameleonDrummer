@@ -21,11 +21,18 @@ type
 TGenrePlugin = class(TObject)
 private
   FIntensityProfile: specialize TDictionary<string, Double>;
+  FMeterNum, FMeterDen: Integer;
 protected
   procedure SetIntensityProfile(const AProfile: specialize TDictionary<string, Double>); virtual;
 public
   constructor Create; virtual;
   destructor Destroy; override;
+
+  { The meter the grooves are built in: 4/4 until the composer sets the meter
+    of the section it is working on. }
+  procedure SetMeter(ANum, ADen: Integer);
+  property MeterNum: Integer read FMeterNum;
+  property MeterDen: Integer read FMeterDen;
 
   { Abstract properties (must be overridden). }
   function GetGenreName: string; virtual;
@@ -70,9 +77,17 @@ implementation
 
 { GenrePlugin base class }
 
+procedure TGenrePlugin.SetMeter(ANum, ADen: Integer);
+begin
+  FMeterNum := ANum;
+  FMeterDen := ADen;
+end;
+
 constructor TGenrePlugin.Create;
 begin
   inherited Create;
+  FMeterNum := 4;
+  FMeterDen := 4;
   FIntensityProfile := specialize TDictionary<string, Double>.Create;
   { Default: neutral (0.5) for all dimensions. }
   FIntensityProfile.Add('aggression', 0.5);
@@ -231,7 +246,7 @@ var
   HasHiHat: boolean;
   BeatNum: Double;
   DurationBars: Double;
-  BeatsPerBar: Integer;
+  BarQuarters: Double;
   Bell: TDrumInstrument;
   RideShaft: TDrumInstrument;
   Pedal: TDrumInstrument;
@@ -304,7 +319,7 @@ begin
       Continue; { Not a hi-hat beat. }
 
     IsDownbeat := (Trunc(Beat.Position) = Beat.Position);
-    BarIndex := Trunc(Beat.Position) div Round(Switched.TimeSignature.BeatsPerBar);
+    BarIndex := Trunc(Beat.Position / Switched.TimeSignature.BeatsPerBar);
 
     if Pos('hihat_open', InstName) = 1 then
     begin
@@ -346,16 +361,16 @@ begin
     end;
   end;
 
-  { Add hi-hat pedal ("chick") on every other beat. }
-  BeatsPerBar := Round(Switched.TimeSignature.BeatsPerBar);
+  { Add hi-hat pedal ("chick") on every other beat of the bar. }
+  BarQuarters := Switched.TimeSignature.BeatsPerBar;
   DurationBars := Switched.DurationBars;
-  for BarIndex := 0 to Trunc(DurationBars) do
+  for BarIndex := 0 to Trunc(DurationBars) - 1 do
   begin
     BeatNum := 1.0;
-    while BeatNum < BeatsPerBar do
+    while BeatNum < BarQuarters - 0.001 do
     begin
       if Assigned(Pedal) then
-        Switched.AddBeat(BarIndex + BeatNum, Pedal, 80);
+        Switched.AddBeat(BarIndex * BarQuarters + BeatNum, Pedal, 80);
       BeatNum := BeatNum + 2.0;
     end;
   end;

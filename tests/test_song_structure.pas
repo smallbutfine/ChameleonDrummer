@@ -148,6 +148,10 @@ begin
   Structure[2] := ParseSectionSpec('chorus:4@150');
   Check(DescribeStructure(Structure) = 'intro:2 verse:4@100 chorus:4@150',
     'DescribeStructure round-trips the syntax, got: ' + DescribeStructure(Structure));
+  Structure[1] := ParseSegmentSpec('verse:4:100:7/8');
+  Check(Pos('verse:4@100 7/8', DescribeStructure(Structure)) > 0,
+    'DescribeStructure shows the meter, got: ' + DescribeStructure(Structure));
+  Structure[1] := ParseSectionSpec('verse:4@100');
 
   Gen := TDrumGenerator.Create;
   try
@@ -273,11 +277,49 @@ begin
   Msg := LoadError('{"sections": [{"name": "   ", "bars": 4}]}');
   Check(Pos('"name"', Msg) > 0, 'blank name: ' + Msg);
   Msg := LoadError('{"time_signature": [7, 8], "sections": [{"name": "verse", "bars": 4}]}');
-  Check((Pos('7/8', Msg) > 0) and (Pos('4/4', Msg) > 0), 'file meter 7/8: ' + Msg);
-  Msg := LoadError('{"sections": [{"name": "verse", "bars": 4, "time_signature": [3, 4]}]}');
-  Check((Pos('3/4', Msg) > 0) and (Pos('section 1', Msg) > 0), 'section meter 3/4: ' + Msg);
+  Check(Msg = '', 'a 7/8 file is accepted: ' + Msg);
+  Msg := LoadError('{"sections": [{"name": "verse", "bars": 4, "time_signature": [13, 8]}]}');
+  Check(Msg = '', 'a 13/8 section is accepted: ' + Msg);
+  Msg := LoadError('{"time_signature": [7, 3], "sections": [{"name": "verse", "bars": 4}]}');
+  Check((Pos('7/3', Msg) > 0) and (Pos('denominator', Msg) > 0), 'denominator 3: ' + Msg);
+  Msg := LoadError('{"sections": [{"name": "verse", "bars": 4, "time_signature": [1, 4]}]}');
+  Check((Pos('1/4', Msg) > 0) and (Pos('numerator', Msg) > 0) and (Pos('section 1', Msg) > 0),
+    'numerator 1 in a section: ' + Msg);
+  Msg := LoadError('{"time_signature": [40, 8], "sections": [{"name": "verse", "bars": 4}]}');
+  Check(Pos('numerator', Msg) > 0, 'numerator 40: ' + Msg);
+  Msg := LoadError('{"time_signature": [7.5, 8], "sections": [{"name": "verse", "bars": 4}]}');
+  Check(Pos('whole numbers', Msg) > 0, 'fractional numerator: ' + Msg);
   Msg := LoadError('{"time_signature": 4, "sections": [{"name": "verse", "bars": 4}]}');
   Check(Pos('time_signature', Msg) > 0, 'meter not a list: ' + Msg);
+
+  { the meter comes through }
+  Path := WriteFile('meter.json', '{"time_signature": [7, 8], "sections": [' +
+    '{"name": "verse", "bars": 4}, {"name": "bridge", "bars": 2, "time_signature": [5, 4]}]}');
+  Info := LoadStructureFile(Path);
+  Check((Info.MeterNum = 7) and (Info.MeterDen = 8), 'file meter 7/8 read');
+  Check((Info.Sections[0].MeterNum = 0) and (Info.Sections[1].MeterNum = 5) and
+    (Info.Sections[1].MeterDen = 4), 'section meter 5/4 read, the first inherits');
+
+  { --segment }
+  D := ParseSegmentSpec('bridge:4:96:7/8');
+  Check((D.Name = 'bridge') and (D.Bars = 4) and (D.Tempo = 96) and (D.MeterNum = 7) and (D.MeterDen = 8),
+    '--segment bridge:4:96:7/8');
+  D := ParseSegmentSpec('Verse:8:-:3/4');
+  Check((D.Name = 'verse') and (D.Tempo = 0) and (D.MeterNum = 3), '--segment with - keeps the tempo');
+  D := ParseSegmentSpec('x:2::13/8');
+  Check((D.Tempo = 0) and (D.MeterNum = 13) and (D.MeterDen = 8), '--segment with an empty tempo');
+  for Msg in ['verse:4', 'verse:4:100', 'verse:4:100:7', 'verse:4:100:7/3', 'verse:4:100:1/4',
+              'verse:4:20:7/8', 'verse:0:100:7/8', 'verse:4:100:a/b', ':4:100:7/8',
+              'verse:4:100:7/8:9'] do
+  begin
+    Text := '';
+    try
+      ParseSegmentSpec(Msg);
+    except
+      on E: Exception do Text := E.Message;
+    end;
+    Check((Text <> '') and (Pos(Msg, Text) > 0), '--segment "' + Msg + '" is rejected and named: ' + Text);
+  end;
 
   { ---- per-section complexity reaches the notes ---- }
 

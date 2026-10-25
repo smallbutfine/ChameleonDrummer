@@ -9,18 +9,24 @@ unit SongStructure;
       --section name:bars          a section of that many bars
       --section name:bars@tempo    the same, at its own tempo in BPM
 
+      --segment name:bars:bpm:num/den   a section with its own tempo and meter,
+                                        e.g. bridge:4:96:7/8 (bpm - = the song's)
+
   Structure file (JSON, a superset of the REAPER sidecar format):
 
       {
         "genre": "rock", "style": "classic",      optional defaults, the
         "tempo": 120,                              command line overrides them
-        "time_signature": [4, 4],                  only 4/4 for now
+        "time_signature": [4, 4],                  the song's meter (any, e.g. [7, 8])
         "sections": [
           {"name": "intro",  "bars": 4},
           {"name": "verse",  "bars": 8, "tempo": 110, "complexity": 0.4},
-          {"name": "chorus", "bars": 8, "complexity": 0.9}
+          {"name": "bridge", "bars": 4, "time_signature": [7, 8]}
         ]
       }
+
+  A meter is a numerator from 2 to 32 over 2, 4, 8 or 16 (2/4, 3/4, 5/4, 7/8,
+  9/8, 11/8, 13/8 ...). A section without a meter plays in the song's.
 
   The composer treats these section names specially: intro, verse, pre_chorus,
   chorus, bridge, breakdown, solo, outro. Any other name plays like a verse. }
@@ -28,7 +34,8 @@ unit SongStructure;
 interface
 
 uses
-  SysUtils, Classes, Generics.Collections, fpjson, jsonparser, ComposerV2;
+  SysUtils, Classes, Generics.Collections, fpjson, jsonparser, ComposerV2,
+  time_signature;
 
 const
   MAX_SECTION_BARS = 256;
@@ -43,6 +50,8 @@ type
     Genre: string;
     Style: string;
     Tempo: Integer;
+    { The song's meter from "time_signature"; 0/0 = not given. }
+    MeterNum, MeterDen: Integer;
     Sections: specialize TArray<TSectionDef>;
     { Things in the file that are ignored, one readable line each. }
     Warnings: specialize TArray<string>;
@@ -51,6 +60,10 @@ type
 { Parses one --section value. Raises an Exception that names the offending
   text and shows the expected syntax when the value is not valid. }
 function ParseSectionSpec(const ASpec: string): TSectionDef;
+
+{ Parses one --segment value, name:bars:bpm:num/den. The bpm may be - or
+  empty to keep the song's tempo. Raises an Exception that names the text. }
+function ParseSegmentSpec(const ASpec: string): TSectionDef;
 
 { Loads a structure file. Raises an Exception that names the file and the
   place in it (section number and name, key) when something is wrong. }
@@ -83,6 +96,8 @@ begin
   Result.Tempo := 0;
   Result.HasComplexity := False;
   Result.Complexity := 0.0;
+  Result.MeterNum := 0;
+  Result.MeterDen := 0;
 
   ColonPos := Pos(':', Text);
   if ColonPos < 2 then
@@ -124,6 +139,65 @@ begin
   Result.Name := LowerCase(NamePart);
 end;
 
+function ParseSegmentSpec(const ASpec: string): TSectionDef;
+var
+  Parts: TStringList;
+  Text, Problem, BpmText: string;
+  I: Integer;
+const
+  HELP = 'expected name:bars:bpm:num/den, e.g. bridge:4:96:7/8 (bpm - keeps the song tempo)';
+begin
+  Result.Name := '';
+  Result.Bars := 0;
+  Result.Tempo := 0;
+  Result.HasComplexity := False;
+  Result.Complexity := 0.0;
+  Result.MeterNum := 0;
+  Result.MeterDen := 0;
+  Text := Trim(ASpec);
+  Parts := TStringList.Create;
+  try
+    Parts.StrictDelimiter := True;
+    Parts.Delimiter := ':';
+    Parts.DelimitedText := Text;
+    if Parts.Count <> 4 then
+      raise Exception.CreateFmt('Invalid --segment "%s": %s', [ASpec, HELP]);
+    for I := 0 to 3 do
+      Parts[I] := Trim(Parts[I]);
+
+    { name and bars have the rules of --section; its messages name the
+      whole --segment value, not the two parts that were handed over. }
+    try
+      Result := ParseSectionSpec(Parts[0] + ':' + Parts[1]);
+    except
+      on E: Exception do
+        raise Exception.CreateFmt('Invalid --segment "%s": %s', [ASpec,
+          Copy(E.Message, Pos('": ', E.Message) + 3, MaxInt)]);
+    end;
+
+    BpmText := Parts[2];
+    if (BpmText <> '') and (BpmText <> '-') then
+    begin
+      if not TryStrToInt(BpmText, Result.Tempo) then
+        raise Exception.CreateFmt('Invalid --segment "%s": "%s" is not a tempo (%s)',
+          [ASpec, BpmText, HELP]);
+      if (Result.Tempo < MIN_SECTION_TEMPO) or (Result.Tempo > MAX_SECTION_TEMPO) then
+        raise Exception.CreateFmt('Invalid --segment "%s": tempo must be between %d and %d BPM',
+          [ASpec, MIN_SECTION_TEMPO, MAX_SECTION_TEMPO]);
+    end;
+
+    if not TryParseMeter(Parts[3], Result.MeterNum, Result.MeterDen) then
+      raise Exception.CreateFmt('Invalid --segment "%s": "%s" is not a meter like 7/8 (%s)',
+        [ASpec, Parts[3], HELP]);
+    Problem := MeterProblem(Result.MeterNum, Result.MeterDen);
+    if Problem <> '' then
+      raise Exception.CreateFmt('Invalid --segment "%s": meter %d/%d: %s',
+        [ASpec, Result.MeterNum, Result.MeterDen, Problem]);
+  finally
+    Parts.Free;
+  end;
+end;
+
 function DescribeStructure(const AStructure: array of TSectionDef): string;
 var
   I: Integer;
@@ -135,6 +209,8 @@ begin
     Part := Format('%s:%d', [AStructure[I].Name, AStructure[I].Bars]);
     if AStructure[I].Tempo > 0 then
       Part := Part + '@' + IntToStr(AStructure[I].Tempo);
+    if AStructure[I].MeterNum > 0 then
+      Part := Part + ' ' + MeterName(AStructure[I].MeterNum, AStructure[I].MeterDen);
     if Result <> '' then
       Result := Result + ' ';
     Result := Result + Part;
@@ -218,19 +294,23 @@ var
     Result := Trim(AValue.AsString);
   end;
 
-  { time_signature must be [4, 4] - other meters need pattern work first. }
-  procedure CheckMeter(AValue: TJSONData; const AWhere: string);
+  { time_signature is a list [numerator, denominator], e.g. [7, 8]. }
+  procedure ReadMeter(AValue: TJSONData; const AWhere: string; out ANum, ADen: Integer);
   var
     Arr: TJSONArray;
+    Problem: string;
   begin
     if (AValue.JSONType <> jtArray) or (TJSONArray(AValue).Count <> 2) then
-      Fail(AWhere, '"time_signature" must be a list of two numbers, like [4, 4]');
+      Fail(AWhere, '"time_signature" must be a list of two numbers, like [7, 8]');
     Arr := TJSONArray(AValue);
-    if (Arr[0].JSONType <> jtNumber) or (Arr[1].JSONType <> jtNumber) then
-      Fail(AWhere, '"time_signature" must be a list of two numbers, like [4, 4]');
-    if (Arr[0].AsInteger <> 4) or (Arr[1].AsInteger <> 4) then
-      Fail(AWhere, Format('time signature %d/%d is not supported yet, only 4/4',
-        [Arr[0].AsInteger, Arr[1].AsInteger]));
+    if (Arr[0].JSONType <> jtNumber) or (Arr[1].JSONType <> jtNumber) or
+       (Frac(Arr[0].AsFloat) <> 0) or (Frac(Arr[1].AsFloat) <> 0) then
+      Fail(AWhere, '"time_signature" must be a list of two whole numbers, like [7, 8]');
+    ANum := Arr[0].AsInteger;
+    ADen := Arr[1].AsInteger;
+    Problem := MeterProblem(ANum, ADen);
+    if Problem <> '' then
+      Fail(AWhere, Format('time signature %d/%d: %s', [ANum, ADen, Problem]));
   end;
 
   function ParseSection(AIndex: Integer; AObj: TJSONObject): TSectionDef;
@@ -245,6 +325,8 @@ var
     Result.Tempo := 0;
     Result.HasComplexity := False;
     Result.Complexity := 0.0;
+    Result.MeterNum := 0;
+    Result.MeterDen := 0;
     HasName := False;
     HasBars := False;
     Where := Format('section %d: ', [AIndex + 1]);
@@ -290,7 +372,7 @@ var
             Result.Complexity := F;
             Result.HasComplexity := True;
           end;
-        'time_signature': CheckMeter(Item, Where);
+        'time_signature': ReadMeter(Item, Where, Result.MeterNum, Result.MeterDen);
         'pattern_template', 'fill_policy':
           Warn(Format('%s"%s" is not supported yet and is ignored', [Where, Key]));
       else
@@ -305,6 +387,8 @@ begin
   Result.Genre := '';
   Result.Style := '';
   Result.Tempo := 0;
+  Result.MeterNum := 0;
+  Result.MeterDen := 0;
   Result.Sections := nil;
   Result.Warnings := nil;
 
@@ -334,7 +418,7 @@ begin
         'style': Result.Style := LowerCase(Text0(Item, '', 'style'));
         'tempo': Result.Tempo := WholeNumber(Item, '', 'tempo',
           MIN_SECTION_TEMPO, MAX_SECTION_TEMPO);
-        'time_signature': CheckMeter(Item, '');
+        'time_signature': ReadMeter(Item, '', Result.MeterNum, Result.MeterDen);
         'pattern_template', 'fill_policy':
           Warn(Format('"%s" is not supported yet and is ignored', [Root.Names[I]]));
       else

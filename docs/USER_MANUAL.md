@@ -256,6 +256,9 @@ Options:
   --complexity <0-1>   Pattern complexity (default: 0.5)
   --humanization <0-1> Humanization intensity (default: 0.3)
   --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1
+  --time-sig <n/d>     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+                       (bpm - keeps the song tempo); mix freely with --section
   --section <n:bars[@bpm]>  Song structure; repeat once per section, in order
                        e.g. --section intro:4 --section verse:8 --section chorus:8@140
                        (without --section the genre default structure is used)
@@ -373,7 +376,7 @@ chameleondrummer generate --genre rock --style classic --tempo 120 \
 
 - Each section needs `name` and `bars` (1-256); `tempo` (60-300) and `complexity` (0-1) are optional. `complexity` replaces `--complexity` for that section only, so a chorus can be busier than a verse.
 - `genre`, `style` and `tempo` at the top are defaults: whatever you give on the command line wins.
-- Only 4/4 is accepted for now; any other `time_signature` stops with a message.
+- `time_signature` is `[7, 8]` style: numerator 2-32 over 2, 4, 8 or 16. At the top it is the song's meter, in a section it is that section's. Command-line `--time-sig` wins over the file.
 - `pattern_template` and `fill_policy` are recognised but not implemented yet. They, and any unknown key, print a warning and are ignored.
 - A mistake stops with a message naming the file, the section (number and name) and the key. `--structure` cannot be combined with `--section`.
 - It works with `generate`, `reaper export` and `ardour export`.
@@ -381,6 +384,17 @@ chameleondrummer generate --genre rock --style classic --tempo 120 \
 **Song Map (`--song-map`)**: A JSON file defining per-region segments with tempo and meter changes. This allows complex song structures with mid-section tempo changes.
 
 **Timeline (`--write-timeline`)**: Writes a flat timeline JSON after generation, resolving tempo points and region boundaries.
+
+### Odd Meters
+
+```bash
+chameleondrummer generate --genre rock --style classic --time-sig 7/8
+chameleondrummer generate --genre rock --style classic --tempo 120   --section intro:2 --segment verse:4:100:7/8 --segment chorus:4:-:5/4 --section outro:2
+```
+
+`--time-sig n/d` plays the whole song in that meter; `--segment name:bars:bpm:n/d` is a section with its own tempo and meter (`-` keeps the song tempo) and mixes freely with `--section`. Any numerator from 2 to 32 over 2, 4, 8 or 16 works: 2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 ... The GUI has a Meter box. A `--structure` file takes `"time_signature": [7, 8]` for the song or for one section.
+
+Grooves and fills are written per meter in the files (`[classic verse 7/8]`, see below). When a meter has none, the song still plays: the engine uses a groove of another style of the genre, or a plain one it builds, and prints a `[Warning]` naming the block to add and the file to add it to. MIDI, REAPER and Ardour all get the meter and its changes.
 
 ### Your Own Grooves, Fills and Defaults
 

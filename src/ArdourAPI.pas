@@ -39,7 +39,8 @@ type
   TArdourTempoPoint = record
     Beat: Double;
     BPM: Integer;
-    BeatsPerBar: Integer;
+    { The meter that starts here, e.g. 7 and 8 for 7/8. }
+    Num, Den: Integer;
   end;
 
   TArdourBridge = class(TObject)
@@ -242,7 +243,8 @@ begin
       Point := ATempoPoints[I];
       Lines.Add('    { beat = ' + FloatToStrDot(Point.Beat) +
         ', bpm = ' + IntToStr(Point.BPM) +
-        ', beats_per_bar = ' + IntToStr(Point.BeatsPerBar) + ' },');
+        ', num = ' + IntToStr(Point.Num) +
+        ', den = ' + IntToStr(Point.Den) + ' },');
     end;
     Lines.Add('  },');
     Lines.Add('  sections = {');
@@ -395,9 +397,10 @@ begin
           SliceBeats := Spec.Bars * Spec.TimeSignature.BeatsPerBar;
           Point.Beat := BeatCursor;
           Point.BPM := Spec.Tempo;
-          Point.BeatsPerBar := Trunc(Spec.TimeSignature.BeatsPerBar);
-          if Point.BeatsPerBar < 1 then
-            Point.BeatsPerBar := 4;
+          Point.Num := Spec.TimeSignature.Numerator;
+          Point.Den := Spec.TimeSignature.Denominator;
+          if Point.Num < 1 then Point.Num := 4;
+          if Point.Den < 1 then Point.Den := 4;
           TempoPoints.Add(Point);
           BeatCursor := BeatCursor + SliceBeats;
         end;

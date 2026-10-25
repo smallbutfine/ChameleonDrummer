@@ -135,7 +135,8 @@ begin
   { Grooves are drum tabs in MetalGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('metal', AStyle, AKind, AVariant, FComplexity,
-    MetalGrooveLines(AStyle, AKind, AVariant mod 3));
+    MetalGrooveLines(AStyle, AKind, AVariant mod 3),
+    MeterNum, MeterDen);
 end;
 
 function TMetalGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -250,7 +251,7 @@ begin
       FIntensity := Parameters.Dynamics;
     end;
 
-    for BarIdx := 0 to GrooveVariantCount('metal', StyleForVerse, GrooveKindOfSection(Section)) - 1 do
+    for BarIdx := 0 to GrooveVariantCount('metal', StyleForVerse, GrooveKindOfSection(Section), 3, MeterNum, MeterDen) - 1 do
       GrooveList.Add(MakeGroove(GrooveKindOfSection(Section), StyleForVerse, BarIdx));
 
     Result := GrooveList;

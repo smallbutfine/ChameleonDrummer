@@ -122,7 +122,8 @@ begin
   { Grooves are drum tabs in FunkGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('funk', FStyle, AKind, AVariant, FComplexity,
-    FunkGrooveLines(FStyle, AKind, AVariant mod 3));
+    FunkGrooveLines(FStyle, AKind, AVariant mod 3),
+    MeterNum, MeterDen);
 end;
 
 function TFunkGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -242,7 +243,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to GrooveVariantCount('funk', FStyle, GrooveKindOfSection(Section)) - 1 do
+      for BarIdx := 0 to GrooveVariantCount('funk', FStyle, GrooveKindOfSection(Section), 3, MeterNum, MeterDen) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

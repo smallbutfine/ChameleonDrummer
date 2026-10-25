@@ -129,7 +129,8 @@ begin
   { Grooves are drum tabs in JazzGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('jazz', FStyle, AKind, AVariant, FComplexity,
-    JazzGrooveLines(FStyle, AKind, AVariant mod 3));
+    JazzGrooveLines(FStyle, AKind, AVariant mod 3),
+    MeterNum, MeterDen);
 end;
 
 function TJazzGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -249,7 +250,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to GrooveVariantCount('jazz', FStyle, GrooveKindOfSection(Section)) - 1 do
+      for BarIdx := 0 to GrooveVariantCount('jazz', FStyle, GrooveKindOfSection(Section), 3, MeterNum, MeterDen) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

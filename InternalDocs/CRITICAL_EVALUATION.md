@@ -555,8 +555,8 @@ The real extensibility need: allow users to define custom drummer profiles and p
 |----------|---------|---------------------|
 | ~~**P0**~~ | `--section` inline syntax | **DONE.** `--section name:bars[@bpm]`, repeatable, parsed in `SongStructure.pas`; overrides the genre default structure; a per-section tempo becomes a tempo segment of that section (MIDI, Ardour, bar lengths). The GUI section list now sends its sections this way. The REAPER project gets the tempo changes as a `<TEMPOENVEX` tempo envelope (step points at the section starts, meter changes included), written to the format in REAPER's published state-chunk documentation; not yet opened in REAPER itself. |
 | ~~**P1**~~ | `--structure file.json` | **DONE** (`--sidecar` is an alias). `LoadStructureFile` in `SongStructure.pas`: optional genre/style/tempo, per-section `bars`, `tempo`, `complexity` (applied for that section only and restored after it). Validates keys, ranges and 4/4 with messages that name file, section and key. `pattern_template` and `fill_policy` are accepted but not implemented yet: a warning is printed and they are ignored. `tests/test_song_structure.pas` covers the loader and that complexity changes the notes. Example: `config/example_structure.json`. |
-| **P2** | `--time-sig num/denom` | Parse from CLI; validate numerator [2-16], denom in {2,4,8}; pass to `TSong.Create()`; pattern compatibility check required |
-| **P3** | `--segment section:bars:bpm:numer/denom` | Per-section tempo + meter inline; combines section control with time signature support |
+| ~~**P2**~~ | `--time-sig num/denom` | **DONE** with the Phase 6 work below. Numerator 2-32 over 2, 4, 8 or 16 (not 2-16 over 2/4/8 as first planned: 13/8, 15/16 and 2/2 are real meters). Also `"time_signature": [7, 8]` in `--structure`, and a Meter box in the GUI. |
+| ~~**P3**~~ | `--segment section:bars:bpm:numer/denom` | **DONE.** `ParseSegmentSpec`; `-` as the tempo keeps the song's. |
 | **P3** | `--template name` | Override default pattern template for a specific section or global |
 
 ---
@@ -583,8 +583,8 @@ The real extensibility need: allow users to define custom drummer profiles and p
 
 | Priority | Feature | Scope | Notes |
 |----------|---------|-------|-------|
-| **P0** | Pattern compatibility with odd meters | Add `compatible_time_signatures` metadata to each pattern template; engine refuses incompatible templates or auto-adapt (stretch/compress while preserving rhythmic relationships) | **Critical gap** — most templates assume 4 bars per phrase in 4/4 time. In 7/8, "4 bars" = 28 beats with a very different feel. |
-| **P1** | CLI `--time-sig` + `--segment` support | Parse and propagate to `TSong.Create()`; generate correct MIDI time signature meta events; validate numerator/denom ranges | Already specified in Phase 4 but needs odd-meter pattern compatibility work from P0. |
+| ~~**P0**~~ | Pattern compatibility with odd meters | **DONE, differently from the plan.** Neither refusing nor stretching: grooves and fills are *written per meter* in the files (`[classic verse 7/8]`, `[weckl_fill energy=0.5 7/8]`) and the engine uses what exists for the song's meter. Lookup: the style's grooves in that meter, another style of the genre in that meter, else a plain groove the engine builds (`BuildMeterFallbackGroove`: kick on the downbeat, snare at each beat group start, hi-hat per unit) with a `[Warning]` naming the block and file to add. Fills: only fills of that meter, else a tom run (`BuildMeterFallbackFill`) and a warning. The drum-tab grid divides a bar of N/D into N units with 1, 2, 3, 4, 6 or 8 steps each. Beat groups (3+2+2 ...) from `MeterGrouping` place the snare in the fallbacks and Bonham's backbeat accent. Hand-written grooves are shipped for 3/4, 5/4, 7/8, 9/8, 11/8 and 13/8 in `tools/write_meter_grooves.py` (rock, jazz, funk, metal, electronic: a start, not a library). `tests/test_odd_meters.pas`, `tools/meter_check.py`. |
+| ~~**P1**~~ | CLI `--time-sig` + `--segment` support | **DONE.** MIDI time signature events, REAPER tempo envelope (meter packed as 65536 x denominator + numerator, read back in REAPER 7.79: 7/8 at 4 s, 5/4 at 12.4 s) and the Ardour session (`<Meter note-value divisions-per-bar>`, read from the saved session) carry the meters. The radio-length default structure uses the real bar length. |
 
 ---
 

@@ -133,6 +133,8 @@ The `TCLIInterface.ParseArgs()` method handles a flat list of string arguments. 
 | `--drummer <name>` | Sets `Result.Drummer` (lowercased) |
 | `--output <file>` | Sets `Result.OutputFile` |
 | `--mapping <name>` | Sets `Result.Mapping` (lowercased, default `'gm'`) |
+| `--time-sig <n/d>` | Parses with `TryParseMeter`, rejects with `MeterProblem`; sets `Result.MeterNum/MeterDen`, used as the song meter by all three song commands and by `pattern` |
+| `--segment <name:bars:bpm:n/d>` | Appends one entry parsed by `ParseSegmentSpec` (a `--section` with its own meter) |
 | `--structure <file>` / `--sidecar <file>` | Same option under two names; sets `Result.StructureFile`. After parsing, for `generate`, `reaper` and `ardour`, `LoadStructureFile` (`SongStructure.pas`) reads it: its sections become `Result.Sections`, its genre/style/tempo fill in what the command line left empty, and its warnings are printed. Combining it with `--section` raises an error |
 | `--song-map <file>` | Sets `Result.SongMapFile` |
 | `--write-timeline <path>` | Sets `Result.WriteTimelinePath` |
@@ -452,6 +454,8 @@ Grooves, fills, default tempos and default structures are read from text files n
 | `TabFiles.pas` | splits a `.tab` file into `[header]` blocks of drum-tab lines | |
 | `GrooveLibrary.pas` | `grooves\<genre>.tab`; `BuildGroove` is used by the five genre plugins; `WithFileStyles` adds styles that only the file has | `MetalGrooves.pas` ... `ElectronicGrooves.pas` |
 | `FillLibrary.pas` | `fills\<drummer>.tab`; `TDrummerPlugin.GetFillVocabulary` is what `ComposerV2` calls | `GetSignatureFills` in each drummer unit |
+| `time_signature.pas` | `TryParseMeter`, `MeterProblem` (2-32 over 2/4/8/16), `MeterGrouping` (3+2+2 ...), `MeterBackbeats` | |
+| `patterns_templates.pas` | `TDrumTab` divides a bar of any meter; `BuildMeterFallbackGroove` / `BuildMeterFallbackFill` | |
 | `GenreDefaults.pas` | `defaults\<genre>.ini` (tempo per style, preferred drummers), `sections\<genre>.json` (via `LoadStructureFile`) | `BuiltInBpm`, `GENRE_ARCHETYPES`, the lists in `LoadPlugins` |
 
 A file with a mistake is ignored as a whole and the message (file, line) goes to `ConfigWarnings`; the CLI prints it as `[Warning]`. The shipped files are generated from the built-in content by `tools/export_grooves.pas`, `tools/export_fills.py` and `tools/export_defaults.pas`; `tests/test_groove_files.pas`, `test_fill_files.pas` and `test_genre_defaults.pas` check that they equal it.

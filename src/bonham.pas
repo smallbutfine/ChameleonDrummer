@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Math, Generics.Collections,
-  Pattern, Song,
+  Pattern, Song, time_signature,
   DrummerPlugin, patterns_templates, DrummerMods;
 
 type
@@ -47,15 +47,20 @@ begin
   Result := Pos('snare', AInstName) = 1;
 end;
 
-function IsBackbeatPosition(APosition: Double): Boolean;
+function IsBackbeatPosition(APosition: Double; AMeterNum: Integer = 4;
+  AMeterDen: Integer = 4): Boolean;
 var
-  PosInBar: Double;
+  PosInBar, BarQuarters, Backbeat: Double;
 begin
-  { Backbeats are beats 2 and 4 of a 4/4 bar, i.e. positions 1.0 and 3.0.
+  { Backbeats are beats 2 and 4 of a 4/4 bar, i.e. positions 1.0 and 3.0; in
+    other meters the starts of the later beat groups (MeterBackbeats).
     The tolerance absorbs the behind-the-beat shift and the humanization. }
-  PosInBar := APosition - (Floor(APosition / 4.0) * 4.0);
-  Result := (Abs(PosInBar - 1.0) <= BONHAM_BACKBEAT_TOLERANCE) or
-            (Abs(PosInBar - 3.0) <= BONHAM_BACKBEAT_TOLERANCE);
+  BarQuarters := AMeterNum * 4.0 / AMeterDen;
+  PosInBar := APosition - (Floor(APosition / BarQuarters) * BarQuarters);
+  Result := False;
+  for Backbeat in MeterBackbeats(AMeterNum, AMeterDen) do
+    if Abs(PosInBar - Backbeat) <= BONHAM_BACKBEAT_TOLERANCE then
+      Exit(True);
 end;
 
 constructor TBonhamPlugin.Create;
@@ -109,7 +114,8 @@ begin
       Result2.Beats[B].Velocity := Min(127, Result2.Beats[B].Velocity + 10)
     else if IsSnareVoice(InstName) then
     begin
-      if IsBackbeatPosition(Result2.Beats[B].Position) then
+      if IsBackbeatPosition(Result2.Beats[B].Position,
+        Result2.TimeSignature.Numerator, Result2.TimeSignature.Denominator) then
         Result2.Beats[B].Velocity := Min(127, Result2.Beats[B].Velocity + 15)
       else
         Result2.Beats[B].Velocity := Max(50, Result2.Beats[B].Velocity - 10);

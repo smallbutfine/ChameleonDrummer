@@ -12,7 +12,8 @@ uses
   Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song,
   time_signature, generation_parameters, GenrePlugin,
   DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization,
-  GMDPatternLibrary, LimbConstraints, PatternFixer, DrummerProfiles;
+  GMDPatternLibrary, LimbConstraints, PatternFixer, DrummerProfiles,
+  patterns_templates;
 
 type
   { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
@@ -25,6 +26,8 @@ type
       zero-filled record (the default) inherits the song's complexity. }
     HasComplexity: Boolean;
     Complexity: Double;
+    { Meter of this section (7/8: 7 and 8); 0 = the song's meter. }
+    MeterNum, MeterDen: Integer;
   end;
 
   { Intensity Curve Enum }
@@ -114,7 +117,8 @@ public
   function CreateSong(const Genre, Style: string; ATempo: Integer;
     const Structure: array of TSectionDef; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6;
-    AHumanization: Double = 0.5; ASwing: Double = 0.0): TSong;
+    AHumanization: Double = 0.5; ASwing: Double = 0.0;
+    ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4): TSong;
 
   property PluginManager: PluginRegistry.TPluginManager read FPluginManager write FPluginManager;
 end;
@@ -284,10 +288,16 @@ begin
       FillBarIndices[High(FillBarIndices)] := I;
       { A fill only takes over the whole bar when the music is at full
         energy; otherwise it fills the last two beats and the groove
-        keeps playing before it. }
-      Result.Add(TFill.Create(GenerateFillPattern(
-        SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1,
-        IntensityValues[I] > 0.8)));
+        keeps playing before it. The built-in generic fills are written
+        for 4/4; another meter gets a tom run that fits its bar. }
+      if (Params.MeterNum <> 4) or (Params.MeterDen <> 4) then
+        Result.Add(TFill.Create(BuildMeterFallbackFill('fill_' +
+          IntToStr(Params.MeterNum) + '_' + IntToStr(Params.MeterDen),
+          Params.MeterNum, Params.MeterDen, IntensityValues[I] > 0.8)))
+      else
+        Result.Add(TFill.Create(GenerateFillPattern(
+          SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1,
+          IntensityValues[I] > 0.8)));
       Result[Result.Count - 1].TargetBar := I;
     end;
 end;
@@ -707,8 +717,11 @@ end;
 function TComposerV2.CreateSong(const Genre, Style: string; ATempo: Integer;
   const Structure: array of TSectionDef; ADrummer: string = '';
   AComplexity: Double = 0.5; ADynamics: Double = 0.6;
-  AHumanization: Double = 0.5; ASwing: Double = 0.0): TSong;
+  AHumanization: Double = 0.5; ASwing: Double = 0.0;
+  ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4): TSong;
 var
+  SectionMeterNum, SectionMeterDen: Integer;
+  MeterText: string;
   Params: TGenerationParameters;
   Song: TSong;
   CurveMap: specialize TDictionary<string, Integer>;
@@ -772,6 +785,10 @@ begin
   if (ADrummer <> '') and
      not Assigned(FPluginManager.Registry.GetDrummerPlugin(ADrummer)) then
     raise Exception.CreateFmt('Unknown drummer: %s', [ADrummer]);
+  MeterText := MeterProblem(ASongMeterNum, ASongMeterDen);
+  if MeterText <> '' then
+    raise Exception.CreateFmt('Time signature %d/%d: %s',
+      [ASongMeterNum, ASongMeterDen, MeterText]);
 
   { Create generation parameters }
   Params := TGenerationParameters.Create(
@@ -811,6 +828,11 @@ begin
   { Create song }
   Song := TSong.Create(Genre + '_' + Style + '_song', ATempo);
   Song.GlobalParameters := Params;
+  if (ASongMeterNum <> 4) or (ASongMeterDen <> 4) then
+  begin
+    Song.TimeSignature.Free;
+    Song.TimeSignature := TTimeSignature.Create(ASongMeterNum, ASongMeterDen);
+  end;
 
   { Determine section-specific intensity curves }
   CurveMap := GetSectionCurveMap(Structure);
@@ -828,6 +850,18 @@ begin
       SectionTempo := SectionDef.Tempo
     else
       SectionTempo := ATempo;
+    { The meter of this section: its own, else the song's. }
+    SectionMeterNum := ASongMeterNum;
+    SectionMeterDen := ASongMeterDen;
+    if SectionDef.MeterNum > 0 then
+    begin
+      MeterText := MeterProblem(SectionDef.MeterNum, SectionDef.MeterDen);
+      if MeterText <> '' then
+        raise Exception.CreateFmt('Section "%s": time signature %d/%d: %s',
+          [SectionName, SectionDef.MeterNum, SectionDef.MeterDen, MeterText]);
+      SectionMeterNum := SectionDef.MeterNum;
+      SectionMeterDen := SectionDef.MeterDen;
+    end;
 
     GeneratedBars := specialize TList<TPattern>.Create;
     Flavors := nil;
@@ -848,6 +882,10 @@ begin
       FGenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
       if not Assigned(FGenrePlugin) then
         Continue;
+      { Grooves, fills and the fallback groove are built in this section's meter. }
+      FGenrePlugin.SetMeter(SectionMeterNum, SectionMeterDen);
+      Params.MeterNum := SectionMeterNum;
+      Params.MeterDen := SectionMeterDen;
 
       { Calculate section intensity range from curve map for flavor filtering }
       MinIntensityRange := 1.0;
@@ -868,8 +906,7 @@ begin
       if not Assigned(Flavors) then
         Flavors := specialize TList<TPattern>.Create;
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
-        Genre, Style, 'beat', Song.TimeSignature.Numerator,
-        Song.TimeSignature.Denominator);
+        Genre, Style, 'beat', SectionMeterNum, SectionMeterDen);
       try
         for Idx := 0 to GMDFlavors.Count - 1 do
         begin
@@ -1037,7 +1074,8 @@ begin
       begin
         DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
         if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
-          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetFillVocabulary(ADrummer);
+          SignatureFills := (DrummerPlugin as TDrummerPlugin).GetFillVocabulary(
+            ADrummer, SectionMeterNum, SectionMeterDen);
       end;
       HasVocabulary := Assigned(SignatureFills) and (SignatureFills.Count > 0);
       if HasVocabulary then
@@ -1094,8 +1132,7 @@ begin
             Fills[Idx].Pattern.ApplySwing(Params.SwingRatio);
 
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
-        Genre, Style, 'fill', Song.TimeSignature.Numerator,
-        Song.TimeSignature.Denominator);
+        Genre, Style, 'fill', SectionMeterNum, SectionMeterDen);
       try
         GmdCount := 0;
         for FlavorItem in GMDFlavors do
@@ -1134,17 +1171,24 @@ begin
       if Section.GrooveOffsetsMs.Count = 0 then
         for JBar := 0 to Bars - 1 do
           Section.GrooveOffsetsMs.Add(0.0);
-      { The exporters read a section's tempo from its segments. }
-      if SectionTempo <> ATempo then
+      { The exporters read a section's tempo and meter from its segments. }
+      if (SectionTempo <> ATempo) or (SectionMeterNum <> ASongMeterNum) or
+         (SectionMeterDen <> ASongMeterDen) then
       begin
         TempoSegment := TSongSegment.Create(Bars);
-        TempoSegment.Tempo := SectionTempo;
+        if SectionTempo <> ATempo then
+          TempoSegment.Tempo := SectionTempo;
+        if (SectionMeterNum <> ASongMeterNum) or (SectionMeterDen <> ASongMeterDen) then
+          TempoSegment.TimeSignature := TTimeSignature.Create(SectionMeterNum, SectionMeterDen);
         Section.Segments.Add(TempoSegment);
         Section.ValidateSegments;
       end;
       Song.Sections.Add(Section);
     finally
       Params.Complexity := SavedComplexity;
+      { The plugin is shared: leave it in 4/4 for whoever uses it next. }
+      if Assigned(FGenrePlugin) then
+        FGenrePlugin.SetMeter(4, 4);
 
       if Assigned(MacroComposer) then
         MacroComposer.Free;

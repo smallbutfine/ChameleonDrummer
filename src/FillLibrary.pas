@@ -10,6 +10,9 @@ unit FillLibrary;
       S .... .... .... x.x.                  drum-tab lines (see TDrumTab)
       K .... .... .... .x.x
 
+      [weckl_fill_79 energy=0.5 7/8]         a fill for 7/8 (no meter = 4/4)
+      S ..... ..... ..x.x
+
   energy is the bar intensity (0-1) the fill suits best: a short fill about
   0.3, a big one about 0.9. Without it the fill suits every bar. A fill is
   usually one bar; with several bars in its lines it is that long.
@@ -25,9 +28,10 @@ uses
   Classes, SysUtils, Generics.Collections, Pattern, Song, patterns_templates,
   ConfigFiles, TabFiles;
 
-{ The fills of the drummer's file, or nil when it has none (or a broken one).
-  The caller owns the list and the fills. }
-function FileFills(const ADrummer: string): specialize TList<TFill>;
+{ The fills of the drummer's file for a meter, or nil when it has none (or a
+  broken one). The caller owns the list and the fills. }
+function FileFills(const ADrummer: string;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4): specialize TList<TFill>;
 
 { Names of all drummers that have a fill file. }
 procedure FillFileDrummers(ANames: TStrings);
@@ -75,7 +79,10 @@ begin
         raise Exception.Create(TabMessage(AFileName, B.HeaderLine,
           Format('energy must be a number from 0 to 1, not "%s"', [Value])));
     try
-      Pattern := BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1);
+      if B.MeterNum = 0 then
+        Pattern := BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1)
+      else
+        Pattern := BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, B.MeterNum, B.MeterDen);
       Pattern.Free;
     except
       on E: Exception do
@@ -85,12 +92,14 @@ begin
   end;
 end;
 
-function FileFills(const ADrummer: string): specialize TList<TFill>;
+function FileFills(const ADrummer: string;
+  AMeterNum, AMeterDen: Integer): specialize TList<TFill>;
 var
   Path: string;
   Blocks: TTabBlocks;
   B: TTabBlock;
   Fill: TFill;
+  Num, Den: Integer;
 begin
   Result := nil;
   if ADrummer = '' then
@@ -111,7 +120,16 @@ begin
   Result := specialize TList<TFill>.Create;
   for B in Blocks do
   begin
-    Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1));
+    Num := B.MeterNum;
+    Den := B.MeterDen;
+    if Num = 0 then
+    begin
+      Num := 4;
+      Den := 4;
+    end;
+    if (Num <> AMeterNum) or (Den <> AMeterDen) then
+      Continue;
+    Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, Num, Den));
     Fill.Energy := EnergyOf(B);
     Result.Add(Fill);
   end;

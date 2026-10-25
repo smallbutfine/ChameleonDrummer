@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Generics.Collections, fpjson,
   Pattern, Song,
   DrumGenerator, ComposerV2, DrumMidiLoader, SongStructure,
-  PluginRegistry, Kit, ReaperAPI, ArdourAPI, ConfigFiles;
+  PluginRegistry, Kit, ReaperAPI, ArdourAPI, ConfigFiles, time_signature;
 
 // ============================================================================
 // TCLIArgs - command-line arguments structure
@@ -23,6 +23,8 @@ type
     Complexity: Double;
     Humanization: Double;
     Swing: Double; // 0 = straight (default), 0.67 = classic 2:1 swing, 1 = 3:1
+    MeterNum: Integer; // --time-sig num/den; 0 = not given (4/4)
+    MeterDen: Integer;
     Drummer: String;
     OutputFile: String;
     Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc)
@@ -65,6 +67,16 @@ type
   end;
 
 implementation
+
+function SongMeterNum(const Args: TCLIArgs): Integer;
+begin
+  if Args.MeterNum > 0 then Result := Args.MeterNum else Result := 4;
+end;
+
+function SongMeterDen(const Args: TCLIArgs): Integer;
+begin
+  if Args.MeterNum > 0 then Result := Args.MeterDen else Result := 4;
+end;
 
 function TCLIInterface.GetPluginRegistry: PluginRegistry.TPluginRegistry;
 begin
@@ -128,6 +140,25 @@ begin
         raise Exception.Create('--section requires a value like verse:8 or chorus:8@140');
       SetLength(Result.Sections, Length(Result.Sections) + 1);
       Result.Sections[High(Result.Sections)] := ParseSectionSpec(Args[I]);
+    end
+    else if (Args[I] = '--time-sig') then
+    begin
+      Inc(I);
+      if (I >= Length(Args)) then
+        raise Exception.Create('--time-sig requires a value like 7/8');
+      if not TryParseMeter(Args[I], Result.MeterNum, Result.MeterDen) then
+        raise Exception.CreateFmt('Invalid --time-sig "%s": expected num/den, e.g. 7/8 or 3/4', [Args[I]]);
+      W := MeterProblem(Result.MeterNum, Result.MeterDen);
+      if W <> '' then
+        raise Exception.CreateFmt('Invalid --time-sig "%s": %s', [Args[I], W]);
+    end
+    else if (Args[I] = '--segment') then
+    begin
+      Inc(I);
+      if (I >= Length(Args)) then
+        raise Exception.Create('--segment requires a value like bridge:4:96:7/8');
+      SetLength(Result.Sections, Length(Result.Sections) + 1);
+      Result.Sections[High(Result.Sections)] := ParseSegmentSpec(Args[I]);
     end
     else if (Args[I] = '--swing') then
     begin
@@ -271,7 +302,7 @@ begin
 
   begin
     if Length(Result.Sections) > 0 then
-      raise Exception.Create('--section cannot be combined with --structure; put all sections in one place');
+      raise Exception.Create('--section and --segment cannot be combined with --structure; put all sections in one place');
     Info := LoadStructureFile(Result.StructureFile);
     for W in Info.Warnings do
       Writeln('[Warning] ', Result.StructureFile, ': ', W);
@@ -281,6 +312,11 @@ begin
 
     if (Result.Style = '') then Result.Style := Info.Style;
     if (Result.Tempo = 0) then Result.Tempo := Info.Tempo;
+    if (Result.MeterNum = 0) then
+    begin
+      Result.MeterNum := Info.MeterNum;
+      Result.MeterDen := Info.MeterDen;
+    end;
 
   end;
 end;
@@ -374,6 +410,9 @@ begin
   Writeln('  --complexity <0-1>   Pattern complexity (default: 0.5)');
   Writeln('  --humanization <0-1> Humanization intensity (default: 0.3)');
   Writeln('  --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1');
+  Writeln('  --time-sig <n/d>     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)');
+  Writeln('  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8');
+  Writeln('                       (bpm - keeps the song tempo); mix freely with --section');
   Writeln('  --section <n:bars[@bpm]>  Song structure; repeat once per section, in order');
   Writeln('                       e.g. --section intro:4 --section verse:8 --section chorus:8@140');
   Writeln('                       (without --section the genre default structure is used)');
@@ -424,8 +463,8 @@ begin
     Args.Complexity,  // AComplexity - pattern complexity from CLI
     0.6,              // ADynamics - default dynamics
     Args.Humanization, // AHumanization - humanization intensity from CLI
-    Args.Swing        // ASwing - swing feel from CLI
-
+    Args.Swing,
+    SongMeterNum(Args), SongMeterDen(Args)  // ASwing - swing feel from CLI
   );
 
   PrintGeneratorWarnings;
@@ -441,6 +480,8 @@ begin
     Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
     if Length(Args.Sections) > 0 then
       Writeln(Format('Structure   : %s', [DescribeStructure(Args.Sections)]));
+    if Args.MeterNum > 0 then
+      Writeln(Format('Time sig    : %s', [MeterName(Args.MeterNum, Args.MeterDen)]));
 
     { The same song goes into the project and the session, so all three agree. }
     if Args.ExportReaper then
@@ -471,7 +512,7 @@ begin
   FGenerator.DrumKit := DrumKit;
 
   Pattern := FGenerator.GeneratePattern(
-    Args.Genre, 'verse', DrumKit, Args.Style);
+    Args.Genre, 'verse', DrumKit, Args.Style, SongMeterNum(Args), SongMeterDen(Args));
   try
     if (Args.OutputFile = '') then
       OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])
@@ -483,6 +524,8 @@ begin
       Tempo := GetDefaultBpm(Args.Genre, Args.Style);
     FGenerator.SavePatternMidi(Pattern, OutputFile, Tempo);
     Writeln(Format('Pattern generated: %s', [OutputFile]));
+    if Args.MeterNum > 0 then
+      Writeln(Format('Time sig    : %s', [MeterName(Args.MeterNum, Args.MeterDen)]));
   finally
     Pattern.Free;
   end;
@@ -557,8 +600,8 @@ begin
     Args.Complexity,   // AComplexity
     0.6,               // ADynamics
     Args.Humanization, // AHumanization
-    Args.Swing         // ASwing
-
+    Args.Swing,
+    SongMeterNum(Args), SongMeterDen(Args)  // ASwing
   );
   PrintGeneratorWarnings;
 
@@ -604,8 +647,8 @@ begin
     Args.Complexity,  // AComplexity - pattern complexity from CLI
     0.6,               // ADynamics
     Args.Humanization, // AHumanization
-    Args.Swing         // ASwing
-
+    Args.Swing,
+    SongMeterNum(Args), SongMeterDen(Args)  // ASwing
   );
 
   PrintGeneratorWarnings;

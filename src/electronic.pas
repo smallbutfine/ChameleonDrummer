@@ -121,7 +121,8 @@ begin
   { Grooves are drum tabs in ElectronicGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('electronic', FStyle, AKind, AVariant, FComplexity,
-    ElectronicGrooveLines(FStyle, AKind, AVariant mod 3));
+    ElectronicGrooveLines(FStyle, AKind, AVariant mod 3),
+    MeterNum, MeterDen);
 end;
 
 function TElectronicGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
@@ -242,7 +243,7 @@ begin
       FSection := LowerCase(Section);
       SectionName := FSection;
 
-      for BarIdx := 0 to GrooveVariantCount('electronic', FStyle, GrooveKindOfSection(Section)) - 1 do
+      for BarIdx := 0 to GrooveVariantCount('electronic', FStyle, GrooveKindOfSection(Section), 3, MeterNum, MeterDen) - 1 do
         Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
 
     except

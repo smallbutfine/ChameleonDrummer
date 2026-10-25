@@ -12,22 +12,26 @@ unit TabFiles;
   The header holds words and key=value pairs in any order:
       [heavy verse intensity=0.2-0.6]
       [short energy=0.3]
-  What the words and keys mean is up to the caller (grooves, fills). This unit
-  only splits the file; the tab lines themselves are checked by the caller
-  with the drum-tab engine.
+      [heavy verse 7/8 intensity=0.2-0.6]     a groove for 7/8
+  A word like 7/8 is a meter: it is taken out of the words and returned in
+  MeterNum/MeterDen (0/0 when there is none, which means 4/4). What the other
+  words and keys mean is up to the caller (grooves, fills). This unit only
+  splits the file; the tab lines themselves are checked by the caller with the
+  drum-tab engine.
 
   Errors name the file and the line:  metal.tab (12): ... }
 
 interface
 
 uses
-  Classes, SysUtils, ConfigFiles;
+  Classes, SysUtils, ConfigFiles, time_signature;
 
 type
   TTabWords = array of string;
 
   TTabBlock = record
-    Words: TTabWords;      { header words, lower case }
+    Words: TTabWords;      { header words, lower case, without the meter }
+    MeterNum, MeterDen: Integer;  { 0/0 = no meter in the header: 4/4 }
     KeyNames: TTabWords;   { header keys, lower case }
     KeyValues: TTabWords;
     Lines: array of string;
@@ -74,7 +78,7 @@ end;
 function ParseTabLines(ALines: TStrings; const AFileName: string): TTabBlocks;
 var
   I, P, N: Integer;
-  Line, Head, Word: string;
+  Line, Head, Word, Problem: string;
   Parts: TStringList;
   Open: Boolean;
   Cur: TTabBlock;
@@ -130,6 +134,17 @@ begin
             SetLength(Cur.KeyValues, N + 1);
             Cur.KeyNames[N] := LowerCase(Copy(Word, 1, P - 1));
             Cur.KeyValues[N] := Trim(Copy(Word, P + 1, MaxInt));
+          end
+          else if Pos('/', Word) > 0 then
+          begin
+            if (Cur.MeterNum <> 0) or
+               not TryParseMeter(Word, Cur.MeterNum, Cur.MeterDen) then
+              raise Exception.Create(TabMessage(AFileName, I + 1,
+                Format('"%s" is not a meter like 7/8 (or the header has two meters)', [Word])));
+            Problem := MeterProblem(Cur.MeterNum, Cur.MeterDen);
+            if Problem <> '' then
+              raise Exception.Create(TabMessage(AFileName, I + 1,
+                Format('meter %d/%d: %s', [Cur.MeterNum, Cur.MeterDen, Problem])));
           end
           else
           begin

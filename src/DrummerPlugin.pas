@@ -52,8 +52,12 @@ public
 
   { The fills the composer uses: config/fills/<AKey>.tab when that file exists
     and is valid, else GetSignatureFills. AKey is the name the drummer is
-    registered under (--drummer). The caller owns the list and the fills. }
-  function GetFillVocabulary(const AKey: string): specialize TList<TFill>;
+    registered under (--drummer). For a meter other than 4/4 only the fills the
+    file has for that meter are used (the built-in fills are 4/4); without any
+    the list is empty and ConfigWarnings says which block to add. The caller
+    owns the list and the fills. }
+  function GetFillVocabulary(const AKey: string;
+    AMeterNum: Integer = 4; AMeterDen: Integer = 4): specialize TList<TFill>;
 
   { Helper methods. }
   function IsPreferredForGenre(const Genre: string): boolean; virtual;
@@ -74,7 +78,7 @@ function CreateSignatureFillPattern(const AFillName: string): TPattern;
 implementation
 
 uses
-  patterns_templates, FillLibrary;
+  patterns_templates, FillLibrary, ConfigFiles;
 
 { DrummerPlugin base class }
 
@@ -146,8 +150,20 @@ begin
   Result := specialize TList<TFill>.Create;
 end;
 
-function TDrummerPlugin.GetFillVocabulary(const AKey: string): specialize TList<TFill>;
+function TDrummerPlugin.GetFillVocabulary(const AKey: string;
+  AMeterNum, AMeterDen: Integer): specialize TList<TFill>;
 begin
+  if (AMeterNum <> 4) or (AMeterDen <> 4) then
+  begin
+    Result := FileFills(AKey, AMeterNum, AMeterDen);
+    if Result = nil then
+      Result := specialize TList<TFill>.Create;
+    if Result.Count = 0 then
+      AddConfigWarning(Format(
+        'no %d/%d fill for %s: the engine plays a simple tom fill. Add a block like [%s_fill energy=0.5 %d/%d] to config\fills\%s.tab',
+        [AMeterNum, AMeterDen, AKey, AKey, AMeterNum, AMeterDen, AKey]));
+    Exit;
+  end;
   Result := FileFills(AKey);
   if Result = nil then
     Result := GetSignatureFills;
