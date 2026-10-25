@@ -176,7 +176,9 @@ begin
   end;
 
   Result := Composer.Build(2, FComplexity);
-  Composer.Free;
+  { Tag verse patterns as lower-intensity for intensity-based selection. }
+  Result.Metadata.Add('valid_intensity_min', '0.15');
+  Result.Metadata.Add('valid_intensity_max', '0.55');
 end;
 
 function TRockGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
@@ -223,7 +225,9 @@ begin
   end;
 
   Result := Composer.Build(2, FComplexity);
-  Composer.Free;
+  { Tag chorus patterns as higher-intensity for intensity-based selection. }
+  Result.Metadata.Add('valid_intensity_min', '0.55');
+  Result.Metadata.Add('valid_intensity_max', '0.95');
 end;
 
 function TRockGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -268,7 +272,9 @@ begin
   end;
 
   Result := Composer.Build(2, FComplexity);
-  Composer.Free;
+  { Tag bridge patterns — variable intensity (can bridge between bands). }
+  Result.Metadata.Add('valid_intensity_min', '0.3');
+  Result.Metadata.Add('valid_intensity_max', '0.7');
 end;
 
 function TRockGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -407,23 +413,39 @@ begin
 end;
 
 function TRockGenrePlugin.GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>;
+{ Filter flavors by actual intensity metadata tags rather than list index.
+  Each flavor is tagged with valid_intensity_min / valid_intensity_max when
+  created. A pattern is compatible when its midpoint falls within the
+  section's observed intensity range. }
 var
   BaseFlavors: specialize TList<TPattern>;
   I: Integer;
+  PMin, PMax, PMid: Double;
 begin
   Result := specialize TList<TPattern>.Create;
   BaseFlavors := GetSectionFlavors(Section, Parameters);
   if not Assigned(BaseFlavors) or (BaseFlavors.Count = 0) then Exit;
+
   for I := 0 to BaseFlavors.Count - 1 do
   begin
-    case I of
-      0: if (MaxIntensity > 0.0) and (MinIntensity < 0.4) then Result.Add(BaseFlavors[I]);
-      1: if (MaxIntensity > 0.35) and (MinIntensity < 0.7) then Result.Add(BaseFlavors[I]);
-    else
-      if (MaxIntensity > 0.65) then Result.Add(BaseFlavors[I]);
-    end;
+    { Read tagged intensity range; fall back to full range if untagged. }
+    if not BaseFlavors[I].Metadata.TryGetValue('valid_intensity_min', AnsiString(PMin)) and
+       not TryStrToDouble(BaseFlavors[I].Metadata.Items['valid_intensity_min'], PMin) then
+      PMin := 0.0;
+    if not BaseFlavors[I].Metadata.TryGetValue('valid_intensity_max', AnsiString(PMax)) and
+       not TryStrToDouble(BaseFlavors[I].Metadata.Items['valid_intensity_max'], PMax) then
+      PMax := 1.0;
+    PMid := (PMin + PMax) / 2.0;
+
+    { Include if pattern's midpoint overlaps the section intensity band. }
+    if (PMid >= MinIntensity - 0.15) and (PMid <= MaxIntensity + 0.15) then
+      Result.Add(BaseFlavors[I]);
   end;
-  if Result.Count = 0 then for I := 0 to BaseFlavors.Count - 1 do Result.Add(BaseFlavors[I]);
+
+  { Safety net: return all flavors if nothing matched to avoid empty song. }
+  if Result.Count = 0 then
+    for I := 0 to BaseFlavors.Count - 1 do
+      Result.Add(BaseFlavors[I]);
 end;
 
 end.

@@ -141,7 +141,9 @@ begin
     Composer.Add(TBasicGroove.Create);
   end;
   Result := Composer.Build(2, FComplexity);
-  Composer.Free;
+  { Tag verse patterns as lower-intensity for intensity-based selection. }
+  Result.Metadata.Add('valid_intensity_min', '0.25');
+  Result.Metadata.Add('valid_intensity_max', '0.65');
 end;
 
 function TElectronicGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
@@ -171,7 +173,9 @@ begin
     Composer.Add(TBasicGroove.Create);
   end;
   Result := Composer.Build(2, FComplexity);
-  Composer.Free;
+  { Tag chorus (drop) patterns as higher-intensity for intensity-based selection. }
+  Result.Metadata.Add('valid_intensity_min', '0.65');
+  Result.Metadata.Add('valid_intensity_max', '0.95');
 end;
 
 function TElectronicGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -200,7 +204,9 @@ begin
     Composer.Add(TBasicGroove.Create);
   end;
   Result := Composer.Build(2, FComplexity);
-  Composer.Free;
+  { Tag bridge patterns with variable intensity for intensity-based selection. }
+  Result.Metadata.Add('valid_intensity_min', '0.35');
+  Result.Metadata.Add('valid_intensity_max', '0.8');
 end;
 
 function TElectronicGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -334,22 +340,27 @@ begin
 end;
 
 function TElectronicGenrePlugin.GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>;
+{ Filter flavors by actual intensity metadata tags rather than list index. }
 var
   BaseFlavors: specialize TList<TPattern>;
   I: Integer;
+  PMin, PMax, PMid: Double;
 begin
   Result := specialize TList<TPattern>.Create;
   BaseFlavors := GetSectionFlavors(Section, Parameters);
   if not Assigned(BaseFlavors) or (BaseFlavors.Count = 0) then Exit;
+
   for I := 0 to BaseFlavors.Count - 1 do
   begin
-    case I of
-      0: if (MaxIntensity > 0.0) and (MinIntensity < 0.4) then Result.Add(BaseFlavors[I]);
-      1: if (MaxIntensity > 0.35) and (MinIntensity < 0.7) then Result.Add(BaseFlavors[I]);
-    else
-      if (MaxIntensity > 0.65) then Result.Add(BaseFlavors[I]);
-    end;
+    if not TryStrToDouble(BaseFlavors[I].Metadata.Items['valid_intensity_min'], PMin) then PMin := 0.0;
+    if not TryStrToDouble(BaseFlavors[I].Metadata.Items['valid_intensity_max'], PMax) then PMax := 1.0;
+    PMid := (PMin + PMax) / 2.0;
+
+    { Include if pattern midpoint overlaps the section intensity band. }
+    if (PMid >= MinIntensity - 0.15) and (PMid <= MaxIntensity + 0.15) then
+      Result.Add(BaseFlavors[I]);
   end;
+
   if Result.Count = 0 then for I := 0 to BaseFlavors.Count - 1 do Result.Add(BaseFlavors[I]);
 end;
 

@@ -54,6 +54,7 @@ public
   function GetSectionVariations(const Section: string): specialize TList<TPattern>; virtual;
   function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; virtual;
   function GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>; virtual;
+  function GetCompatiblePatternsForBar(const Section: string; const Parameters: TGenerationParameters; BarIntensity: Double): specialize TList<TPattern>; virtual;
   function SupportsStyle(const Style: string): boolean;
   function ValidateParameters(const Parameters: TGenerationParameters): boolean;
 
@@ -385,6 +386,14 @@ function TGenrePlugin.GetSectionFlavorsFiltered(const Section: string; const Par
   Subclasses override this for intensity-based pattern curation. }
 begin
   { Default: no intensity filtering — return everything. }
+  Result := GetSectionFlavors(Section, Parameters);
+end;
+
+function TGenrePlugin.GetCompatiblePatternsForBar(const Section: string; const Parameters: TGenerationParameters; BarIntensity: Double): specialize TList<TPattern>;
+{ Get patterns compatible with a specific bar's intensity point.
+  Default implementation returns all flavors without filtering. Subclasses
+  override to filter by tagged intensity ranges. }
+begin
   Result := GetSectionFlavors(Section, Parameters);
 end;
 

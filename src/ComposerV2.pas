@@ -73,7 +73,7 @@ type
 
     function DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
     function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-      const Available: specialize TList<TPattern>; ARng: TThreadedRandom): TPattern;
+      const Available: specialize TList<TPattern; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
     function GetNextGrooveIndex(GrooveCount: Integer): Integer;
   end;
 
@@ -444,15 +444,37 @@ begin
 end;
 
 function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-  const Available: specialize TList<TPattern>; ARng: TThreadedRandom): TPattern;
+  const Available: specialize TList<TPattern; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
 var
   Idx: Integer;
+  Compatible: specialize TList<TPattern>;
+  CI: Integer;
+  PMin, PMax, PMid: Double;
 begin
+  { Filter patterns by intensity compatibility for this specific bar.
+    Only patterns whose valid_intensity_mid falls within the bar's intensity
+    (with 0.15 buffer) are eligible. This ensures per-bar pattern variation.
+    Phase then picks from this filtered set. }
+  Compatible := specialize TList<TPattern>.Create;
+  try
+    for CI := 0 to Available.Count - 1 do
+    begin
+      PMin := 0.0; PMax := 1.0; PMid := 0.5;
+      if Available[CI].Metadata.TryGetValue('valid_intensity_min', AnsiString(PMin)) and
+         Available[CI].Metadata.TryGetValue('valid_intensity_max', AnsiString(PMax)) then
+      begin
+        PMid := (PMin + PMax) / 2.0;
+        { Check overlap with bar intensity using a tolerance band. }
+        if (PMid >= BarIntensity - 0.15) and (PMid <= BarIntensity + 0.15) then
+          Compatible.Add(Available[CI]);
+      end;
+    end;
+
   { The macro phase decides which groove of the section's library plays, so
     the song has a purposeful shape (establish -> maintain -> build ->
     turnaround) instead of a random pick per phrase. }
   Result := nil;
-  if (Available = nil) or (Available.Count = 0) then
+  if (Compatible = nil) or (Compatible.Count = 0) then
     Exit;
 
   case Phase of
@@ -466,29 +488,29 @@ begin
       begin
         { The body of a section rotates through the library and never repeats
           the groove that was just used. }
-        Idx := GetNextGrooveIndex(Available.Count);
+        Idx := GetNextGrooveIndex(Compatible.Count);
       end;
     mpBuild:
       begin
         { The build pushes towards the densest groove in the library. }
-        Idx := Available.Count - 1;
+        Idx := Compatible.Count - 1;
       end;
     mpTurnaround:
       begin
         { A turnaround breaks out of the rotation so the section can change
           gear. }
-        Idx := ARng.NextInt(Available.Count);
+        Idx := ARng.NextInt(Compatible.Count);
       end;
   else
-    Idx := GetNextGrooveIndex(Available.Count);
+    Idx := GetNextGrooveIndex(Compatible.Count);
   end;
 
-  if (Idx < 0) or (Idx >= Available.Count) then
+  if (Idx < 0) or (Idx >= Compatible.Count) then
     Idx := 0;
 
   { The returned pattern is owned by the caller's list — it must NOT be freed
     by the macro composer. }
-  Result := Available[Idx];
+  Result := Compatible[Idx];
 end;
 
 function TMacroComposer.GetNextGrooveIndex(GrooveCount: Integer): Integer;
@@ -735,10 +757,12 @@ begin
           CurrentPatternOwned := False;
 
           { Phase-aware groove selection — the macro phase decides which
-            flavour of the section's library the phrase plays. }
+            flavour of the section's library the phrase plays. The intensity
+            point for this specific bar is used to filter by pattern metadata.
+            Only patterns compatible with this bar's intensity are eligible. }
           if Available.Count > 0 then
             CurrentPattern := MacroComposer.SelectGroove(Genre, SectionName,
-              Phase, Available, FRng);
+              Phase, Available, IntensityPt, FRng);
           if not Assigned(CurrentPattern) then
           begin
             CurrentPattern := FGenrePlugin.GeneratePattern(SectionName, Params);
