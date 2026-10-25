@@ -45,7 +45,7 @@ type
   public
     function SelectPatternForPhrase(const Available: specialize TList<TPattern>;
       PhraseIndex: Integer; IntensityPt: Double; Phase: TMacroPhase;
-      PreviousPattern: TPattern): TPattern;
+      PreviousPattern: TPattern; ARng: TThreadedRandom): TPattern;
     function GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
       IntensityPt, Complexity, Dynamics: Double; const ADrummer: string;
       PreviousBars: specialize TList<TPattern>): TPattern;
@@ -129,60 +129,61 @@ implementation
 
 function TBarSelector.SelectPatternForPhrase(const Available: specialize TList<TPattern>;
   PhraseIndex: Integer; IntensityPt: Double; Phase: TMacroPhase;
-  PreviousPattern: TPattern): TPattern;
+  PreviousPattern: TPattern; ARng: TThreadedRandom): TPattern;
+{ A weighted random draw, not a rotation: every groove that suits the bar has a
+  chance, the ones that fit its intensity best have the most, the one that
+  just played has little (so it can still return, but rarely), and the phase
+  leans the draw: establishing favours the lightest groove, a build the
+  heaviest. }
 var
-  Compatible: specialize TList<TPattern>;
-  I: Integer;
-  PMin, PMax, PMid: Double;
-  SelectedIdx: Integer;
+  Weights: array of Double;
+  I, Heaviest, Lightest: Integer;
+  PMin, PMax, PMid, MidOfHeaviest, MidOfLightest, Total, Pick, Sum: Double;
 begin
   Result := nil;
   if not Assigned(Available) or (Available.Count = 0) then
     Exit;
+  if Available.Count = 1 then
+    Exit(Available[0]);
 
-  Compatible := specialize TList<TPattern>.Create;
-  try
-    for I := 0 to Available.Count - 1 do
-    begin
-      TryGetIntensityRange(Available[I], PMin, PMax);
-      PMid := (PMin + PMax) / 2.0;
-
-      { Check if the pattern's intensity midpoint is compatible with the phrase's intensity }
-      if (PMid >= IntensityPt - 0.25) and (PMid <= IntensityPt + 0.25) then
-        Compatible.Add(Available[I]);
-    end;
-
-    { Fallback if no exact match within tolerance }
-    if Compatible.Count = 0 then
-      for I := 0 to Available.Count - 1 do
-        Compatible.Add(Available[I]);
-
-    { Phase-aware and phrase-index cycling for per-bar/per-phrase variation }
-    case Phase of
-      mpEstablish:
-        SelectedIdx := 0;
-      mpMaintain:
-        begin
-          SelectedIdx := PhraseIndex mod Compatible.Count;
-          { Avoid repeating the exact previous phrase pattern if possible }
-          if (Compatible.Count > 1) and (Compatible[SelectedIdx] = PreviousPattern) then
-            SelectedIdx := (SelectedIdx + 1) mod Compatible.Count;
-        end;
-      mpBuild:
-        SelectedIdx := Compatible.Count - 1;
-      mpTurnaround:
-        SelectedIdx := PhraseIndex mod Compatible.Count;
-    else
-      SelectedIdx := PhraseIndex mod Compatible.Count;
-    end;
-
-    if (SelectedIdx < 0) or (SelectedIdx >= Compatible.Count) then
-      SelectedIdx := 0;
-
-    Result := Compatible[SelectedIdx];
-  finally
-    Compatible.Free;
+  SetLength(Weights, Available.Count);
+  Heaviest := 0;
+  Lightest := 0;
+  MidOfHeaviest := -1;
+  MidOfLightest := 2;
+  for I := 0 to Available.Count - 1 do
+  begin
+    TryGetIntensityRange(Available[I], PMin, PMax);
+    PMid := (PMin + PMax) / 2.0;
+    if PMid > MidOfHeaviest then begin MidOfHeaviest := PMid; Heaviest := I; end;
+    if PMid < MidOfLightest then begin MidOfLightest := PMid; Lightest := I; end;
+    { 1.0 at the middle of the groove's band, falling to 0.1 a quarter away
+      and below; a groove that does not suit the bar at all keeps a small
+      chance, so nothing is ever shut out. }
+    Weights[I] := Max(0.1, 1.0 - Abs(PMid - IntensityPt) * 3.0);
+    if (IntensityPt >= PMin) and (IntensityPt <= PMax) then
+      Weights[I] := Weights[I] + 0.5;
+    if Available[I] = PreviousPattern then
+      Weights[I] := Weights[I] * 0.25;
   end;
+
+  case Phase of
+    mpEstablish: Weights[Lightest] := Weights[Lightest] * 2.0;
+    mpBuild: Weights[Heaviest] := Weights[Heaviest] * 2.0;
+  end;
+
+  Total := 0;
+  for I := 0 to High(Weights) do
+    Total := Total + Weights[I];
+  Pick := ARng.NextDouble * Total;
+  Sum := 0;
+  for I := 0 to High(Weights) do
+  begin
+    Sum := Sum + Weights[I];
+    if Pick < Sum then
+      Exit(Available[I]);
+  end;
+  Result := Available[Available.Count - 1];
 end;
 
 function TBarSelector.GenerateForBar(BasePattern: TPattern; ABarIndex: Integer; ABars: Integer;
@@ -964,7 +965,7 @@ begin
             Available; only the fallback generated pattern is owned here. }
           if Available.Count > 0 then
             CurrentPattern := FBarSelector.SelectPatternForPhrase(
-              Available, PhraseIndex, IntensityPt, Phase, PreviousPhrasePattern);
+              Available, PhraseIndex, IntensityPt, Phase, PreviousPhrasePattern, FRng);
           Inc(PhraseIndex);
           if not Assigned(CurrentPattern) then
           begin
