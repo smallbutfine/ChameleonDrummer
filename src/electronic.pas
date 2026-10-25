@@ -52,6 +52,7 @@ type
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
     function GetBridgeFlavor(BarIndex: Integer): TPattern;
+    function GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>; override;
   end;
 
 implementation
@@ -330,6 +331,26 @@ begin
     FComplexity := PreviousComplexity;
     FIntensity := PreviousIntensity;
   end;
+end;
+
+function TElectronicGenrePlugin.GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>;
+var
+  BaseFlavors: specialize TList<TPattern>;
+  I: Integer;
+begin
+  Result := specialize TList<TPattern>.Create;
+  BaseFlavors := GetSectionFlavors(Section, Parameters);
+  if not Assigned(BaseFlavors) or (BaseFlavors.Count = 0) then Exit;
+  for I := 0 to BaseFlavors.Count - 1 do
+  begin
+    case I of
+      0: if (MaxIntensity > 0.0) and (MinIntensity < 0.4) then Result.Add(BaseFlavors[I]);
+      1: if (MaxIntensity > 0.35) and (MinIntensity < 0.7) then Result.Add(BaseFlavors[I]);
+    else
+      if (MaxIntensity > 0.65) then Result.Add(BaseFlavors[I]);
+    end;
+  end;
+  if Result.Count = 0 then for I := 0 to BaseFlavors.Count - 1 do Result.Add(BaseFlavors[I]);
 end;
 
 end.

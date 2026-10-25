@@ -53,6 +53,7 @@ public
   { Helper methods. }
   function GetSectionVariations(const Section: string): specialize TList<TPattern>; virtual;
   function GetSectionFlavors(const Section: string; const Parameters: TGenerationParameters): specialize TList<TPattern>; virtual;
+  function GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>; virtual;
   function SupportsStyle(const Style: string): boolean;
   function ValidateParameters(const Parameters: TGenerationParameters): boolean;
 
@@ -377,6 +378,14 @@ begin
   { Default: return only the standard pattern (no flavor variety). }
   StandardPattern := GeneratePattern(Section, Parameters);
   Result.Add(StandardPattern);
+end;
+
+function TGenrePlugin.GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>;
+{ Intensity-aware flavor selection. Default returns all flavors (no filtering).
+  Subclasses override this for intensity-based pattern curation. }
+begin
+  { Default: no intensity filtering — return everything. }
+  Result := GetSectionFlavors(Section, Parameters);
 end;
 
 function TGenrePlugin.SupportsStyle(const Style: string): boolean;

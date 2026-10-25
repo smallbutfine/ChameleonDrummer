@@ -581,6 +581,7 @@ var
   SignatureFill: TFill;
   FillBarIndices: specialize TArray<Integer>;
   SectionIntensities: specialize TArray<Double>;
+  MinIntensityRange, MaxIntensityRange: Double;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
   PreferredDrummers: specialize TArray<string>;
@@ -669,8 +670,22 @@ begin
       if not Assigned(FGenrePlugin) then
         Continue;
 
-      { Load section patterns once so multi-bar source phrases remain coherent. }
-      Flavors := FGenrePlugin.GetSectionFlavors(SectionName, Params);
+      { Calculate section intensity range from curve map for flavor filtering }
+      MinIntensityRange := 1.0;
+      MaxIntensityRange := 0.0;
+      for JBar := 0 to Bars - 1 do
+      begin
+        MinIntensityRange := Min(MinIntensityRange, GetIntensityPt(CurveMap, SectionName, JBar, Bars));
+        MaxIntensityRange := Max(MaxIntensityRange, GetIntensityPt(CurveMap, SectionName, JBar, Bars));
+      end;
+
+      { Load section patterns — intensity-aware flavor selection }
+      FGenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
+      if not Assigned(FGenrePlugin) then
+        Continue;
+
+      { Load section patterns — intensity-aware flavor selection }
+      Flavors := FGenrePlugin.GetSectionFlavorsFiltered(SectionName, Params, MinIntensityRange, MaxIntensityRange);
       if not Assigned(Flavors) then
         Flavors := specialize TList<TPattern>.Create;
       GMDFlavors := FGMDPatternLibrary.GetPatterns(

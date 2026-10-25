@@ -60,6 +60,9 @@ type
     function GetVerseFlavor(BarIndex: Integer): TPattern;
     function GetChorusFlavor(BarIndex: Integer): TPattern;
     function GetBridgeFlavor(BarIndex: Integer): TPattern;
+
+    // Intensity-aware flavor filtering (Phase 1 P0)
+    function GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>;
   end;
 
 implementation
@@ -428,6 +431,45 @@ begin
       GrooveList.Free;
     end;
   end;
+end;
+
+function TMetalGenrePlugin.GetSectionFlavorsFiltered(const Section: string; const Parameters: TGenerationParameters; MinIntensity, MaxIntensity: Double): specialize TList<TPattern>;
+{ Filter section flavors by intensity range. Pattern indices encode intensity:
+  Index 0 = low (intensity 0–0.4), Index 1 = medium (0.4–0.7), Index 2+ = high (>0.7) }
+var
+  BaseFlavors: specialize TList<TPattern>;
+  I, MaxIdx: Integer;
+begin
+  Result := specialize TList<TPattern>.Create;
+  BaseFlavors := Self.GetSectionFlavors(Section, Parameters);
+  if not Assigned(BaseFlavors) or (BaseFlavors.Count = 0) then
+    Exit;
+
+  // Filter by index range mapped to intensity bands:
+  // Index 0 → low band (0.0–0.33)
+  // Index 1 → mid band (0.33–0.67)
+  // Index 2+ → high band (>0.67)
+  for I := 0 to BaseFlavors.Count - 1 do
+  begin
+    case I of
+      0: begin
+        if (MaxIntensity > 0.0) and (MinIntensity < 0.4) then
+          Result.Add(BaseFlavors[I]);
+      end;
+      1: begin
+        if (MaxIntensity > 0.35) and (MinIntensity < 0.7) then
+          Result.Add(BaseFlavors[I]);
+      end;
+    else // Index 2+
+      if (MaxIntensity > 0.65) then
+        Result.Add(BaseFlavors[I]);
+    end;
+  end;
+
+  { Safety net: if nothing matched, return everything to avoid empty song }
+  if Result.Count = 0 then
+    for I := 0 to BaseFlavors.Count - 1 do
+      Result.Add(BaseFlavors[I]);
 end;
 
 function TMetalGenrePlugin.GetCommonFills: specialize TList<TFill>;
