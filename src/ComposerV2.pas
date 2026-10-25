@@ -511,6 +511,9 @@ begin
   { The returned pattern is owned by the caller's list — it must NOT be freed
     by the macro composer. }
   Result := Compatible[Idx];
+  finally
+    Compatible.Free;
+  end;
 end;
 
 function TMacroComposer.GetNextGrooveIndex(GrooveCount: Integer): Integer;
