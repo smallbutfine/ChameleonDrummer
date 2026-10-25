@@ -75,4 +75,5 @@ def main():
     print(f'bar-to-bar changes={changes} of {total - 1}')
 
 
-main()
+if __name__ == '__main__':
+    main()

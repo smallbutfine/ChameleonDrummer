@@ -45,9 +45,10 @@ type
   { TFillPicker — determines fill placement and type }
   TFillPicker = class
   private
-    function ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
+    function IsStructuralFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
+    function IsReactiveFill(const Genre: string; ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
     function SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer; IntensityPt: Double): String;
-    function GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
+    function GenerateFillPattern(FillType: String; ABarsToFill: Integer; AFullBar: Boolean): TPattern;
   public
     function PickFillsForSection(const Genre: string; const Params: TGenerationParameters;
       ABars: Integer; SectionName: string; out FillBarIndices: specialize TArray<Integer>; const IntensityValues: specialize TArray<Double>): specialize TList<TFill>;
@@ -226,58 +227,78 @@ function TFillPicker.PickFillsForSection(const Genre: string; const Params: TGen
   const IntensityValues: specialize TArray<Double>): specialize TList<TFill>;
 var
   I: Integer;
+  Placed: array of Boolean;
 begin
   Result := specialize TList<TFill>.Create;
   FillBarIndices := nil;
-  { Place fills at musical boundaries using genre-aware fill selection }
+  SetLength(Placed, Max(ABars, 0));
+
+  { Pass 1 - structural fills: the transition into the next section and,
+    in long sections, the end of a phrase. These always win. }
   for I := 0 to ABars - 1 do
-  begin
-    if ShouldPlaceFill(I, ABars, SectionName, IntensityValues[I]) then
+    Placed[I] := IsStructuralFill(I, ABars, SectionName, IntensityValues[I]);
+
+  { Pass 2 - reactive fills (jazz/funk only), never next to another fill. }
+  for I := 1 to ABars - 2 do
+    if (not Placed[I]) and (not Placed[I - 1]) and (not Placed[I + 1]) and
+       IsReactiveFill(Genre, I, ABars, SectionName, IntensityValues[I]) then
+      Placed[I] := True;
+
+  for I := 0 to ABars - 1 do
+    if Placed[I] then
     begin
       SetLength(FillBarIndices, Length(FillBarIndices) + 1);
       FillBarIndices[High(FillBarIndices)] := I;
-      Result.Add(TFill.Create(
-        GenerateFillPattern(SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1)
-      ));
+      { A fill only takes over the whole bar when the music is at full
+        energy; otherwise it fills the last two beats and the groove
+        keeps playing before it. }
+      Result.Add(TFill.Create(GenerateFillPattern(
+        SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1,
+        IntensityValues[I] > 0.8)));
     end;
-  end;
 end;
 
-function TFillPicker.ShouldPlaceFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
+function TFillPicker.IsStructuralFill(ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
 begin
-  // No fills at the end of an outro section — that would interrupt the fade-out
-  if (ASectionName = 'outro') then Exit(false);
+  Result := False;
 
-  // Fills belong at phrase boundaries, not at bar 0 or arbitrary midpoints
-  // Bar N-1: last bar before section ends — universal fill location
-  if (ABarIndex = ABars - 1) then Exit(true);
-  
-  // Bar N-2: second-to-last bar — common transition point to final fill
-  if (ABarIndex = ABars - 2) then Exit(true);
+  { A fill announces a transition. The outro fades out, and a one-bar
+    section has no room for a fill that is not the whole section. }
+  if Pos('outro', LowerCase(ASectionName)) > 0 then Exit;
+  if ABars < 2 then Exit;
 
-  // Mid-section fills only at phrase boundaries (every 4 bars) AND at high intensity
-  // This is where a drummer might place a "fill within the verse" before the chorus builds
-  if ((ABars >= 8) and ((ABarIndex mod 4) = 3)) then
-  begin
-    // Only place mid-phrase fills when intensity justifies it (>0.6)
-    Result := (IntensityPt > 0.6);
-    Exit;
-  end;
+  { Drummers do not fill where a phrase starts. }
+  if ABarIndex = 0 then Exit;
 
-  // Intensity-gated random chance for jazz/funk — these genres use reactive fills
-  // At high intensity (>0.75), jazz and funk drummers place fills reactively ~10% of the time
-  if ((IntensityPt > 0.75) and (ABarIndex >= 2) and (ABarIndex < ABars - 1)) then
-  begin
-    case LowerCase(ASectionName) of
-      'verse': Result := RandomRange(0, 100) < 8;   // 8% at high intensity for verse
-      'chorus': Result := RandomRange(0, 100) < 5;  // 5% for chorus (already dense)
-    else
-      Result := false;
-    end;
-    Exit;
-  end;
+  { The last bar leads into the next section - the one mandatory fill. }
+  if ABarIndex = ABars - 1 then Exit(True);
 
-  Result := false;
+  { Never a second fill right before that one. }
+  if ABarIndex = ABars - 2 then Exit;
+
+  { In long sections the end of a four-bar phrase gets a fill too, but only
+    when the energy justifies it. }
+  if (ABars >= 8) and ((ABarIndex mod 4) = 3) then
+    Result := IntensityPt > 0.6;
+end;
+
+function TFillPicker.IsReactiveFill(const Genre: string; ABarIndex: Integer; ABars: Integer; const ASectionName: string; IntensityPt: Double): Boolean;
+const
+  THRESHOLD = 0.7;
+  MAX_CHANCE = 0.15;
+begin
+  Result := False;
+
+  { Jazz and funk drummers react to what is happening and drop fills in
+    spontaneously at high energy. Metal and rock fill on the structure only. }
+  if not (SameText(Genre, 'jazz') or SameText(Genre, 'funk')) then Exit;
+  if Pos('outro', LowerCase(ASectionName)) > 0 then Exit;
+  if (ABars < 4) or (ABarIndex < 1) or (ABarIndex >= ABars - 1) then Exit;
+  if (ABarIndex mod 4) = 0 then Exit;
+  if IntensityPt <= THRESHOLD then Exit;
+
+  { 0 at the threshold, 15 percent at full intensity. }
+  Result := Random < MAX_CHANCE * (IntensityPt - THRESHOLD) / (1.0 - THRESHOLD);
 end;
 
 function TFillPicker.SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer; IntensityPt: Double): String;
@@ -348,7 +369,28 @@ begin
   end;
 end;
 
-function TFillPicker.GenerateFillPattern(FillType: String; ABarsToFill: Integer): TPattern;
+{ Squeezes a one-bar fill into the last two beats of the bar. }
+procedure ShortenFillToLastBeats(APattern: TPattern; const AFillType: string);
+var
+  I: Integer;
+  Beat: TBeat;
+begin
+  for I := APattern.Beats.Count - 1 downto 0 do
+  begin
+    Beat := APattern.Beats[I];
+    if (AFillType = 'tom_downfill') or (AFillType = 'tom_upfill') then
+      Beat.Position := 2.0 + Beat.Position * 0.5
+    else if AFillType = 'snare_roll' then
+      Beat.Position := 2.0 + Beat.Position
+    else if Beat.Position < 2.0 then
+    begin
+      Beat.Free;
+      APattern.Beats.Delete(I);
+    end;
+  end;
+end;
+
+function TFillPicker.GenerateFillPattern(FillType: String; ABarsToFill: Integer; AFullBar: Boolean): TPattern;
 var
   I: Integer;
 begin
@@ -408,6 +450,9 @@ begin
     Result.AddBeat(2.0, TInstrumentRegistry.Get('tom_2_open_hit'), 85);
     Result.AddBeat(3.0, TInstrumentRegistry.Get('snare_rimshot_open_hit'), 110);
   end;
+
+  if not AFullBar then
+    ShortenFillToLastBeats(Result, FillType);
 
   Result.Metadata.Add('bars_to_fill', IntToStr(ABarsToFill));
 end;
