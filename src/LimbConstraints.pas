@@ -235,6 +235,10 @@ begin
     Result := [limbLeftFoot, limbRightFoot]
   else if Copy(LName, 1, 5) = 'snare' then
     Result := [limbRightHand]
+  else if Copy(LName, 1, 11) = 'hihat_pedal' then
+    { The pedal is played with the left foot, so it can sound together with
+      a ride or snare pattern played by the hands. }
+    Result := [limbLeftFoot]
   else if Copy(LName, 1, 5) = 'hihat' then
     Result := [limbLeftHand]
   else if Copy(LName, 1, 4) = 'ride' then

@@ -11,7 +11,7 @@ uses
   Kit,
   generation_parameters,
   GenrePlugin,
-  config_constants;
+  config_constants, JazzGrooves;
 
 type
   TJazzContext = record
@@ -28,6 +28,7 @@ type
     FComplexity: Double;
     FIntensity: Double;
     function GetRideSwingPattern: String;
+    function MakeGroove(const AKind: String; AVariant: Integer): TPattern;
     function GetFlavorVerse(BarIndex: Integer): TPattern;
     function GetFlavorChorus(BarIndex: Integer): TPattern;
     function GetFlavorBridge(BarIndex: Integer): TPattern;
@@ -123,156 +124,28 @@ begin
   end;
 end;
 
-function TJazzGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
+function TJazzGenrePlugin.MakeGroove(const AKind: String; AVariant: Integer): TPattern;
 begin
-  Composer := TTemplateComposer.Create('jazz_' + FStyle + '_verse_b' + IntToStr(BarIndex));
+  { Grooves are drum tabs in JazzGrooves.pas: three per style and section
+    kind, tagged with overlapping intensity bands. }
+  Result := BuildTaggedGroove(
+    'jazz_' + FStyle + '_' + AKind + '_v' + IntToStr(AVariant), AKind,
+    AVariant, JazzGrooveLines(FStyle, AKind, AVariant), FComplexity);
+end;
 
-  case FStyle of
-    'swing':
-      begin
-        // Traditional swing with ride pattern
-        Composer.Add(TJazzRidePattern.Create('swing'));
-      end;
-    'bebop':
-      begin
-        // Fast complex bebop
-        Composer.Add(TJazzRidePattern.Create('elvin'));
-      end;
-    'fusion':
-      begin
-        // Electric jazz fusion energy
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'latin':
-      begin
-        // Latin jazz clave patterns
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'ballad':
-      begin
-        // Soft brushed ballad
-        Composer.Add(TSteadyRide.Create);
-      end;
-    'hard_bop':
-      begin
-        // Aggressive hard bop
-        Composer.Add(TJazzRidePattern.Create('swing'));
-      end;
-    'contemporary':
-      begin
-        // Modern contemporary jazz
-        Composer.Add(TJazzRidePattern.Create('tony'));
-      end;
-  else
-    Composer.Add(TSteadyRide.Create);
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag verse patterns as lower-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.1');
-  Result.Metadata.Add('valid_intensity_max', '0.5');
+function TJazzGenrePlugin.GetFlavorVerse(BarIndex: Integer): TPattern;
+begin
+  Result := MakeGroove('verse', BarIndex mod 3);
 end;
 
 function TJazzGenrePlugin.GetFlavorChorus(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('jazz_' + FStyle + '_chorus_b' + IntToStr(BarIndex));
-
-  case FStyle of
-    'swing':
-      begin
-        Composer.Add(TJazzRidePattern.Create('swing'));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
-      end;
-    'bebop':
-      begin
-        Composer.Add(TJazzRidePattern.Create('elvin'));
-      end;
-    'fusion':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'latin':
-      begin
-        // Latin jazz fusion chorus
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'ballad':
-      begin
-        Composer.Add(TSteadyRide.Create);
-      end;
-    'hard_bop':
-      begin
-        Composer.Add(TJazzRidePattern.Create('swing'));
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TCrashAccents.Create);
-      end;
-    'contemporary':
-      begin
-        Composer.Add(TJazzRidePattern.Create('tony'));
-      end;
-  else
-    Composer.Add(TSteadyRide.Create);
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag chorus patterns as higher-intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.4');
-  Result.Metadata.Add('valid_intensity_max', '0.8');
+  Result := MakeGroove('chorus', BarIndex mod 3);
 end;
 
 function TJazzGenrePlugin.GetFlavorBridge(BarIndex: Integer): TPattern;
-var
-  Composer: TTemplateComposer;
 begin
-  Composer := TTemplateComposer.Create('jazz_' + FStyle + '_bridge_b' + IntToStr(BarIndex));
-
-  case FStyle of
-    'swing':
-      begin
-        // Bridge — switch to ride bell or hi-hat
-        if (BarIndex mod 2 = 0) then
-          Composer.Add(TSteadyRide.Create)
-        else
-          Composer.Add(TJazzRidePattern.Create('swing'));
-      end;
-    'bebop':
-      begin
-        Composer.Add(TJazzRidePattern.Create('elvin'));
-      end;
-    'fusion':
-      begin
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'latin':
-      begin
-        // Latin jazz bridge fusion
-        Composer.Add(TBasicGroove.Create(nil, nil, 0.5));
-      end;
-    'ballad':
-      begin
-        Composer.Add(TSteadyRide.Create);
-      end;
-    'hard_bop':
-      begin
-        Composer.Add(TJazzRidePattern.Create('swing'));
-      end;
-    'contemporary':
-      begin
-        Composer.Add(TJazzRidePattern.Create('tony'));
-      end;
-  else
-    Composer.Add(TSteadyRide.Create);
-  end;
-
-  Result := Composer.Build(2, FComplexity);
-  { Tag bridge patterns with variable intensity for intensity-based selection. }
-  Result.Metadata.Add('valid_intensity_min', '0.2');
-  Result.Metadata.Add('valid_intensity_max', '0.6');
+  Result := MakeGroove('bridge', BarIndex mod 3);
 end;
 
 function TJazzGenrePlugin.GetVerseFlavor(BarIndex: Integer): TPattern;
@@ -335,18 +208,20 @@ end;
 
 function TJazzGenrePlugin.GeneratePattern(const Section: string; const Parameters: TGenerationParameters): TPattern;
 var
-  Patterns: specialize TList<TPattern>;
-  PatternItem: TPattern;
+  PreviousStyle: String;
+  PreviousComplexity: Double;
 begin
-  Patterns := GetSectionFlavors(Section, Parameters);
+  PreviousStyle := FStyle;
+  PreviousComplexity := FComplexity;
   try
-    if Patterns.Count = 0 then
-      raise Exception.CreateFmt('No jazz patterns available for section %s', [Section]);
-    Result := Patterns[0].Copy;
+    if (Parameters <> nil) and (Parameters.Style <> '') then
+      FStyle := LowerCase(Parameters.Style);
+    if Parameters <> nil then
+      FComplexity := Parameters.Complexity;
+    Result := MakeGroove(GrooveKindOfSection(Section), 1);
   finally
-    for PatternItem in Patterns do
-      PatternItem.Free;
-    Patterns.Free;
+    FStyle := PreviousStyle;
+    FComplexity := PreviousComplexity;
   end;
 end;
 
@@ -376,16 +251,8 @@ begin
       SectionName := FSection;
 
       for BarIdx := 0 to 2 do
-      begin
-        if (Pos('chorus', SectionName) > 0) then
-          Result.Add(GetFlavorChorus(BarIdx))
-        else if (Pos('bridge', SectionName) > 0) or
-                (Pos('pre_chorus', SectionName) > 0) or
-                (Pos('breakdown', SectionName) > 0) then
-          Result.Add(GetFlavorBridge(BarIdx))
-        else
-          Result.Add(GetFlavorVerse(BarIdx));
-      end;
+        Result.Add(MakeGroove(GrooveKindOfSection(Section), BarIdx));
+
     except
       while Result.Count > 0 do
       begin
