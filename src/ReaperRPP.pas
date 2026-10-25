@@ -23,6 +23,20 @@ type
   end;
 
 // ============================================================================
+// TReaperTempoPoint - one point of the project tempo envelope (<TEMPOENVEX).
+// Position is in SECONDS. SetsMeter says whether the point also sets the time
+// signature (REAPER packs it as 65536 * denominator + numerator).
+// ============================================================================
+type
+  TReaperTempoPoint = record
+    Position: Double;
+    BPM: Integer;
+    Num: Integer;
+    Denom: Integer;
+    SetsMeter: Boolean;
+  end;
+
+// ============================================================================
 // TReaperRPPReader — parses .rpp files to extract markers and regions
 // ============================================================================
 type
@@ -51,6 +65,7 @@ type
     FTempoDenom: Integer;
     FTrackName: String;
     FMIDILength: Double;
+    FTempoPoints: specialize TList<TReaperTempoPoint>;
     function EscapeRPPString(const S: String): String;
   public
     constructor Create;
@@ -62,9 +77,16 @@ type
     procedure AddMarker(APosition: Double; const AMarkerName: String);
     procedure AddRegion(AStart, AEnd: Double; const ARegionName: String);
     procedure ClearMarkers;
+    { The first point is the song's starting tempo, the following ones are the
+      changes. The envelope is only written when there is more than one point,
+      so a song at one tempo keeps its plain TEMPO line. }
+    procedure AddTempoPoint(APosition: Double; ABPM, ANumerator, ADenominator: Integer;
+      ASetsMeter: Boolean);
+    procedure ClearTempoPoints;
 
     function SaveToFile(const AFilePath: String; const AMIDIFile: String): Boolean;
     function GetMarkers: specialize TList<TReaperMarker>;
+    function TempoPointCount: Integer;
   end;
 
 implementation
@@ -247,6 +269,7 @@ end;
 constructor TReaperRPPWriter.Create;
 begin
   FMarkers := specialize TList<TReaperMarker>.Create;
+  FTempoPoints := specialize TList<TReaperTempoPoint>.Create;
   FTitle := '';
   FTempo := 120;
   FTempoNum := 4;
@@ -257,6 +280,7 @@ end;
 
 destructor TReaperRPPWriter.Destroy;
 begin
+  FTempoPoints.Free;
   FMarkers.Free;
   inherited Destroy;
 end;
@@ -304,6 +328,24 @@ end;
 procedure TReaperRPPWriter.ClearMarkers;
 begin
   FMarkers.Clear;
+end;
+
+procedure TReaperRPPWriter.AddTempoPoint(APosition: Double; ABPM, ANumerator,
+  ADenominator: Integer; ASetsMeter: Boolean);
+var
+  Point: TReaperTempoPoint;
+begin
+  Point.Position := APosition;
+  Point.BPM := ABPM;
+  Point.Num := ANumerator;
+  Point.Denom := ADenominator;
+  Point.SetsMeter := ASetsMeter;
+  FTempoPoints.Add(Point);
+end;
+
+procedure TReaperRPPWriter.ClearTempoPoints;
+begin
+  FTempoPoints.Clear;
 end;
 
 function TReaperRPPWriter.EscapeRPPString(const S: String): String;
@@ -359,6 +401,32 @@ begin
         Output.Add('  MARKER ' + IntToStr(Id) + ' ' + FormatRPPFloat(M.Position) +
           ' ' + Quote(M.Name) + ' 0 0');
       Inc(Id);
+    end;
+
+    { Tempo envelope. A "PT" line is: position (seconds), bpm, shape, meter,
+      selected, flags. Shape 1 is a square step, so the tempo jumps exactly at
+      the section boundary. The meter field is 65536 * denominator + numerator
+      and flag bit 1 says the point sets it; a tempo-only point has both 0. }
+    if FTempoPoints.Count > 1 then
+    begin
+      Output.Add('  <TEMPOENVEX');
+      Output.Add('    EGUID ' + '{' + MakeGUID('tempoenv:' + FTitle) + '}');
+      Output.Add('    ACT 1 -1');
+      Output.Add('    VIS 1 1 1');
+      Output.Add('    LANEHEIGHT 0 0');
+      Output.Add('    ARM 0');
+      Output.Add('    DEFSHAPE 1 -1 -1');
+      for I := 0 to FTempoPoints.Count - 1 do
+      begin
+        if FTempoPoints[I].SetsMeter then
+          Output.Add('    PT ' + FormatRPPFloat(FTempoPoints[I].Position) + ' ' +
+            IntToStr(FTempoPoints[I].BPM) + ' 1 ' +
+            IntToStr(65536 * FTempoPoints[I].Denom + FTempoPoints[I].Num) + ' 0 1')
+        else
+          Output.Add('    PT ' + FormatRPPFloat(FTempoPoints[I].Position) + ' ' +
+            IntToStr(FTempoPoints[I].BPM) + ' 1 0 0 0');
+      end;
+      Output.Add('  >');
     end;
 
     { REAPER resolves the media path relative to the project file and
@@ -435,6 +503,11 @@ end;
 function TReaperRPPWriter.GetMarkers: specialize TList<TReaperMarker>;
 begin
   Result := FMarkers;
+end;
+
+function TReaperRPPWriter.TempoPointCount: Integer;
+begin
+  Result := FTempoPoints.Count;
 end;
 
 end.

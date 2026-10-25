@@ -117,6 +117,7 @@ begin
   Result := False;
 
   FRPPWriter.ClearMarkers;
+  FRPPWriter.ClearTempoPoints;
   FRPPWriter.SetTitle(ATitle);
 
   AccumulatedSeconds := 0.0;
@@ -132,6 +133,17 @@ begin
     BarLen := (60.0 / ASections[I].BPM) *
       (ASections[I].Num * 4.0 / ASections[I].Denom);
     SectionEnd := AccumulatedSeconds + (ASections[I].Bars * BarLen);
+
+    { A tempo or meter change at the section start becomes a point of the
+      project's tempo envelope. The first point carries the starting tempo. }
+    if (I = Low(ASections)) or (ASections[I].BPM <> ASections[I - 1].BPM) or
+       (ASections[I].Num <> ASections[I - 1].Num) or
+       (ASections[I].Denom <> ASections[I - 1].Denom) then
+      FRPPWriter.AddTempoPoint(AccumulatedSeconds, ASections[I].BPM,
+        ASections[I].Num, ASections[I].Denom,
+        (I > Low(ASections)) and
+        ((ASections[I].Num <> ASections[I - 1].Num) or
+         (ASections[I].Denom <> ASections[I - 1].Denom)));
 
     { A marker at the section start, and a region covering the section. }
     FRPPWriter.AddMarker(AccumulatedSeconds, ASections[I].Name);

@@ -351,7 +351,7 @@ The CLI supports reading external song structures:
 chameleondrummer generate --genre rock --style classic --tempo 120 \n  --section intro:4 --section verse:8@100 --section chorus:8@140 --section outro:4
 ```
 
-`name:bars` gives a section of that many bars (1-256); `@bpm` (60-300) gives it its own tempo, otherwise it plays at `--tempo`. A name is letters, digits, `_` and `-`, starting with a letter. The composer treats `intro`, `verse`, `pre_chorus`, `chorus`, `bridge`, `breakdown`, `solo` and `outro` specially; any other name plays like a verse. A wrong value stops with a message that names it. The tempo changes appear in the MIDI file, the Ardour session and the exported bar lengths; the REAPER project still starts at the first section's tempo and does not yet get the later tempo changes. The GUI sends the sections shown in its section list this way.
+`name:bars` gives a section of that many bars (1-256); `@bpm` (60-300) gives it its own tempo, otherwise it plays at `--tempo`. A name is letters, digits, `_` and `-`, starting with a letter. The composer treats `intro`, `verse`, `pre_chorus`, `chorus`, `bridge`, `breakdown`, `solo` and `outro` specially; any other name plays like a verse. A wrong value stops with a message that names it. The tempo changes appear in the MIDI file, the Ardour session, the REAPER project (as a tempo envelope with a step at every section start, which also carries meter changes) and the exported bar lengths. The GUI sends the sections shown in its section list this way.
 
 **Sidecar (`--sidecar`)**: A JSON file defining sections and bar counts.
 
