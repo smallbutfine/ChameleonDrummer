@@ -22,6 +22,7 @@ type
     Tempo: Integer;
     Complexity: Double;
     Humanization: Double;
+    Swing: Double; // 0 = straight (default), 0.67 = classic 2:1 swing, 1 = 3:1
     Drummer: String;
     OutputFile: String;
     Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc)
@@ -62,7 +63,7 @@ end;
 
 function TCLIInterface.ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
 var
-  I: Integer;
+  I, ValCode: Integer;
 begin
   FillChar(Result, SizeOf(Result), 0);
   Result.Tempo := 0;
@@ -102,6 +103,17 @@ begin
       Inc(I);
       if (I < Length(Args)) then Val(Args[I], Result.Humanization)
       else raise Exception.Create('--humanization requires a value');
+    end
+    else if (Args[I] = '--swing') then
+    begin
+      Inc(I);
+      if (I >= Length(Args)) then
+        raise Exception.Create('--swing requires a value');
+      Val(Args[I], Result.Swing, ValCode);
+      if ValCode <> 0 then
+        raise Exception.CreateFmt('--swing needs a number between 0 and 1, got "%s"', [Args[I]]);
+      if (Result.Swing < 0.0) or (Result.Swing > 1.0) then
+        raise Exception.Create('--swing must be between 0 and 1');
     end
     else if (Args[I] = '--drummer') then
     begin
@@ -238,6 +250,7 @@ begin
   Writeln('  --tempo <bpm>        Tempo in BPM (default: genre/style value)');
   Writeln('  --complexity <0-1>   Pattern complexity (default: 0.5)');
   Writeln('  --humanization <0-1> Humanization intensity (default: 0.3)');
+  Writeln('  --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1');
   Writeln('  --drummer <name>     Drummer style (e.g., bonham, peart, carey)');
   Writeln('  --output <file>      Output MIDI file path');
   Writeln('  --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg');
@@ -279,7 +292,8 @@ begin
     DrummerName, // ADrummer - pass directly to composer
     Args.Complexity,  // AComplexity - pattern complexity from CLI
     0.6,              // ADynamics - default dynamics
-    Args.Humanization // AHumanization - humanization intensity from CLI
+    Args.Humanization, // AHumanization - humanization intensity from CLI
+    Args.Swing        // ASwing - swing feel from CLI
   );
   try
     { Save MIDI output and optionally timeline JSON }
@@ -400,7 +414,8 @@ begin
     Args.Drummer,
     0.5,      // AComplexity
     0.6,      // ADynamics
-    0.3       // AHumanization
+    0.3,      // AHumanization
+    Args.Swing // ASwing
   );
 
   { Determine output paths }
@@ -452,7 +467,8 @@ begin
     Args.Drummer,
     Args.Complexity,  // AComplexity - pattern complexity from CLI
     0.6,              // ADynamics
-    0.3               // AHumanization
+    0.3,              // AHumanization
+    Args.Swing        // ASwing
   );
   try
     { The output is an Ardour session directory; the MIDI file sits next to

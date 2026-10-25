@@ -128,6 +128,7 @@ The `TCLIInterface.ParseArgs()` method handles a flat list of string arguments. 
 | `--tempo <bpm>` | Parses integer into `Result.Tempo` |
 | `--complexity <0-1>` | Parses double into `Result.Complexity` |
 | `--humanization <0-1>` | Parses double into `Result.Humanization` |
+| `--swing <0-1>` | Parses double into `Result.Swing` (rejects non-numbers and values outside 0-1) |
 | `--drummer <name>` | Sets `Result.Drummer` (lowercased) |
 | `--output <file>` | Sets `Result.OutputFile` |
 | `--mapping <name>` | Sets `Result.Mapping` (lowercased, default `'gm'`) |
@@ -422,6 +423,7 @@ finally Free; end;
 | Tempo spin edit | `--tempo` | `seTempo.Value` (only if > 0) |
 | Complexity trackbar | `--complexity` | `tbComplexity.Position / 100` |
 | Humanization trackbar | `--humanization` | `tbHumanization.Position / 100` |
+| Swing trackbar | `--swing` (only if > 0) | `tbSwing.Position / 100` |
 | Export combo | `--reaper` or `--ardour` | Based on `cbExport.ItemIndex` |
 | Output edit | `--output` | `edOutput.Text` |
 

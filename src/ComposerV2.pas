@@ -108,7 +108,7 @@ public
   function CreateSong(const Genre, Style: string; ATempo: Integer;
     const Structure: array of TSectionDef; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6;
-    AHumanization: Double = 0.5): TSong;
+    AHumanization: Double = 0.5; ASwing: Double = 0.0): TSong;
 
   property PluginManager: PluginRegistry.TPluginManager read FPluginManager write FPluginManager;
 end;
@@ -701,7 +701,7 @@ end;
 function TComposerV2.CreateSong(const Genre, Style: string; ATempo: Integer;
   const Structure: array of TSectionDef; ADrummer: string = '';
   AComplexity: Double = 0.5; ADynamics: Double = 0.6;
-  AHumanization: Double = 0.5): TSong;
+  AHumanization: Double = 0.5; ASwing: Double = 0.0): TSong;
 var
   Params: TGenerationParameters;
   Song: TSong;
@@ -766,7 +766,8 @@ begin
 
   { Create generation parameters }
   Params := TGenerationParameters.Create(
-    Genre, Style, ADrummer, AComplexity, ADynamics, AHumanization);
+    Genre, Style, ADrummer, AComplexity, ADynamics, AHumanization,
+    0.35, EnsureRange(ASwing, 0.0, 1.0));
 
   { Auto-select a random preferred drummer when none is specified }
   if ADrummer = '' then
@@ -953,6 +954,12 @@ begin
         finally
           BarSourcePattern.Free;
         end;
+        { Swing is a grid distortion applied after the bar is composed and
+          before humanization, which only adds jitter on top. Recorded GMD
+          patterns are skipped: a human already played their feel. }
+        if (Params.SwingRatio > 0) and
+           not BasePattern.Metadata.ContainsKey('gmd_source_style') then
+          FinalPattern.ApplySwing(Params.SwingRatio);
         { Physically-playable constraint pass — remove hits a human could not
           actually play (two hits on the same hand at the same instant, more
           than three simultaneous hits, impossibly fast repeats on one limb).
@@ -1057,6 +1064,13 @@ begin
           SignatureFills.Free;
         end;
       end;
+
+      { Fills written on the 16th grid swing with the groove; recorded GMD
+        fills (added below) keep their own feel. }
+      if Params.SwingRatio > 0 then
+        for Idx := 0 to Fills.Count - 1 do
+          if Assigned(Fills[Idx].Pattern) then
+            Fills[Idx].Pattern.ApplySwing(Params.SwingRatio);
 
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
         Genre, Style, 'fill', Song.TimeSignature.Numerator,

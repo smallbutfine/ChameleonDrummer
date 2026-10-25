@@ -67,6 +67,16 @@ public
   function DurationBars: Double;
   function Humanize(ATimingVariance: Double = 0.02; AVelocityVariance: Integer = 10): TPattern;
   function Copy: TPattern;
+
+  { Swing as a grid distortion (not a timing offset): inside every beat the
+    offbeat eighth moves from 0.5 to 0.5 + 0.25 * AAmount of the beat, and the
+    sixteenths around it move with it. AAmount 0 is straight, about 0.67 is
+    the classic 2:1 triplet swing, 1.0 is a 3:1 dotted feel. SwingRatio
+    records the amount that was applied.
+    Nothing is changed (False is returned) when the amount is 0, when the
+    pattern was swung before, when the meter is not x/4, or when the pattern
+    already sits on a triplet grid (shuffles, jazz ride patterns). }
+  function ApplySwing(AAmount: Double): Boolean;
 end;
 
 { Reads the valid_intensity_min/max metadata tags of a pattern. Parsing is
@@ -259,6 +269,43 @@ begin
   for B in HumanizedBeats do
     Result.FBeats.Add(B);
   HumanizedBeats.Free;
+end;
+
+function TPattern.ApplySwing(AAmount: Double): Boolean;
+var
+  Beat: TBeat;
+  Whole, Frac, OffbeatPos: Double;
+begin
+  Result := False;
+  AAmount := Math.Min(1.0, AAmount);
+  if AAmount <= 0.0001 then
+    Exit;
+  if FSwingRatio > 0 then
+    Exit;
+  if FTimeSignature.Denominator <> 4 then
+    Exit;
+
+  { A pattern with notes on the triplet grid is already swung or shuffled. }
+  for Beat in FBeats do
+  begin
+    Frac := Beat.Position - Math.Floor(Beat.Position);
+    if (Abs(Frac - 1.0 / 3.0) < 0.02) or (Abs(Frac - 2.0 / 3.0) < 0.02) then
+      Exit;
+  end;
+
+  OffbeatPos := 0.5 + 0.25 * AAmount;
+  for Beat in FBeats do
+  begin
+    Whole := Math.Floor(Beat.Position);
+    Frac := Beat.Position - Whole;
+    if Frac < 0.5 then
+      Frac := Frac * 2.0 * OffbeatPos
+    else
+      Frac := OffbeatPos + (Frac - 0.5) * 2.0 * (1.0 - OffbeatPos);
+    Beat.Position := Whole + Frac;
+  end;
+  FSwingRatio := AAmount;
+  Result := True;
 end;
 
 function TPattern.Copy: TPattern;

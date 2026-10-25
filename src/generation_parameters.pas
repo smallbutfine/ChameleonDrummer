@@ -28,7 +28,7 @@ private
 public
   constructor Create(AGenre, AStyle: string; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-    AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.12; ARideThreshold: Double = 0.9);
+    AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.0; ARideThreshold: Double = 0.9);
   destructor Destroy; override;
 
   property Genre: string read FGenre write FGenre;
@@ -38,6 +38,8 @@ public
   property Dynamics: Double read FDynamics write FDynamics;
   property Humanization: Double read FHumanization write FHumanization;
   property FillFrequency: Double read FFillFrequency write FFillFrequency;
+  { Swing amount: 0 = straight (default), about 0.67 = classic 2:1 swing,
+    1.0 = 3:1. See TPattern.ApplySwing. }
   property SwingRatio: Double read FSwingRatio write FSwingRatio;
   property RideThreshold: Double read FRideThreshold write FRideThreshold;
   property SongGenreContext: string read FSongGenreContext write FSongGenreContext;
@@ -51,7 +53,7 @@ implementation
 
 constructor TGenerationParameters.Create(AGenre, AStyle: string; ADrummer: string = '';
   AComplexity: Double = 0.5; ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-  AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.12; ARideThreshold: Double = 0.9);
+  AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.0; ARideThreshold: Double = 0.9);
 var
   ParamValue: Double;
 begin

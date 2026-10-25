@@ -102,7 +102,7 @@ A `TPattern` is a container of `TBeat` objects. Each beat has:
 The `TPattern` also holds:
 - `TimeSignature` (`TTimeSignature`): Numerator/denominator (default 4/4)
 - `Subdivision` (`Integer`): Grid resolution (default 16 = 16th notes)
-- `SwingRatio` (`Double`): Swing feel (0.0 = straight, >0 = swing)
+- `SwingRatio` (`Double`): Swing amount (0.0 = straight, the default; about 0.67 = classic 2:1 swing; 1.0 = 3:1). Applied by `TPattern.ApplySwing` after a bar is composed and before humanization. Patterns already on a triplet grid (jazz swing, funk shuffle, blues) and recorded GMD patterns are left alone.
 - `Metadata` (`TDictionary<string, string>`): Key-value tags (e.g., `bars_to_fill`, `phrase_bars`)
 
 ### 2. Song and Section Model (`Song.pas`)
@@ -255,6 +255,7 @@ Options:
   --tempo <bpm>        Tempo in BPM (default: genre/style value)
   --complexity <0-1>   Pattern complexity (default: 0.5)
   --humanization <0-1> Humanization intensity (default: 0.3)
+  --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1
   --drummer <name>     Drummer style (e.g., bonham, peart, carey)
   --output <file>      Output MIDI file path
   --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg

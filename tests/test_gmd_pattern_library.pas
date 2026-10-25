@@ -204,7 +204,7 @@ begin
       end;
     for Fill in GeneratedSong.Sections[0].Fills do
       if Assigned(Fill.Pattern) and (Fill.Pattern.Beats.Count > 0) and
-         (Pos('signature_', Fill.Pattern.Name) = 1) then
+         (Pos('chambers_fill_', Fill.Pattern.Name) = 1) then
       begin
         HasDrummerSignatureFill := True;
         if not Assigned(SignaturePattern) then
@@ -235,8 +235,10 @@ begin
     GeneratedSong.Sections[0].Fills.Add(TFill.Create(SignaturePattern));
     SignaturePattern := nil;
     Generator.SaveSongMidi(GeneratedSong, SignatureOutputPath);
+    { Chambers' fills are snare and ghost-note fills: the groove under the
+      fill is cut, so a snare in the file proves the fill itself played. }
     Check(MidiContainsNote(SignatureOutputPath,
-      Byte(Generator.DrumKit.GetMidiNote('tom_4_open_hit'))),
+      Byte(Generator.DrumKit.GetMidiNote('snare_open_hit_open_lateral_hit'))),
       'scheduled drummer signature fill must be exported to MIDI');
   finally
     MultiBarGMDPattern.Free;

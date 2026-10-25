@@ -42,6 +42,9 @@ type
     lblHumanization: TLabel;
     tbHumanization: TTrackBar;
     lblHumanizationValue: TLabel;
+    lblSwing: TLabel;
+    tbSwing: TTrackBar;
+    lblSwingValue: TLabel;
     gbOutput: TGroupBox;
     lblExport: TLabel;
     cbExport: TComboBox;
@@ -61,6 +64,7 @@ type
     procedure cbGenreChange(Sender: TObject);
     procedure tbComplexityChange(Sender: TObject);
     procedure tbHumanizationChange(Sender: TObject);
+    procedure tbSwingChange(Sender: TObject);
     procedure btnGenerateClick(Sender: TObject);
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
@@ -73,6 +77,7 @@ type
     procedure FillStyles;
     procedure ResetToDefaultStructure;
     procedure UpdateValueLabels;
+    function SwingAmount: Double;
     function SelectedGenre: String;
     function SelectedStyle: String;
     function OutputBasePath: String;
@@ -92,6 +97,17 @@ implementation
 
 { The form file is named after the form class, not after this unit }
 {$R TMainForm.lfm}
+
+{ Numbers handed to the command line must use a '.' decimal separator whatever
+  the system locale is: the CLI would not understand '0,67'. }
+function CliNumber(AValue: Double): String;
+var
+  FS: TFormatSettings;
+begin
+  FS := DefaultFormatSettings;
+  FS.DecimalSeparator := '.';
+  Result := FormatFloat('0.00', AValue, FS);
+end;
 
 const
   ExportMIDI = 0;
@@ -151,6 +167,10 @@ begin
   tbHumanization.Max := 100;
   tbHumanization.Position := 30;
 
+  tbSwing.Min := 0;
+  tbSwing.Max := 100;
+  tbSwing.Position := 0;
+
   UpdateValueLabels;
 
   ResetToDefaultStructure;
@@ -190,6 +210,17 @@ procedure TMainForm.UpdateValueLabels;
 begin
   lblComplexityValue.Caption := FormatFloat('0.00', tbComplexity.Position / 100);
   lblHumanizationValue.Caption := FormatFloat('0.00', tbHumanization.Position / 100);
+  if tbSwing.Position = 0 then
+    lblSwingValue.Caption := 'straight'
+  else if (tbSwing.Position >= 60) and (tbSwing.Position <= 72) then
+    lblSwingValue.Caption := FormatFloat('0.00', SwingAmount) + '  (classic 2:1)'
+  else
+    lblSwingValue.Caption := FormatFloat('0.00', SwingAmount);
+end;
+
+function TMainForm.SwingAmount: Double;
+begin
+  Result := tbSwing.Position / 100;
 end;
 
 function TMainForm.SelectedGenre: String;
@@ -420,8 +451,11 @@ begin
       if TempoVal > 0 then begin
         Parameters.Add('--tempo'); Parameters.Add(IntToStr(TempoVal));
       end;
-      Parameters.Add('--complexity'); Parameters.Add(FloatToStr(tbComplexity.Position / 100));
-      Parameters.Add('--humanization'); Parameters.Add(FloatToStr(tbHumanization.Position / 100));
+      Parameters.Add('--complexity'); Parameters.Add(CliNumber(tbComplexity.Position / 100));
+      Parameters.Add('--humanization'); Parameters.Add(CliNumber(tbHumanization.Position / 100));
+      if tbSwing.Position > 0 then begin
+        Parameters.Add('--swing'); Parameters.Add(CliNumber(SwingAmount));
+      end;
       case cbExport.ItemIndex of
         ExportREAPER: Parameters.Add('--reaper');
         ExportArdour: Parameters.Add('--ardour');
@@ -452,6 +486,11 @@ begin
 end;
 
 procedure TMainForm.tbHumanizationChange(Sender: TObject);
+begin
+  UpdateValueLabels;
+end;
+
+procedure TMainForm.tbSwingChange(Sender: TObject);
 begin
   UpdateValueLabels;
 end;
