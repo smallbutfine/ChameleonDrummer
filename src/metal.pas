@@ -445,6 +445,7 @@ var
   BaseFlavors: specialize TList<TPattern>;
   I: Integer;
   PMin, PMax, PMid: Double;
+  PMinStr, PMaxStr: string;
 begin
   Result := specialize TList<TPattern>.Create;
   BaseFlavors := Self.GetSectionFlavors(Section, Parameters);
@@ -452,8 +453,11 @@ begin
 
   for I := 0 to BaseFlavors.Count - 1 do
   begin
-    if not TryStrToDouble(BaseFlavors[I].Metadata.Items['valid_intensity_min'], PMin) then PMin := 0.0;
-    if not TryStrToDouble(BaseFlavors[I].Metadata.Items['valid_intensity_max'], PMax) then PMax := 1.0;
+    PMin := 0.0; PMax := 1.0; PMinStr := ''; PMaxStr := '';
+    if BaseFlavors[I].Metadata.TryGetValue('valid_intensity_min', PMinStr) then
+      PMin := StrToFloat(PMinStr);
+    if BaseFlavors[I].Metadata.TryGetValue('valid_intensity_max', PMaxStr) then
+      PMax := StrToFloat(PMaxStr);
     PMid := (PMin + PMax) / 2.0;
 
     { Include if pattern midpoint overlaps the section intensity band. }
