@@ -19,6 +19,8 @@ type
   TSectionDef = record
     Name: string;
     Bars: Integer;
+    { Tempo of this section in BPM; 0 = inherit the song tempo. }
+    Tempo: Integer;
   end;
 
   { Intensity Curve Enum }
@@ -749,6 +751,8 @@ var
   JBar: Integer;
   Idx: Integer;
   Section: TSection;
+  SectionTempo: Integer;
+  TempoSegment: TSongSegment;
   GmdCount: Integer;
   HasVocabulary: Boolean;
   GenericWeight, GmdShare, VocabShare, WeightSum: Double;
@@ -812,6 +816,13 @@ begin
     SectionDef := Structure[I];
     SectionName := SectionDef.Name;
     Bars := SectionDef.Bars;
+    { A section can run at its own tempo; everything that depends on the
+      tempo inside the section (drummer feel, humanization, groove offsets)
+      must use that one, not the song tempo. }
+    if SectionDef.Tempo > 0 then
+      SectionTempo := SectionDef.Tempo
+    else
+      SectionTempo := ATempo;
 
     GeneratedBars := specialize TList<TPattern>.Create;
     Flavors := nil;
@@ -937,7 +948,7 @@ begin
           DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
           if Assigned(DrummerPlugin) then
             DrummedPattern := (DrummerPlugin as TDrummerPlugin).
-              ApplyStyleForContext(BasePattern, Genre, Style, ATempo);
+              ApplyStyleForContext(BasePattern, Genre, Style, SectionTempo);
         end;
 
         try
@@ -978,7 +989,7 @@ begin
           HumanizationContext.Complexity := Params.Complexity;
           HumanizationContext.Intensity := IntensityPt;
           HumanizationContext.Humanization := Params.Humanization;
-          HumanizationContext.Tempo := ATempo;
+          HumanizationContext.Tempo := SectionTempo;
           HumanizationContext.Drummer := ADrummer;
           HumanizationContext.SourceRandom := FRng;
           try
@@ -1107,12 +1118,20 @@ begin
         begin
           IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
           OffsetMs := FGrooveEngine.GetBarOffsetMs(
-            JBar, ATempo, IntensityPt, SectionName, Genre, ADrummer);
+            JBar, SectionTempo, IntensityPt, SectionName, Genre, ADrummer);
           Section.GrooveOffsetsMs.Add(OffsetMs);
         end;
       if Section.GrooveOffsetsMs.Count = 0 then
         for JBar := 0 to Bars - 1 do
           Section.GrooveOffsetsMs.Add(0.0);
+      { The exporters read a section's tempo from its segments. }
+      if SectionTempo <> ATempo then
+      begin
+        TempoSegment := TSongSegment.Create(Bars);
+        TempoSegment.Tempo := SectionTempo;
+        Section.Segments.Add(TempoSegment);
+        Section.ValidateSegments;
+      end;
       Song.Sections.Add(Section);
     finally
       if Assigned(MacroComposer) then

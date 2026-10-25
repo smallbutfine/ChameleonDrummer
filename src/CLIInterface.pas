@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Generics.Collections, fpjson,
   Pattern, Song,
-  DrumGenerator, ComposerV2, DrumMidiLoader,
+  DrumGenerator, ComposerV2, DrumMidiLoader, SongStructure,
   PluginRegistry, Kit, ReaperAPI, ArdourAPI;
 
 // ============================================================================
@@ -29,6 +29,7 @@ type
     SidecarFile: String;
     SongMapFile: String;
     WriteTimelinePath: String;
+    Sections: specialize TArray<TSectionDef>; // --section name:bars[@tempo], in order; empty = genre default
     PresetOnly: Boolean; // --preset-only (accepted for reaper/ardour export)
     ListType: String; // 'genres', 'styles', 'drummers'
     IsSongCommand: Boolean; // --song flag from regen_all.bat
@@ -103,6 +104,14 @@ begin
       Inc(I);
       if (I < Length(Args)) then Val(Args[I], Result.Humanization)
       else raise Exception.Create('--humanization requires a value');
+    end
+    else if (Args[I] = '--section') then
+    begin
+      Inc(I);
+      if (I >= Length(Args)) then
+        raise Exception.Create('--section requires a value like verse:8 or chorus:8@140');
+      SetLength(Result.Sections, Length(Result.Sections) + 1);
+      Result.Sections[High(Result.Sections)] := ParseSectionSpec(Args[I]);
     end
     else if (Args[I] = '--swing') then
     begin
@@ -251,6 +260,9 @@ begin
   Writeln('  --complexity <0-1>   Pattern complexity (default: 0.5)');
   Writeln('  --humanization <0-1> Humanization intensity (default: 0.3)');
   Writeln('  --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1');
+  Writeln('  --section <n:bars[@bpm]>  Song structure; repeat once per section, in order');
+  Writeln('                       e.g. --section intro:4 --section verse:8 --section chorus:8@140');
+  Writeln('                       (without --section the genre default structure is used)');
   Writeln('  --drummer <name>     Drummer style (e.g., bonham, peart, carey)');
   Writeln('  --output <file>      Output MIDI file path');
   Writeln('  --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg');
@@ -287,7 +299,7 @@ begin
     Args.Genre,
     Args.Style,
     Args.Tempo,
-    nil,   // AStructure - use genre default
+    Args.Sections, // AStructure - from --section, nil = genre default
     DrumKit, // Pass pre-loaded keymap
     DrummerName, // ADrummer - pass directly to composer
     Args.Complexity,  // AComplexity - pattern complexity from CLI
@@ -304,6 +316,8 @@ begin
 
     FGenerator.SaveSongMidi(Song, OutputFile);
     Writeln(Format('Song generated: %s (mapping: %s)', [OutputFile, Args.Mapping]));
+    if Length(Args.Sections) > 0 then
+      Writeln(Format('Structure   : %s', [DescribeStructure(Args.Sections)]));
 
     { Write timeline JSON if requested }
     if (Args.WriteTimelinePath <> '') then
@@ -409,7 +423,7 @@ begin
     Args.Genre,
     Args.Style,
     Args.Tempo,
-    nil,      // AStructure - use genre default
+    Args.Sections, // AStructure - from --section, nil = genre default
     DrumKit,
     Args.Drummer,
     0.5,      // AComplexity
@@ -462,7 +476,7 @@ begin
     Args.Genre,
     Args.Style,
     Args.Tempo,
-    nil,      // AStructure - use genre default
+    Args.Sections, // AStructure - from --section, nil = genre default
     DrumKit,
     Args.Drummer,
     Args.Complexity,  // AComplexity - pattern complexity from CLI

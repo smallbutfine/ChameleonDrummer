@@ -400,7 +400,7 @@ end;
 procedure TMainForm.btnGenerateClick(Sender: TObject);
 var
   Mode, Genre, Style, OutputFile: String;
-  TempoVal: Integer;
+  TempoVal, SecIdx: Integer;
 begin
   if cbGenre.ItemIndex < 0 then begin Log('Pick a genre first.'); Exit; end;
   if cbStyle.ItemIndex < 0 then begin Log('Pick a style/first.'); Exit; end;
@@ -453,6 +453,11 @@ begin
       end;
       Parameters.Add('--complexity'); Parameters.Add(CliNumber(tbComplexity.Position / 100));
       Parameters.Add('--humanization'); Parameters.Add(CliNumber(tbHumanization.Position / 100));
+      { The section list on screen is the song structure. }
+      for SecIdx := 0 to High(FSectionNames) do begin
+        Parameters.Add('--section');
+        Parameters.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
+      end;
       if tbSwing.Position > 0 then begin
         Parameters.Add('--swing'); Parameters.Add(CliNumber(SwingAmount));
       end;

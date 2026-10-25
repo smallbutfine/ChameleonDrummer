@@ -256,6 +256,9 @@ Options:
   --complexity <0-1>   Pattern complexity (default: 0.5)
   --humanization <0-1> Humanization intensity (default: 0.3)
   --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1
+  --section <n:bars[@bpm]>  Song structure; repeat once per section, in order
+                       e.g. --section intro:4 --section verse:8 --section chorus:8@140
+                       (without --section the genre default structure is used)
   --drummer <name>     Drummer style (e.g., bonham, peart, carey)
   --output <file>      Output MIDI file path
   --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg
@@ -341,6 +344,14 @@ Default structures per genre:
 ### Song Maps and Sidecars
 
 The CLI supports reading external song structures:
+
+**Sections (`--section`)**: Describes the song structure directly on the command line, one `--section` per section, in playing order:
+
+```bash
+chameleondrummer generate --genre rock --style classic --tempo 120 \n  --section intro:4 --section verse:8@100 --section chorus:8@140 --section outro:4
+```
+
+`name:bars` gives a section of that many bars (1-256); `@bpm` (60-300) gives it its own tempo, otherwise it plays at `--tempo`. A name is letters, digits, `_` and `-`, starting with a letter. The composer treats `intro`, `verse`, `pre_chorus`, `chorus`, `bridge`, `breakdown`, `solo` and `outro` specially; any other name plays like a verse. A wrong value stops with a message that names it. The tempo changes appear in the MIDI file, the Ardour session and the exported bar lengths; the REAPER project still starts at the first section's tempo and does not yet get the later tempo changes. The GUI sends the sections shown in its section list this way.
 
 **Sidecar (`--sidecar`)**: A JSON file defining sections and bar counts.
 

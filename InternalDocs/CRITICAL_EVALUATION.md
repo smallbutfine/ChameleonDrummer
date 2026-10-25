@@ -553,7 +553,7 @@ The real extensibility need: allow users to define custom drummer profiles and p
 
 | Priority | Feature | Implementation Notes |
 |----------|---------|---------------------|
-| **P0** | `--section` inline syntax | Parse `name:bars` and `name:bars@tempo`; build `TSongBarSpec` per section; override genre default structure |
+| ~~**P0**~~ | `--section` inline syntax | **DONE.** `--section name:bars[@bpm]`, repeatable, parsed in `SongStructure.pas`; overrides the genre default structure; a per-section tempo becomes a tempo segment of that section (MIDI, Ardour, bar lengths). The GUI section list now sends its sections this way. Known gap: the REAPER project still writes only the first section's tempo. |
 | **P1** | `--structure file.json` | Load JSON sidecar format (extends existing sidecar); add `pattern_template`, `complexity`, `fill_policy` per section |
 | **P2** | `--time-sig num/denom` | Parse from CLI; validate numerator [2-16], denom in {2,4,8}; pass to `TSong.Create()`; pattern compatibility check required |
 | **P3** | `--segment section:bars:bpm:numer/denom` | Per-section tempo + meter inline; combines section control with time signature support |

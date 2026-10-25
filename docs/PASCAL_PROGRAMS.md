@@ -129,6 +129,7 @@ The `TCLIInterface.ParseArgs()` method handles a flat list of string arguments. 
 | `--complexity <0-1>` | Parses double into `Result.Complexity` |
 | `--humanization <0-1>` | Parses double into `Result.Humanization` |
 | `--swing <0-1>` | Parses double into `Result.Swing` (rejects non-numbers and values outside 0-1) |
+| `--section <name:bars[@bpm]>` | Appends one entry (parsed by `ParseSectionSpec` in `SongStructure.pas`) to `Result.Sections`; repeat per section |
 | `--drummer <name>` | Sets `Result.Drummer` (lowercased) |
 | `--output <file>` | Sets `Result.OutputFile` |
 | `--mapping <name>` | Sets `Result.Mapping` (lowercased, default `'gm'`) |
@@ -424,6 +425,7 @@ finally Free; end;
 | Complexity trackbar | `--complexity` | `tbComplexity.Position / 100` |
 | Humanization trackbar | `--humanization` | `tbHumanization.Position / 100` |
 | Swing trackbar | `--swing` (only if > 0) | `tbSwing.Position / 100` |
+| Section list | one `--section name:bars` per row | `FSectionNames[i]`, `FSectionBars[i]` |
 | Export combo | `--reaper` or `--ardour` | Based on `cbExport.ItemIndex` |
 | Output edit | `--output` | `edOutput.Text` |
 
