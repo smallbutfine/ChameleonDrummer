@@ -74,7 +74,7 @@ type
     function DeterminePhase(ABarIndex: Integer; ABars: Integer): TMacroPhase;
     function SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
       const Available: specialize TList<TPattern>; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
-    function GetNextGrooveIndex(GrooveCount: Integer): Integer;
+    function GetNextGrooveIndex(GrooveCount: Integer);
   end;
 
 { TComposerV2 — bar-by-bar song composition engine }
@@ -444,7 +444,7 @@ begin
 end;
 
 function TMacroComposer.SelectGroove(const Genre, SectionName: string; Phase: TMacroPhase;
-  const Available: specialize TList<TPattern; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
+  const Available: specialize TList<TPattern>; const BarIntensity: Double; ARng: TThreadedRandom): TPattern;
 var
   Idx: Integer;
   Compatible: specialize TList<TPattern>;
