@@ -107,5 +107,7 @@ length use `--structure`.
 
 They were written from the built-in content and can be rewritten with
 `tools/export_grooves.pas`, `tools/export_fills.py` and `tools/export_defaults.pas`
-(run from the project root). That overwrites your edits to the files in `config\`;
+(run from the project root; the grooves with a meter in their header are kept).
+`python tools/meter_audit.py` lays out every odd-meter groove per beat group and flags likely mistakes
+(a snare on the one, kick and snare on one step, a wrong step count) - run it after editing them. That overwrites your edits to the files in `config\`;
 keep your own copies in the user folder.

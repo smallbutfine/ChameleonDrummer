@@ -363,69 +363,305 @@ C@0.5 X... .... .... .... | .... .... .... ....
 
 # ---- odd meters (hand written, tools/write_meter_grooves.py) ----
 # The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+# Jazz /4 meters count triplets (3 steps per quarter), the others eighths.
 
 [classic verse 3/4 intensity=0.20-0.60]
-K   x. .. x.
-S   .. x. ..
-H   x. x. x.
+K     x. .. .x
+S     .. x. x.
+H     x. x. x.
 
 [classic verse 3/4 intensity=0.40-0.80]
-K   x. .. x.
-S   .. x. .x
-H   x. x. x.
+K     x. .x .x
+S     .. x. x.
+H     xx xx xx
 C@0.7 X. .. ..
 
-[classic chorus 3/4 intensity=0.40-1.00]
-K   x. .x x.
-S   .. x. .x
-R   x. x. x.
-C   X. .. ..
+[classic verse 3/4 intensity=0.60-1.00]
+K     xx .x .x
+S     .. x. x.
+R     xx xx xx
+C     X. .. ..
 
-[classic verse 5/4 intensity=0.20-0.70]
-K   x. .. .. x. ..
-S   .. .. .. x. ..
-H   x. x. x. x. x.
+[classic chorus 3/4 intensity=0.40-0.80]
+K     x. .x ..
+S     .. x. x.
+R     x. x. x.
+C     X. .. ..
 
-[classic chorus 5/4 intensity=0.40-1.00]
-K   x. .. x. x. ..
-S   .. .. .. x. ..
-R   x. x. x. x. x.
-C   X. .. .. .. ..
+[classic chorus 3/4 intensity=0.60-1.00]
+K     x. .x .x
+S     .. x. x.
+R     xx xx xx
+C     X. .. ..
+
+[classic chorus 3/4 intensity=0.75-1.00]
+K     xx .. .x
+S     .. x. x.
+R     xx xx xx
+C     X. .. ..
+S@0.9 .. .g .g
+
+[classic bridge 3/4 intensity=0.10-0.50]
+K     x. .. ..
+S     .. x. ..
+R     x. x. x.
+
+[classic bridge 3/4 intensity=0.30-0.70]
+K     x. .. .x
+S     .. x. x.
+H     x. x. x.
+
+[classic bridge 3/4 intensity=0.50-0.90]
+K     x. .x .x
+S     .. x. x.
+R     xx xx xx
+
+[classic verse 5/4 intensity=0.20-0.60]
+K     x. .. .x .. ..
+S     .. .. .. x. ..
+H     x. x. x. x. x.
+
+[classic verse 5/4 intensity=0.40-0.80]
+K     x. .. x. .. x.
+S     .. .. .. x. ..
+H     xx xx xx xx xx
+
+[classic verse 5/4 intensity=0.60-1.00]
+K     x. .. .. .x .x
+S     .. .. .. x. ..
+H     xx xx xx xx xx
+C@0.7 X. .. .. .. ..
+S@0.8 .. g. .. .. g.
+
+[classic chorus 5/4 intensity=0.40-0.80]
+K     x. .. .x .. x.
+S     .. .. .. x. ..
+R     x. x. x. x. x.
+C     X. .. .. .. ..
+
+[classic chorus 5/4 intensity=0.60-1.00]
+K     x. .x .. .. xx
+S     .. .. .. x. ..
+R     xx xx xx xx xx
+C     X. .. .. .. ..
+
+[classic chorus 5/4 intensity=0.75-1.00]
+K     x. .. .x .. .x
+S     .. .. .. x. ..
+R     xx xx xx xx xx
+S@0.9 .. g. .. .. g.
+C     X. .. .. .. ..
+
+[classic bridge 5/4 intensity=0.10-0.50]
+K     x. .. .. .. ..
+S     .. .. .. x. ..
+R     x. x. x. x. x.
+
+[classic bridge 5/4 intensity=0.30-0.70]
+K     x. .. .x .. ..
+S     .. .. .. x. ..
+H     x. x. x. x. x.
+
+[classic bridge 5/4 intensity=0.50-0.90]
+K     x. .. x. .x ..
+S     .. .. .. x. ..
+R     xx xx xx xx xx
 
 [classic verse 7/8 intensity=0.20-0.60]
-K   x.. .. ..
-S   ... x. x.
-H   xxx xx xx
+K     x.. .. .x
+S     ... x. x.
+H     xxx xx xx
 
 [classic verse 7/8 intensity=0.40-0.80]
-K   x.. .x ..
-S   ... x. x.
-H   x.x x. x.
-HP  ..x .x ..
+K     x.. .x ..
+S     ... x. x.
+H     x.x x. x.
 
-[classic chorus 7/8 intensity=0.40-1.00]
-K   x.. x. x.
-S   ... x. x.
-R   xxx xx xx
-C   X.. .. ..
+[classic verse 7/8 intensity=0.60-1.00]
+K     x.. .. .x
+S     ... x. x.
+H     xxx xx xx
+C@0.7 X.. .. ..
+S@0.8 .g. .. .g
 
-[classic verse 9/8 intensity=0.20-0.80]
-K   x.. ... x..
-S   ... x.. ...
-H   x.x x.x x.x
+[classic chorus 7/8 intensity=0.40-0.80]
+K     x.. .. .x
+S     ... x. x.
+R     xxx xx xx
+C     X.. .. ..
 
-[classic chorus 9/8 intensity=0.40-1.00]
-K   x.. x.. x..
-S   ... x.. x..
-R   xxx xxx xxx
-C   X.. ... ...
+[classic chorus 7/8 intensity=0.60-1.00]
+K     x.x .. .x
+S     ... x. x.
+R     xxx xx xx
+C     X.. .. ..
 
-[classic verse 11/8 intensity=0.20-0.80]
-K   x.. ... x.. ..
-S   ... x.. ... x.
-H   xxx xxx xxx xx
+[classic chorus 7/8 intensity=0.75-1.00]
+K     x.. .x .x
+S     ... x. x.
+R     xxx xx xx
+C     X.. .. ..
+S@0.9 .g. .. .g
 
-[classic verse 13/8 intensity=0.20-0.80]
-K   x.. ... x.. .. ..
-S   ... x.. ... x. x.
-H   xxx xxx xxx xx xx
+[classic bridge 7/8 intensity=0.10-0.50]
+K     x.. .. ..
+S     ... x. ..
+R     x.x x. x.
+
+[classic bridge 7/8 intensity=0.30-0.70]
+K     x.. .. .x
+S     ... x. x.
+H     x.x x. x.
+
+[classic bridge 7/8 intensity=0.50-0.90]
+K     x.x .. .x
+S     ... x. x.
+R     xxx xx xx
+
+[classic verse 9/8 intensity=0.20-0.60]
+K     x.. ... ..x
+S     ... x.. x..
+H     x.x x.x x.x
+
+[classic verse 9/8 intensity=0.40-0.80]
+K     x.. ..x ..x
+S     ... x.. x..
+H     xxx xxx xxx
+
+[classic verse 9/8 intensity=0.60-1.00]
+K     x.. .x. ..x
+S     ... x.. x..
+H     xxx xxx xxx
+S@0.8 ..g ..g ..g
+
+[classic chorus 9/8 intensity=0.40-0.80]
+K     x.. ..x ..x
+S     ... x.. x..
+R     xxx xxx xxx
+C     X.. ... ...
+
+[classic chorus 9/8 intensity=0.60-1.00]
+K     x.. .x. ..x
+S     ... x.. x..
+R     xxx xxx xxx
+C     X.. ... ...
+S@0.8 ..g ..g ..g
+
+[classic chorus 9/8 intensity=0.75-1.00]
+K     x.x ..x .xx
+S     ... x.. x..
+R     xxx xxx xxx
+C     X.. ... ...
+
+[classic bridge 9/8 intensity=0.10-0.50]
+K     x.. ... ...
+S     ... ... x..
+R     x.x x.x x.x
+
+[classic bridge 9/8 intensity=0.30-0.70]
+K     x.. ... ..x
+S     ... x.. x..
+H     x.x x.x x.x
+
+[classic bridge 9/8 intensity=0.50-0.90]
+K     x.. ..x ..x
+S     ... x.. x..
+R     xxx xxx xxx
+
+[classic verse 11/8 intensity=0.20-0.60]
+K     x.. ... x.. ..
+S     ... x.. ... x.
+H     x.x x.x x.x x.
+
+[classic verse 11/8 intensity=0.40-0.80]
+K     x.. ..x ..x ..
+S     ... x.. ... x.
+H     xxx xxx xxx xx
+
+[classic verse 11/8 intensity=0.60-1.00]
+K     x.. ..x ..x ..
+S     ... x.. x.. x.
+R     xxx xxx xxx xx
+C     X.. ... ... ..
+
+[classic chorus 11/8 intensity=0.40-0.80]
+K     x.. ..x ..x ..
+S     ... x.. x.. x.
+R     xxx xxx xxx xx
+C     X.. ... ... ..
+
+[classic chorus 11/8 intensity=0.60-1.00]
+K     x.x ..x .xx ..
+S     ... x.. x.. x.
+R     xxx xxx xxx xx
+C     X.. ... ... ..
+
+[classic chorus 11/8 intensity=0.75-1.00]
+K     xxx ..x .xx ..
+S     ... x.. x.. x.
+R     xxx xxx xxx xx
+C     X.. ... ... ..
+
+[classic bridge 11/8 intensity=0.10-0.50]
+K     x.. ... ... ..
+S     ... ... ... x.
+R     x.x x.x x.x x.
+
+[classic bridge 11/8 intensity=0.30-0.70]
+K     x.. ... x.. ..
+S     ... x.. ... x.
+H     xxx xxx xxx xx
+
+[classic bridge 11/8 intensity=0.50-0.90]
+K     x.. ..x ..x ..
+S     ... x.. ... x.
+R     xxx xxx xxx xx
+
+[classic verse 13/8 intensity=0.20-0.60]
+K     x.. ... x.. .. ..
+S     ... x.. ... x. x.
+H     x.x x.x x.x x. x.
+
+[classic verse 13/8 intensity=0.40-0.80]
+K     x.. ..x ..x .. ..
+S     ... x.. ... x. x.
+H     xxx xxx xxx xx xx
+
+[classic verse 13/8 intensity=0.60-1.00]
+K     x.. ..x ..x .. .x
+S     ... x.. x.. x. x.
+R     xxx xxx xxx xx xx
+C     X.. ... ... .. ..
+
+[classic chorus 13/8 intensity=0.40-0.80]
+K     x.. ..x ..x .. ..
+S     ... x.. x.. x. x.
+R     xxx xxx xxx xx xx
+C     X.. ... ... .. ..
+
+[classic chorus 13/8 intensity=0.60-1.00]
+K     x.x ..x .xx .. .x
+S     ... x.. x.. x. x.
+R     xxx xxx xxx xx xx
+C     X.. ... ... .. ..
+
+[classic chorus 13/8 intensity=0.75-1.00]
+K     xxx ..x .xx .. .x
+S     ... x.. x.. x. x.
+R     xxx xxx xxx xx xx
+C     X.. ... ... .. ..
+
+[classic bridge 13/8 intensity=0.10-0.50]
+K     x.. ... ... .. ..
+S     ... ... ... x. ..
+R     x.x x.x x.x x. x.
+
+[classic bridge 13/8 intensity=0.30-0.70]
+K     x.. ... x.. .. ..
+S     ... x.. ... x. x.
+H     xxx xxx xxx xx xx
+
+[classic bridge 13/8 intensity=0.50-0.90]
+K     x.. ..x ..x .. ..
+S     ... x.. ... x. x.
+R     xxx xxx xxx xx xx

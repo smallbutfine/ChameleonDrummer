@@ -374,19 +374,55 @@ C X... .... .... .... | .... .... .... ....
 
 # ---- odd meters (hand written, tools/write_meter_grooves.py) ----
 # The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+# Jazz /4 meters count triplets (3 steps per quarter), the others eighths.
 
-[classic verse 7/8 intensity=0.20-0.80]
-K   x.. x. .x
-S   ... x. x.
-H   xxx xx xx
-S@0.7 ... .g .g
+[classic verse 7/8 intensity=0.20-0.60]
+K     x.x .. .x
+S     ... x. x.
+H     xxx xx xx
 
-[classic verse 5/4 intensity=0.20-0.80]
-K   x. .. .x x. ..
-S   .. .. .. x. ..
-H   x. x. x. x. x.
+[classic verse 7/8 intensity=0.40-0.80]
+K     x.x .. .x
+S     ... x. x.
+H     xxx xx xx
+S@0.7 .g. .g ..
 
-[classic verse 3/4 intensity=0.20-0.80]
-K   x. .. .x
-S   .. x. ..
-H   xx xx xx
+[classic verse 7/8 intensity=0.60-1.00]
+K     x. .x ..x
+S     .. x. x..
+H     xx xx xxx
+S@0.6 .g .. .g.
+
+[classic verse 5/4 intensity=0.20-0.60]
+K     x. .. .x .. x.
+S     .. .. .. x. ..
+H     x. x. x. x. x.
+
+[classic verse 5/4 intensity=0.40-0.80]
+K     x. .x .. .x x.
+S     .. .. .. x. ..
+H     xx xx xx xx xx
+S@0.6 .. g. .g .. .g
+
+[classic verse 5/4 intensity=0.60-1.00]
+K     x. .. .x .. .x
+S     .. .. x. .. x.
+H     xx xx xx xx xx
+S@0.6 .g .. .. g. ..
+
+[classic verse 3/4 intensity=0.20-0.60]
+K     x. .. .x
+S     .. x. ..
+H     xx xx xx
+
+[classic verse 3/4 intensity=0.40-0.80]
+K     x. .x .x
+S     .. x. x.
+H     xx xx xx
+S@0.6 .g .. g.
+
+[classic verse 3/4 intensity=0.60-1.00]
+K     xx .x .x
+S     .. x. x.
+H     xx xx xx
+S@0.6 .g .g g.
