@@ -26,7 +26,9 @@ type
     Drummer: String;
     OutputFile: String;
     Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc)
+    StructureFile: String; // --structure / --sidecar: JSON file with the song structure
     SidecarFile: String;
+
     SongMapFile: String;
     WriteTimelinePath: String;
     Sections: specialize TArray<TSectionDef>; // --section name:bars[@tempo], in order; empty = genre default
@@ -65,7 +67,14 @@ end;
 function TCLIInterface.ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
 var
   I, ValCode: Integer;
+
+  Name: String;
+
+  Info: TStructureInfo;
+
+  W: String;
 begin
+
   FillChar(Result, SizeOf(Result), 0);
   Result.Tempo := 0;
   Result.Complexity := 0.5;
@@ -142,11 +151,24 @@ begin
       if (I < Length(Args)) then Result.Mapping := LowerCase(Args[I])
       else raise Exception.Create('--mapping requires a value');
     end
-    else if (Args[I] = '--sidecar') then
+    else if (Args[I] = '--structure') or (Args[I] = '--sidecar') then
+
     begin
+
+      { --sidecar is the older name for the same JSON file }
+
+      Name := Args[I];
+
       Inc(I);
-      if (I < Length(Args)) then Result.SidecarFile := Args[I]
-      else raise Exception.Create('--sidecar requires a value');
+
+      if (I >= Length(Args)) then
+        raise Exception.CreateFmt('%s requires a file name', [Name]);
+
+      if (Result.StructureFile <> '') and (Result.StructureFile <> Args[I]) then
+        raise Exception.Create('--structure and --sidecar name different files; give only one');
+      Result.StructureFile := Args[I];
+
+      Result.SidecarFile := Args[I];
     end
     else if (Args[I] = '--song-map') then
     begin
@@ -224,8 +246,32 @@ begin
   end;
 
   { If --song was used but no command specified, default to 'generate' }
+
   if Result.IsSongCommand and (Result.Command = '') then
+
     Result.Command := 'generate';
+
+
+  { A structure file supplies the sections, and genre/style/tempo where the
+    command line did not. Only the commands that build a song need it. }
+  if (Result.StructureFile <> '') and
+     ((Result.Command = 'generate') or (Result.Command = 'reaper') or
+      (Result.Command = 'ardour')) then
+
+  begin
+    if Length(Result.Sections) > 0 then
+      raise Exception.Create('--section cannot be combined with --structure; put all sections in one place');
+    Info := LoadStructureFile(Result.StructureFile);
+    for W in Info.Warnings do
+      Writeln('[Warning] ', Result.StructureFile, ': ', W);
+
+    Result.Sections := Info.Sections;
+    if (Result.Genre = '') then Result.Genre := Info.Genre;
+
+    if (Result.Style = '') then Result.Style := Info.Style;
+    if (Result.Tempo = 0) then Result.Tempo := Info.Tempo;
+
+  end;
 end;
 
 constructor TCLIInterface.Create;
@@ -266,7 +312,11 @@ begin
   Writeln('  --drummer <name>     Drummer style (e.g., bonham, peart, carey)');
   Writeln('  --output <file>      Output MIDI file path');
   Writeln('  --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg');
-  Writeln('  --sidecar <file>     Read section structure from sidecar JSON');
+  Writeln('  --structure <file>   Song structure from a JSON file (sections with bars, tempo,');
+  Writeln('                       complexity; optional genre, style, tempo). Command-line');
+  Writeln('                       genre/style/tempo win over the file. Not with --section.');
+
+  Writeln('  --sidecar <file>     Same as --structure (the REAPER sidecar format works)');
   Writeln('  --song-map <file>    Read song map JSON for per-bar tempo/meter');
   Writeln('  --write-timeline     Write timeline JSON after generation');
   Writeln('  --list <type>        List: genres, styles, drummers');

@@ -1,0 +1,14 @@
+{
+  "genre": "rock",
+  "style": "classic",
+  "tempo": 120,
+  "time_signature": [4, 4],
+  "sections": [
+    { "name": "intro",      "bars": 4,  "complexity": 0.2 },
+    { "name": "verse",      "bars": 8,  "tempo": 112, "complexity": 0.4 },
+    { "name": "pre_chorus", "bars": 4,  "complexity": 0.6 },
+    { "name": "chorus",     "bars": 8,  "tempo": 124, "complexity": 0.9 },
+    { "name": "bridge",     "bars": 4,  "complexity": 0.5 },
+    { "name": "outro",      "bars": 4,  "complexity": 0.3 }
+  ]
+}

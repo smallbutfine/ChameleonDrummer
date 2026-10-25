@@ -506,6 +506,13 @@ begin
           Section := Result.Sections[SectionIndex];
           if not Assigned(Section.Pattern) then
             Continue;
+          { The ride switch looks at complexity, so it must see the
+            section's own value when the structure gave one. }
+          if (SectionIndex < Length(Structure)) and
+             Structure[SectionIndex].HasComplexity then
+            RideParams.Complexity := Structure[SectionIndex].Complexity
+          else
+            RideParams.Complexity := AComplexity;
           NewPattern := GenrePlugin.ApplyRideHihatLogic(Section.Pattern,
             Section.Name, RideParams);
           { The function returns the input unchanged when it does not apply. }

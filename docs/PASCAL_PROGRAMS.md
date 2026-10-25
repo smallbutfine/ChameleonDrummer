@@ -133,7 +133,7 @@ The `TCLIInterface.ParseArgs()` method handles a flat list of string arguments. 
 | `--drummer <name>` | Sets `Result.Drummer` (lowercased) |
 | `--output <file>` | Sets `Result.OutputFile` |
 | `--mapping <name>` | Sets `Result.Mapping` (lowercased, default `'gm'`) |
-| `--sidecar <file>` | Sets `Result.SidecarFile` |
+| `--structure <file>` / `--sidecar <file>` | Same option under two names; sets `Result.StructureFile`. After parsing, for `generate`, `reaper` and `ardour`, `LoadStructureFile` (`SongStructure.pas`) reads it: its sections become `Result.Sections`, its genre/style/tempo fill in what the command line left empty, and its warnings are printed. Combining it with `--section` raises an error |
 | `--song-map <file>` | Sets `Result.SongMapFile` |
 | `--write-timeline <path>` | Sets `Result.WriteTimelinePath` |
 | `--preset-only` | Sets `Result.PresetOnly = True` |

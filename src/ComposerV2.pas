@@ -21,6 +21,10 @@ type
     Bars: Integer;
     { Tempo of this section in BPM; 0 = inherit the song tempo. }
     Tempo: Integer;
+    { Complexity of this section; only used when HasComplexity is set, so a
+      zero-filled record (the default) inherits the song's complexity. }
+    HasComplexity: Boolean;
+    Complexity: Double;
   end;
 
   { Intensity Curve Enum }
@@ -752,6 +756,7 @@ var
   Idx: Integer;
   Section: TSection;
   SectionTempo: Integer;
+  SavedComplexity: Double;
   TempoSegment: TSongSegment;
   GmdCount: Integer;
   HasVocabulary: Boolean;
@@ -833,7 +838,12 @@ begin
     PreviousPhrasePattern := nil;
     CurrentPatternOwned := False;
     MacroComposer := nil;
+    { A section can ask for its own complexity; it applies to everything the
+      section generates and is put back in the finally below. }
+    SavedComplexity := Params.Complexity;
     try
+      if SectionDef.HasComplexity then
+        Params.Complexity := SectionDef.Complexity;
       { Get genre plugin }
       FGenrePlugin := TGenrePlugin(FPluginManager.Registry.GetGenrePlugin(Genre));
       if not Assigned(FGenrePlugin) then
@@ -1134,6 +1144,8 @@ begin
       end;
       Song.Sections.Add(Section);
     finally
+      Params.Complexity := SavedComplexity;
+
       if Assigned(MacroComposer) then
         MacroComposer.Free;
       if Assigned(GMDFlavors) then

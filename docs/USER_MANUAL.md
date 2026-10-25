@@ -262,7 +262,10 @@ Options:
   --drummer <name>     Drummer style (e.g., bonham, peart, carey)
   --output <file>      Output MIDI file path
   --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg
-  --sidecar <file>     Read section structure from sidecar JSON
+  --structure <file>   Song structure from a JSON file (sections with bars, tempo,
+                       complexity; optional genre, style, tempo). Command-line
+                       genre/style/tempo win over the file. Not with --section.
+  --sidecar <file>     Same as --structure (the REAPER sidecar format works)
   --song-map <file>    Read song map JSON for per-bar tempo/meter
   --write-timeline     Write timeline JSON after generation
   --list <type>        List: genres, styles, drummers
@@ -348,12 +351,32 @@ The CLI supports reading external song structures:
 **Sections (`--section`)**: Describes the song structure directly on the command line, one `--section` per section, in playing order:
 
 ```bash
-chameleondrummer generate --genre rock --style classic --tempo 120 \n  --section intro:4 --section verse:8@100 --section chorus:8@140 --section outro:4
+chameleondrummer generate --genre rock --style classic --tempo 120 \
+  --section intro:4 --section verse:8@100 --section chorus:8@140 --section outro:4
 ```
 
 `name:bars` gives a section of that many bars (1-256); `@bpm` (60-300) gives it its own tempo, otherwise it plays at `--tempo`. A name is letters, digits, `_` and `-`, starting with a letter. The composer treats `intro`, `verse`, `pre_chorus`, `chorus`, `bridge`, `breakdown`, `solo` and `outro` specially; any other name plays like a verse. A wrong value stops with a message that names it. The tempo changes appear in the MIDI file, the Ardour session, the REAPER project (as a tempo envelope with a step at every section start, which also carries meter changes) and the exported bar lengths. The GUI sends the sections shown in its section list this way.
 
-**Sidecar (`--sidecar`)**: A JSON file defining sections and bar counts.
+**Structure file (`--structure file.json`)**: The same information in a JSON file, for songs too long to type. `--sidecar` is the older name for the same option and reads the same files, so the sidecar that the REAPER script writes works as is. See `config/example_structure.json`:
+
+```json
+{
+  "genre": "rock", "style": "classic", "tempo": 120,
+  "time_signature": [4, 4],
+  "sections": [
+    { "name": "intro",  "bars": 4, "complexity": 0.2 },
+    { "name": "verse",  "bars": 8, "tempo": 112, "complexity": 0.4 },
+    { "name": "chorus", "bars": 8, "tempo": 124, "complexity": 0.9 }
+  ]
+}
+```
+
+- Each section needs `name` and `bars` (1-256); `tempo` (60-300) and `complexity` (0-1) are optional. `complexity` replaces `--complexity` for that section only, so a chorus can be busier than a verse.
+- `genre`, `style` and `tempo` at the top are defaults: whatever you give on the command line wins.
+- Only 4/4 is accepted for now; any other `time_signature` stops with a message.
+- `pattern_template` and `fill_policy` are recognised but not implemented yet. They, and any unknown key, print a warning and are ignored.
+- A mistake stops with a message naming the file, the section (number and name) and the key. `--structure` cannot be combined with `--section`.
+- It works with `generate`, `reaper export` and `ardour export`.
 
 **Song Map (`--song-map`)**: A JSON file defining per-region segments with tempo and meter changes. This allows complex song structures with mid-section tempo changes.
 
