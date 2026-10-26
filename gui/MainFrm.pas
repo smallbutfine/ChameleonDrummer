@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, ShellApi, process, StrUtils, menus, CliLookup,
+  Dialogs, LCLType, process, StrUtils, menus, CliLookup,
   time_signature, DarkTheme;
 
 type
@@ -664,10 +664,18 @@ begin
 end;
 
 procedure TMainForm.OpenFolder(const APath: String);
+var
+  P: TProcess;
 begin
   if APath = '' then begin Log('No folder to open.'); Exit; end;
   if not DirectoryExists(APath) then begin Log('Folder does not exist yet: ' + APath); Exit; end;
-  ShellExecute(0, 'open', PChar(APath), nil, nil, SW_SHOWNORMAL);
+  P := TProcess.Create(nil);
+  try
+    P.Executable := 'xdg-open';
+    P.Parameters.Add(APath);
+    P.Options := P.Options + [poNoConsole];
+    P.Execute;
+  finally P.Free; end;
 end;
 
 procedure TMainForm.mnuQuitClick(Sender: TObject);
