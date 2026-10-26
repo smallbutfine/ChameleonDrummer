@@ -19,23 +19,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up FPC
-        uses: free-pascal/fpc-action@v1.4
-        with:
-          fpc-version: '3.2.2'
+      - name: Set up Free Pascal
+        run: |
+          echo FPC is available at C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe
+          C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe --version
 
       - name: Compile CLI
         run: |
           cd B:\dev\github\ChameleonDrummer
-          .\src\ChameleonDrummer.lpr
-          echo "CLI compile exit code: %errorlevel%"
+          C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
+          echo CLI compile exit code: %errorlevel%
 
       - name: Build GUI (Lazarus)
         if: success()
         run: |
           cd B:\dev\github\ChameleonDrummer\gui
           C:\lazarus\lazbuild.exe --build-all --build-mode=Default chameleondrummer_gui.lpi
-          echo "GUI build exit code: %errorlevel%"
+          echo GUI build exit code: %errorlevel%
 
       - name: Build Inno Setup installer
         if: success()
@@ -81,22 +81,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Free Pascal
-        uses: free-pascal/fpc-action@v1.4
-        with:
-          fpc-version: '3.2.2'
+        run: |
+          echo Installing FPC on Ubuntu...
+          sudo apt-get update
+          sudo apt-get install -y fpc
+          fpc --version | head -1
 
       - name: Compile CLI
         run: |
-          cd B:/dev/github/ChameleonDrummer
+          cd /home/runner/work/ChameleonDrummer/ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
-
-      - name: Run tests (if available)
-        if: success()
-        run: |
-          cd B:/dev/github/ChameleonDrummer
-          chmod +x _run_test.ps1
-          powershell -NoProfile -ExecutionPolicy Bypass -File _run_test.ps1 -Name all 2>&1 || echo "Tests skipped or failed (expected on Linux without Windows dependencies)"
 
       - name: Upload CLI binary
         uses: actions/upload-artifact@v4
@@ -125,22 +120,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Free Pascal
-        uses: free-pascal/fpc-action@v1.4
-        with:
-          fpc-version: '3.2.2'
+        run: |
+          echo Installing FPC on macOS...
+          brew install fpc
+          fpc --version | head -1
 
       - name: Compile CLI
         run: |
-          cd /dev/github/ChameleonDrummer
+          cd /Users/runner/work/ChameleonDrummer/ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
-
-      - name: Run tests (if available)
-        if: success()
-        run: |
-          cd /dev/github/ChameleonDrummer
-          chmod +x _run_test.ps1
-          powershell -NoProfile -ExecutionPolicy Bypass -File _run_test.ps1 -Name all 2>&1 || echo "Tests skipped or failed (expected on macOS without Windows dependencies)"
 
       - name: Upload CLI binary
         uses: actions/upload-artifact@v4
