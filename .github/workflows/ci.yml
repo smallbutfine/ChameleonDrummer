@@ -108,41 +108,27 @@ jobs:
 
       - name: Fix Lazarus & FPC Paths (Resolve Symlinks)
         run: |
-          python3 -c 'import os, re
-laz_dir = os.path.realpath("/tmp/lazarus-macos/lazarus")
-fpc_path = os.path.realpath(os.path.join(laz_dir, "fpc/3.2.4/bin/aarch64-darwin/fpc"))
-config_dir = os.path.realpath("/private/tmp/lazarus-macos/lazarus/config")
-config_file = os.path.join(config_dir, "environmentoptions.xml")
-
-print(f"Resolved Lazarus Dir: {laz_dir}")
-print(f"Resolved FPC Path:    {fpc_path}")
-print(f"Target Config File:   {config_file}")
-
-os.makedirs(config_dir, exist_ok=True)
-
-if os.path.exists(config_file):
-    with open(config_file, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    if "<CompilerFilename>" in content:
-        content = re.sub(r"<CompilerFilename>.*?</CompilerFilename>", f"<CompilerFilename>{fpc_path}</CompilerFilename>", content)
-    else:
-        content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\\"{fpc_path}\\"/>\\n</EnvironmentOptions>")
-
-    with open(config_file, "w", encoding="utf-8") as f:
-        f.write(content)
-else:
-    minimal_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+          LAZ_DIR=$(realpath /tmp/lazarus-macos/lazarus)
+          FPC_PATH=$(realpath "$LAZ_DIR/fpc/3.2.4/bin/aarch64-darwin/fpc")
+          CONFIG_DIR=$(realpath /private/tmp/lazarus-macos/lazarus/config)
+          CONFIG_FILE="$CONFIG_DIR/environmentoptions.xml"
+          echo "Resolved Lazarus Dir: $LAZ_DIR"
+          echo "Resolved FPC Path:    $FPC_PATH"
+          echo "Target Config File:   $CONFIG_FILE"
+          mkdir -p "$CONFIG_DIR"
+          if [ -f "$CONFIG_FILE" ]; then
+            sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$FPC_PATH</CompilerFilename>|" "$CONFIG_FILE"
+          else
+            cat > "$CONFIG_FILE" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <EnvironmentOptions>
-    <CompilerFilename Value="{fpc_path}"/>
-    <LazarusDirectory Value="{laz_dir}"/>
+    <CompilerFilename Value="$FPC_PATH"/>
+    <LazarusDirectory Value="$LAZ_DIR"/>
   </EnvironmentOptions>
 </CONFIG>
-"""
-    with open(config_file, "w", encoding="utf-8") as f:
-        f.write(minimal_xml)
-'
+EOF
+          fi
 
       - name: Compile CLI
         run: |
@@ -186,14 +172,6 @@ else:
             src/*.pas
             test_verify.mid
 
-      - name: Upload build logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-logs
-          path: |
-            compile_out.txt
-
       - name: Upload GUI binary
         if: success()
         uses: actions/upload-artifact@v4
@@ -201,3 +179,11 @@ else:
           name: chameleondrummer-gui-macos
           path: |
             chameleondrummer_gui
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build-logs
+          path: |
+            compile_out.txt
