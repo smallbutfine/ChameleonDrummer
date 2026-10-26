@@ -26,7 +26,7 @@ interface
 
 uses
   Classes, SysUtils, LCLType, Controls, Forms, Graphics, StdCtrls, ExtCtrls, ComCtrls,
-  Spin, Menus, IniFiles, Registry, Windows;
+  Spin, Menus, IniFiles, Registry, {$IFDEF MSWINDOWS}Windows,{$ENDIF};
 
 type
   TThemeChoice = (tcSystem, tcLight, tcDark);
@@ -70,6 +70,8 @@ var
   OnSystemThemeChange: TNotifyEvent = nil;
 
 implementation
+
+{$IFDEF MSWINDOWS}
 
 const
   OBJID_MENU = LONG($FFFFFFFD);
@@ -602,4 +604,5 @@ finalization
   GMenuPainter.Free;
   if GBarBrush <> 0 then DeleteObject(GBarBrush);
   if GHotBrush <> 0 then DeleteObject(GHotBrush);
+{$ENDIF}
 end.
