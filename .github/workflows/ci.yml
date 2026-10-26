@@ -111,10 +111,11 @@ jobs:
           echo "Found FPC at: $FPC_REAL_PATH"
 
           if [ -f "$CONFIG_FILE" ] && [ -n "$FPC_REAL_PATH" ]; then
-            sed -i "" 's|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$FPC_REAL_PATH</CompilerFilename>|g' "$CONFIG_FILE"
+            REAL_FPC=$(realpath "$FPC_REAL_PATH")
+            sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$REAL_FPC</CompilerFilename>|" "$CONFIG_FILE"
           fi
           if [ -f "$CONFIG_FILE" ]; then
-            sed -i "" 's|/usr/local/bin/_PPCARCH_|/tmp/lazarus-macos/lazarus/fpc/3.2.4/bin/aarch64-darwin/fpc|g' "$CONFIG_FILE"
+            sed -i '' 's|/usr/local/bin/_PPCARCH_|/tmp/lazarus-macos/lazarus/fpc/3.2.4/bin/aarch64-darwin/fpc|g' "$CONFIG_FILE"
           fi
 
       - name: Compile CLI
