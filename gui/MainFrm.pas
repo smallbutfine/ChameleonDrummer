@@ -16,8 +16,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, DarkTheme, {$IFDEF MSWINDOWS}ShellApi,{$ENDIF} process, StrUtils, menus, CliLookup,
-  time_signature;
+  Dialogs, LCLType, {$IFDEF MSWINDOWS}ShellApi,{$ENDIF} process, StrUtils, menus, CliLookup,
+  time_signature, DarkTheme;
 
 type
   TIntDynArray = array of Integer;
