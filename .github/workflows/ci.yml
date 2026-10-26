@@ -98,11 +98,25 @@ jobs:
           brew install fpc
           fpc -iV 2>&1 | head -1
 
+      - name: Download signed Lazarus for macOS
+        run: |
+          echo "Downloading signed Lazarus installer for macOS..."
+          curl -L -o /tmp/lazarus-macos.zip "https://download.lazarus-ide.org/Lazarus%20macOS%20aarch64/Lazarus%204.8/lazarus-darwin-aarch64-4.8.zip"
+          ls -la /tmp/lazarus-macos.zip
+          unzip -o /tmp/lazarus-macos.zip -d /tmp/lazarus-macos
+          ls -la /tmp/lazarus-macos/
+
       - name: Compile CLI
         run: |
           cd /Users/runner/work/ChameleonDrummer/ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
+
+      - name: Build GUI (Lazarus)
+        run: |
+          echo "Building GUI with signed Lazarus..."
+          /tmp/lazarus-macos/lazarus/bin/lazbuild --build-all --build-mode=Default gui/chameleondrummer_gui.lpi
+          echo "GUI build exit code: $?"
 
       - name: Verify CLI produces MIDI
         if: success()
@@ -136,3 +150,11 @@ jobs:
           name: macos-build-logs
           path: |
             compile_out.txt
+
+      - name: Upload GUI binary
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chameleondrummer-gui-macos
+          path: |
+            chameleondrummer_gui
