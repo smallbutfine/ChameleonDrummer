@@ -105,18 +105,46 @@ jobs:
           ls -la /tmp/lazarus-macos.zip
           unzip -o /tmp/lazarus-macos.zip -d /tmp/lazarus-macos
           ls -la /tmp/lazarus-macos/
-          CONFIG_FILE="/tmp/lazarus-macos/lazarus/config/environmentoptions.xml"
-          # Find the real FPC path
-          FPC_REAL_PATH=$(find /tmp /private/tmp -name "fpc" -type f -path "*/aarch64-darwin/*" | head -n 1)
-          echo "Found FPC at: $FPC_REAL_PATH"
 
-          if [ -f "$CONFIG_FILE" ] && [ -n "$FPC_REAL_PATH" ]; then
-            REAL_FPC=$(realpath "$FPC_REAL_PATH")
-            sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$REAL_FPC</CompilerFilename>|" "$CONFIG_FILE"
-          fi
-          if [ -f "$CONFIG_FILE" ]; then
-            sed -i '' 's|/usr/local/bin/_PPCARCH_|/tmp/lazarus-macos/lazarus/fpc/3.2.4/bin/aarch64-darwin/fpc|g' "$CONFIG_FILE"
-          fi
+      - name: Fix Lazarus & FPC Paths (Resolve Symlinks)
+        run: |
+          python3 -c '
+          import os, re
+
+          laz_dir = os.path.realpath("/tmp/lazarus-macos/lazarus")
+          fpc_path = os.path.realpath(os.path.join(laz_dir, "fpc/3.2.4/bin/aarch64-darwin/fpc"))
+          config_dir = os.path.realpath("/private/tmp/lazarus-macos/lazarus/config")
+          config_file = os.path.join(config_dir, "environmentoptions.xml")
+
+          print(f"Resolved Lazarus Dir: {laz_dir}")
+          print(f"Resolved FPC Path:    {fpc_path}")
+          print(f"Target Config File:   {config_file}")
+
+          os.makedirs(config_dir, exist_ok=True)
+
+          if os.path.exists(config_file):
+              with open(config_file, "r", encoding="utf-8") as f:
+                  content = f.read()
+
+              if "<CompilerFilename>" in content:
+                  content = re.sub(r"<CompilerFilename>.*?</CompilerFilename>", f"<CompilerFilename>{fpc_path}</CompilerFilename>", content)
+              else:
+                  content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\"{fpc_path}\"/>\n</EnvironmentOptions>")
+
+              with open(config_file, "w", encoding="utf-8") as f:
+                  f.write(content)
+          else:
+              minimal_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <EnvironmentOptions>
+    <CompilerFilename Value="{fpc_path}"/>
+    <LazarusDirectory Value="{laz_dir}"/>
+  </EnvironmentOptions>
+</CONFIG>
+"""
+              with open(config_file, "w", encoding="utf-8") as f:
+                  f.write(minimal_xml)
+          '
 
       - name: Compile CLI
         run: |
@@ -131,10 +159,7 @@ jobs:
           echo "Found lazbuild at: $LAZBUILD"
           LAZARUS_DIR=$(dirname "$LAZBUILD")
           echo "Lazarus dir: $LAZARUS_DIR"
-          FPC="$LAZARUS_DIR/fpc/3.2.4/bin/aarch64-darwin/fpc"
-          echo "FPC: $FPC"
           export LAZARUS_DIR
-          export FPC
           "$LAZBUILD" --build-all --build-mode=Default --lazarusdir="$LAZARUS_DIR" gui/chameleondrummer_gui.lpi
           echo "GUI build exit code: $?"
 
