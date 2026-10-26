@@ -87,8 +87,8 @@ type
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
     FCliTool: String;
-    FThemeChoice: TThemeChoice;
-    FDark: Boolean;
+     {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
+    FDark: Boolean;{$ENDIF}
     procedure Log(const AText: String);
     {$IFDEF MSWINDOWS}procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
     procedure SystemThemeChanged(Sender: TObject);
