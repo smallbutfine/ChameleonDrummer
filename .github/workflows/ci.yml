@@ -106,6 +106,13 @@ jobs:
           unzip -o /tmp/lazarus-macos.zip -d /tmp/lazarus-macos
           ls -la /tmp/lazarus-macos/
           CONFIG_FILE="/tmp/lazarus-macos/lazarus/config/environmentoptions.xml"
+          # Find the real FPC path
+          FPC_REAL_PATH=$(find /tmp /private/tmp -name "fpc" -type f -path "*/aarch64-darwin/*" | head -n 1)
+          echo "Found FPC at: $FPC_REAL_PATH"
+
+          if [ -f "$CONFIG_FILE" ] && [ -n "$FPC_REAL_PATH" ]; then
+            sed -i "" 's|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$FPC_REAL_PATH</CompilerFilename>|g' "$CONFIG_FILE"
+          fi
           if [ -f "$CONFIG_FILE" ]; then
             sed -i "" 's|/usr/local/bin/_PPCARCH_|/tmp/lazarus-macos/lazarus/fpc/3.2.4/bin/aarch64-darwin/fpc|g' "$CONFIG_FILE"
           fi
