@@ -108,9 +108,7 @@ jobs:
 
       - name: Fix Lazarus & FPC Paths (Resolve Symlinks)
         run: |
-          python3 -c '
-import os, re
-
+          python3 -c 'import os, re
 laz_dir = os.path.realpath("/tmp/lazarus-macos/lazarus")
 fpc_path = os.path.realpath(os.path.join(laz_dir, "fpc/3.2.4/bin/aarch64-darwin/fpc"))
 config_dir = os.path.realpath("/private/tmp/lazarus-macos/lazarus/config")
@@ -129,7 +127,7 @@ if os.path.exists(config_file):
     if "<CompilerFilename>" in content:
         content = re.sub(r"<CompilerFilename>.*?</CompilerFilename>", f"<CompilerFilename>{fpc_path}</CompilerFilename>", content)
     else:
-        content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\"{fpc_path}\"/>\n</EnvironmentOptions>")
+        content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\\"{fpc_path}\\"/>\\n</EnvironmentOptions>")
 
     with open(config_file, "w", encoding="utf-8") as f:
         f.write(content)
@@ -144,7 +142,7 @@ else:
 """
     with open(config_file, "w", encoding="utf-8") as f:
         f.write(minimal_xml)
-          '
+'
 
       - name: Compile CLI
         run: |
