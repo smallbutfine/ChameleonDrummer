@@ -129,7 +129,7 @@ jobs:
               if "<CompilerFilename>" in content:
                   content = re.sub(r"<CompilerFilename>.*?</CompilerFilename>", f"<CompilerFilename>{fpc_path}</CompilerFilename>", content)
               else:
-                  content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\"{fpc_path}\"/>\n</EnvironmentOptions>")
+                  content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\\"{fpc_path}\\"/>\n</EnvironmentOptions>")
 
               with open(config_file, "w", encoding="utf-8") as f:
                   f.write(content)
