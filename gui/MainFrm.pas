@@ -181,8 +181,8 @@ begin
   lblStatus.Caption := 'Ready';
 
   { Colours last, when every control exists. }
-  OnSystemThemeChange := @SystemThemeChanged;
-  SetTheme(LoadThemeChoice, False);
+  {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged;
+  SetTheme(LoadThemeChoice, False);{$ENDIF}
 end;
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
@@ -444,7 +444,7 @@ begin
     btnDelete := TButton.Create(gbSong); with btnDelete do begin Parent := gbSong; Name := Format('secDel%d', [I]); Left := 340; Top := Y; Width := 28; Height := 24; Caption := '-'; OnClick := @BtnSectionDeleteClick; end;
     Inc(Y, 28); end;
   { the controls made here are new: give them the current colours }
-  ThemeControlTree(gbSong, FDark);
+   {$IFDEF MSWINDOWS}ThemeControlTree(gbSong, FDark);{$ENDIF}
 end;
 
 procedure TMainForm.SyncSectionArraysFromControls;
