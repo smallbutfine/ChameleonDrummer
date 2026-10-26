@@ -76,6 +76,7 @@ jobs:
             config/
             assets/
             src/*.pas
+            test_verify.mid
 
       - name: Upload GUI binary
         if: success()
@@ -141,6 +142,7 @@ jobs:
             config/
             assets/
             src/*.pas
+            test_verify.mid
 
       - name: Upload build logs
         if: always()
@@ -196,6 +198,7 @@ jobs:
             config/
             assets/
             src/*.pas
+            test_verify.mid
 
       - name: Upload build logs
         if: always()
