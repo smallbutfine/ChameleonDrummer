@@ -119,7 +119,9 @@ jobs:
           echo "Found lazbuild at: $LAZBUILD"
           LAZARUS_DIR=$(dirname "$LAZBUILD")
           echo "Lazarus dir: $LAZARUS_DIR"
-          "$LAZBUILD" --build-all --build-mode=Default --lazarusdir="$LAZARUS_DIR" gui/chameleondrummer_gui.lpi
+          FPC="$LAZARUS_DIR/fpc/3.2.4/bin/aarch64-darwin/fpc"
+          echo "FPC: $FPC"
+          "$LAZBUILD" --build-all --build-mode=Default --lazarusdir="$LAZARUS_DIR" --compiler="$FPC" gui/chameleondrummer_gui.lpi
           echo "GUI build exit code: $?"
 
       - name: Verify CLI produces MIDI
