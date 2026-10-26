@@ -24,9 +24,13 @@ unit DarkTheme;
 
 interface
 
+{$IFDEF MSWINDOWS}
+  Windows;
+{$ENDIF}
+
 uses
   Classes, SysUtils, LCLType, Controls, Forms, Graphics, StdCtrls, ExtCtrls, ComCtrls,
-  Spin, Menus, IniFiles, Registry{$IFDEF MSWINDOWS}, Windows{$ENDIF};
+  Spin, Menus, IniFiles, Registry;
 
 type
   TThemeChoice = (tcSystem, tcLight, tcDark);
