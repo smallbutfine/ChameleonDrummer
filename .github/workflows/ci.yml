@@ -109,32 +109,32 @@ jobs:
       - name: Fix Lazarus & FPC Paths (Resolve Symlinks)
         run: |
           python3 -c '
-          import os, re
+import os, re
 
-          laz_dir = os.path.realpath("/tmp/lazarus-macos/lazarus")
-          fpc_path = os.path.realpath(os.path.join(laz_dir, "fpc/3.2.4/bin/aarch64-darwin/fpc"))
-          config_dir = os.path.realpath("/private/tmp/lazarus-macos/lazarus/config")
-          config_file = os.path.join(config_dir, "environmentoptions.xml")
+laz_dir = os.path.realpath("/tmp/lazarus-macos/lazarus")
+fpc_path = os.path.realpath(os.path.join(laz_dir, "fpc/3.2.4/bin/aarch64-darwin/fpc"))
+config_dir = os.path.realpath("/private/tmp/lazarus-macos/lazarus/config")
+config_file = os.path.join(config_dir, "environmentoptions.xml")
 
-          print(f"Resolved Lazarus Dir: {laz_dir}")
-          print(f"Resolved FPC Path:    {fpc_path}")
-          print(f"Target Config File:   {config_file}")
+print(f"Resolved Lazarus Dir: {laz_dir}")
+print(f"Resolved FPC Path:    {fpc_path}")
+print(f"Target Config File:   {config_file}")
 
-          os.makedirs(config_dir, exist_ok=True)
+os.makedirs(config_dir, exist_ok=True)
 
-          if os.path.exists(config_file):
-              with open(config_file, "r", encoding="utf-8") as f:
-                  content = f.read()
+if os.path.exists(config_file):
+    with open(config_file, "r", encoding="utf-8") as f:
+        content = f.read()
 
-              if "<CompilerFilename>" in content:
-                  content = re.sub(r"<CompilerFilename>.*?</CompilerFilename>", f"<CompilerFilename>{fpc_path}</CompilerFilename>", content)
-              else:
-                  content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\\"{fpc_path}\\"/>\n</EnvironmentOptions>")
+    if "<CompilerFilename>" in content:
+        content = re.sub(r"<CompilerFilename>.*?</CompilerFilename>", f"<CompilerFilename>{fpc_path}</CompilerFilename>", content)
+    else:
+        content = content.replace("</EnvironmentOptions>", f"  <CompilerFilename Value=\"{fpc_path}\"/>\n</EnvironmentOptions>")
 
-              with open(config_file, "w", encoding="utf-8") as f:
-                  f.write(content)
-          else:
-              minimal_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+    with open(config_file, "w", encoding="utf-8") as f:
+        f.write(content)
+else:
+    minimal_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <EnvironmentOptions>
     <CompilerFilename Value="{fpc_path}"/>
@@ -142,8 +142,8 @@ jobs:
   </EnvironmentOptions>
 </CONFIG>
 """
-              with open(config_file, "w", encoding="utf-8") as f:
-                  f.write(minimal_xml)
+    with open(config_file, "w", encoding="utf-8") as f:
+        f.write(minimal_xml)
           '
 
       - name: Compile CLI
