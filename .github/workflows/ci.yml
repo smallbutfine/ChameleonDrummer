@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: cmd
+        shell: pwsh
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,14 +36,14 @@ jobs:
         run: |
           cd B:\dev\github\ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
-          echo "CLI compile exit code: %errorlevel%"
+          echo "CLI compile exit code: $LASTEXITCODE"
 
       - name: Build GUI (Lazarus)
         if: success()
         run: |
           cd B:\dev\github\ChameleonDrummer\gui
           C:\lazarus\lazbuild.exe --build-all --build-mode=Default chameleondrummer_gui.lpi
-          echo "GUI build exit code: %errorlevel%"
+          echo "GUI build exit code: $LASTEXITCODE"
 
       - name: Build Inno Setup installer
         if: success()
