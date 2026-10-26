@@ -52,13 +52,17 @@ jobs:
           chcp 65001
           powershell -NoProfile -ExecutionPolicy Bypass -File _run_build.ps1
 
-      - name: Upload CLI binary
+      - name: Upload CLI binary + support files
         uses: actions/upload-artifact@v4
         with:
           name: chameleondrummer-cli-windows
           path: |
             ChameleonDrummer.exe
             ChameleonDrummer_Setup_*.exe
+            mappings/
+            config/
+            assets/
+            src/*.pas
 
       - name: Upload GUI binary
         if: success()
@@ -101,12 +105,16 @@ jobs:
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
 
-      - name: Upload CLI binary
+      - name: Upload CLI binary + support files
         uses: actions/upload-artifact@v4
         with:
           name: chameleondrummer-cli-linux
           path: |
             ChameleonDrummer
+            mappings/
+            config/
+            assets/
+            src/*.pas
 
       - name: Upload build logs
         if: always()
@@ -139,12 +147,16 @@ jobs:
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
 
-      - name: Upload CLI binary
+      - name: Upload CLI binary + support files
         uses: actions/upload-artifact@v4
         with:
           name: chameleondrummer-cli-macos
           path: |
             ChameleonDrummer
+            mappings/
+            config/
+            assets/
+            src/*.pas
 
       - name: Upload build logs
         if: always()
