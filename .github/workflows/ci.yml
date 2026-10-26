@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: cmd.exe
+        shell: cmd
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
