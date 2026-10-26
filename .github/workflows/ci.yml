@@ -131,7 +131,7 @@ jobs:
         run: |
           echo "Installing FPC on macOS..."
           brew install fpc
-          fpc --version | head -1
+          fpc -iV 2>&1 | head -1
 
       - name: Compile CLI
         run: |
