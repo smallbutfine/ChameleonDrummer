@@ -115,7 +115,9 @@ jobs:
       - name: Build GUI (Lazarus)
         run: |
           echo "Building GUI with signed Lazarus..."
-          /tmp/lazarus-macos/lazarus/bin/lazbuild --build-all --build-mode=Default gui/chameleondrummer_gui.lpi
+          LAZBUILD=$(find /tmp/lazarus-macos -name lazbuild -type f | head -n 1)
+          echo "Found lazbuild at: $LAZBUILD"
+          "$LAZBUILD" --build-all --build-mode=Default gui/chameleondrummer_gui.lpi
           echo "GUI build exit code: $?"
 
       - name: Verify CLI produces MIDI
