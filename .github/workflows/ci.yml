@@ -21,21 +21,29 @@ jobs:
 
       - name: Set up Free Pascal
         run: |
-          echo FPC is available at C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe
-          C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe --version
+          echo "Installing FPC on Windows..."
+          Invoke-WebRequest -Uri "https://www.freepascal.org/download/fpc-3.2.2-x86_64-win64.exe" -OutFile "fpc-installer.exe"
+          Start-Process -FilePath "fpc-installer.exe" -ArgumentList "/quiet" -Wait
+          echo "FPC installed at C:\Program Files\FreePascal\fpc-3.2.2-x86_64-win64\bin\fpc.exe"
+          C:\Program Files\FreePascal\fpc-3.2.2-x86_64-win64\bin\fpc.exe --version
+
+      - name: Add FPC to PATH
+        run: |
+          echo "C:\Program Files\FreePascal\fpc-3.2.2-x86_64-win64\bin" >> $env:GITHUB_PATH
+          echo "FPC added to PATH"
 
       - name: Compile CLI
         run: |
           cd B:\dev\github\ChameleonDrummer
-          C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
-          echo CLI compile exit code: %errorlevel%
+          fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
+          echo "CLI compile exit code: %errorlevel%"
 
       - name: Build GUI (Lazarus)
         if: success()
         run: |
           cd B:\dev\github\ChameleonDrummer\gui
           C:\lazarus\lazbuild.exe --build-all --build-mode=Default chameleondrummer_gui.lpi
-          echo GUI build exit code: %errorlevel%
+          echo "GUI build exit code: %errorlevel%"
 
       - name: Build Inno Setup installer
         if: success()
@@ -82,7 +90,7 @@ jobs:
 
       - name: Set up Free Pascal
         run: |
-          echo Installing FPC on Ubuntu...
+          echo "Installing FPC on Ubuntu..."
           sudo apt-get update
           sudo apt-get install -y fpc
           fpc --version | head -1
@@ -121,7 +129,7 @@ jobs:
 
       - name: Set up Free Pascal
         run: |
-          echo Installing FPC on macOS...
+          echo "Installing FPC on macOS..."
           brew install fpc
           fpc --version | head -1
 
