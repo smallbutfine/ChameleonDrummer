@@ -22,14 +22,14 @@ jobs:
       - name: Set up Free Pascal
         run: |
           echo "Installing FPC on Windows..."
-          Invoke-WebRequest -Uri "https://www.freepascal.org/download/fpc-3.2.2-x86_64-win64.exe" -OutFile "fpc-installer.exe"
+          Invoke-WebRequest -Uri "https://www.freepascal.org/pub/fpc/dist/3.2.2/x86_64-win64/fpc-3.2.2-win64.exe" -OutFile "fpc-installer.exe"
           Start-Process -FilePath "fpc-installer.exe" -ArgumentList "/quiet" -Wait
-          echo "FPC installed at C:\Program Files\FreePascal\fpc-3.2.2-x86_64-win64\bin\fpc.exe"
-          C:\Program Files\FreePascal\fpc-3.2.2-x86_64-win64\bin\fpc.exe --version
+          echo "FPC installed at C:\Program Files\FreePascal\fpc-3.2.2-win64\bin\fpc.exe"
+          C:\Program Files\FreePascal\fpc-3.2.2-win64\bin\fpc.exe --version
 
       - name: Add FPC to PATH
         run: |
-          echo "C:\Program Files\FreePascal\fpc-3.2.2-x86_64-win64\bin" >> $env:GITHUB_PATH
+          echo "C:\Program Files\FreePascal\fpc-3.2.2-win64\bin" >> $env:GITHUB_PATH
           echo "FPC added to PATH"
 
       - name: Compile CLI
@@ -111,7 +111,7 @@ jobs:
           echo "Installing FPC on Ubuntu..."
           sudo apt-get update
           sudo apt-get install -y fpc
-          fpc --version | head -1
+          fpc -iV 2>&1 | head -1
 
       - name: Compile CLI
         run: |
