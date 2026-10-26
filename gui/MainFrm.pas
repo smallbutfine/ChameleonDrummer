@@ -16,8 +16,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, {$IFDEF MSWINDOWS}ShellApi,{$ENDIF} process, StrUtils, menus, CliLookup,
-  time_signature, DarkTheme;
+  Dialogs, LCLType, {$IFDEF MSWINDOWS}DarkTheme, ShellApi,{$ENDIF} process, StrUtils, menus, CliLookup,
+  time_signature;
 
 type
   TIntDynArray = array of Integer;
@@ -30,7 +30,7 @@ type
     mnuView: TMenuItem;
     mnuThemeSystem: TMenuItem;
     mnuThemeLight: TMenuItem;
-    mnuThemeDark: TMenuItem;
+    {$IFDEF MSWINDOWS}mnuThemeDark: TMenuItem;{$ENDIF}
     rbPattern: TRadioButton;
     rbSong: TRadioButton;
     lblGenre: TLabel;
@@ -81,7 +81,7 @@ type
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mnuQuitClick(Sender: TObject);
-    procedure mnuThemeClick(Sender: TObject);
+    {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
   private
     FSectionNames: TStrDynArray;
@@ -90,9 +90,9 @@ type
     FThemeChoice: TThemeChoice;
     FDark: Boolean;
     procedure Log(const AText: String);
-    procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
+    {$IFDEF MSWINDOWS}procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
     procedure SystemThemeChanged(Sender: TObject);
-    procedure ThemeMenuChecks;
+    procedure ThemeMenuChecks;{$ENDIF}
 
     procedure FillStyles;
 
@@ -185,7 +185,7 @@ begin
   SetTheme(LoadThemeChoice, False);
 end;
 
-procedure TMainForm.ThemeMenuChecks;
+{$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
 begin
   mnuThemeSystem.Checked := FThemeChoice = tcSystem;
   mnuThemeLight.Checked := FThemeChoice = tcLight;
@@ -217,7 +217,7 @@ begin
     SetTheme(tcLight, True)
   else
     SetTheme(tcSystem, True);
-end;
+end;{$ENDIF}
 
 { The command line tool is the only source of genres, styles and drummers. If
   it is missing, the lists stay empty, Generate is off, and the log says where
