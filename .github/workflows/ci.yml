@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Installing FPC on Ubuntu..."
           sudo apt-get update
-          sudo apt-get install -y fpc
+          sudo apt-get install -y fpc lazarus
           fpc -iV 2>&1 | head -1
 
       - name: Compile CLI
@@ -31,6 +31,13 @@ jobs:
           cd /home/runner/work/ChameleonDrummer/ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
+
+      - name: Build GUI (Lazarus)
+        if: success()
+        run: |
+          echo "Building GUI..."
+          lazbuild --build-all --build-mode=Default gui/chameleondrummer_gui.lpi
+          echo "GUI build exit code: $?"
 
       - name: Verify CLI produces MIDI
         if: success()
@@ -51,11 +58,20 @@ jobs:
           name: chameleondrummer-cli-linux
           path: |
             ChameleonDrummer
+            chameleondrummer_gui
             mappings/
             config/
             assets/
             src/*.pas
             test_verify.mid
+
+      - name: Upload GUI binary
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chameleondrummer-gui-linux
+          path: |
+            chameleondrummer_gui
 
       - name: Upload build logs
         if: always()
@@ -79,7 +95,7 @@ jobs:
       - name: Set up Free Pascal
         run: |
           echo "Installing FPC on macOS..."
-          brew install fpc
+          brew install fpc lazarus
           fpc -iV 2>&1 | head -1
 
       - name: Compile CLI
@@ -87,6 +103,13 @@ jobs:
           cd /Users/runner/work/ChameleonDrummer/ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
+
+      - name: Build GUI (Lazarus)
+        if: success()
+        run: |
+          echo "Building GUI..."
+          lazbuild --build-all --build-mode=Default gui/chameleondrummer_gui.lpi
+          echo "GUI build exit code: $?"
 
       - name: Verify CLI produces MIDI
         if: success()
@@ -107,11 +130,20 @@ jobs:
           name: chameleondrummer-cli-macos
           path: |
             ChameleonDrummer
+            chameleondrummer_gui
             mappings/
             config/
             assets/
             src/*.pas
             test_verify.mid
+
+      - name: Upload GUI binary
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chameleondrummer-gui-macos
+          path: |
+            chameleondrummer_gui
 
       - name: Upload build logs
         if: always()
