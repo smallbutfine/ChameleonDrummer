@@ -52,6 +52,19 @@ jobs:
           chcp 65001
           powershell -NoProfile -ExecutionPolicy Bypass -File _run_build.ps1
 
+      - name: Verify CLI produces MIDI
+        if: success()
+        run: |
+          echo "Testing CLI MIDI generation..."
+          .\ChameleonDrummer.exe generate --genre metal --style heavy --tempo 120 --output test_verify.mid
+          if (Test-Path test_verify.mid) {
+            echo "SUCCESS: MIDI file produced"
+            dir test_verify.mid
+          } else {
+            echo "FAILURE: No MIDI file produced"
+            exit 1
+          }
+
       - name: Upload CLI binary + support files
         uses: actions/upload-artifact@v4
         with:
@@ -105,6 +118,19 @@ jobs:
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
 
+      - name: Verify CLI produces MIDI
+        if: success()
+        run: |
+          echo "Testing CLI MIDI generation..."
+          ./ChameleonDrummer generate --genre metal --style heavy --tempo 120 --output test_verify.mid
+          if [ -f test_verify.mid ]; then
+            echo "SUCCESS: MIDI file produced"
+            ls -la test_verify.mid
+          else
+            echo "FAILURE: No MIDI file produced"
+            exit 1
+          fi
+
       - name: Upload CLI binary + support files
         uses: actions/upload-artifact@v4
         with:
@@ -146,6 +172,19 @@ jobs:
           cd /Users/runner/work/ChameleonDrummer/ChameleonDrummer
           fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
           echo "CLI compile exit code: $?"
+
+      - name: Verify CLI produces MIDI
+        if: success()
+        run: |
+          echo "Testing CLI MIDI generation..."
+          ./ChameleonDrummer generate --genre metal --style heavy --tempo 120 --output test_verify.mid
+          if [ -f test_verify.mid ]; then
+            echo "SUCCESS: MIDI file produced"
+            ls -la test_verify.mid
+          else
+            echo "FAILURE: No MIDI file produced"
+            exit 1
+          fi
 
       - name: Upload CLI binary + support files
         uses: actions/upload-artifact@v4
