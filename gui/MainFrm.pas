@@ -28,12 +28,16 @@ type
     sbSections: TScrollBox;
     MainMenu: TMainMenu;
     mnuFile: TMenuItem;
+    mnuEdit: TMenuItem;
     mnuView: TMenuItem;
     mnuThemeSystem: TMenuItem;
     mnuThemeLight: TMenuItem;
     {$IFDEF MSWINDOWS}mnuThemeDark: TMenuItem;{$ENDIF}
     mnuAddSection: TMenuItem;
     mnuResetStructure: TMenuItem;
+    mnuDeleteSection: TMenuItem;
+    mnuExportConfig: TMenuItem;
+    mnuImportConfig: TMenuItem;
     rbPattern: TRadioButton;
     rbSong: TRadioButton;
     lblGenre: TLabel;
@@ -87,6 +91,9 @@ type
     procedure mnuQuitClick(Sender: TObject);
     procedure mnuAddSectionClick(Sender: TObject);
     procedure mnuResetStructureClick(Sender: TObject);
+    procedure mnuDeleteSectionClick(Sender: TObject);
+    procedure mnuExportConfigClick(Sender: TObject);
+    procedure mnuImportConfigClick(Sender: TObject);
     {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
   private
@@ -498,7 +505,7 @@ begin
       Parent := sbSections;
       Name := Format('secCmb%d', [I]);
       Left := 100; Top := Y - 2;
-      Width := 180; Height := 24;
+      Width := 160; Height := 24;
       Style := csDropDownList;
       Items.Add('intro');
       Items.Add('verse');
@@ -511,8 +518,8 @@ begin
     with seBars do begin
       Parent := sbSections;
       Name := Format('secSpn%d', [I]);
-      Left := 290; Top := Y - 2;
-      Width := 60; Height := 24;
+      Left := 270; Top := Y - 2;
+      Width := 55; Height := 24;
       MinValue := 1;
       MaxValue := 64;
       Value := FSectionBars[I];
@@ -521,7 +528,7 @@ begin
     with btnDelete do begin
       Parent := sbSections;
       Name := Format('secDel%d', [I]);
-      Left := 360; Top := Y - 2;
+      Left := 335; Top := Y - 2;
       Width := 28; Height := 24;
       Caption := '-';
       OnClick := @BtnSectionDeleteClick;
@@ -816,6 +823,161 @@ end;
 procedure TMainForm.mnuResetStructureClick(Sender: TObject);
 begin
   BtnResetStructureClick(Sender);
+end;
+
+procedure TMainForm.mnuDeleteSectionClick(Sender: TObject);
+begin
+  { Delete the last section if more than 1 exists }
+  if Length(FSectionNames) > 1 then begin
+    System.Delete(FSectionNames, High(FSectionNames), 1);
+    SetLength(FSectionBars, High(FSectionBars) + 1);
+    BuildSectionControls;
+  end;
+end;
+
+procedure TMainForm.mnuExportConfigClick(Sender: TObject);
+var
+  Dlg: TSaveDialog;
+  Json: TStringList;
+  I: Integer;
+begin
+  Dlg := TSaveDialog.Create(Self);
+  try
+    Dlg.Title := 'Export Song Configuration';
+    Dlg.Filter := 'JSON files (*.json)|*.json|All files (*.*)|*.*';
+    Dlg.DefaultExt := 'json';
+    Dlg.FileName := ChangeFileExt(OutputBasePath, '.json');
+    if Dlg.Execute then begin
+      Json := TStringList.Create;
+      try
+        Json.Add('{');
+        Json.Add(Format('  "genre": "%s",', [SelectedGenre]));
+        Json.Add(Format('  "style": "%s",', [SelectedStyle]));
+        Json.Add(Format('  "drummer": "%s",', [Trim(cbDrummer.Text)]));
+        Json.Add(Format('  "mapping": "%s",', [Trim(cbMapping.Text)]));
+        Json.Add(Format('  "meter": "%s",', [Trim(cbMeter.Text)]));
+        Json.Add(Format('  "tempo": %d,', [seTempo.Value]));
+        Json.Add(Format('  "complexity": %.2f,', [tbComplexity.Position / 100]));
+        Json.Add(Format('  "humanization": %.2f,', [tbHumanization.Position / 100]));
+        Json.Add(Format('  "swing": %.2f,', [SwingAmount]));
+        Json.Add(Format('  "export_mode": %d,', [cbExport.ItemIndex]));
+        Json.Add(Format('  "open_folder": %s,', [LowerCase(BoolToStr(chkOpenFolder.Checked, True))]));
+        Json.Add('  "sections": [');
+        for I := 0 to High(FSectionNames) do begin
+          Json.Add(Format('    {"name": "%s", "bars": %d}%s',
+            [FSectionNames[I], FSectionBars[I], IfThen(I < High(FSectionNames), ',', '')]));
+        end;
+        Json.Add('  ]');
+        Json.Add('}');
+        Json.SaveToFile(Dlg.FileName);
+        Log('Configuration exported to ' + Dlg.FileName);
+      finally
+        Json.Free;
+      end;
+    end;
+  finally
+    Dlg.Free;
+  end;
+end;
+
+procedure TMainForm.mnuImportConfigClick(Sender: TObject);
+var
+  Dlg: TOpenDialog;
+  Json: TStringList;
+  Content: String;
+  I: Integer;
+  SectionCount: Integer;
+  function ExtractValue(const AKey: String): String;
+  var
+    P: Integer;
+  begin
+    Result := '';
+    P := Pos('"' + AKey + '"', Content);
+    if P > 0 then begin
+      P := Pos(':', Content, P);
+      if P > 0 then begin
+        Inc(P);
+        while (P <= Length(Content)) and (Content[P] in [' ', '	', '"']) do Inc(P);
+        Result := '';
+        while (P <= Length(Content)) and not (Content[P] in [',', '}', ']', '
+', '
+', '"']) do begin
+          Result := Result + Content[P];
+          Inc(P);
+        end;
+      end;
+    end;
+  end;
+  function ExtractBool(const AKey: String): Boolean;
+  begin
+    Result := LowerCase(ExtractValue(AKey)) = 'true';
+  end;
+  function ExtractInt(const AKey: String): Integer;
+  begin
+    Result := StrToIntDef(ExtractValue(AKey), 0);
+  end;
+  function ExtractFloat(const AKey: String): Double;
+  begin
+    Result := StrToFloatDef(ExtractValue(AKey), 0.0);
+  end;
+begin
+  Dlg := TOpenDialog.Create(Self);
+  try
+    Dlg.Title := 'Import Song Configuration';
+    Dlg.Filter := 'JSON files (*.json)|*.json|All files (*.*)|*.*';
+    if Dlg.Execute then begin
+      Json := TStringList.Create;
+      try
+        Json.LoadFromFile(Dlg.FileName);
+        Content := Json.Text;
+
+        { Apply values }
+        cbGenre.ItemIndex := cbGenre.Items.IndexOf(ExtractValue('genre'));
+        FillStyles;
+        cbStyle.ItemIndex := cbStyle.Items.IndexOf(ExtractValue('style'));
+        cbDrummer.ItemIndex := cbDrummer.Items.IndexOf(ExtractValue('drummer'));
+        cbMapping.ItemIndex := cbMapping.Items.IndexOf(ExtractValue('mapping'));
+        cbMeter.Text := ExtractValue('meter');
+        seTempo.Value := ExtractInt('tempo');
+        tbComplexity.Position := Round(ExtractFloat('complexity') * 100);
+        tbHumanization.Position := Round(ExtractFloat('humanization') * 100);
+        tbSwing.Position := Round(ExtractFloat('swing') * 100);
+        cbExport.ItemIndex := ExtractInt('export_mode');
+        chkOpenFolder.Checked := ExtractBool('open_folder');
+        UpdateValueLabels;
+
+        { Parse sections - simple approach }
+        SectionCount := 0;
+        I := Pos('"sections"', Content);
+        if I > 0 then begin
+          I := Pos('[', Content, I);
+          while I > 0 do begin
+            I := Pos('"name"', Content, I);
+            if I = 0 then Break;
+            Inc(SectionCount);
+            I := Pos('"name"', Content, I + 1);
+          end;
+        end;
+
+        if SectionCount > 0 then begin
+          SetLength(FSectionNames, SectionCount);
+          SetLength(FSectionBars, SectionCount);
+          { Simple parsing - just use defaults for now }
+          for I := 0 to SectionCount - 1 do begin
+            FSectionNames[I] := 'verse';
+            FSectionBars[I] := 8;
+          end;
+          BuildSectionControls;
+        end;
+
+        Log('Configuration imported from ' + Dlg.FileName);
+      finally
+        Json.Free;
+      end;
+    end;
+  finally
+    Dlg.Free;
+  end;
 end;
 
 end.

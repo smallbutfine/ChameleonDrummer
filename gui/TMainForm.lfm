@@ -9,9 +9,52 @@ object MainForm: TMainForm
   object MainMenu: TMainMenu
     object mnuFile: TMenuItem
       Caption = '&File'
+      object mnuGenerate: TMenuItem
+        Caption = '&Generate'
+        ShortCut = 16455
+        OnClick = btnGenerateClick
+      end
+      object mnuOpenFolder: TMenuItem
+        Caption = '&Open Output Folder'
+        OnClick = btnOpenFolderClick
+      end
+      object N2: TMenuItem
+        Caption = '-'
+      end
+      object mnuExportConfig: TMenuItem
+        Caption = '&Export Configuration...'
+        OnClick = mnuExportConfigClick
+      end
+      object mnuImportConfig: TMenuItem
+        Caption = '&Import Configuration...'
+        OnClick = mnuImportConfigClick
+      end
+      object N1: TMenuItem
+        Caption = '-'
+      end
       object mnuQuit: TMenuItem
         Caption = 'E&xit'
         OnClick = mnuQuitClick
+      end
+    end
+    object mnuEdit: TMenuItem
+      Caption = '&Edit'
+      object mnuAddSection: TMenuItem
+        Caption = '&Add Section'
+        ShortCut = 16449
+        OnClick = mnuAddSectionClick
+      end
+      object mnuDeleteSection: TMenuItem
+        Caption = '&Delete Section'
+        ShortCut = 16430
+        OnClick = mnuDeleteSectionClick
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
+      object mnuResetStructure: TMenuItem
+        Caption = '&Reset Structure'
+        OnClick = mnuResetStructureClick
       end
     end
     object mnuView: TMenuItem
@@ -33,17 +76,6 @@ object MainForm: TMainForm
         GroupIndex = 1
         RadioItem = True
         OnClick = mnuThemeClick
-      end
-      object N1: TMenuItem
-        Caption = '-'
-      end
-      object mnuAddSection: TMenuItem
-        Caption = '&Add Section'
-        OnClick = mnuAddSectionClick
-      end
-      object mnuResetStructure: TMenuItem
-        Caption = '&Reset Structure'
-        OnClick = mnuResetStructureClick
       end
     end
     object mnuHelp: TMenuItem
