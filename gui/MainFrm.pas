@@ -900,9 +900,7 @@ var
         Inc(P);
         while (P <= Length(Content)) and (Content[P] in [' ', '	', '"']) do Inc(P);
         Result := '';
-        while (P <= Length(Content)) and not (Content[P] in [',', '}', ']', '
-', '
-', '"']) do begin
+        while (P <= Length(Content)) and not (Content[P] in [',', '}', ']', #13, #10, '"']) do begin
           Result := Result + Content[P];
           Inc(P);
         end;
