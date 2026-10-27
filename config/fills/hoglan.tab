@@ -23,3 +23,15 @@ K .... .... .x.x .x.x
 [hoglan_fill_big energy=0.9]
 S x.x. x.x. x.x. x.x.
 K .x.x .x.x .x.x .x.x
+
+[hoglan_fill_short2 energy=0.25]
+S .... .... .... x.x.
+K .... .... .... .x.x
+
+[hoglan_fill_half2 energy=0.55]
+S .... .... x.x. x.x.
+K .... .... .x.x .x.x
+
+[hoglan_fill_big2 energy=0.85]
+S x.x. x.x. x.x. x.x.
+K .x.x .x.x .x.x .x.x

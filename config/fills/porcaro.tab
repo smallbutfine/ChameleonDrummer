@@ -23,3 +23,19 @@ T1 ... ... ... x.x
 S ... g.g x.x ...
 T1 ... ... ... x.x
 T2 ... ... ... .x.
+
+[porcaro_fill_short2 energy=0.25]
+S .... .... .... x.x.
+K .... .... .... .x.x
+
+[porcaro_fill_half2 energy=0.55]
+S .... .... x..x ....
+T1 .... .... .... x..
+T2 .... .... .... .x.
+
+[porcaro_fill_big2 energy=0.85]
+S ... x.x. ... x..
+T1 ... ... x.x. ...
+T2 ... ... ... x..
+T3 ... ... ... .x.
+K .... .... .... x..

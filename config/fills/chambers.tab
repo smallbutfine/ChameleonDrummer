@@ -24,3 +24,16 @@ K .... .... ..x. ....
 S .... gxgx xxxx gxgx
 T2 .... .... .... ...x
 K .... .... x... ....
+
+[chambers_fill_short2 energy=0.25]
+S .... .... .... xgxg
+K .... .... .... ...x
+
+[chambers_fill_half2 energy=0.55]
+S .... .... gxgx xxgx
+K .... .... ..x. ....
+
+[chambers_fill_big2 energy=0.85]
+S .... gxgx xxxx gxgx
+T2 .... .... .... ...x
+K .... .... x... ....

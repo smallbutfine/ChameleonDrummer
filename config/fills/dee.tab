@@ -22,3 +22,14 @@ K .... .... .xxx .xxx
 [dee_fill_big energy=0.9]
 K .... xxxx xxxx xxxx
 S .... x... x... x...
+
+[dee_fill_short2 energy=0.25]
+K .... .... xxxx xxxx
+
+[dee_fill_half2 energy=0.55]
+S .... .... x... x...
+K .... .... .xxx .xxx
+
+[dee_fill_big2 energy=0.85]
+K .... xxxx xxxx xxxx
+S .... x... x... x...
