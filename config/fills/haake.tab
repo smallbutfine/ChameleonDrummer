@@ -185,3 +185,51 @@ K .... .... .... x..
 S .... .... .... x.x.
 T1 .... .... .... x..
 K .... .... .... x..
+
+[haake_fill_odd_7_8 energy=0.4]
+K x.x. ..x. x.x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_5_4 energy=0.6]
+K x.x. ..x. x.x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_3_4 energy=0.5]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_7_8 energy=0.3]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_5_4 energy=0.7]
+K x.x. ..x. x.x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_3_4 energy=0.4]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_7/8 energy=0.2]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_5_4 energy=0.8]
+K x.x. ..x. x.x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_3_4 energy=0.4]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_7_8 energy=0.1]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_5_4 energy=0.9]
+K x.x. ..x. x.x. ..x.
+S .... x... .... x...
+
+[haake_fill_odd_3_4 energy=0.2]
+K x.x. ..x. ..x. ..x.
+S .... x... .... x..
