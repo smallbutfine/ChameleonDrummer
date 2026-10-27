@@ -90,7 +90,7 @@ object MainForm: TMainForm
     Left = 12
     Top = 1
     Width = 416
-    Height = 560
+    Height = 520
     Caption = 'Song'
     object rbPattern: TRadioButton
       Left = 12
