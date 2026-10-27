@@ -390,3 +390,4 @@ object MainForm: TMainForm
     Visible = False
   end
 end
+end
