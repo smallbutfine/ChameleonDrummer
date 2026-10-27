@@ -78,6 +78,7 @@ type
     memLog: TMemo;
     lblStatus: TLabel;
     pbProgress: TProgressBar;
+    StatusBar: TStatusBar;
     procedure FormCreate(Sender: TObject);
     procedure rgModeChange(Sender: TObject);
     procedure cbGenreChange(Sender: TObject);
@@ -825,7 +826,7 @@ begin
     end;
     FillRect(Rect);
     Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
-    DrawText(Handle, Panel.Text, -1, Rect, Flags);
+    DrawText(Handle, PChar(Panel.Text), -1, Rect, Flags);
   end;
 end;
 
