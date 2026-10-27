@@ -89,7 +89,7 @@ object MainForm: TMainForm
   object gbSong: TGroupBox
     Left = 12
     Top = 21
-    Width = 396
+    Width = 416
     Height = 560
     Caption = 'Song'
     object rbPattern: TRadioButton
