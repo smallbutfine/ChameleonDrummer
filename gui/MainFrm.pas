@@ -233,6 +233,7 @@ begin
   { Colours last, when every control exists. }
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged;
   SetTheme(LoadThemeChoice, False);{$ENDIF}
+  {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
