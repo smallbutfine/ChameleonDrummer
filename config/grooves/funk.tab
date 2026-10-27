@@ -13,58 +13,339 @@
 # tom 2 left hand; kick and hi-hat pedal feet; at most 3 hits on one step.
 
 [classic verse intensity=0.20-0.60]
-K x... .... x... .... | x... .... x... ....
+K X... .... ..x. .... | X... ..x. .... ....
 S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
 
 [classic verse intensity=0.40-0.80]
-K x... ..x. x... ..x. | x... ..x. ..x. x...
+K X... ..x. .x.. .... | X... ..x. .... .x..
 S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-S@0.6 .... ..g. .... ...g | .... ..g. .... ....
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+S@0.4 ...g .... .g.. ...g | ..g. .... .g.. ....
 
 [classic verse intensity=0.60-1.00]
-K x... .x.. x... .x.. | x.x. .... x... .x..
+K X... ..x. .x.. ..x. | X... ..x. .x.. ....
 S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H xoxo xoxo xoxo xo.o | xoxo xoxo xoxo xo.o
+HO .... .... .... ..x. | .... .... .... ..x.
+S@0.4 ...g .g.. .g.. ...g | ..g. .g.. .... ...g
 
 [classic chorus intensity=0.40-0.80]
-K x... .... x... .... | x... .... x... ....
+K X... ..x. .x.. .... | X... ..x. .... .x..
 S .... x... .... x... | .... x... .... x...
-HO x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
 C X... .... .... .... | .... .... .... ....
 
 [classic chorus intensity=0.60-0.95]
-K x... ..x. x... ..x. | x... ..x. x... ..x.
+K X... ..x. .x.. ..x. | X... ..x. .x.. ....
 S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 C X... .... .... .... | X... .... .... ....
+S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
 
 [classic chorus intensity=0.75-1.00]
-K x.x. ..x. x.x. ..x. | x.x. ..x. x.x. x.x.
+K X..x ..x. .x.. ..x. | X..x ..x. .x.x ..x.
 S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... X... .... | X... .... X... ....
+C X... .... .... .... | X... .... .... ....
+S@0.5 ...g .g.. .g.. ...g | ..g. .g.. .g.. ...g
 
 [classic bridge intensity=0.10-0.50]
-K x... .... .... .... | x... .... ..x. ....
+K X... .... .... .... | X... .... .... ....
 SS .... x... .... x... | .... x... .... x...
 H x... x... x... x... | x... x... x... x...
 
 [classic bridge intensity=0.30-0.70]
-K x... .... x... .... | x... .... x... ....
-S .... x... .... x... | .... x... .... x...
-R x... x... x... x... | x... x... x... x...
-C@0.5 X... .... .... .... | .... .... .... ....
+K X... ..x. .... .... | X... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 
 [classic bridge intensity=0.50-0.90]
-K x... ..x. .... ..x. | x... ..x. x... x.x.
+K X... ..x. .x.. .... | X... ..x. .x.. ..x.
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+
+[pfunk verse intensity=0.20-0.60]
+K X... ..x. .... ..x. | X... ..x. .x.. ....
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+
+[pfunk verse intensity=0.40-0.80]
+K X..x ..x. .x.. ..x. | X..x ..x. .x.. .x..
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
+
+[pfunk verse intensity=0.60-1.00]
+K X..x ..x. .x.x ..x. | X.xx ..x. .x.. xx.x
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+S@0.5 ...g .g.. ...g ..g. | ..g. .g.. .g.. ...g
+
+[pfunk chorus intensity=0.40-0.80]
+K X..x ..x. .x.. ..x. | X..x ..x. .x.. ....
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+C X... .... .... .... | .... .... .... ....
+
+[pfunk chorus intensity=0.60-0.95]
+K X.xx ..x. .x.x ..x. | X.xx ..x. .x.. xx..
 S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-T1@0.5 .... .... .... .... | .... .... .... ..x.
+C X... .... .... .... | X... .... .... ....
+
+[pfunk chorus intensity=0.75-1.00]
+K X.xx x.x. .x.x ..xx | X.xx x.x. .x.x xx..
+S .... x... .... x... | .... x... .... x...
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | X... .... .... ....
+S@0.6 ...g .g.. ...g .... | ..g. .... .g.. ...g
+
+[pfunk bridge intensity=0.10-0.50]
+K X... .... .... .... | X... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[pfunk bridge intensity=0.30-0.70]
+K X..x .... ..x. .... | X..x .... ..x. ....
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+
+[pfunk bridge intensity=0.50-0.90]
+K X..x ..x. .x.. ..x. | X..x ..x. .x.x xx..
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+T1@0.5 .... .... .... .... | .... .... .... ..xx
+
+[shuffle verse intensity=0.20-0.60]
+K X.. ... x.. ... | X.. ... x.. ...
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+
+[shuffle verse intensity=0.40-0.80]
+K X.. ... x.. ..x | X.. ... x.. ...
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+S@0.5 ... ..g ... ... | ... ..g ... ..g
+
+[shuffle verse intensity=0.60-1.00]
+K X.. ..x x.. ... | X.. ..x x.. ..x
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+
+[shuffle chorus intensity=0.40-0.80]
+K X.. ... x.. ... | X.. ... x.. ..x
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+C X.. ... ... ... | ... ... ... ...
+
+[shuffle chorus intensity=0.60-0.95]
+K X.. ..x x.. ... | X.. ..x x.. ..x
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+C X.. ... ... ... | X.. ... ... ...
+
+[shuffle chorus intensity=0.75-1.00]
+K X.. x.x x.. x.. | X.. x.x x.. x.x
+S ... x.. ... x.. | ... x.. ... x..
+R x.x x.x x.x x.x | x.x x.x x.x x.x
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+C X.. ... ... ... | X.. ... ... ...
+
+[shuffle bridge intensity=0.10-0.50]
+K X.. ... ... ... | X.. ... ... ...
+SS ... x.. ... x.. | ... x.. ... x..
+H x.. x.. x.. x.. | x.. x.. x.. x..
+
+[shuffle bridge intensity=0.30-0.70]
+K X.. ... ..x ... | X.. ... ... ...
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+
+[shuffle bridge intensity=0.50-0.90]
+K X.. ..x x.. ..x | X.. ..x x.. ..x
+S ... x.. ... x.. | ... x.. ... x..
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+
+[new_orleans verse intensity=0.20-0.60]
+K x... .... .... x... | x... ..x. .... ....
+S .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[new_orleans verse intensity=0.40-0.80]
+K x... ..x. .... x... | x... ..x. .... x...
+S .... x..x ..x. x... | .... x..x ..x. x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[new_orleans verse intensity=0.60-1.00]
+K x..x ..x. .x.. x... | x..x ..x. .x.. x.x.
+S ..x. x..x ..x. x..x | ..x. x..x ..x. x.xx
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+S@0.5 ...g .... .g.. .... | .... .... .... ....
+
+[new_orleans chorus intensity=0.40-0.80]
+K x... ..x. .... x... | x... ..x. .... x...
+S .... x..x ..x. x... | .... x..x ..x. x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | .... .... .... ....
+
+[new_orleans chorus intensity=0.60-0.95]
+K x..x ..x. .x.. x... | x..x ..x. .x.. x...
+S .... x..x ..x. x... | .... x..x ..x. xx.x
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | X... .... .... ....
+
+[new_orleans chorus intensity=0.75-1.00]
+K x.xx ..x. .x.x x... | x.xx ..x. .x.x x.x.
+S ..x. x..x ..x. x.xx | ..x. x..x ..x. x.xx
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | X... .... .... ....
+
+[new_orleans bridge intensity=0.10-0.50]
+K x... .... .... x... | x... .... .... ....
+SS .... x... .... x... | .... x... .... x...
+H x... x... x... x... | x... x... x... x...
+
+[new_orleans bridge intensity=0.30-0.70]
+K x... ..x. .... x... | x... ..x. .... ....
+S .... x..x .... x... | .... x..x .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[new_orleans bridge intensity=0.50-0.90]
+K x..x ..x. .x.. x... | x..x ..x. .x.. x...
+S .... x..x ..x. x... | .... x..x ..x. x.xx
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[fusion verse intensity=0.20-0.60]
+K x..x ..x. .x.. ..x. | x..x ..x. .x.. ....
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+
+[fusion verse intensity=0.40-0.80]
+K x.xx ..x. .x.x ..x. | x..x ..x. .x.x ..xx
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g ....
+
+[fusion verse intensity=0.60-1.00]
+K x.xx x.x. .x.x ..xx | x.xx ..x. .x.x x.x.
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xo.o | xoxo xoxo xoxo xo.o
+HO .... .... .... ..x. | .... .... .... ..x.
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
+
+[fusion chorus intensity=0.40-0.80]
+K x..x ..x. x... ..x. | x..x ..x. x... ..x.
+S .... x... .... x... | .... x... .... x...
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | .... .... .... ....
+
+[fusion chorus intensity=0.60-0.95]
+K x.xx ..x. x.x. ..xx | x.xx ..x. x.x. ..x.
+S .... x... .... x... | .... x... .... x...
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | X... .... .... ....
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
+
+[fusion chorus intensity=0.75-1.00]
+K x.xx x.x. x.xx ..xx | x.xx x.x. x.xx x.x.
+S .... x... .... x... | .... x... .... x...
+R xxxx xxxx xxxx xxxx | xxxx xxxx xxxx xxxx
+C X... .... .... .... | X... .... .... ....
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
+
+[fusion bridge intensity=0.10-0.50]
+K x... .... ..x. .... | x... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x... x... x... x... | x... x... x... x...
+
+[fusion bridge intensity=0.30-0.70]
+K x..x .... ..x. ..x. | x... ..x. .... ....
+S .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[fusion bridge intensity=0.50-0.90]
+K x..x ..x. .x.x ..x. | x..x ..x. .x.. xx.x
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+T3@0.5 .... .... .... .... | .... .... .... ..x.
+
+[minimal verse intensity=0.20-0.60]
+K X... .... .... .... | X... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x... x... x... x... | x... x... x... x...
+
+[minimal verse intensity=0.40-0.80]
+K X... ..x. .... .... | X... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[minimal verse intensity=0.60-1.00]
+K X... ..x. .... ..x. | X... .... ..x. ....
+S .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+S@0.5 ...g .... .... .... | .... ..g. .... ...g
+
+[minimal chorus intensity=0.40-0.80]
+K X... .... .... .... | X... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | .... .... .... ....
+
+[minimal chorus intensity=0.60-0.95]
+K X... ..x. .... ..x. | X... ..x. .... ....
+S .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | .... .... .... ....
+
+[minimal chorus intensity=0.75-1.00]
+K X..x ..x. .... ..x. | X..x ..x. .x.. ....
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+C X... .... .... .... | X... .... .... ....
+
+[minimal bridge intensity=0.10-0.50]
+K X... .... .... .... | .... .... .... ....
+SS .... .... x... .... | .... .... x... ....
+H x... x... x... x... | x... x... x... x...
+
+[minimal bridge intensity=0.30-0.70]
+K X... .... .... .... | X... .... ..x. ....
+SS .... x... .... x... | .... x... .... x...
+H x... x... x... x... | x... x... x... x...
+
+[minimal bridge intensity=0.50-0.90]
+K X... ..x. .... .... | X... ..x. .... ..x.
+SS .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+
+[heavy verse intensity=0.20-0.60]
+K X..x ..x. .... ..x. | X..x ..x. .... ....
+S .... x... .... x... | .... x... .... x...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 
 [heavy verse intensity=0.40-0.80]
-K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X..x ..x. .x.. ..x. | X..x ..x. .x.. ..x.
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+
+[heavy verse intensity=0.60-1.00]
+K X.xx ..x. .x.x ..x. | X.xx ..x. .x.. x.x.
+S .... x... .... x... | .... x... .... x...
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
+
+[heavy chorus intensity=0.40-0.80]
+K X..x ..x. X... ..x. | X..x ..x. X... ..x.
+RS .... X... .... X... | .... X... .... X...
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+C X... .... .... .... | .... .... .... ....
+
+[heavy chorus intensity=0.60-0.95]
+K X.xx ..x. X.x. ..x. | X.xx ..x. X.x. x.x.
 RS .... X... .... X... | .... X... .... X...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 C X... .... .... .... | X... .... .... ....
@@ -141,142 +422,6 @@ H     xx xx xx
 S@0.6 .g .. g.
 
 [classic verse 3/4 intensity=0.60-1.00]
-K     xx .x .x
-S     .. x. x.
-H     xx xx xx
-S@0.6 .g .g g.
-
-# Additional classic patterns
-[classic verse intensity=0.10-0.40]
-K x... .... x... .... | x... .... x... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[classic verse intensity=0.80-1.00]
-K x... .x.. x... .x.. | x.x. .... x... .x..
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[classic chorus intensity=0.10-0.40]
-K x... .... x... .... | x... .... x... ....
-S .... x... .... x... | .... x... .... x...
-HO x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
-[classic chorus intensity=0.80-1.00]
-K x... .x.. x... .x.. | x.x. .... x... .x..
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[classic bridge intensity=0.10-0.40]
-K x... .... .... .... | x... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[classic bridge intensity=0.80-1.00]
-K x... ..x. .... ..x. | x... ..x. x... x.x.
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-T1@0.5 .... .... .... .... | .... .... .... ..x.
-
-# Additional heavy patterns
-[heavy verse intensity=0.10-0.40]
-K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
-RS .... X... .... X... | .... X... .... X...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[heavy verse intensity=0.80-1.00]
-K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
-RS .... X... .... X... | .... X... .... X...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[heavy chorus intensity=0.10-0.40]
-K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
-RS .... X... .... X... | .... X... .... X...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[heavy chorus intensity=0.80-1.00]
-K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
-RS .... X... .... X... | .... X... .... X...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[heavy bridge intensity=0.10-0.50]
-K X... .... ..x. .... | X... .... ..x. ....
-S .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[heavy bridge intensity=0.80-1.00]
-K X..x .... X... .... | X..x .... X... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-# Additional odd meter patterns
-[classic verse 7/8 intensity=0.10-0.40]
-K     x.x .. .x
-S     ... x. x.
-H     xxx xx xx
-
-[classic verse 7/8 intensity=0.80-1.00]
-K     x.x .. .x
-S     ... x. x.
-H     xxx xx xx
-S@0.7 .g. .g ..
-
-[classic verse 5/4 intensity=0.10-0.40]
-K     x. .. .x .. x.
-S     .. .. .. x. ..
-H     x. x. x. x. x.
-
-[classic verse 5/4 intensity=0.80-1.00]
-K     x. .x .. .x x.
-S     .. .. .. x. ..
-H     xx xx xx xx xx
-S@0.6 .. g. .g .. .g
-
-[classic verse 3/4 intensity=0.10-0.40]
-K     x. .. .x
-S     .. x. ..
-H     xx xx xx
-
-[classic verse 3/4 intensity=0.80-1.00]
-K     xx .x .x
-S     .. x. x.
-H     xx xx xx
-S@0.6 .g .g g.
-
-[classic verse 3/4 intensity=0.10-0.40]
-K     x. .. .x
-S     .. x. ..
-H     xx xx xx
-
-[classic verse 3/4 intensity=0.80-1.00]
-K     xx .x .x
-S     .. x. x.
-H     xx xx xx
-S@0.6 .g .g g.
-
-[classic verse 5/4 intensity=0.10-0.40]
-K     x. .. .x .. x.
-S     .. .. .. x. ..
-H     x. x. x. x. x.
-
-[classic verse 5/4 intensity=0.80-1.00]
-K     x. .x .. .x x.
-S     .. .. .. x. ..
-H     xx xx xx xx xx
-S@0.6 .. g. .g .. .g
-
-[classic verse 3/4 intensity=0.10-0.40]
-K     x. .. .x
-S     .. x. ..
-H     xx xx xx
-
-[classic verse 3/4 intensity=0.80-1.00]
 K     xx .x .x
 S     .. x. x.
 H     xx xx xx
