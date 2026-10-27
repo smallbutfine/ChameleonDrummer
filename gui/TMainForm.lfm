@@ -359,6 +359,14 @@ object MainForm: TMainForm
     Caption = 'Open output folder'
     OnClick = btnOpenFolderClick
   end
+  object chkRadioLength: TCheckBox
+    Left = 436
+    Top = 475
+    Width = 396
+    Height = 18
+    Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
+    OnClick = chkRadioLengthClick
+  end
   object gbLog: TGroupBox
     Left = 12
     Top = 485

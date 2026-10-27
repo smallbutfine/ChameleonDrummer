@@ -74,6 +74,7 @@ type
     lblHint: TLabel;
     btnGenerate: TButton;
     btnOpenFolder: TButton;
+    chkRadioLength: TCheckBox;
     gbLog: TGroupBox;
     memLog: TMemo;
     lblStatus: TLabel;
@@ -88,6 +89,7 @@ type
     procedure btnGenerateClick(Sender: TObject);
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
+    procedure chkRadioLengthClick(Sender: TObject);
     procedure mnuQuitClick(Sender: TObject);
     procedure mnuAddSectionClick(Sender: TObject);
     procedure mnuResetStructureClick(Sender: TObject);
@@ -702,27 +704,46 @@ begin
       CommonOptions(Args);
     end
     else begin
-      SyncSectionArraysFromControls;
-      Log(Format('Song mode: %d sections, genre=%s style=%s',
-        [Length(FSectionNames), SelectedGenre, SelectedStyle]));
-      Args.Add('generate');
-      CommonOptions(Args);
-      if cbDrummer.ItemIndex >= 0 then begin
-        Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
+      { Radio-length mode: use CLI default structure with radio-length fitting }
+      if chkRadioLength.Checked then begin
+        Log('Radio-length mode: genre default structure, 3:00-3:45');
+        Args.Add('generate');
+        CommonOptions(Args);
+        if cbDrummer.ItemIndex >= 0 then begin
+          Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
+        end;
+        Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
+        Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
+        if tbSwing.Position > 0 then begin
+          Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
+        end;
+        if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
+        if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
+      end
+      else begin
+        { Custom structure mode }
+        SyncSectionArraysFromControls;
+        Log(Format('Song mode: %d sections, genre=%s style=%s',
+          [Length(FSectionNames), SelectedGenre, SelectedStyle]));
+        Args.Add('generate');
+        CommonOptions(Args);
+        if cbDrummer.ItemIndex >= 0 then begin
+          Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
+        end;
+        Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
+        Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
+        { The section list on screen is the song structure. }
+        for SecIdx := 0 to High(FSectionNames) do begin
+          Args.Add('--section');
+          Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
+        end;
+        if tbSwing.Position > 0 then begin
+          Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
+        end;
+        { The REAPER project goes with the Ardour session too. }
+        if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
+        if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
       end;
-      Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
-      Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
-      { The section list on screen is the song structure. }
-      for SecIdx := 0 to High(FSectionNames) do begin
-        Args.Add('--section');
-        Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
-      end;
-      if tbSwing.Position > 0 then begin
-        Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
-      end;
-      { The REAPER project goes with the Ardour session too. }
-      if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
-      if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
     end;
 
     lblStatus.Caption := 'Working...';
@@ -749,6 +770,16 @@ begin
     lblStatus.Caption := 'Failed - see the log';
     if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Failed';
   end;
+end;
+
+procedure TMainForm.chkRadioLengthClick(Sender: TObject);
+begin
+  { Grey out section controls when radio-length is checked }
+  gbSong.Enabled := not chkRadioLength.Checked;
+  if chkRadioLength.Checked then
+    Log('Radio-length mode: using genre default structure (3:00-3:45)')
+  else
+    Log('Custom structure mode: using section list below');
 end;
 
 procedure TMainForm.Log(const AText: String);
