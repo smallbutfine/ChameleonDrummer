@@ -124,7 +124,7 @@ type
     procedure BuildSectionControls;
     procedure ClearSectionControls;
     procedure SyncSectionArraysFromControls;
-    procedure StatusBarDrawPanel(Sender: TObject; Panel: TStatusPanel; var Rect: TRect);
+    procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
   public
     procedure BtnAddSectionClick(Sender: TObject);
     procedure BtnResetStructureClick(Sender: TObject);
@@ -815,13 +815,11 @@ begin
   Close;
 end;
 
-procedure TMainForm.StatusBarDrawPanel(Sender: TObject; Panel: TStatusPanel; var Rect: TRect);
+procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
 var
   Flags: Longint;
-  SB: TStatusBar;
 begin
-  SB := Sender as TStatusBar;
-  with SB.Canvas do begin
+  with Sender.Canvas do begin
     if FDark then begin
       Brush.Color := $2D2D2D;
       Font.Color := clWhite;
