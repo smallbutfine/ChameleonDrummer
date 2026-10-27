@@ -215,12 +215,24 @@ begin
 
   ResetToDefaultStructure;
 
+  { Create StatusBar programmatically to avoid .lfm loading issues }
+  StatusBar := TStatusBar.Create(Self);
+  with StatusBar do begin
+    Parent := Self;
+    Align := alBottom;
+    SimplePanel := False;
+    Panels.Add;
+    Panels[0].Width := 300;
+    Panels.Add;
+    Panels[1].Width := 150;
+    Panels.Add;
+    Panels[2].Width := 100;
+    OnDrawPanel := @StatusBarDrawPanel;
+  end;
+
   Log('Choose a genre and style, pick a drummer, then press Generate.');
   lblStatus.Caption := 'Ready';
   StatusBar.Panels[0].Text := 'Ready';
-
-  { Assign OnDrawPanel for dark mode status bar }
-  StatusBar.OnDrawPanel := @StatusBarDrawPanel;
 
   { Colours last, when every control exists. }
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged;
