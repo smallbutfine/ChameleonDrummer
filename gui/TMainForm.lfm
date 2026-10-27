@@ -359,34 +359,30 @@ object MainForm: TMainForm
     Caption = 'Open output folder'
     OnClick = btnOpenFolderClick
   end
+  object chkRadioLength: TCheckBox
+    Left = 436
+    Top = 455
+    Width = 396
+    Height = 18
+    Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
+    OnClick = chkRadioLengthClick
+  end
   object gbLog: TGroupBox
     Left = 12
-    Top = 481
-    Width = 804
+    Top = 511
+    Width = 820
     Height = 140
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
       Top = 20
-      Width = 788
+      Width = 804
       Height = 110
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
       WordWrap = True
     end
-  end
-  object lblStatus: TLabel
-    Left = 16
-    Top = 625
-    Width = 560
-    Height = 16
-    Alignment = taLeftJustify
-    Caption = 'Ready'
-    ParentShowHint = False
-    ShowHint = False
-    Font.Color = clWindowText
-    Font.Size = -11
   end
   object pbProgress: TProgressBar
     Left = 700
