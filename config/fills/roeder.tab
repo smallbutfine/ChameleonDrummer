@@ -41,3 +41,19 @@ T1 x... x...
 T2 .x.. .x..
 T3 ..x. ..x.
 T4 ...x ...x
+
+[roeder_fill_short3 energy=0.2]
+T3 .... ..x.
+T4 .... ...x
+
+[roeder_fill_half3 energy=0.5]
+S .... x...
+T1 .... ..x.
+T2 .... ...x
+
+[roeder_fill_big3 energy=0.95]
+T1 x... x...
+T2 .x.. .x..
+T3 ..x. ..x.
+T4 ...x ...x
+C X... .... .... ....

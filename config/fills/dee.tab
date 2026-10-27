@@ -33,3 +33,15 @@ K .... .... .xxx .xxx
 [dee_fill_big2 energy=0.85]
 K .... xxxx xxxx xxxx
 S .... x... x... x...
+
+[dee_fill_short3 energy=0.2]
+K .... .... xxxx xxxx
+
+[dee_fill_half3 energy=0.5]
+S .... .... x... x...
+K .... .... .xxx .xxx
+
+[dee_fill_big3 energy=0.95]
+K .... xxxx xxxx xxxx
+S .... x... x... x...
+KK .... XXXX XXXX XXXX
