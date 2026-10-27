@@ -99,7 +99,6 @@ type
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
     FCliTool: String;
-    StatusBar: TStatusBar;
      {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
     FDark: Boolean;{$ENDIF}
     procedure Log(const AText: String);
@@ -211,24 +210,6 @@ begin
     BorderStyle := bsNone;
     VertScrollBar.Tracking := True;
     HorzScrollBar.Visible := False;
-  end;
-
-  { Setup status bar }
-  StatusBar := TStatusBar.Create(Self);
-  with StatusBar do begin
-    Parent := Self;
-    Align := alBottom;
-    SimplePanel := False;
-    Panels.Add;
-    Panels[0].Text := 'Ready';
-    Panels[0].Width := 300;
-    Panels.Add;
-    Panels[1].Text := '';
-    Panels[1].Width := 150;
-    Panels.Add;
-    Panels[2].Text := '';
-    Panels[2].Width := 100;
-    OnDrawPanel := @StatusBarDrawPanel;
   end;
 
   ResetToDefaultStructure;

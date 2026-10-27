@@ -395,4 +395,22 @@ object MainForm: TMainForm
     Height = 16
     Visible = False
   end
+  object StatusBar: TStatusBar
+    Left = 0
+    Top = 651
+    Width = 960
+    Height = 19
+    Panels = <
+      item
+        Width = 300
+      end
+      item
+        Width = 150
+      end
+      item
+        Width = 100
+      end
+    >
+    OnDrawPanel = StatusBarDrawPanel
+  end
 end
