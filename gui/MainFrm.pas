@@ -77,7 +77,6 @@ type
     chkRadioLength: TCheckBox;
     gbLog: TGroupBox;
     memLog: TMemo;
-    lblStatus: TLabel;
     pbProgress: TProgressBar;
     StatusBar: TStatusBar;
     procedure FormCreate(Sender: TObject);
@@ -233,7 +232,6 @@ begin
   end;
 
   Log('Choose a genre and style, pick a drummer, then press Generate.');
-  lblStatus.Caption := 'Ready';
   StatusBar.Panels[0].Text := 'Ready';
 
   { Colours last, when every control exists. }
@@ -312,7 +310,6 @@ begin
 
     if FCliTool = '' then begin
       btnGenerate.Enabled := False;
-      lblStatus.Caption := 'ChameleonDrummer.exe not found';
       if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'CLI not found';
       Log('ChameleonDrummer.exe was not found. It must sit in the same folder as this program:');
       Log('  ' + CliToolPath);
@@ -746,7 +743,6 @@ begin
       end;
     end;
 
-    lblStatus.Caption := 'Working...';
     if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Working...';
     btnGenerate.Enabled := False;
     Application.ProcessMessages;
@@ -760,14 +756,12 @@ begin
   end;
 
   if Ok then begin
-    lblStatus.Caption := 'Done';
     if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Done';
     Log('Done.');
     if chkOpenFolder.Checked then
       OpenFolder(ExtractFilePath(ExpandFileName(OutputBasePath)));
   end
   else begin
-    lblStatus.Caption := 'Failed - see the log';
     if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Failed';
   end;
 end;
