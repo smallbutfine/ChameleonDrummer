@@ -17,7 +17,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
   Dialogs, LCLType, {$IFDEF MSWINDOWS}DarkTheme, ShellApi,{$ENDIF} process, StrUtils, menus, CliLookup,
-  time_signature;
+  time_signature, ComCtrls;
 
 type
   TIntDynArray = array of Integer;
@@ -25,12 +25,15 @@ type
 
   TMainForm = class(TForm)
     gbSong: TGroupBox;
+    sbSections: TScrollBox;
     MainMenu: TMainMenu;
     mnuFile: TMenuItem;
     mnuView: TMenuItem;
     mnuThemeSystem: TMenuItem;
     mnuThemeLight: TMenuItem;
     {$IFDEF MSWINDOWS}mnuThemeDark: TMenuItem;{$ENDIF}
+    mnuAddSection: TMenuItem;
+    mnuResetStructure: TMenuItem;
     rbPattern: TRadioButton;
     rbSong: TRadioButton;
     lblGenre: TLabel;
@@ -69,6 +72,7 @@ type
     btnOpenFolder: TButton;
     gbLog: TGroupBox;
     memLog: TMemo;
+    StatusBar: TStatusBar;
     lblStatus: TLabel;
     pbProgress: TProgressBar;
     procedure FormCreate(Sender: TObject);
@@ -81,6 +85,8 @@ type
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mnuQuitClick(Sender: TObject);
+    procedure mnuAddSectionClick(Sender: TObject);
+    procedure mnuResetStructureClick(Sender: TObject);
     {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
   private
@@ -145,6 +151,15 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
   cbMeter.ItemIndex := 0;
+
+  { Make combo boxes read-only (no text selection on focus) }
+  cbGenre.Style := csDropDownList;
+  cbStyle.Style := csDropDownList;
+  cbDrummer.Style := csDropDownList;
+  cbMapping.Style := csDropDownList;
+  cbMeter.Style := csDropDownList;
+  cbExport.Style := csDropDownList;
+
   FillLists;
   FillStyles;
 
@@ -175,10 +190,38 @@ begin
 
   UpdateValueLabels;
 
+  { Setup scrollable section area }
+  sbSections := TScrollBox.Create(Self);
+  with sbSections do begin
+    Parent := gbSong;
+    Align := alClient;
+    BorderStyle := bsNone;
+    VertScrollBar.Tracking := True;
+    HorzScrollBar.Visible := False;
+  end;
+
+  { Setup status bar }
+  StatusBar := TStatusBar.Create(Self);
+  with StatusBar do begin
+    Parent := Self;
+    Align := alBottom;
+    SimplePanel := False;
+    Panels.Add;
+    Panels[0].Text := 'Ready';
+    Panels[0].Width := 300;
+    Panels.Add;
+    Panels[1].Text := '';
+    Panels[1].Width := 150;
+    Panels.Add;
+    Panels[2].Text := '';
+    Panels[2].Width := 100;
+  end;
+
   ResetToDefaultStructure;
 
   Log('Choose a genre and style, pick a drummer, then press Generate.');
   lblStatus.Caption := 'Ready';
+  StatusBar.Panels[0].Text := 'Ready';
 
   { Colours last, when every control exists. }
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged;
@@ -244,6 +287,7 @@ begin
     if FCliTool = '' then begin
       btnGenerate.Enabled := False;
       lblStatus.Caption := 'ChameleonDrummer.exe not found';
+      if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'CLI not found';
       Log('ChameleonDrummer.exe was not found. It must sit in the same folder as this program:');
       Log('  ' + CliToolPath);
       Log('Copy it there (or reinstall), then restart this program.');
@@ -411,40 +455,107 @@ var
   I: Integer;
   C: TComponent;
 begin
-  for I := gbSong.ComponentCount - 1 downto 0 do begin
-    C := gbSong.Components[I];
-    if (C is TLabel) and AnsiStartsStr('Section ', TLabel(C).Caption) then
-      gbSong.Components[I].Free
-    else if (C is TComboBox) and AnsiStartsStr('secCmb', C.Name) then
-      gbSong.Components[I].Free
-    else if (C is TSpinEdit) and AnsiStartsStr('secSpn', C.Name) then
-      gbSong.Components[I].Free
-    else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure')) then
-      gbSong.Components[I].Free;
+  if Assigned(sbSections) then begin
+    for I := sbSections.ComponentCount - 1 downto 0 do begin
+      C := sbSections.Components[I];
+      if (C is TLabel) and AnsiStartsStr('Section ', TLabel(C).Caption) then
+        sbSections.Components[I].Free
+      else if (C is TComboBox) and AnsiStartsStr('secCmb', C.Name) then
+        sbSections.Components[I].Free
+      else if (C is TSpinEdit) and AnsiStartsStr('secSpn', C.Name) then
+        sbSections.Components[I].Free
+      else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure')) then
+        sbSections.Components[I].Free;
+    end;
   end;
 end;
 
 procedure TMainForm.BuildSectionControls;
 var
   I, Y: Integer;
-  C: TComponent;
   lblName: TLabel;
   cmbSection: TComboBox;
   seBars: TSpinEdit;
   btnDelete: TButton;
+  btnAdd: TButton;
 begin
   ClearSectionControls;
 
   SetLength(FSectionBars, Length(FSectionNames));
 
-  Y := 200; for I := 0 to High(FSectionNames) do begin
-    lblName := TLabel.Create(gbSong); with lblName do begin Parent := gbSong; Left := 12; Top := Y; Width := 70; Height := 14; Caption := Format('Section %d', [I+1]); end;
-    cmbSection := TComboBox.Create(gbSong); with cmbSection do begin Parent := gbSong; Name := Format('secCmb%d', [I]); Left := 80; Top := Y; Width := 180; Height := 24; Items.Add('intro'); Items.Add('verse'); Items.Add('chorus'); Items.Add('bridge'); Items.Add('outro'); ItemIndex := Items.IndexOf(FSectionNames[I]); end;
-    seBars := TSpinEdit.Create(gbSong); with seBars do begin Parent := gbSong; Name := Format('secSpn%d', [I]); Left := 270; Top := Y; Width := 60; Height := 24; MinValue := 1; MaxValue := 64; Value := FSectionBars[I]; end;
-    btnDelete := TButton.Create(gbSong); with btnDelete do begin Parent := gbSong; Name := Format('secDel%d', [I]); Left := 340; Top := Y; Width := 28; Height := 24; Caption := '-'; OnClick := @BtnSectionDeleteClick; end;
-    Inc(Y, 28); end;
+  Y := 8;
+  for I := 0 to High(FSectionNames) do begin
+    lblName := TLabel.Create(sbSections);
+    with lblName do begin
+      Parent := sbSections;
+      Left := 12; Top := Y;
+      Width := 80; Height := 14;
+      Caption := Format('Section %d', [I+1]);
+      AutoSize := False;
+    end;
+    cmbSection := TComboBox.Create(sbSections);
+    with cmbSection do begin
+      Parent := sbSections;
+      Name := Format('secCmb%d', [I]);
+      Left := 100; Top := Y - 2;
+      Width := 180; Height := 24;
+      Style := csDropDownList;
+      Items.Add('intro');
+      Items.Add('verse');
+      Items.Add('chorus');
+      Items.Add('bridge');
+      Items.Add('outro');
+      ItemIndex := Items.IndexOf(FSectionNames[I]);
+    end;
+    seBars := TSpinEdit.Create(sbSections);
+    with seBars do begin
+      Parent := sbSections;
+      Name := Format('secSpn%d', [I]);
+      Left := 290; Top := Y - 2;
+      Width := 60; Height := 24;
+      MinValue := 1;
+      MaxValue := 64;
+      Value := FSectionBars[I];
+    end;
+    btnDelete := TButton.Create(sbSections);
+    with btnDelete do begin
+      Parent := sbSections;
+      Name := Format('secDel%d', [I]);
+      Left := 360; Top := Y - 2;
+      Width := 28; Height := 24;
+      Caption := '-';
+      OnClick := @BtnSectionDeleteClick;
+    end;
+    Inc(Y, 30);
+  end;
+
+  { Add Section button at the bottom }
+  btnAdd := TButton.Create(sbSections);
+  with btnAdd do begin
+    Parent := sbSections;
+    Name := 'btnAddSection';
+    Left := 100; Top := Y + 4;
+    Width := 100; Height := 28;
+    Caption := '+ Add Section';
+    OnClick := @BtnAddSectionClick;
+  end;
+
+  { Reset Structure button }
+  btnAdd := TButton.Create(sbSections);
+  with btnAdd do begin
+    Parent := sbSections;
+    Name := 'btnResetStructure';
+    Left := 210; Top := Y + 4;
+    Width := 100; Height := 28;
+    Caption := 'Reset';
+    OnClick := @BtnResetStructureClick;
+  end;
+
+  { Update scroll range }
+  sbSections.VertScrollBar.Range := Y + 40;
+
   { the controls made here are new: give them the current colours }
-   {$IFDEF MSWINDOWS}ThemeControlTree(gbSong, FDark);{$ENDIF}
+  {$IFDEF MSWINDOWS}ThemeControlTree(sbSections, FDark);{$ENDIF}
 end;
 
 procedure TMainForm.SyncSectionArraysFromControls;
@@ -455,9 +566,9 @@ var
 begin
   SetLength(FSectionBars, Length(FSectionNames));
   for I := 0 to High(FSectionNames) do begin
-    cmb := gbSong.FindComponent(Format('secCmb%d', [I])) as TComboBox;
+    cmb := sbSections.FindComponent(Format('secCmb%d', [I])) as TComboBox;
     if (cmb <> nil) then FSectionNames[I] := cmb.Text;
-    spn := gbSong.FindComponent(Format('secSpn%d', [I])) as TSpinEdit;
+    spn := sbSections.FindComponent(Format('secSpn%d', [I])) as TSpinEdit;
     if (spn <> nil) then FSectionBars[I] := spn.Value;
   end;
 end;
@@ -591,6 +702,7 @@ begin
     end;
 
     lblStatus.Caption := 'Working...';
+    if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Working...';
     btnGenerate.Enabled := False;
     Application.ProcessMessages;
     try
@@ -604,12 +716,15 @@ begin
 
   if Ok then begin
     lblStatus.Caption := 'Done';
+    if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Done';
     Log('Done.');
     if chkOpenFolder.Checked then
       OpenFolder(ExtractFilePath(ExpandFileName(OutputBasePath)));
   end
-  else
+  else begin
     lblStatus.Caption := 'Failed - see the log';
+    if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Failed';
+  end;
 end;
 
 procedure TMainForm.Log(const AText: String);
@@ -617,6 +732,8 @@ begin
   memLog.Lines.Add(FormatDateTime('hh:nn:ss', Now) + '  ' + AText);
   memLog.SelStart := Length(memLog.Text);
   memLog.SelLength := 0;
+  if Assigned(StatusBar) then
+    StatusBar.Panels[0].Text := AText;
 end;
 
 procedure TMainForm.cbGenreChange(Sender: TObject);
@@ -689,6 +806,16 @@ end;
 procedure TMainForm.mnuAboutClick(Sender: TObject);
 begin
   ShowMessage('ChameleonDrummer GUI v1.0.634' + LineEnding + LineEnding + '(c) Martin Haverland');
+end;
+
+procedure TMainForm.mnuAddSectionClick(Sender: TObject);
+begin
+  BtnAddSectionClick(Sender);
+end;
+
+procedure TMainForm.mnuResetStructureClick(Sender: TObject);
+begin
+  BtnResetStructureClick(Sender);
 end;
 
 end.

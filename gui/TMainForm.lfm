@@ -34,6 +34,17 @@ object MainForm: TMainForm
         RadioItem = True
         OnClick = mnuThemeClick
       end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object mnuAddSection: TMenuItem
+        Caption = '&Add Section'
+        OnClick = mnuAddSectionClick
+      end
+      object mnuResetStructure: TMenuItem
+        Caption = '&Reset Structure'
+        OnClick = mnuResetStructureClick
+      end
     end
     object mnuHelp: TMenuItem
       Caption = '&Help'
