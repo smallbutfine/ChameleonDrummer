@@ -97,6 +97,8 @@ type
     procedure mnuImportConfigClick(Sender: TObject);
     {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
+    procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
+
   private
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
@@ -161,27 +163,34 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
   cbMeter.ItemIndex := 0;
+  FDark := False;
 
-  { Make combo boxes read-only (no text selection on focus) }
-  cbGenre.Style := csDropDownList;
-  cbStyle.Style := csDropDownList;
-  cbDrummer.Style := csDropDownList;
-  cbMapping.Style := csDropDownList;
-  cbMeter.Style := csDropDownList;
-  cbExport.Style := csDropDownList;
+  // Aktiviert das manuelle Zeichnen (Owner-Draw)
+  cbGenre.Style := csOwnerDrawFixed;
+  cbStyle.Style := csOwnerDrawFixed;
+  cbDrummer.Style := csOwnerDrawFixed;
+  cbMapping.Style := csOwnerDrawFixed;
+  cbMeter.Style := csOwnerDrawFixed;
+  cbExport.Style := csOwnerDrawFixed;
+
+  // Verknüpft die Events mit der neuen Methode
+  cbGenre.OnDrawItem := @ComboBoxDrawItem;
+  cbStyle.OnDrawItem := @ComboBoxDrawItem;
+  cbDrummer.OnDrawItem := @ComboBoxDrawItem;
+  cbMapping.OnDrawItem := @ComboBoxDrawItem;
+  cbMeter.OnDrawItem := @ComboBoxDrawItem;
+  cbExport.OnDrawItem := @ComboBoxDrawItem;
 
   FillLists;
   FillStyles;
 
-  { Re-apply dropdown style after FillLists/FillStyles (they reset it) }
-  cbGenre.Style := csDropDownList;
-  cbStyle.Style := csDropDownList;
-  cbDrummer.Style := csDropDownList;
-  cbMapping.Style := csDropDownList;
-  cbMeter.Style := csDropDownList;
-  cbExport.Style := csDropDownList;
+  cbGenre.Style := csOwnerDrawFixed;
+  cbStyle.Style := csOwnerDrawFixed;
+  cbDrummer.Style := csOwnerDrawFixed;
+  cbMapping.Style := csOwnerDrawFixed;
+  cbMeter.Style := csOwnerDrawFixed;
+  cbExport.Style := csOwnerDrawFixed;
 
-  { Assign OnDropDown to theme dropdown list in dark mode }
   cbGenre.OnDropDown := @ComboBoxDropDown;
   cbStyle.OnDropDown := @ComboBoxDropDown;
   cbDrummer.OnDropDown := @ComboBoxDropDown;
@@ -189,73 +198,44 @@ begin
   cbMeter.OnDropDown := @ComboBoxDropDown;
   cbExport.OnDropDown := @ComboBoxDropDown;
 
-  { Export options }
   cbExport.Items.Add('MIDI only');
   cbExport.Items.Add('MIDI + REAPER project');
   cbExport.Items.Add('MIDI + REAPER project + Ardour session');
   cbExport.ItemIndex := ExportREAPER;
-
   edOutput.Text := 'song';
   chkOpenFolder.Checked := False;
-
-  seTempo.MinValue := 0;
-  seTempo.MaxValue := 300;
-  seTempo.Value := 0;
-
-  tbComplexity.Min := 0;
-  tbComplexity.Max := 100;
-  tbComplexity.Position := 50;
-
-  tbHumanization.Min := 0;
-  tbHumanization.Max := 100;
-  tbHumanization.Position := 30;
-
-  tbSwing.Min := 0;
-  tbSwing.Max := 100;
-  tbSwing.Position := 0;
-
+  seTempo.MinValue := 0; seTempo.MaxValue := 300; seTempo.Value := 0;
+  tbComplexity.Min := 0; tbComplexity.Max := 100; tbComplexity.Position := 50;
+  tbHumanization.Min := 0; tbHumanization.Max := 100; tbHumanization.Position := 30;
+  tbSwing.Min := 0; tbSwing.Max := 100; tbSwing.Position := 0;
   UpdateValueLabels;
 
-  { Setup scrollable section area - positioned below static controls }
   sbSections := TScrollBox.Create(Self);
   with sbSections do begin
-    Parent := gbSong;
-    Left := 0;
-    Top := 210;
-    Width := gbSong.ClientWidth;
-    Height := gbSong.ClientHeight - 210;
-    Align := alNone;
-    Anchors := [akLeft, akTop, akRight, akBottom];
-    BorderStyle := bsNone;
-    VertScrollBar.Tracking := True;
-    HorzScrollBar.Visible := False;
+    Parent := gbSong; Left := 0; Top := 210;
+    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 210;
+    Align := alNone; Anchors := [akLeft, akTop, akRight, akBottom];
+    BorderStyle := bsNone; VertScrollBar.Tracking := True; HorzScrollBar.Visible := False;
   end;
 
   ResetToDefaultStructure;
 
-  { Create StatusBar programmatically to avoid .lfm loading issues }
   StatusBar := TStatusBar.Create(Self);
   with StatusBar do begin
-    Parent := Self;
-    Align := alBottom;
-    SimplePanel := False;
-    Panels.Add;
-    Panels[0].Width := 300;
-    Panels.Add;
-    Panels[1].Width := 150;
-    Panels.Add;
-    Panels[2].Width := 100;
+    Parent := Self; Align := alBottom; SimplePanel := False;
+    Panels.Add; Panels[0].Width := 300;
+    Panels.Add; Panels[1].Width := 150;
+    Panels.Add; Panels[2].Width := 100;
     OnDrawPanel := @StatusBarDrawPanel;
   end;
 
   Log('Choose a genre and style, pick a drummer, then press Generate.');
   StatusBar.Panels[0].Text := 'Ready';
 
-  { Colours last, when every control exists. }
-  {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged;
-  SetTheme(LoadThemeChoice, False);{$ENDIF}
+  {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged; SetTheme(LoadThemeChoice, False);{$ENDIF}
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
+
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
 begin
@@ -1079,6 +1059,43 @@ begin
     end;
   finally
     Dlg.Free;
+  end;
+end;
+procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
+var
+  CB: TComboBox;
+  IsSelected: Boolean;
+begin
+  CB := Control as TComboBox;
+  // KORREKTUR: Unit-Präfix LCLType hinzugefügt, um den Typen-Konflikt zu lösen
+  IsSelected := LCLType.odSelected in State;
+
+  with CB.Canvas do begin
+    if FDark then begin
+      if IsSelected then begin
+        Brush.Color := TColor($404040); // Dunkles Grau statt Blau
+        Font.Color := clWhite;
+      end else begin
+        Brush.Color := TColor($2D2D2D);
+        Font.Color := clWhite;
+      end;
+    end else begin
+      if IsSelected then begin
+        Brush.Color := TColor($E0E0E0); // Helles Grau statt Blau
+        Font.Color := clBlack;
+      end else begin
+        Brush.Color := clWindow;
+        Font.Color := clWindowText;
+      end;
+    end;
+
+    FillRect(ARect);
+    TextRect(ARect, ARect.Left + 4, ARect.Top + 2, CB.Items[Index]);
+
+    {$IFDEF MSWINDOWS}
+    // KORREKTUR: Auch hier das Präfix für odFocused nutzen
+    if LCLType.odFocused in State then DrawFocusRect(ARect);
+    {$ENDIF}
   end;
 end;
 
