@@ -1,428 +1,711 @@
-# Funk grooves.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-# One block per groove:  [style kind intensity=low-high]
-#   kind       verse, chorus or bridge (intro/outro play verse, solo/breakdown bridge)
-#   intensity  the bar intensities (0-1) this groove suits; neighbours overlap on purpose
-# Then one line per instrument:  <instrument>[@min complexity] <bar 1> | <bar 2> ...
-#   instruments  K S RS SS H HO HP R RB C C2 CH SP T1 T2 T3 T4
-#   steps        . rest   x hit   X accent   o soft   g ghost
+#
 #   a bar has 4, 8, 12, 16, 24 or 32 steps; spaces inside a bar are ignored
-# Add a block to add a groove; the blocks of a style and kind are its variants,
-# lightest first. A new style name makes a new style of this genre.
-# Playable by one drummer: snare, crash and toms 1/3 right hand; hi-hat, ride,
-# tom 2 left hand; kick and hi-hat pedal feet; at most 3 hits on one step.
-
-[classic verse intensity=0.20-0.60]
-K X... .... ..x. .... | X... ..x. .... ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-
-[classic verse intensity=0.40-0.80]
-K X... ..x. .x.. .... | X... ..x. .... .x..
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-S@0.4 ...g .... .g.. ...g | ..g. .... .g.. ....
-
-[classic verse intensity=0.60-1.00]
-K X... ..x. .x.. ..x. | X... ..x. .x.. ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xo.o | xoxo xoxo xoxo xo.o
-HO .... .... .... ..x. | .... .... .... ..x.
-S@0.4 ...g .g.. .g.. ...g | ..g. .g.. .... ...g
-
-[classic chorus intensity=0.40-0.80]
-K X... ..x. .x.. .... | X... ..x. .... .x..
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-C X... .... .... .... | .... .... .... ....
-
-[classic chorus intensity=0.60-0.95]
-K X... ..x. .x.. ..x. | X... ..x. .x.. ....
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
-
-[classic chorus intensity=0.75-1.00]
-K X..x ..x. .x.. ..x. | X..x ..x. .x.x ..x.
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-S@0.5 ...g .g.. .g.. ...g | ..g. .g.. .g.. ...g
-
-[classic bridge intensity=0.10-0.50]
-K X... .... .... .... | X... .... .... ....
-SS .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[classic bridge intensity=0.30-0.70]
-K X... ..x. .... .... | X... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[classic bridge intensity=0.50-0.90]
-K X... ..x. .x.. .... | X... ..x. .x.. ..x.
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-
-[pfunk verse intensity=0.20-0.60]
-K X... ..x. .... ..x. | X... ..x. .x.. ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-
-[pfunk verse intensity=0.40-0.80]
-K X..x ..x. .x.. ..x. | X..x ..x. .x.. .x..
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
-
-[pfunk verse intensity=0.60-1.00]
-K X..x ..x. .x.x ..x. | X.xx ..x. .x.. xx.x
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-S@0.5 ...g .g.. ...g ..g. | ..g. .g.. .g.. ...g
-
-[pfunk chorus intensity=0.40-0.80]
-K X..x ..x. .x.. ..x. | X..x ..x. .x.. ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-C X... .... .... .... | .... .... .... ....
-
-[pfunk chorus intensity=0.60-0.95]
-K X.xx ..x. .x.x ..x. | X.xx ..x. .x.. xx..
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[pfunk chorus intensity=0.75-1.00]
-K X.xx x.x. .x.x ..xx | X.xx x.x. .x.x xx..
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-S@0.6 ...g .g.. ...g .... | ..g. .... .g.. ...g
-
-[pfunk bridge intensity=0.10-0.50]
-K X... .... .... .... | X... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[pfunk bridge intensity=0.30-0.70]
-K X..x .... ..x. .... | X..x .... ..x. ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-
-[pfunk bridge intensity=0.50-0.90]
-K X..x ..x. .x.. ..x. | X..x ..x. .x.x xx..
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-T1@0.5 .... .... .... .... | .... .... .... ..xx
-
-[shuffle verse intensity=0.20-0.60]
-K X.. ... x.. ... | X.. ... x.. ...
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-
-[shuffle verse intensity=0.40-0.80]
-K X.. ... x.. ..x | X.. ... x.. ...
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-S@0.5 ... ..g ... ... | ... ..g ... ..g
-
-[shuffle verse intensity=0.60-1.00]
-K X.. ..x x.. ... | X.. ..x x.. ..x
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
-
-[shuffle chorus intensity=0.40-0.80]
-K X.. ... x.. ... | X.. ... x.. ..x
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-C X.. ... ... ... | ... ... ... ...
-
-[shuffle chorus intensity=0.60-0.95]
-K X.. ..x x.. ... | X.. ..x x.. ..x
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
-C X.. ... ... ... | X.. ... ... ...
-
-[shuffle chorus intensity=0.75-1.00]
-K X.. x.x x.. x.. | X.. x.x x.. x.x
-S ... x.. ... x.. | ... x.. ... x..
-R x.x x.x x.x x.x | x.x x.x x.x x.x
-S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
-C X.. ... ... ... | X.. ... ... ...
-
-[shuffle bridge intensity=0.10-0.50]
-K X.. ... ... ... | X.. ... ... ...
-SS ... x.. ... x.. | ... x.. ... x..
-H x.. x.. x.. x.. | x.. x.. x.. x..
-
-[shuffle bridge intensity=0.30-0.70]
-K X.. ... ..x ... | X.. ... ... ...
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-
-[shuffle bridge intensity=0.50-0.90]
-K X.. ..x x.. ..x | X.. ..x x.. ..x
-S ... x.. ... x.. | ... x.. ... x..
-H x.x x.x x.x x.x | x.x x.x x.x x.x
-S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
-
-[new_orleans verse intensity=0.20-0.60]
-K x... .... .... x... | x... ..x. .... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[new_orleans verse intensity=0.40-0.80]
-K x... ..x. .... x... | x... ..x. .... x...
-S .... x..x ..x. x... | .... x..x ..x. x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[new_orleans verse intensity=0.60-1.00]
-K x..x ..x. .x.. x... | x..x ..x. .x.. x.x.
-S ..x. x..x ..x. x..x | ..x. x..x ..x. x.xx
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-S@0.5 ...g .... .g.. .... | .... .... .... ....
-
-[new_orleans chorus intensity=0.40-0.80]
-K x... ..x. .... x... | x... ..x. .... x...
-S .... x..x ..x. x... | .... x..x ..x. x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
-[new_orleans chorus intensity=0.60-0.95]
-K x..x ..x. .x.. x... | x..x ..x. .x.. x...
-S .... x..x ..x. x... | .... x..x ..x. xx.x
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[new_orleans chorus intensity=0.75-1.00]
-K x.xx ..x. .x.x x... | x.xx ..x. .x.x x.x.
-S ..x. x..x ..x. x.xx | ..x. x..x ..x. x.xx
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[new_orleans bridge intensity=0.10-0.50]
-K x... .... .... x... | x... .... .... ....
-SS .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[new_orleans bridge intensity=0.30-0.70]
-K x... ..x. .... x... | x... ..x. .... ....
-S .... x..x .... x... | .... x..x .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[new_orleans bridge intensity=0.50-0.90]
-K x..x ..x. .x.. x... | x..x ..x. .x.. x...
-S .... x..x ..x. x... | .... x..x ..x. x.xx
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[fusion verse intensity=0.20-0.60]
-K x..x ..x. .x.. ..x. | x..x ..x. .x.. ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-
-[fusion verse intensity=0.40-0.80]
-K x.xx ..x. .x.x ..x. | x..x ..x. .x.x ..xx
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g ....
-
-[fusion verse intensity=0.60-1.00]
-K x.xx x.x. .x.x ..xx | x.xx ..x. .x.x x.x.
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xo.o | xoxo xoxo xoxo xo.o
-HO .... .... .... ..x. | .... .... .... ..x.
-S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
-
-[fusion chorus intensity=0.40-0.80]
-K x..x ..x. x... ..x. | x..x ..x. x... ..x.
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
-[fusion chorus intensity=0.60-0.95]
-K x.xx ..x. x.x. ..xx | x.xx ..x. x.x. ..x.
-S .... x... .... x... | .... x... .... x...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
-
-[fusion chorus intensity=0.75-1.00]
-K x.xx x.x. x.xx ..xx | x.xx x.x. x.xx x.x.
-S .... x... .... x... | .... x... .... x...
-R xxxx xxxx xxxx xxxx | xxxx xxxx xxxx xxxx
-C X... .... .... .... | X... .... .... ....
-S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
-
-[fusion bridge intensity=0.10-0.50]
-K x... .... ..x. .... | x... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[fusion bridge intensity=0.30-0.70]
-K x..x .... ..x. ..x. | x... ..x. .... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[fusion bridge intensity=0.50-0.90]
-K x..x ..x. .x.x ..x. | x..x ..x. .x.. xx.x
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-T3@0.5 .... .... .... .... | .... .... .... ..x.
-
-[minimal verse intensity=0.20-0.60]
-K X... .... .... .... | X... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[minimal verse intensity=0.40-0.80]
-K X... ..x. .... .... | X... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[minimal verse intensity=0.60-1.00]
-K X... ..x. .... ..x. | X... .... ..x. ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-S@0.5 ...g .... .... .... | .... ..g. .... ...g
-
-[minimal chorus intensity=0.40-0.80]
-K X... .... .... .... | X... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
-[minimal chorus intensity=0.60-0.95]
-K X... ..x. .... ..x. | X... ..x. .... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
-[minimal chorus intensity=0.75-1.00]
-K X..x ..x. .... ..x. | X..x ..x. .x.. ....
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-C X... .... .... .... | X... .... .... ....
-
-[minimal bridge intensity=0.10-0.50]
-K X... .... .... .... | .... .... .... ....
-SS .... .... x... .... | .... .... x... ....
-H x... x... x... x... | x... x... x... x...
-
-[minimal bridge intensity=0.30-0.70]
-K X... .... .... .... | X... .... ..x. ....
-SS .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[minimal bridge intensity=0.50-0.90]
-K X... ..x. .... .... | X... ..x. .... ..x.
-SS .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[heavy verse intensity=0.20-0.60]
-K X..x ..x. .... ..x. | X..x ..x. .... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[heavy verse intensity=0.40-0.80]
-K X..x ..x. .x.. ..x. | X..x ..x. .x.. ..x.
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-
-[heavy verse intensity=0.60-1.00]
-K X.xx ..x. .x.x ..x. | X.xx ..x. .x.. x.x.
-S .... x... .... x... | .... x... .... x...
-H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
-S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
-
-[heavy chorus intensity=0.40-0.80]
-K X..x ..x. X... ..x. | X..x ..x. X... ..x.
-RS .... X... .... X... | .... X... .... X...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
-[heavy chorus intensity=0.60-0.95]
-K X.xx ..x. X.x. ..x. | X.xx ..x. X.x. x.x.
-RS .... X... .... X... | .... X... .... X...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[heavy chorus intensity=0.75-1.00]
-K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
-RS .... X... .... X... | .... X... .... X...
-R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | X... .... .... ....
-
-[heavy bridge intensity=0.10-0.50]
-K X... .... ..x. .... | X... .... ..x. ....
-S .... x... .... x... | .... x... .... x...
-H x... x... x... x... | x... x... x... x...
-
-[heavy bridge intensity=0.30-0.70]
-K X..x .... X... .... | X..x .... X... ....
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-
-[heavy bridge intensity=0.50-0.90]
-K X..x ..x. X.x. ..x. | X..x ..x. X.x. xxxx
-S .... x... .... x... | .... x... .... x...
-H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... .... .... | .... .... .... ....
-
+#   a bar has 4, 8, 12, 16, 24 or 32 steps; spaces inside a bar are ignored
+#   instruments  K S RS SS H HO HP R RB C C2 CH SP T1 T2 T3 T4
+#   instruments  K S RS SS H HO HP R RB C C2 CH SP T1 T2 T3 T4
+#   intensity  the bar intensities (0-1) this groove suits; neighbours overlap on purpose
+#   intensity  the bar intensities (0-1) this groove suits; neighbours overlap on purpose
+#   kind       verse, chorus or bridge (intro/outro play verse, solo/breakdown bridge)
+#   kind       verse, chorus or bridge (intro/outro play verse, solo/breakdown bridge)
+#   steps        . rest   x hit   X accent   o soft   g ghost
+#   steps        . rest   x hit   X accent   o soft   g ghost
 # ---- odd meters (hand written, tools/write_meter_grooves.py) ----
-# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+# ---- odd meters (hand written, tools/write_meter_grooves.py) ----
+# Add a block to add a groove; the blocks of a style and kind are its variants,
+# Add a block to add a groove; the blocks of a style and kind are its variants,
+# Additional classic patterns
+# Additional heavy patterns
+# Additional odd meter patterns
+# Funk grooves.
+# Funk grooves.
 # Jazz /4 meters count triplets (3 steps per quarter), the others eighths.
-
-[classic verse 7/8 intensity=0.20-0.60]
-K     x.x .. .x
-S     ... x. x.
-H     xxx xx xx
-
-[classic verse 7/8 intensity=0.40-0.80]
-K     x.x .. .x
-S     ... x. x.
-H     xxx xx xx
-S@0.7 .g. .g ..
-
-[classic verse 7/8 intensity=0.60-1.00]
-K     x. .x ..x
-S     .. x. x..
-H     xx xx xxx
-S@0.6 .g .. .g.
-
-[classic verse 5/4 intensity=0.20-0.60]
-K     x. .. .x .. x.
-S     .. .. .. x. ..
-H     x. x. x. x. x.
-
-[classic verse 5/4 intensity=0.40-0.80]
-K     x. .x .. .x x.
-S     .. .. .. x. ..
-H     xx xx xx xx xx
-S@0.6 .. g. .g .. .g
-
-[classic verse 5/4 intensity=0.60-1.00]
-K     x. .. .x .. .x
-S     .. .. x. .. x.
-H     xx xx xx xx xx
-S@0.6 .g .. .. g. ..
-
+# Jazz /4 meters count triplets (3 steps per quarter), the others eighths.
+# lightest first. A new style name makes a new style of this genre.
+# lightest first. A new style name makes a new style of this genre.
+# One block per groove:  [style kind intensity=low-high]
+# One block per groove:  [style kind intensity=low-high]
+# Playable by one drummer: snare, crash and toms 1/3 right hand; hi-hat, ride,
+# Playable by one drummer: snare, crash and toms 1/3 right hand; hi-hat, ride,
+# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
+# Then one line per instrument:  <instrument>[@min complexity] <bar 1> | <bar 2> ...
+# Then one line per instrument:  <instrument>[@min complexity] <bar 1> | <bar 2> ...
+# tom 2 left hand; kick and hi-hat pedal feet; at most 3 hits on one step.
+# tom 2 left hand; kick and hi-hat pedal feet; at most 3 hits on one step.
+[classic bridge intensity=0.10-0.40]
+[classic bridge intensity=0.10-0.50]
+[classic bridge intensity=0.10-0.50]
+[classic bridge intensity=0.30-0.70]
+[classic bridge intensity=0.30-0.70]
+[classic bridge intensity=0.50-0.90]
+[classic bridge intensity=0.50-0.90]
+[classic bridge intensity=0.80-1.00]
+[classic chorus intensity=0.10-0.40]
+[classic chorus intensity=0.40-0.80]
+[classic chorus intensity=0.40-0.80]
+[classic chorus intensity=0.60-0.95]
+[classic chorus intensity=0.60-0.95]
+[classic chorus intensity=0.75-1.00]
+[classic chorus intensity=0.75-1.00]
+[classic chorus intensity=0.80-1.00]
+[classic verse 3/4 intensity=0.10-0.40]
+[classic verse 3/4 intensity=0.10-0.40]
+[classic verse 3/4 intensity=0.10-0.40]
 [classic verse 3/4 intensity=0.20-0.60]
-K     x. .. .x
-S     .. x. ..
-H     xx xx xx
-
+[classic verse 3/4 intensity=0.20-0.60]
 [classic verse 3/4 intensity=0.40-0.80]
-K     x. .x .x
-S     .. x. x.
-H     xx xx xx
-S@0.6 .g .. g.
-
+[classic verse 3/4 intensity=0.40-0.80]
 [classic verse 3/4 intensity=0.60-1.00]
-K     xx .x .x
-S     .. x. x.
+[classic verse 3/4 intensity=0.60-1.00]
+[classic verse 3/4 intensity=0.80-1.00]
+[classic verse 3/4 intensity=0.80-1.00]
+[classic verse 3/4 intensity=0.80-1.00]
+[classic verse 5/4 intensity=0.10-0.40]
+[classic verse 5/4 intensity=0.10-0.40]
+[classic verse 5/4 intensity=0.20-0.60]
+[classic verse 5/4 intensity=0.20-0.60]
+[classic verse 5/4 intensity=0.40-0.80]
+[classic verse 5/4 intensity=0.40-0.80]
+[classic verse 5/4 intensity=0.60-1.00]
+[classic verse 5/4 intensity=0.60-1.00]
+[classic verse 5/4 intensity=0.80-1.00]
+[classic verse 5/4 intensity=0.80-1.00]
+[classic verse 7/8 intensity=0.10-0.40]
+[classic verse 7/8 intensity=0.20-0.60]
+[classic verse 7/8 intensity=0.20-0.60]
+[classic verse 7/8 intensity=0.40-0.80]
+[classic verse 7/8 intensity=0.40-0.80]
+[classic verse 7/8 intensity=0.60-1.00]
+[classic verse 7/8 intensity=0.60-1.00]
+[classic verse 7/8 intensity=0.80-1.00]
+[classic verse intensity=0.10-0.40]
+[classic verse intensity=0.20-0.60]
+[classic verse intensity=0.20-0.60]
+[classic verse intensity=0.40-0.80]
+[classic verse intensity=0.40-0.80]
+[classic verse intensity=0.60-1.00]
+[classic verse intensity=0.60-1.00]
+[classic verse intensity=0.80-1.00]
+[fusion bridge intensity=0.10-0.50]
+[fusion bridge intensity=0.30-0.70]
+[fusion bridge intensity=0.50-0.90]
+[fusion chorus intensity=0.40-0.80]
+[fusion chorus intensity=0.60-0.95]
+[fusion chorus intensity=0.75-1.00]
+[fusion verse intensity=0.20-0.60]
+[fusion verse intensity=0.40-0.80]
+[fusion verse intensity=0.60-1.00]
+[heavy bridge intensity=0.10-0.50]
+[heavy bridge intensity=0.10-0.50]
+[heavy bridge intensity=0.10-0.50]
+[heavy bridge intensity=0.30-0.70]
+[heavy bridge intensity=0.30-0.70]
+[heavy bridge intensity=0.50-0.90]
+[heavy bridge intensity=0.50-0.90]
+[heavy bridge intensity=0.80-1.00]
+[heavy chorus intensity=0.10-0.40]
+[heavy chorus intensity=0.40-0.80]
+[heavy chorus intensity=0.60-0.95]
+[heavy chorus intensity=0.75-1.00]
+[heavy chorus intensity=0.75-1.00]
+[heavy chorus intensity=0.80-1.00]
+[heavy verse intensity=0.10-0.40]
+[heavy verse intensity=0.20-0.60]
+[heavy verse intensity=0.40-0.80]
+[heavy verse intensity=0.40-0.80]
+[heavy verse intensity=0.60-1.00]
+[heavy verse intensity=0.80-1.00]
+[minimal bridge intensity=0.10-0.50]
+[minimal bridge intensity=0.30-0.70]
+[minimal bridge intensity=0.50-0.90]
+[minimal chorus intensity=0.40-0.80]
+[minimal chorus intensity=0.60-0.95]
+[minimal chorus intensity=0.75-1.00]
+[minimal verse intensity=0.20-0.60]
+[minimal verse intensity=0.40-0.80]
+[minimal verse intensity=0.60-1.00]
+[new_orleans bridge intensity=0.10-0.50]
+[new_orleans bridge intensity=0.30-0.70]
+[new_orleans bridge intensity=0.50-0.90]
+[new_orleans chorus intensity=0.40-0.80]
+[new_orleans chorus intensity=0.60-0.95]
+[new_orleans chorus intensity=0.75-1.00]
+[new_orleans verse intensity=0.20-0.60]
+[new_orleans verse intensity=0.40-0.80]
+[new_orleans verse intensity=0.60-1.00]
+[pfunk bridge intensity=0.10-0.50]
+[pfunk bridge intensity=0.30-0.70]
+[pfunk bridge intensity=0.50-0.90]
+[pfunk chorus intensity=0.40-0.80]
+[pfunk chorus intensity=0.60-0.95]
+[pfunk chorus intensity=0.75-1.00]
+[pfunk verse intensity=0.20-0.60]
+[pfunk verse intensity=0.40-0.80]
+[pfunk verse intensity=0.60-1.00]
+[shuffle bridge intensity=0.10-0.50]
+[shuffle bridge intensity=0.30-0.70]
+[shuffle bridge intensity=0.50-0.90]
+[shuffle chorus intensity=0.40-0.80]
+[shuffle chorus intensity=0.60-0.95]
+[shuffle chorus intensity=0.75-1.00]
+[shuffle verse intensity=0.20-0.60]
+[shuffle verse intensity=0.40-0.80]
+[shuffle verse intensity=0.60-1.00]
+C X.. ... ... ... | ... ... ... ...
+C X.. ... ... ... | X.. ... ... ...
+C X.. ... ... ... | X.. ... ... ...
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | .... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... .... .... | X... .... .... ....
+C X... .... X... .... | X... .... X... ....
+C@0.5 X... .... .... .... | .... .... .... ....
+H     x. x. x. x. x.
+H     x. x. x. x. x.
+H     x. x. x. x. x.
+H     x. x. x. x. x.
 H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx
+H     xx xx xx xx xx
+H     xx xx xx xx xx
+H     xx xx xx xx xx
+H     xx xx xx xx xx
+H     xx xx xx xx xx
+H     xx xx xx xx xx
+H     xx xx xxx
+H     xx xx xxx
+H     xxx xx xx
+H     xxx xx xx
+H     xxx xx xx
+H     xxx xx xx
+H     xxx xx xx
+H     xxx xx xx
+H x.. x.. x.. x.. | x.. x.. x.. x..
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x... x... x... x... | x... x... x... x...
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x x.x x.x x.x | x.x x.x x.x x.x
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+H xoxo xoxo xoxo xo.o | xoxo xoxo xoxo xo.o
+H xoxo xoxo xoxo xo.o | xoxo xoxo xoxo xo.o
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+H xoxo xoxo xoxo xoxo | xoxo xoxo xoxo xoxo
+HO .... .... .... ..x. | .... .... .... ..x.
+HO .... .... .... ..x. | .... .... .... ..x.
+HO x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+HO x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+K     x. .. .x
+K     x. .. .x
+K     x. .. .x
+K     x. .. .x
+K     x. .. .x
+K     x. .. .x .. .x
+K     x. .. .x .. .x
+K     x. .. .x .. x.
+K     x. .. .x .. x.
+K     x. .. .x .. x.
+K     x. .. .x .. x.
+K     x. .x .. .x x.
+K     x. .x .. .x x.
+K     x. .x .. .x x.
+K     x. .x .. .x x.
+K     x. .x ..x
+K     x. .x ..x
+K     x. .x .x
+K     x. .x .x
+K     x.x .. .x
+K     x.x .. .x
+K     x.x .. .x
+K     x.x .. .x
+K     x.x .. .x
+K     x.x .. .x
+K     xx .x .x
+K     xx .x .x
+K     xx .x .x
+K     xx .x .x
+K     xx .x .x
+K X.. ... ... ... | X.. ... ... ...
+K X.. ... ..x ... | X.. ... ... ...
+K X.. ... x.. ... | X.. ... x.. ...
+K X.. ... x.. ... | X.. ... x.. ..x
+K X.. ... x.. ..x | X.. ... x.. ...
+K X.. ..x x.. ... | X.. ..x x.. ..x
+K X.. ..x x.. ... | X.. ..x x.. ..x
+K X.. ..x x.. ..x | X.. ..x x.. ..x
+K X.. x.x x.. x.. | X.. x.x x.. x.x
+K X... .... .... .... | .... .... .... ....
+K X... .... .... .... | X... .... .... ....
+K x... .... .... .... | x... .... ..x. ....
+K x... .... .... .... | x... .... ..x. ....
+K X... .... .... .... | X... .... ..x. ....
+K X... .... .... .... | X... .... ..x. ....
+K X... .... .... .... | X... .... ..x. ....
+K X... .... .... .... | X... .... ..x. ....
+K x... .... .... x... | x... .... .... ....
+K x... .... .... x... | x... ..x. .... ....
+K x... .... ..x. .... | x... .... ..x. ....
+K X... .... ..x. .... | X... .... ..x. ....
+K X... .... ..x. .... | X... .... ..x. ....
+K X... .... ..x. .... | X... .... ..x. ....
+K X... .... ..x. .... | X... ..x. .... ....
+K x... .... x... .... | x... .... x... ....
+K x... .... x... .... | x... .... x... ....
+K x... .... x... .... | x... .... x... ....
+K x... .... x... .... | x... .... x... ....
+K x... .... x... .... | x... .... x... ....
+K X... ..x. .... .... | X... .... ..x. ....
+K X... ..x. .... .... | X... .... ..x. ....
+K X... ..x. .... .... | X... ..x. .... ..x.
+K X... ..x. .... ..x. | X... .... ..x. ....
+K X... ..x. .... ..x. | X... ..x. .... ....
+K X... ..x. .... ..x. | X... ..x. .x.. ....
+K x... ..x. .... ..x. | x... ..x. x... x.x.
+K x... ..x. .... ..x. | x... ..x. x... x.x.
+K x... ..x. .... x... | x... ..x. .... ....
+K x... ..x. .... x... | x... ..x. .... x...
+K x... ..x. .... x... | x... ..x. .... x...
+K X... ..x. .x.. .... | X... ..x. .... .x..
+K X... ..x. .x.. .... | X... ..x. .... .x..
+K X... ..x. .x.. .... | X... ..x. .x.. ..x.
+K X... ..x. .x.. ..x. | X... ..x. .x.. ....
+K X... ..x. .x.. ..x. | X... ..x. .x.. ....
+K x... ..x. x... ..x. | x... ..x. ..x. x...
+K x... ..x. x... ..x. | x... ..x. x... ..x.
+K x... .x.. x... .x.. | x.x. .... x... .x..
+K x... .x.. x... .x.. | x.x. .... x... .x..
+K x... .x.. x... .x.. | x.x. .... x... .x..
+K X..x .... ..x. .... | X..x .... ..x. ....
+K x..x .... ..x. ..x. | x... ..x. .... ....
+K X..x .... X... .... | X..x .... X... ....
+K X..x .... X... .... | X..x .... X... ....
+K X..x .... X... .... | X..x .... X... ....
+K X..x ..x. .... ..x. | X..x ..x. .... ....
+K X..x ..x. .... ..x. | X..x ..x. .x.. ....
+K x..x ..x. .x.. ..x. | x..x ..x. .x.. ....
+K X..x ..x. .x.. ..x. | X..x ..x. .x.. ....
+K X..x ..x. .x.. ..x. | X..x ..x. .x.. ..x.
+K X..x ..x. .x.. ..x. | X..x ..x. .x.. .x..
+K X..x ..x. .x.. ..x. | X..x ..x. .x.x ..x.
+K X..x ..x. .x.. ..x. | X..x ..x. .x.x xx..
+K x..x ..x. .x.. x... | x..x ..x. .x.. x...
+K x..x ..x. .x.. x... | x..x ..x. .x.. x...
+K x..x ..x. .x.. x... | x..x ..x. .x.. x.x.
+K x..x ..x. .x.x ..x. | x..x ..x. .x.. xx.x
+K X..x ..x. .x.x ..x. | X.xx ..x. .x.. xx.x
+K x..x ..x. x... ..x. | x..x ..x. x... ..x.
+K X..x ..x. X... ..x. | X..x ..x. X... ..x.
+K X..x ..x. X.x. ..x. | X..x ..x. X.x. xxxx
+K X..x ..x. X.x. ..x. | X..x ..x. X.x. xxxx
+K x.x. ..x. x.x. ..x. | x.x. ..x. x.x. x.x.
+K x.xx ..x. .x.x ..x. | x..x ..x. .x.x ..xx
+K X.xx ..x. .x.x ..x. | X.xx ..x. .x.. x.x.
+K X.xx ..x. .x.x ..x. | X.xx ..x. .x.. xx..
+K x.xx ..x. .x.x x... | x.xx ..x. .x.x x.x.
+K X.xx ..x. X.x. ..x. | X.xx ..x. X.x. x.x.
+K x.xx ..x. x.x. ..xx | x.xx ..x. x.x. ..x.
+K x.xx x.x. .x.x ..xx | x.xx ..x. .x.x x.x.
+K X.xx x.x. .x.x ..xx | X.xx x.x. .x.x xx..
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K X.xx x.x. X.xx ..x. | X.xx x.x. X.xx x.xx
+K x.xx x.x. x.xx ..xx | x.xx x.x. x.xx x.x.
+R x... x... x... x... | x... x... x... x...
+R x.x x.x x.x x.x | x.x x.x x.x x.x
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
+R xxxx xxxx xxxx xxxx | xxxx xxxx xxxx xxxx
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+RS .... X... .... X... | .... X... .... X...
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. .. x. ..
+S     .. .. x. .. x.
+S     .. .. x. .. x.
+S     .. x. ..
+S     .. x. ..
+S     .. x. ..
+S     .. x. ..
+S     .. x. ..
+S     .. x. x.
+S     .. x. x.
+S     .. x. x.
+S     .. x. x.
+S     .. x. x.
+S     .. x. x.
+S     .. x. x.
+S     .. x. x..
+S     .. x. x..
+S     ... x. x.
+S     ... x. x.
+S     ... x. x.
+S     ... x. x.
+S     ... x. x.
+S     ... x. x.
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S ... x.. ... x.. | ... x.. ... x..
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x... .... x... | .... x... .... x...
+S .... x..x .... x... | .... x..x .... x...
+S .... x..x ..x. x... | .... x..x ..x. x...
+S .... x..x ..x. x... | .... x..x ..x. x...
+S .... x..x ..x. x... | .... x..x ..x. x.xx
+S .... x..x ..x. x... | .... x..x ..x. xx.x
+S ..x. x..x ..x. x..x | ..x. x..x ..x. x.xx
+S ..x. x..x ..x. x.xx | ..x. x..x ..x. x.xx
+S@0.4 ...g .... .g.. ...g | ..g. .... .g.. ....
+S@0.4 ...g .g.. .g.. ...g | ..g. .g.. .... ...g
+S@0.5 ... ..g ... ... | ... ..g ... ..g
+S@0.5 ...g .... .... .... | .... ..g. .... ...g
+S@0.5 ...g .... .g.. .... | .... .... .... ....
+S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
+S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
+S@0.5 ...g .... .g.. .... | ..g. .... .g.. ...g
+S@0.5 ...g .g.. ...g ..g. | ..g. .g.. .g.. ...g
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g ....
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
+S@0.5 ...g .g.. ...g .g.. | ..g. .g.. ...g .g..
+S@0.5 ...g .g.. .g.. ...g | ..g. .g.. .g.. ...g
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g
+S@0.6 .. g. .g .. .g
+S@0.6 .. g. .g .. .g
+S@0.6 .. g. .g .. .g
+S@0.6 .. g. .g .. .g
+S@0.6 .... ..g. .... ...g | .... ..g. .... ....
+S@0.6 ...g .g.. ...g .... | ..g. .... .g.. ...g
+S@0.6 .g .. .. g. ..
+S@0.6 .g .. .. g. ..
+S@0.6 .g .. .g.
+S@0.6 .g .. .g.
+S@0.6 .g .. g.
+S@0.6 .g .. g.
 S@0.6 .g .g g.
+S@0.6 .g .g g.
+S@0.6 .g .g g.
+S@0.6 .g .g g.
+S@0.6 .g .g g.
+S@0.7 .g. .g ..
+S@0.7 .g. .g ..
+S@0.7 .g. .g ..
+SS ... x.. ... x.. | ... x.. ... x..
+SS .... .... x... .... | .... .... x... ....
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+SS .... x... .... x... | .... x... .... x...
+T1@0.5 .... .... .... .... | .... .... .... ..x.
+T1@0.5 .... .... .... .... | .... .... .... ..x.
+T1@0.5 .... .... .... .... | .... .... .... ..xx
+T3@0.5 .... .... .... .... | .... .... .... ..x.
