@@ -361,14 +361,14 @@ object MainForm: TMainForm
   end
   object gbLog: TGroupBox
     Left = 12
-    Top = 481
-    Width = 804
+    Top = 485
+    Width = 820
     Height = 140
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
       Top = 20
-      Width = 788
+      Width = 804
       Height = 110
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True

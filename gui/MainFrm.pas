@@ -124,6 +124,7 @@ type
     procedure BuildSectionControls;
     procedure ClearSectionControls;
     procedure SyncSectionArraysFromControls;
+    procedure StatusBarDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
   public
     procedure BtnAddSectionClick(Sender: TObject);
     procedure BtnResetStructureClick(Sender: TObject);
@@ -227,6 +228,7 @@ begin
     Panels.Add;
     Panels[2].Text := '';
     Panels[2].Width := 100;
+    OnDrawPanel := @StatusBarDrawPanel;
   end;
 
   ResetToDefaultStructure;
@@ -254,6 +256,18 @@ begin
   FDark := ResolveDark(AChoice);
   ThemeMenuChecks;
   ApplyTheme(Self, FDark);
+  { Update status bar panel colors for dark mode }
+  if Assigned(StatusBar) then begin
+    if FDark then begin
+      StatusBar.Panels[0].Style := psOwnerDraw;
+      StatusBar.Panels[1].Style := psOwnerDraw;
+      StatusBar.Panels[2].Style := psOwnerDraw;
+    end else begin
+      StatusBar.Panels[0].Style := psText;
+      StatusBar.Panels[1].Style := psText;
+      StatusBar.Panels[2].Style := psText;
+    end;
+  end;
   if ASave then
     SaveThemeChoice(AChoice);
 end;
@@ -814,6 +828,24 @@ end;
 procedure TMainForm.mnuQuitClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TMainForm.StatusBarDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
+var
+  Flags: Longint;
+begin
+  with StatusBar.Canvas do begin
+    if FDark then begin
+      Brush.Color := $2D2D2D;
+      Font.Color := clWhite;
+    end else begin
+      Brush.Color := clBtnFace;
+      Font.Color := clWindowText;
+    end;
+    FillRect(Rect);
+    Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
+    DrawText(Handle, Panel.Text, -1, Rect, Flags);
+  end;
 end;
 
 procedure TMainForm.mnuAboutClick(Sender: TObject);
