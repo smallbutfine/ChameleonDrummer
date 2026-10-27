@@ -231,3 +231,72 @@ H     xxx xx xx
 K     x. x. x. x. x.
 RS    .. .. .. x. ..
 H     .x .x .x .x .x
+
+[electronic verse 7/8 intensity=0.20-0.60]
+K     x.. .x .x
+RS    ... x. x.
+HO    xxx xx xx
+
+[electronic verse 5/4 intensity=0.40-0.80]
+K     x. .x .. .x ..
+RS    .. .. x. .. x.
+HO    x. x. x. x.
+
+[electronic verse 3/4 intensity=0.20-0.60]
+K     x. .x .x
+HO    xx xx xxx
+
+[electronic chorus 7/8 intensity=0.40-0.80]
+K     x.. x.. x.. x..
+RS    ... x. x.
+HO    xxx xx xx
+C     X.. .. ..
+
+[electronic chorus 5/4 intensity=0.60-1.00]
+K     x.. ..x x.. ..x
+RS    ... x.. ... x..
+HO    xx xx xxx
+C     X. .. .. ..
+
+[electronic chorus 3/4 intensity=0.80-1.00]
+K     xx .x .x
+RS    .. x. x.
+HO    xx xx xxx
+C     X.. .. ..
+
+[electronic bridge 7/8 intensity=0.10-0.50]
+K     x... .... x... .... | x... .... x... ....
+RS    .... X... .... X... | .... X... .... X...
+HO    ..x. ..x. ..x. ..x. | ..x. ..x. ..x. ..x.
+
+[electronic verse 7/8 intensity=0.20-0.60]
+K     x.. .x .x
+RS    ... x. x.
+HO    xxx xx xx
+
+[electronic verse 5/4 intensity=0.40-0.80]
+K     x. .x .. .x ..
+RS    .. .. x. .. x.
+HO    x. x. x. x.
+
+[electronic verse 3/4 intensity=0.20-0.60]
+K     x. .x .x
+HO    xx xx xxx
+
+[electronic chorus 7/8 intensity=0.40-0.80]
+K     x.. x.. x.. x..
+RS    ... x. x.
+HO    xxx xx xx
+C     X.. .. ..
+
+[electronic chorus 5/4 intensity=0.60-1.00]
+K     x.. ..x x.. ..x
+RS    ... x.. ... x..
+HO    xx xx xxx
+C     X. .. .. ..
+
+[electronic chorus 3/4 intensity=0.80-1.00]
+K     xx .x .x
+RS    .. x. x.
+HO    xx xx xxx
+C     X.. .. ..
