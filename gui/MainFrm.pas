@@ -124,7 +124,7 @@ type
     procedure BuildSectionControls;
     procedure ClearSectionControls;
     procedure SyncSectionArraysFromControls;
-    procedure StatusBarDrawPanel(AStatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
+    procedure StatusBarDrawPanel(AStatusBar: TStatusBar; Panel: TStatusPanel; var Rect: TRect);
   public
     procedure BtnAddSectionClick(Sender: TObject);
     procedure BtnResetStructureClick(Sender: TObject);
@@ -812,7 +812,7 @@ begin
   Close;
 end;
 
-procedure TMainForm.StatusBarDrawPanel(AStatusBar: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
+procedure TMainForm.StatusBarDrawPanel(AStatusBar: TStatusBar; Panel: TStatusPanel; var Rect: TRect);
 var
   Flags: Longint;
 begin
