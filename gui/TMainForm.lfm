@@ -371,7 +371,7 @@ object MainForm: TMainForm
     Left = 12
     Top = 511
     Width = 820
-    Height = 140
+    Height = 130
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
