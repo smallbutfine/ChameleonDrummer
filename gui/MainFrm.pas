@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, {$IFDEF MSWINDOWS}DarkTheme, ShellApi,{$ENDIF} process, StrUtils, menus, CliLookup,
+  Dialogs, LCLType, Graphics, {$IFDEF MSWINDOWS}DarkTheme, ShellApi, Windows,{$ENDIF} process, StrUtils, menus, CliLookup,
   time_signature;
 
 type
@@ -99,6 +99,7 @@ type
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
     FCliTool: String;
+    StatusBar: TStatusBar;
      {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
     FDark: Boolean;{$ENDIF}
     procedure Log(const AText: String);
