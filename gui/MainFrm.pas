@@ -76,7 +76,6 @@ type
     btnOpenFolder: TButton;
     gbLog: TGroupBox;
     memLog: TMemo;
-    StatusBar: TStatusBar;
     lblStatus: TLabel;
     pbProgress: TProgressBar;
     procedure FormCreate(Sender: TObject);
