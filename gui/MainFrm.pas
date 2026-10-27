@@ -818,7 +818,9 @@ end;
 procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
 var
   Flags: Longint;
+  R: TRect;
 begin
+  R := Rect;
   with Sender.Canvas do begin
     if FDark then begin
       Brush.Color := $2D2D2D;
@@ -827,9 +829,9 @@ begin
       Brush.Color := clBtnFace;
       Font.Color := clWindowText;
     end;
-    FillRect(Rect);
+    FillRect(R);
     Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
-    DrawText(Handle, PChar(Panel.Text), -1, Rect, Flags);
+    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
   end;
 end;
 
