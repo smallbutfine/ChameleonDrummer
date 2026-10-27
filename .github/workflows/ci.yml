@@ -106,16 +106,18 @@ jobs:
           unzip -o /tmp/lazarus-macos.zip -d /tmp/lazarus-macos
           ls -la /tmp/lazarus-macos/
 
-      - name: Fix Lazarus & FPC Paths (Resolve Symlinks)
+      - name: Fix Lazarus Config (Point to Homebrew FPC)
         run: |
-          LAZ_DIR=$(realpath /tmp/lazarus-macos/lazarus)
-          FPC_PATH=$(realpath "$LAZ_DIR/fpc/3.2.4/bin/aarch64-darwin/fpc")
-          CONFIG_DIR=$(realpath /private/tmp/lazarus-macos/lazarus/config)
+          # Homebrew FPC path (Apple Silicon)
+          FPC_PATH=$(which fpc)
+          echo "Homebrew FPC: $FPC_PATH"
+          
+          # Lazarus config directory
+          CONFIG_DIR="/private/tmp/lazarus-macos/lazarus/config"
           CONFIG_FILE="$CONFIG_DIR/environmentoptions.xml"
-          echo "Resolved Lazarus Dir: $LAZ_DIR"
-          echo "Resolved FPC Path:    $FPC_PATH"
-          echo "Target Config File:   $CONFIG_FILE"
+          echo "Target Config File: $CONFIG_FILE"
           mkdir -p "$CONFIG_DIR"
+          
           if [ -f "$CONFIG_FILE" ]; then
             sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$FPC_PATH</CompilerFilename>|" "$CONFIG_FILE"
           else
@@ -124,7 +126,6 @@ jobs:
 <CONFIG>
   <EnvironmentOptions>
     <CompilerFilename Value="$FPC_PATH"/>
-    <LazarusDirectory Value="$LAZ_DIR"/>
   </EnvironmentOptions>
 </CONFIG>
 EOF
@@ -139,11 +140,9 @@ EOF
       - name: Build GUI (Lazarus)
         run: |
           echo "Building GUI with signed Lazarus..."
-          LAZBUILD=$(find /tmp/lazarus-macos -name lazbuild -type f | head -n 1)
+          LAZBUILD="/tmp/lazarus-macos/lazarus/lazbuild"
           echo "Found lazbuild at: $LAZBUILD"
-          LAZARUS_DIR=$(dirname "$LAZBUILD")
-          echo "Lazarus dir: $LAZARUS_DIR"
-          export LAZARUS_DIR
+          export LAZARUS_DIR="/tmp/lazarus-macos/lazarus"
           "$LAZBUILD" --build-all --build-mode=Default --lazarusdir="$LAZARUS_DIR" gui/chameleondrummer_gui.lpi
           echo "GUI build exit code: $?"
 
