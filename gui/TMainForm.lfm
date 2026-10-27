@@ -88,7 +88,7 @@ object MainForm: TMainForm
   end
   object gbSong: TGroupBox
     Left = 12
-    Top = 21
+    Top = 1
     Width = 416
     Height = 560
     Caption = 'Song'
@@ -186,7 +186,7 @@ object MainForm: TMainForm
   end
   object gbOutput: TGroupBox
     Left = 436
-    Top = 21
+    Top = 1
     Width = 396
     Height = 210
     Caption = 'Output'
@@ -243,7 +243,7 @@ object MainForm: TMainForm
   end
   object gbPerformance: TGroupBox
     Left = 436
-    Top = 245
+    Top = 225
     Width = 396
     Height = 176
     Caption = 'Performance'
@@ -345,7 +345,7 @@ object MainForm: TMainForm
   end
   object btnGenerate: TButton
     Left = 436
-    Top = 429
+    Top = 409
     Width = 196
     Height = 40
     Caption = 'Generate'
@@ -353,23 +353,21 @@ object MainForm: TMainForm
   end
   object btnOpenFolder: TButton
     Left = 644
-    Top = 429
+    Top = 409
     Width = 188
     Height = 40
     Caption = 'Open output folder'
     OnClick = btnOpenFolderClick
-  end
   object chkRadioLength: TCheckBox
     Left = 436
-    Top = 475
+    Top = 455
     Width = 396
     Height = 18
     Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
     OnClick = chkRadioLengthClick
-  end
   object gbLog: TGroupBox
     Left = 12
-    Top = 511
+    Top = 491
     Width = 820
     Height = 140
     Caption = 'Log'
