@@ -185,7 +185,7 @@ object MainForm: TMainForm
     end
   end
   object gbOutput: TGroupBox
-    Left = 420
+    Left = 436
     Top = 21
     Width = 396
     Height = 210
@@ -242,7 +242,7 @@ object MainForm: TMainForm
     end
   end
   object gbPerformance: TGroupBox
-    Left = 420
+    Left = 436
     Top = 245
     Width = 396
     Height = 176
@@ -344,7 +344,7 @@ object MainForm: TMainForm
     end
   end
   object btnGenerate: TButton
-    Left = 420
+    Left = 436
     Top = 429
     Width = 196
     Height = 40
@@ -352,7 +352,7 @@ object MainForm: TMainForm
     OnClick = btnGenerateClick
   end
   object btnOpenFolder: TButton
-    Left = 628
+    Left = 644
     Top = 429
     Width = 188
     Height = 40
@@ -370,6 +370,7 @@ object MainForm: TMainForm
       Top = 20
       Width = 788
       Height = 110
+      Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
       WordWrap = True

@@ -197,11 +197,16 @@ begin
 
   UpdateValueLabels;
 
-  { Setup scrollable section area }
+  { Setup scrollable section area - positioned below static controls }
   sbSections := TScrollBox.Create(Self);
   with sbSections do begin
     Parent := gbSong;
-    Align := alClient;
+    Left := 0;
+    Top := 210;
+    Width := gbSong.ClientWidth;
+    Height := gbSong.ClientHeight - 210;
+    Align := alNone;
+    Anchors := [akLeft, akTop, akRight, akBottom];
     BorderStyle := bsNone;
     VertScrollBar.Tracking := True;
     HorzScrollBar.Visible := False;
