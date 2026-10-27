@@ -765,8 +765,9 @@ end;
 
 procedure TMainForm.chkRadioLengthClick(Sender: TObject);
 begin
-  { Grey out section controls when radio-length is checked }
-  gbSong.Enabled := not chkRadioLength.Checked;
+  { Grey out only the section controls (ScrollBox) when radio-length is checked }
+  if Assigned(sbSections) then
+    sbSections.Enabled := not chkRadioLength.Checked;
   if chkRadioLength.Checked then
     Log('Radio-length mode: using genre default structure (3:00-3:45)')
   else
