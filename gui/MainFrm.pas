@@ -172,6 +172,14 @@ begin
   FillLists;
   FillStyles;
 
+  { Re-apply dropdown style after FillLists/FillStyles (they reset it) }
+  cbGenre.Style := csDropDownList;
+  cbStyle.Style := csDropDownList;
+  cbDrummer.Style := csDropDownList;
+  cbMapping.Style := csDropDownList;
+  cbMeter.Style := csDropDownList;
+  cbExport.Style := csDropDownList;
+
   { Export options }
   cbExport.Items.Add('MIDI only');
   cbExport.Items.Add('MIDI + REAPER project');
