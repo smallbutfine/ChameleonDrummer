@@ -106,30 +106,41 @@ jobs:
           unzip -o /tmp/lazarus-macos.zip -d /tmp/lazarus-macos
           ls -la /tmp/lazarus-macos/
 
-      - name: Fix Lazarus Config (Point to Homebrew FPC)
+      - name: Fix Lazarus Config (Point to Downloaded FPC)
         run: |
-          # Homebrew FPC path (Apple Silicon)
-          FPC_PATH=$(which fpc)
-          echo "Homebrew FPC: $FPC_PATH"
-          
-          # Lazarus config directory
-          CONFIG_DIR="/private/tmp/lazarus-macos/lazarus/config"
+          # Find the actual FPC binary inside downloaded Lazarus
+          FPC_PATH=$(find /tmp/lazarus-macos/lazarus/fpc -name "fpc" -type f 2>/dev/null | head -n 1)
+          if [ -z "$FPC_PATH" ]; then
+            # Fallback to Homebrew fpc if downloaded bundle lacks it
+            FPC_PATH=$(which fpc)
+          fi
+          echo "Using FPC at: $FPC_PATH"
+
+          # Resolve symlink for /tmp vs /private/tmp
+          REAL_FPC=$(python3 -c "import os,sys; print(os.path.realpath('$FPC_PATH'))")
+          echo "Real FPC path: $REAL_FPC"
+
+          # Lazarus config directory (use realpath to avoid /tmp vs /private/tmp mismatch)
+          CONFIG_DIR=$(python3 -c "import os; print(os.path.realpath('/tmp/lazarus-macos/lazarus/config'))")
           CONFIG_FILE="$CONFIG_DIR/environmentoptions.xml"
           echo "Target Config File: $CONFIG_FILE"
           mkdir -p "$CONFIG_DIR"
-          
+
           if [ -f "$CONFIG_FILE" ]; then
-            sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$FPC_PATH</CompilerFilename>|" "$CONFIG_FILE"
+            sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$REAL_FPC</CompilerFilename>|" "$CONFIG_FILE"
           else
             cat > "$CONFIG_FILE" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <EnvironmentOptions>
-    <CompilerFilename Value="$FPC_PATH"/>
+    <CompilerFilename Value="$REAL_FPC"/>
   </EnvironmentOptions>
 </CONFIG>
 EOF
           fi
+
+          # Also fix the lazbuild call to use the correct lazarusdir
+          echo "LAZARUS_DIR=/tmp/lazarus-macos/lazarus" >> $GITHUB_ENV
 
       - name: Compile CLI
         run: |

@@ -41,3 +41,4 @@ song.mid
 song.rpp
 song.ardour.log
 song.ardour.lua
+tests/out/
