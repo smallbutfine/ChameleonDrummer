@@ -219,6 +219,9 @@ begin
   lblStatus.Caption := 'Ready';
   StatusBar.Panels[0].Text := 'Ready';
 
+  { Assign OnDrawPanel for dark mode status bar }
+  StatusBar.OnDrawPanel := @StatusBarDrawPanel;
+
   { Colours last, when every control exists. }
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged;
   SetTheme(LoadThemeChoice, False);{$ENDIF}

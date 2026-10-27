@@ -411,6 +411,5 @@ object MainForm: TMainForm
         Width = 100
       end
     >
-    OnDrawPanel = StatusBarDrawPanel
   end
 end
