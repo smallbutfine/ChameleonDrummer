@@ -903,10 +903,14 @@ begin
   if ListHandle = 0 then
     ListHandle := GetWindow(CB.Handle, GW_CHILD);
   if ListHandle <> 0 then begin
+    { Theme the dropdown list with dark colors }
     SetWindowLong(ListHandle, GWL_STYLE, GetWindowLong(ListHandle, GWL_STYLE) or WS_BORDER);
     SetWindowPos(ListHandle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
-    { Force repaint with dark theme }
+    { Apply dark theme colors to the dropdown list }
+    SendMessage(ListHandle, WM_ERASEBKGND, 0, 0);
     InvalidateRect(ListHandle, nil, True);
+    { Force the listbox to use dark colors }
+    SendMessage(ListHandle, LB_SETITEMHEIGHT, 0, 20);
   end;
 end;
 
