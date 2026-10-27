@@ -125,6 +125,7 @@ type
     procedure BuildSectionControls;
     procedure ClearSectionControls;
     procedure SyncSectionArraysFromControls;
+    procedure ComboBoxDropDown(Sender: TObject);
     procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
   public
     procedure BtnAddSectionClick(Sender: TObject);
@@ -179,6 +180,14 @@ begin
   cbMapping.Style := csDropDownList;
   cbMeter.Style := csDropDownList;
   cbExport.Style := csDropDownList;
+
+  { Assign OnDropDown to theme dropdown list in dark mode }
+  cbGenre.OnDropDown := @ComboBoxDropDown;
+  cbStyle.OnDropDown := @ComboBoxDropDown;
+  cbDrummer.OnDropDown := @ComboBoxDropDown;
+  cbMapping.OnDropDown := @ComboBoxDropDown;
+  cbMeter.OnDropDown := @ComboBoxDropDown;
+  cbExport.OnDropDown := @ComboBoxDropDown;
 
   { Export options }
   cbExport.Items.Add('MIDI only');
@@ -877,6 +886,27 @@ begin
     FillRect(R);
     Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
     DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
+  end;
+end;
+
+procedure TMainForm.ComboBoxDropDown(Sender: TObject);
+var
+  CB: TComboBox;
+  ListHandle: HWND;
+begin
+  if not FDark then Exit;
+  CB := Sender as TComboBox;
+  { The dropdown list is a child window of the combo box }
+  ListHandle := FindWindowEx(CB.Handle, 0, 'LCLLISTBOX', nil);
+  if ListHandle = 0 then
+    ListHandle := FindWindowEx(CB.Handle, 0, 'TListBox', nil);
+  if ListHandle = 0 then
+    ListHandle := GetWindow(CB.Handle, GW_CHILD);
+  if ListHandle <> 0 then begin
+    SetWindowLong(ListHandle, GWL_STYLE, GetWindowLong(ListHandle, GWL_STYLE) or WS_BORDER);
+    SetWindowPos(ListHandle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
+    { Force repaint with dark theme }
+    InvalidateRect(ListHandle, nil, True);
   end;
 end;
 
