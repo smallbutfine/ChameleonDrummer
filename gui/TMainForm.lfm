@@ -122,6 +122,7 @@ object MainForm: TMainForm
       Top = 41
       Width = 180
       Height = 24
+      Style = csDropDownList
       OnChange = cbGenreChange
     end
     object lblStyle: TLabel
@@ -136,6 +137,7 @@ object MainForm: TMainForm
       Top = 73
       Width = 180
       Height = 24
+      Style = csDropDownList
     end
     object lblDrummer: TLabel
       Left = 12
@@ -149,6 +151,7 @@ object MainForm: TMainForm
       Top = 105
       Width = 180
       Height = 24
+      Style = csDropDownList
     end
     object lblMapping: TLabel
       Left = 12
@@ -162,6 +165,7 @@ object MainForm: TMainForm
       Top = 141
       Width = 180
       Height = 24
+      Style = csDropDownList
     end
     object lblMeter: TLabel
       Left = 12
@@ -175,6 +179,7 @@ object MainForm: TMainForm
       Top = 173
       Width = 80
       Height = 24
+      Style = csDropDownList
     end
     object lblMeterHint: TLabel
       Left = 170
@@ -202,6 +207,7 @@ object MainForm: TMainForm
       Top = 9
       Width = 300
       Height = 24
+      Style = csDropDownList
     end
     object lblFile: TLabel
       Left = 12
