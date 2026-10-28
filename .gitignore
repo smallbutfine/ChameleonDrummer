@@ -42,3 +42,4 @@ song.rpp
 song.ardour.log
 song.ardour.lua
 tests/out/
+_build_counter.txt
