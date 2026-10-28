@@ -27,19 +27,19 @@ T2 .x.. .... ..x. ....
 K x... .... x... ....
 
 [peart_fill_odd_7_8 energy=0.4]
-T1 x.. x.. x..
-T2 ..x ..x ..x
-T3 ... ... ...
+T1 x.. x.. x
+T2 ..x ..x .
+T3 ... ... .
 
 [peart_fill_odd_5_4 energy=0.6]
-T1 x.. ..x ..x ..x
-T2 ..x x.. ... x..
-T3 ... ... x.. ...
+T1 x.. ..x ..x .
+T2 ..x x.. ... x
+T3 ... ... x.. .
 
 [peart_fill_odd_3_4 energy=0.5]
 T1 x.. ..x
 T2 ..x x..
-K x... ...
+K x... ..
 
 [peart_fill_snare_7_var energy=0.4]
 S .... .... .... x.x.

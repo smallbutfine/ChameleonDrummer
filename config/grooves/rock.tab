@@ -677,12 +677,12 @@ C     X.. .. ..
 K     x. .x .. .x ..
 S     .. .. x. .. x.
 H     xx xx xx xx xx
-S@0.6 .g .. .. g..
+S@0.6 .g .. .. g...
 
 [rock verse 3/4 intensity=0.20-0.60]
 K     x. .x .x
 S@0.6 .g .. g.
-H     xx xx xxx
+H xx xx xx
 S@0.6 .g .. g.
 
 [rock chorus 7/8 intensity=0.40-0.80]
@@ -692,16 +692,16 @@ R     xxx xx xx
 C     X.. .. ..
 
 [rock chorus 5/4 intensity=0.60-1.00]
-K     x. .x x. x..
+K x. .x x. x...
 S     .. .. x. .. x.
-H     x. x. x. x.
-C     X. .. .. ..
+H x. x. x. x...
+C X. .. .. ....
 
 [rock chorus 3/4 intensity=0.80-1.00]
 K     xx .x .x
 S     .. x. x.
-H     xx xx xxx
-C     X.. .. ..
+H xx xx xx
+C X.. .. .
 
 [rock bridge 7/8 intensity=0.20-0.60]
 K     x.x .x .x
@@ -710,8 +710,8 @@ H     x.x x. x.
 C     X.. .. ..
 
 [rock verse 7/8 intensity=0.40-1.00]
-K     x.xx xx xx x.x
-S     ... x. x..
+K x.xx xx xx x.x...
+S ... x. x.
 H     x.x x. x.
 C     X.. .. ..
 
@@ -722,13 +722,13 @@ R     xxx xx xx
 C     X.. .. ..
 
 [rock chorus 5/4 intensity=0.60-1.00]
-K     x. .x x. x..
-S     .. .. x. .. x..
-H     x. x. x. x.
-C     X. .. .. ..
+K x. .x x. x...
+S .. .. x. .. x.
+H x. x. x. x...
+C X. .. .. ....
 
 [rock bridge 7/8 intensity=0.20-0.60]
-K     x.. x.. x.. x..
-S     ... x. x..
+K x.. x.. x.. x....
+S ... x. x.
 H     x.x x. x.
 C     X.. .. ..

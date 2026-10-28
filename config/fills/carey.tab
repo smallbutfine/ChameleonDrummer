@@ -43,19 +43,19 @@ T4 .... .... .... ...x
 K x... .... ....
 
 [carey_fill_odd_7_8 energy=0.4]
-T1 x.. x.. x..
-T2 ..x ..x ..x
-T3 ... ... ...
+T1 x.. x.. x
+T2 ..x ..x .
+T3 ... ... .
 
 [carey_fill_odd_5_4 energy=0.6]
-T1 x.. ..x x.. ..x
-T2 ..x x.. ... x..
-T3 ... ... x.. ...
+T1 x.. ..x x.. .
+T2 ..x x.. ... x
+T3 ... ... x.. .
 
 [carey_fill_odd_3_4 energy=0.5]
 T1 x.. ..x
 T2 ..x x..
-K x... ...
+K x... ..
 
 [carey_fill_odd_7_var energy=0.3]
 T1 x.. x.. x..
@@ -63,14 +63,14 @@ T2 ..x ..x ..x
 T3 ... ... ...
 
 [carey_fill_odd_5_4 energy=0.7]
-T1 x.. ..x x.. ..x
-T2 ..x x.. ... x..
-T3 ... ... x.. ...
+T1 x.. ..x x.. .
+T2 ..x x.. ... x
+T3 ... ... x.. .
 
 [carey_fill_odd_3_4 energy=0.4]
 T1 x.. ..x
 T2 ..x x..
-K x... ...
+K x... ..
 
 [carey_fill_odd_7_var energy=0.2]
 T1 x.. x.. x..
@@ -78,14 +78,14 @@ T2 ..x ..x ..x
 T3 ... ... ...
 
 [carey_fill_odd_5_4 energy=0.8]
-T1 x.. ..x x.. ..x
-T2 ..x x.. ... x..
-T3 ... ... x.. ...
+T1 x.. ..x x.. .
+T2 ..x x.. ... x
+T3 ... ... x.. .
 
 [carey_fill_odd_3_4 energy=0.3]
 T1 x.. ..x
 T2 ..x x..
-K x... ...
+K x... ..
 
 [carey_fill_odd_7_var energy=0.1]
 T1 x.. x.. x..
@@ -93,11 +93,11 @@ T2 ..x ..x ..x
 T3 ... ... ...
 
 [carey_fill_odd_5_4 energy=0.9]
-T1 x.. ..x x.. ..x
-T2 ..x x.. ... x..
-T3 ... ... x.. ...
+T1 x.. ..x x.. .
+T2 ..x x.. ... x
+T3 ... ... x.. .
 
 [carey_fill_odd_3_4 energy=0.2]
 T1 x.. ..x
 T2 ..x x..
-K x... ...
+K x... ..
