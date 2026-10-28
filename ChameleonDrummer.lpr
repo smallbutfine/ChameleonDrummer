@@ -15,6 +15,7 @@ uses
   SysUtils, Classes,
   jsonparser,
   CLIInterface, Kit, PluginRegistry;
+{$R *.res} // Standard Lazarus-Ressource (für das Icon)
 
 var
   CLI: TCLIInterface;

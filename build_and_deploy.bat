@@ -128,11 +128,11 @@ echo     BEGIN
 echo         VALUE "Translation", 0x409, 1200
 echo     END
 echo END
-) > version.rc
+) > ChameleonDrummer.rc
 
 set "FPC_BIN_DIR=%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64"
 if not exist "%FPC_BIN_DIR%\windres.exe" ( echo [Fehler] windres.exe fehlt! & exit /b 1 )
-"%FPC_BIN_DIR%\windres.exe" --preprocessor="type" -i version.rc -o version.res
+"%FPC_BIN_DIR%\windres.exe" --preprocessor="type" -i ChameleonDrummer.rc -o ChameleonDrummer.res
 
 echo
 echo.
@@ -140,7 +140,7 @@ echo ==================================================
 echo   7. Kompiliere mit FPC...
 echo ==================================================
 if not exist "%LPR_FILE%" ( echo [Fehler] %LPR_FILE% fehlt! & exit /b 1 )
-"%FPC_BIN_DIR%\fpc.exe" -O2 -Fusrc -Sg -Sc %LPR_FILE%
+"%FPC_BIN_DIR%\fpc.exe" -O2 -Fusrc  -Sg -Sc %LPR_FILE%
 if !ERRORLEVEL! NEQ 0 ( echo [Fehler] FPC fehlgeschlagen! & if "!IS_CI!"=="0" pause & exit /b 1 )
 
 copy /Y "LICENSE" "assets\LICENSE.txt" >nul
