@@ -51,9 +51,9 @@ K .... x.x x.x
 [dee_fill_odd_5_4 energy=0.6]
 K .... x. .x .. x.
 
-[dee_fill_odd_3_4 energy=0.5]
+[dee_fill_odd_3_var energy=0.5]
 K .... x. .x
-KK .... XXXX XXXX XXXX
+K .... XXXX XXXX XXXX
 
 [dee_fill_odd_7_var energy=0.4]
 S .... .... .... x.x.
