@@ -330,14 +330,14 @@ H     xx xx xx xx xx
 H     xx xx xx xx xx
 H     xx xx xx xx xx
 H     xx xx xx xx xx
-H     xx xx xxx
-H     xx xx xxx
-H     xxx xx xx
-H     xxx xx xx
-H     xxx xx xx
-H     xxx xx xx
-H     xxx xx xx
-H     xxx xx xx
+H xx xx xxx.
+H xx xx xxx.
+H xxx xx xx.
+H xxx xx xx.
+H xxx xx xx.
+H xxx xx xx.
+H xxx xx xx.
+H xxx xx xx.
 H x.. x.. x.. x.. | x.. x.. x.. x..
 H x... x... x... x... | x... x... x... x...
 H x... x... x... x... | x... x... x... x...
@@ -418,16 +418,16 @@ K     x. .x .. .x x.
 K     x. .x .. .x x.
 K     x. .x .. .x x.
 K     x. .x .. .x x.
-K     x. .x ..x
-K     x. .x ..x
+K x. .x ..x.
+K x. .x ..x.
 K     x. .x .x
 K     x. .x .x
-K     x.x .. .x
-K     x.x .. .x
-K     x.x .. .x
-K     x.x .. .x
-K     x.x .. .x
-K     x.x .. .x
+K x.x .. .x.
+K x.x .. .x.
+K x.x .. .x.
+K x.x .. .x.
+K x.x .. .x.
+K x.x .. .x.
 K     xx .x .x
 K     xx .x .x
 K     xx .x .x
@@ -557,21 +557,21 @@ RS .... X... .... X... | .... X... .... X...
 RS .... X... .... X... | .... X... .... X...
 RS .... X... .... X... | .... X... .... X...
 RS .... X... .... X... | .... X... .... X...
-S     .. .. .. x. ..
-S     .. .. .. x. ..
-S     .. .. .. x. ..
-S     .. .. .. x. ..
-S     .. .. .. x. ..
-S     .. .. .. x. ..
-S     .. .. .. x. ..
-S     .. .. .. x. ..
+S .. .. .. x. 
+S .. .. .. x. 
+S .. .. .. x. 
+S .. .. .. x. 
+S .. .. .. x. 
+S .. .. .. x. 
+S .. .. .. x. 
+S .. .. .. x. 
 S     .. .. x. .. x.
 S     .. .. x. .. x.
-S     .. x. ..
-S     .. x. ..
-S     .. x. ..
-S     .. x. ..
-S     .. x. ..
+S .. x. 
+S .. x. 
+S .. x. 
+S .. x. 
+S .. x. 
 S     .. x. x.
 S     .. x. x.
 S     .. x. x.
@@ -579,14 +579,14 @@ S     .. x. x.
 S     .. x. x.
 S     .. x. x.
 S     .. x. x.
-S     .. x. x..
-S     .. x. x..
-S     ... x. x.
-S     ... x. x.
-S     ... x. x.
-S     ... x. x.
-S     ... x. x.
-S     ... x. x.
+S .. x. x...
+S .. x. x...
+S ... x. x..
+S ... x. x..
+S ... x. x..
+S ... x. x..
+S ... x. x..
+S ... x. x..
 S ... x.. ... x.. | ... x.. ... x..
 S ... x.. ... x.. | ... x.. ... x..
 S ... x.. ... x.. | ... x.. ... x..
@@ -677,10 +677,10 @@ S@0.6 .. g. .g .. .g
 S@0.6 .. g. .g .. .g
 S@0.6 .... ..g. .... ...g | .... ..g. .... ....
 S@0.6 ...g .g.. ...g .... | ..g. .... .g.. ...g
-S@0.6 .g .. .. g. ..
-S@0.6 .g .. .. g. ..
-S@0.6 .g .. .g.
-S@0.6 .g .. .g.
+S@0.6 .g .. .. g. 
+S@0.6 .g .. .. g. 
+S@0.6 .g .. .g..
+S@0.6 .g .. .g..
 S@0.6 .g .. g.
 S@0.6 .g .. g.
 S@0.6 .g .g g.
@@ -688,9 +688,9 @@ S@0.6 .g .g g.
 S@0.6 .g .g g.
 S@0.6 .g .g g.
 S@0.6 .g .g g.
-S@0.7 .g. .g ..
-S@0.7 .g. .g ..
-S@0.7 .g. .g ..
+S@0.7 .g. .g ...
+S@0.7 .g. .g ...
+S@0.7 .g. .g ...
 SS ... x.. ... x.. | ... x.. ... x..
 SS .... .... x... .... | .... .... x... ....
 SS .... x... .... x... | .... x... .... x...
@@ -711,78 +711,78 @@ T1@0.5 .... .... .... .... | .... .... .... ..xx
 T3@0.5 .... .... .... .... | .... .... .... ..x.
 
 [funk verse 7/8 intensity=0.20-0.60]
-K     x.x .. .x
-S     ... x. x..
-H     x.x x. x.
+K x.x .. .x
+S ... x. x.
+H x.x x. x.
 S@0.6 .g .. .g.
 
 [funk verse 5/4 intensity=0.40-0.80]
 K     x. .. .x .. x.
-S     ... x. x..
-H     x.x x. x.
-S@0.6 .g .. g..
+S ... x. x....
+H x.x x. x....
+S@0.6 .g .. g.....
 
 [funk verse 3/4 intensity=0.20-0.60]
 K     x. .x .x
 S@0.6 .g .. g.
-H     x.x x. x.
+H x.x x. x...
 S@0.6 .g .. g.
 
 [funk chorus 7/8 intensity=0.40-0.80]
-K     x.. x.. x.. x..
-S     ... x. x.
-H     x.x x. x.
+K x.. x.. x.. x....
+S ... x. x.
+H x.x x. x.
 S@0.6 .g .. g..
 
 [funk chorus 5/4 intensity=0.60-1.00]
 K     x.. ..x x.. ..x
-S     ... x.. ... x..
-H     x.x x. x.
-S@0.6 .g .. g..
+S ... x.. ... x
+H x.x x. x....
+S@0.6 .g .. g.....
 
 [funk chorus 3/4 intensity=0.80-1.00]
 K     xx .x .x
 S     .. x. x.
-H     x.x x. x.
+H x.x x. x...
 S@0.6 .g .g g.
 
 [funk bridge 7/8 intensity=0.10-0.50]
-K     x... .... x... .... | x... .... x... ....
-S     .... x... .... x... | .... x... .... x...
+K x... .... x... ..|x... .... x... ..
+S .... x... .... x.|.... x... .... x.
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 
 [funk verse 7/8 intensity=0.20-0.60]
-K     x.x .. .x
-S     ... x. x..
-H     x.x x. x.
+K x.x .. .x
+S ... x. x.
+H x.x x. x.
 S@0.6 .g .. .g.
 
 [funk verse 5/4 intensity=0.40-0.80]
 K     x. .. .x .. x.
-S     ... x. x..
-H     x.x x. x.
-S@0.6 .g .. g..
+S ... x. x....
+H x.x x. x....
+S@0.6 .g .. g.....
 
 [funk verse 3/4 intensity=0.20-0.60]
 K     x. .x .x
 S@0.6 .g .. g.
-H     x.x x. x.
+H x.x x. x...
 S@0.6 .g .. g.
 
 [funk chorus 7/8 intensity=0.40-0.80]
-K     x.. x.. x.. x..
-S     ... x. x.
-H     x.x x. x.
+K x.. x.. x.. x....
+S ... x. x.
+H x.x x. x.
 S@0.6 .g .. g..
 
 [funk chorus 5/4 intensity=0.60-1.00]
 K     x.. ..x x.. ..x
-S     ... x.. ... x..
-H     x.x x. x.
-S@0.6 .g .. g..
+S ... x.. ... x
+H x.x x. x....
+S@0.6 .g .. g.....
 
 [funk chorus 3/4 intensity=0.80-1.00]
 K     xx .x .x
 S     .. x. x.
-H     x.x x. x.
+H x.x x. x...
 S@0.6 .g .g g.

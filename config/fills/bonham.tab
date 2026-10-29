@@ -29,29 +29,29 @@ T3 ... ... ... .x.
 K ... ... ... x..
 
 [bonham_fill_short2 energy=0.25]
-S ... ... ... x.x.
+S ... ... ... x.x
 K .... .... .... .x.x
 
 [bonham_fill_half2 energy=0.55]
-S ... ... x..x ....
-T1 ... ... .... x..
-T2 ... ... .... .x.
+S ... ... x..x ..
+T1 ... ... .... x.
+T2 ... ... .... .x
 
 [bonham_fill_big2 energy=0.85]
-S ... x.x. ... x..
-T1 ... ... x.x. ...
+S ... x.x. ... x.
+T1 ... ... x.x. ..
 T2 ... ... ... x..
 T3 ... ... ... .x.
-K ... ... ... x...
+K ... ... ... x..
 
 [bonham_fill_short3 energy=0.2]
 S ... ... ... X..
-K .... .... .... x..
+K .... .... .... x...
 
 [bonham_fill_half3 energy=0.5]
-S ... ... xXx. ...
-T1 ... ... .... x..
-T2 ... ... .... .x.
+S ... ... xXx. ..
+T1 ... ... .... x.
+T2 ... ... .... .x
 T3 ... ... .... ..x
 
 [bonham_fill_big3 energy=0.95]
@@ -63,41 +63,41 @@ K ... ... ... X..
 C X... .... .... ....
 
 [bonham_fill_odd_7_8 energy=0.4]
-S x.. x.. x..
+S x.. x.. x.
 T1 ..x ..x ..x
-K ... ... ...
+K ... ... ..
 
 [bonham_fill_odd_5_4 energy=0.6]
 S x.. ..x x.. ..x
 T1 ..x x.. ... x..
-K x... ... x...
+K x... ... x....
 
 [bonham_fill_odd_3_4 energy=0.5]
 S x.. ..x
-T1 ..x x..
-K x... ...
+T1 ..x x
+K x... ....
 
 [bonham_fill_odd_7_8 energy=0.4]
-S x.. x.. x..
+S x.. x.. x.
 T1 ..x ..x ..x
-K ... ... ...
+K ... ... ..
 
 [bonham_fill_odd_5_4 energy=0.6]
 S x.. ..x x.. ..x
 T1 ..x x.. ... x..
-K x... ... x...
+K x... ... x....
 
 [bonham_fill_odd_3_4 energy=0.5]
 S x.. ..x
-T1 ..x x..
-K x... ...
+T1 ..x x
+K x... ....
 [bonham_fill_odd_7_8 energy=0.4]
 S ... x.. x.. x..
 T1 ... ... ... x..
 K ... ... ... x..
 
 [bonham_fill_odd_5_4 energy=0.6]
-S ... x.. x.. x.. x..
+S ... x.. x.. x.. x...
 T1 ... ... ... x..
 K ... ... ... x..
 
@@ -107,45 +107,45 @@ T1 ... ... ... x..
 K ... ... ... x..
 
 [bonham_fill_odd_7_8 energy=0.3]
-S ... ... ... x.x.
+S ... ... ... x.x
 K .... .... .... .x.x
 
 [bonham_fill_odd_5_4 energy=0.7]
 S ... ... x.. x..
-T1 ... ... .... x..
-K ... ... ... x...
+T1 ... ... .... x.
+K ... ... ... x..
 
 [bonham_fill_odd_3_4 energy=0.4]
-S ... ... ... x.x.
-T1 ... ... .... x..
+S ... ... ... x.x
+T1 ... ... .... x.
 K ... ... ... x..
 
 [bonham_fill_odd_7_8 energy=0.2]
-S ... ... ... x.x.
+S ... ... ... x.x
 K .... .... .... .x.x
 
 [bonham_fill_odd_5_4 energy=0.8]
 S ... ... x.. x..
-T1 ... ... .... x..
-K ... ... ... x...
+T1 ... ... .... x.
+K ... ... ... x..
 
 [bonham_fill_odd_3_4 energy=0.3]
-S ... ... ... x.x.
-T1 ... ... .... x..
+S ... ... ... x.x
+T1 ... ... .... x.
 K ... ... ... x..
 
 [bonham_fill_odd_7_8 energy=0.1]
-S ... ... ... x.x.
+S ... ... ... x.x
 K .... .... .... .x.x
 
 [bonham_fill_odd_5_4 energy=0.9]
 S ... ... x.. x..
-T1 ... ... .... x..
-K ... ... ... x...
+T1 ... ... .... x.
+K ... ... ... x..
 
 [bonham_fill_odd_3_4 energy=0.2]
-S ... ... ... x.x.
-T1 ... ... .... x..
+S ... ... ... x.x
+T1 ... ... .... x.
 K ... ... ... x..
 
 [bonham_fill_odd_7_8 energy=0.4]

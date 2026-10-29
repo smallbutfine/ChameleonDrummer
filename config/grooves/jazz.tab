@@ -399,167 +399,167 @@ T1@0.5 .... .... .... .... | .... .... .... .xx.
 
 [swing verse 3/4 intensity=0.20-0.60]
 R     x.. x.x x.x
-HP    ... x.. x..
-K     x.. ... ...
+HP ... x.. x..
+K x.. ... ...
 S     ... ... ..x
 
 [swing verse 3/4 intensity=0.40-0.80]
 R     x.. x.x x.x
-HP    ... x.. x..
-K     x.. ... x..
-S     ... ..x ...
+HP ... x.. x..
+K x.. ... x..
+S ... ..x ...
 
 [swing verse 3/4 intensity=0.60-1.00]
 R     x.. x.x x.x
-HP    ... x.. x..
+HP ... x.. x..
 K     x.. ... ..x
-S     ... ..x .x.
+S ... ..x .x.
 
 [swing chorus 3/4 intensity=0.40-0.80]
 R     x.. x.x x.x
-HP    ... x.. x..
-K     x.. ... ...
-S     ... ..x x..
+HP ... x.. x..
+K x.. ... ...
+S ... ..x x..
 
 [swing chorus 3/4 intensity=0.60-1.00]
 R     x.. x.x x.x
-HP    ... x.. x..
-K     x.. ..x ...
+HP ... x.. x..
+K x.. ..x ...
 S     ... ... x.x
 
 [swing verse 5/4 intensity=0.20-0.60]
-R     x.. x.x x.x x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ... ... ...
-SS    ... ... ... x.. ...
+R x.. x.x x.x x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ... ... ...
+SS ... ... ... x.. ...
 
 [swing verse 5/4 intensity=0.40-0.80]
-R     x.. x.x x.x x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ..x ... ...
-S     ... ... ... ..x ...
+R x.. x.x x.x x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ..x ... ...
+S ... ... ... ..x ...
 
 [swing verse 5/4 intensity=0.60-1.00]
-R     x.. x.x x.x x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ... ..x ...
-S     ... ..x ... ... .x.
+R x.. x.x x.x x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ... ..x ...
+S ... ..x ... ... .x.
 
 [swing chorus 5/4 intensity=0.40-0.80]
-R     x.. x.x x.x x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ..x ... ...
-SS    ... ... x.. ... x..
+R x.. x.x x.x x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ..x ... ...
+SS ... ... x.. ... x..
 
 [swing verse 7/8 intensity=0.20-0.70]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ...
-S     .. .x ..x
+R xx xx xxx
+HP .x .. .x.
+K x. .. ...
+S .. .x ..x
 
 [swing verse 7/8 intensity=0.40-0.90]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ..x
-S     .. .x ...
+R xx xx xxx
+HP .x .. .x.
+K x. .. ..x
+S .. .x ...
 
 # Additional swing patterns
 [swing verse 7/8 intensity=0.10-0.40]
 R     xx ... xxx
-HP    .x .. ...
-K     x. .. ...
-S     .. .x ...
+HP .x .. ...
+K x. .. ...
+S .. .x ...
 
 [swing verse 7/8 intensity=0.80-1.00]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ..x
-S     .. .x ...
+R xx xx xxx
+HP .x .. .x.
+K x. .. ..x
+S .. .x ...
 
 [swing chorus 7/8 intensity=0.20-0.70]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ...
-S     .. .x ..x
+R xx xx xxx
+HP .x .. .x.
+K x. .. ...
+S .. .x ..x
 
 [swing chorus 7/8 intensity=0.70-1.00]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ..x
-S     .. .x ...
+R xx xx xxx
+HP .x .. .x.
+K x. .. ..x
+S .. .x ...
 
 # Additional swing patterns
 [swing verse 3/4 intensity=0.10-0.40]
-R     x.. ... x..
-HP    ... x.. ...
-K     x.. ... ...
-S     ... ... ...
+R x.. ... x..
+HP ... x.. ...
+K x.. ... ...
+S ... ... ...
 
 [swing verse 3/4 intensity=0.80-1.00]
 R     x.. x.x x.x
-HP    ... x.. x..
-K     x.. x.. x..
+HP ... x.. x..
+K x.. x.. x..
 S     ... x.. x.x
 
 [swing chorus 3/4 intensity=0.10-0.40]
-R     x.. ... x..
-HP    ... x.. ...
-K     x.. ... ...
-S     ... ... ...
+R x.. ... x..
+HP ... x.. ...
+K x.. ... ...
+S ... ... ...
 
 [swing chorus 3/4 intensity=0.80-1.00]
 R     x.. x.x x.x
-HP    ... x.. x..
-K     x.. x.. x..
+HP ... x.. x..
+K x.. x.. x..
 S     ... x.. x.x
 
 [swing verse 5/4 intensity=0.10-0.40]
-R     x.. ... x.. x.. x..
-HP    ... x.. ... x.. ...
-K     x.. ... ... ... ...
-SS    ... ... ... x.. ...
+R x.. ... x.. x.. x..
+HP ... x.. ... x.. ...
+K x.. ... ... ... ...
+SS ... ... ... x.. ...
 
 [swing verse 5/4 intensity=0.80-1.00]
-R     x.. x.x x.x x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ..x ... ...
-S     ... ..x ... ... .x.
+R x.. x.x x.x x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ..x ... ...
+S ... ..x ... ... .x.
 
 [swing chorus 5/4 intensity=0.10-0.40]
-R     x.. ... x.. x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ... ... ...
-SS    ... ... x.. ... x..
+R x.. ... x.. x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ... ... ...
+SS ... ... x.. ... x..
 
 [swing chorus 5/4 intensity=0.80-1.00]
-R     x.. x.x x.x x.. x.x
-HP    ... x.. ... x.. ...
-K     x.. ... ..x ... ...
-SS    ... ..x ... ... .x.
+R x.. x.x x.x x.. x.x
+HP ... x.. ... x.. ...
+K x.. ... ..x ... ...
+SS ... ..x ... ... .x.
 
 [swing verse 7/8 intensity=0.10-0.40]
 R     xx ... xxx
-HP    .x .. ...
-K     x. .. ...
-S     .. .x ...
+HP .x .. ...
+K x. .. ...
+S .. .x ...
 
 [swing verse 7/8 intensity=0.80-1.00]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ..x
-S     .. .x ...
+R xx xx xxx
+HP .x .. .x.
+K x. .. ..x
+S .. .x ...
 
 [swing chorus 7/8 intensity=0.20-0.70]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ...
-S     .. .x ..x
+R xx xx xxx
+HP .x .. .x.
+K x. .. ...
+S .. .x ..x
 
 [swing chorus 7/8 intensity=0.70-1.00]
-R     xx xx xxx
-HP    .x .. .x.
-K     x. .. ..x
-S     .. .x ...
+R xx xx xxx
+HP .x .. .x.
+K x. .. ..x
+S .. .x ...
 
 # Additional contemporary patterns
 [contemporary verse intensity=0.10-0.40]
@@ -596,83 +596,83 @@ R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 T1@0.5 .... .... .... .... | .... .... .... .xx.
 
 [swing verse 7/8 intensity=0.20-0.60]
-K     x.x .. .x
-S     ... x. x..
-H     xx xx xxx
+K x.x .. .x
+S ... x. x.
+H xx xx xxx
 S@0.6 .g .. .g.
 
 [swing verse 5/4 intensity=0.40-0.80]
 K     x. .. .x .. x.
-S     ... x. x..
-H     xx xx xxx
-S@0.6 .g .. g..
+S ... x. x....
+H xx xx xxx...
+S@0.6 .g .. g.....
 
 [swing verse 3/4 intensity=0.20-0.60]
 K     x. .x .x
 S@0.6 .g .. g.
-H     xx xx xxx
+H xx xx xxx..
 S@0.6 .g .. g.
 
 [swing chorus 7/8 intensity=0.40-0.80]
-K     x.. x.. x.. x..
-S     ... x. x.
-H     xxx xx xx
+K x.. x.. x.. x....
+S ... x. x.
+H xxx xx xx
 S@0.6 .g .. g..
 
 [swing chorus 5/4 intensity=0.60-1.00]
 K     x.. ..x x.. ..x
-S     ... x.. ... x..
-H     xx xx xxx
-S@0.6 .g .. g..
+S ... x.. ... x
+H xx xx xxx...
+S@0.6 .g .. g.....
 
 [swing chorus 3/4 intensity=0.80-1.00]
 K     xx .x .x
 S     .. x. x.
-H     xx xx xxx
+H xx xx xxx..
 S@0.6 .g .g g.
 
 [swing bridge 7/8 intensity=0.10-0.50]
-K     x... .... x... .... | x... .... x... ....
-S     .... x... .... x... | .... x... .... x...
+K x... .... x... ..|x... .... x... ..
+S .... x... .... x.|.... x... .... x.
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 
 [swing verse 7/8 intensity=0.20-0.60]
-K     x.x .. .x
-S     ... x. x..
-H     xx xx xxx
+K x.x .. .x
+S ... x. x.
+H xx xx xxx
 S@0.6 .g .. .g.
 
 [swing verse 5/4 intensity=0.40-0.80]
 K     x. .. .x .. x.
-S     ... x. x..
-H     xx xx xxx
-S@0.6 .g .. g..
+S ... x. x....
+H xx xx xxx...
+S@0.6 .g .. g.....
 
 [swing verse 3/4 intensity=0.20-0.60]
 K     x. .x .x
 S@0.6 .g .. g.
-H     xx xx xxx
+H xx xx xxx..
 S@0.6 .g .. g.
 
 [swing chorus 7/8 intensity=0.40-0.80]
-K     x.. x.. x.. x..
-S     ... x. x.
-H     xxx xx xx
+K x.. x.. x.. x....
+S ... x. x.
+H xxx xx xx
 S@0.6 .g .. g..
 
 [swing chorus 5/4 intensity=0.60-1.00]
 K     x.. ..x x.. ..x
-S     ... x.. ... x..
-H     xx xx xxx
-S@0.6 .g .. g..
+S ... x.. ... x
+H xx xx xxx...
+S@0.6 .g .. g.....
 
 [swing chorus 3/4 intensity=0.80-1.00]
 K     xx .x .x
 S     .. x. x.
-H     xx xx xxx
+H xx xx xxx..
 S@0.6 .g .g g.
 
 [swing bridge 7/8 intensity=0.10-0.50]
-K     x... .... x... .... | x... .... x... ....
-S     .... x... .... x... | .... x... .... x...
+K x... .... x... ..|x... .... x... ..
+S .... x... .... x.|.... x... .... x.
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
