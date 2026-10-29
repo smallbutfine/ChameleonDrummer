@@ -181,8 +181,16 @@ object MainForm: TMainForm
       Height = 24
       Style = csDropDownList
     end
-    object lblMeterHint: TLabel
+    object chkStrictMeter: TCheckBox
       Left = 170
+      Top = 177
+      Width = 120
+      Height = 18
+      Caption = 'Strict meter'
+      Checked = True
+    end
+    object lblMeterHint: TLabel
+      Left = 300
       Top = 177
       Width = 220
       Height = 14

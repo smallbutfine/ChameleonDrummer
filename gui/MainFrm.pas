@@ -50,6 +50,7 @@ type
     cbMapping: TComboBox;
     lblMeter: TLabel;
     cbMeter: TComboBox;
+    chkStrictMeter: TCheckBox;
     lblMeterHint: TLabel;
     gbPerformance: TGroupBox;
     lblTempo: TLabel;
@@ -163,6 +164,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
   cbMeter.ItemIndex := 0;
+  chkStrictMeter.Checked := True;
   FDark := False;
 
   // Aktiviert das manuelle Zeichnen (Owner-Draw)
@@ -666,6 +668,8 @@ begin
   if MeterOption(Meter) and (Meter <> '') then
   begin
     AArgs.Add('--time-sig'); AArgs.Add(Meter);
+    if chkStrictMeter.Checked then
+      AArgs.Add('--strict-meter');
   end;
   AArgs.Add('--genre'); AArgs.Add(SelectedGenre);
   AArgs.Add('--style'); AArgs.Add(SelectedStyle);
