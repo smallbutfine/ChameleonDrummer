@@ -86,8 +86,8 @@ begin
       Pattern.Free;
     except
       on E: Exception do
-        raise Exception.Create(TabMessage(AFileName, B.HeaderLine,
-          Format('[%s]: %s', [B.Words[0], E.Message])));
+        AddConfigWarning(TabMessage(AFileName, B.HeaderLine,
+          Format('[%s]: %s - this fill is skipped', [B.Words[0], E.Message])));
     end;
   end;
 end;
@@ -129,9 +129,15 @@ begin
     end;
     if (Num <> AMeterNum) or (Den <> AMeterDen) then
       Continue;
-    Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, Num, Den));
-    Fill.Energy := EnergyOf(B);
-    Result.Add(Fill);
+    try
+      Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, Num, Den));
+      Fill.Energy := EnergyOf(B);
+      Result.Add(Fill);
+    except
+      on E: Exception do
+        AddConfigWarning(TabMessage(Path, B.HeaderLine,
+          Format('[%s]: %s - this fill is skipped', [B.Words[0], E.Message])));
+    end;
   end;
 end;
 

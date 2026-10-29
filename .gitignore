@@ -43,3 +43,8 @@ song.ardour.log
 song.ardour.lua
 tests/out/
 _build_counter.txt
+gui/chameleondrummer_gui.rc
+ChameleonDrummer.obj
+ChameleonDrummer.res
+ChameleonDrummer.rc
+__pycache__/

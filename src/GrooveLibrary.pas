@@ -175,8 +175,8 @@ begin
       Pattern.Free;
     except
       on E: Exception do
-        raise Exception.Create(TabMessage(AFileName, B.HeaderLine,
-          Format('[%s %s]: %s', [B.Words[0], B.Words[1], E.Message])));
+        AddConfigWarning(TabMessage(AFileName, B.HeaderLine,
+          Format('[%s %s]: %s - this groove is skipped', [B.Words[0], B.Words[1], E.Message])));
     end;
   end;
 end;
@@ -404,9 +404,32 @@ begin
     Index := 0;
   Item := V[Index];
   Kind := AKind;
-  Result := BuildDrumTabPattern(
-    Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, Index]), Item.Lines,
-    AComplexity, 2, AMeterNum, AMeterDen);
+  try
+    Result := BuildDrumTabPattern(
+      Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, Index]), Item.Lines,
+      AComplexity, 2, AMeterNum, AMeterDen);
+  except
+    on E: Exception do
+    begin
+      AddConfigWarning(Format(
+        'groove %s %s (%d/%d) variant %d: %s - falling back to built-in',
+        [AGenre, AStyle, AMeterNum, AMeterDen, Index, E.Message]));
+      if MeterKey(AMeterNum, AMeterDen) = '4/4' then
+      begin
+        Result := BuildTaggedGroove(
+          Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, AVariant]), AKind, AVariant,
+          ABuiltIn, AComplexity);
+        Exit;
+      end
+      else
+      begin
+        Result := BuildMeterFallbackGroove(
+          Format('%s_%s_%s_%d_%d_plain', [AGenre, AStyle, AKind, AMeterNum, AMeterDen]),
+          AMeterNum, AMeterDen, AComplexity);
+        Exit;
+      end;
+    end;
+  end;
   if Item.HasBand then
     TagIntensityBand(Result, Item.BandMin, Item.BandMax)
   else
