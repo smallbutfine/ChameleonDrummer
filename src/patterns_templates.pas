@@ -836,6 +836,8 @@ var
   Tab: TDrumTab;
   Composer: TTemplateComposer;
   Bars: Integer;
+  I: Integer;
+  AllSame: Boolean;
 begin
   Tab := TDrumTab.Create(ALines);
   Tab.SetMeters(AMeters);
@@ -845,6 +847,27 @@ begin
     Composer.Add(Tab);
     Result := Composer.Build(Bars, AComplexity);
     Result.Metadata.AddOrSetValue('phrase_bars', IntToStr(Bars));
+
+    { Set pattern TimeSignature when all header meters are identical.
+      This ensures strict meter filtering works: a pattern with mixed meters
+      (e.g. 7/8 and 5/4 in the header) keeps the default 4/4 TimeSignature
+      and will not match any single-meter strict filter. }
+    if Length(AMeters) > 0 then
+    begin
+      AllSame := True;
+      for I := 1 to High(AMeters) do
+        if (AMeters[I].Num <> AMeters[0].Num) or
+           (AMeters[I].Den <> AMeters[0].Den) then
+        begin
+          AllSame := False;
+          Break;
+        end;
+      if AllSame then
+      begin
+        Result.TimeSignature.Free;
+        Result.TimeSignature := TTimeSignature.Create(AMeters[0].Num, AMeters[0].Den);
+      end;
+    end;
   finally
     Composer.Free;
   end;
