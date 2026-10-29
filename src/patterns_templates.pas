@@ -689,11 +689,9 @@ begin
           'A %d/%d drum tab bar must have %s steps, got %d in "%s"',
           [BarMeterNum, BarMeterDen, TabStepCountsText(BarMeterNum), StepCount, Line]);
 
-      WriteLn(Format('TDrumTab.Generate: about to compute BarQuarters = %d * 4.0 / %d', [BarMeterNum, BarMeterDen]));
       if BarMeterDen = 0 then
         raise Exception.CreateFmt('TDrumTab.Generate: BarMeterDen is 0! line=%s bar=%d', [Line, BarIdx]);
       BarQuarters := BarMeterNum * 4.0 / BarMeterDen;
-      WriteLn(Format('TDrumTab.Generate: BarQuarters=%f', [BarQuarters]));
 
       for P := 1 to StepCount do
       begin
@@ -718,8 +716,6 @@ begin
               [Line, BarIdx, P, BarMeterNum, BarMeterDen, BarQuarters, StepCount, PositionOffset]);
         end;
       end;
-      WriteLn(Format('TDrumTab.Generate: line "%s" processed OK, meter %d/%d, BarQuarters=%f',
-        [Line, BarMeterNum, BarMeterDen, BarQuarters]));
     end;
   finally
     Bars.Free;
