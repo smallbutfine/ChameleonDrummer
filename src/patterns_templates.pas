@@ -1091,7 +1091,8 @@ begin
     CumulativeQuarters := 0.0;
     FirstTab := nil;
     if FTemplates.Count > 0 then
-      FirstTab := TDrumTab(FTemplates[0]);
+      if FTemplates[0] is TDrumTab then
+        FirstTab := TDrumTab(FTemplates[0]);
     for BarIndex := 0 to ABars - 1 do
     begin
       { Get meter for this bar index: from header meters, else infer }
