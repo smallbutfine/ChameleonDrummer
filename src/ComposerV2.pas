@@ -758,6 +758,9 @@ var
   MinIntensityRange, MaxIntensityRange: Double;
   AllDrummers: specialize TArray<string>;
   PreferredForGenre: specialize TList<string>;
+  FirstMeterNumStr, FirstMeterDenStr: string;
+  HasFirstMeter: Boolean;
+  FirstMeterNum, FirstMeterDen: Integer;
   PreferredDrummers: specialize TArray<string>;
   I, J: Integer;
   DrummerPlugin: TObject;
@@ -945,6 +948,30 @@ begin
           begin
             Available[J].Free;
             Available.Delete(J);
+          end;
+          Dec(J);
+        end;
+      end
+      else
+      { Non-strict meter filtering: when --time-sig is set without --strict-meter,
+        only keep patterns whose FIRST bar meter matches the requested song meter.
+        Patterns without first_meter metadata (inferred meter) are kept as-is. }
+      if (not AStrictMeter) and (ASongMeterNum <> 0) and (ASongMeterDen <> 0) then
+      begin
+        J := Available.Count - 1;
+        while J >= 0 do
+        begin
+          HasFirstMeter := Available[J].Metadata.TryGetValue('first_meter_num', FirstMeterNumStr) and
+                           Available[J].Metadata.TryGetValue('first_meter_den', FirstMeterDenStr);
+          if HasFirstMeter then
+          begin
+            FirstMeterNum := StrToIntDef(FirstMeterNumStr, -1);
+            FirstMeterDen := StrToIntDef(FirstMeterDenStr, -1);
+            if (FirstMeterNum <> ASongMeterNum) or (FirstMeterDen <> ASongMeterDen) then
+            begin
+              Available[J].Free;
+              Available.Delete(J);
+            end;
           end;
           Dec(J);
         end;
