@@ -1219,6 +1219,9 @@ begin
     FS.WriteBuffer(DummySize, 4);
 
     { Initial set_tempo meta-event at tick 0 }
+    WriteLn(Format('DrumGenerator.SaveSongMidi: about to compute 60000000 div InitialTempo = 60000000 div %d', [InitialTempo]));
+    if InitialTempo = 0 then
+      raise Exception.CreateFmt('DrumGenerator.SaveSongMidi: InitialTempo is 0!', []);
     MicroSecs := 60000000 div InitialTempo;
     b1 := Byte(MicroSecs shr 16);
     b2 := Byte((MicroSecs shr 8) and $FF);
@@ -1270,6 +1273,9 @@ begin
         else
         begin
           { Tempo change: FF 51 <3-byte microseconds-per-beat> }
+          WriteLn(Format('DrumGenerator.SaveSongMidi: about to compute 60000000 div Events[I].Tempo = 60000000 div %d', [Events[I].Tempo]));
+          if Events[I].Tempo = 0 then
+            raise Exception.CreateFmt('DrumGenerator.SaveSongMidi: Events[%d].Tempo is 0!', [I]);
           MicroSecs := 60000000 div Events[I].Tempo;
           MetaByte := $51; FS.WriteBuffer(MetaByte, 1);
           b1 := Byte(MicroSecs shr 16);
