@@ -1117,9 +1117,8 @@ begin
         BarMeterNum := 4;
         BarMeterDen := 4;
       end;
-      WriteLn(Format('TTemplateComposer.Build: about to compute BarQuarters = %d * 4.0 / %d (bar=%d)', [BarMeterNum, BarMeterDen, BarIndex]));
-      { Guard against garbage/invalid meter values (e.g. from an unsafe cast
-        when a non-TDrumTab template is in FTemplates[0]) }
+{ Guard against garbage/invalid meter values (e.g. from an unsafe cast
+      when a non-TDrumTab template is in FTemplates[0]) }
       if BarMeterNum = 0 then
         BarMeterNum := 4;
       if BarMeterDen = 0 then
