@@ -29,9 +29,14 @@ uses
 type
   TTabWords = array of string;
 
+  { A single time signature from a header, e.g. 7/8 or _6_8_. }
+  TMeterPair = record
+    Num, Den: Integer;
+  end;
+
   TTabBlock = record
-    Words: TTabWords;      { header words, lower case, without the meter }
-    MeterNum, MeterDen: Integer;  { 0/0 = no meter in the header: 4/4 }
+    Words: TTabWords;      { header words, lower case, without the meters }
+    Meters: array of TMeterPair;  { meters from header, empty = infer from tab }
     KeyNames: TTabWords;   { header keys, lower case }
     KeyValues: TTabWords;
     Lines: array of string;
@@ -50,6 +55,10 @@ function ParseTabFile(const APath: string): TTabBlocks;
 
 { Value of a header key; False if the block does not have it. }
 function BlockKey(const ABlock: TTabBlock; const AKey: string; out AValue: string): Boolean;
+
+{ Returns the meter for bar index ABarIndex. Cycles through header meters.
+  Returns False when the header has no meters (infer from tab). }
+function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
 
 { "name(line): text" - the shape of every message about a file. }
 function TabMessage(const AFileName: string; ALine: Integer; const AText: string): string;
@@ -75,10 +84,23 @@ begin
     end;
 end;
 
+{ Returns the meter for bar index ABarIndex. Cycles through header meters.
+  Returns Num=0, Den=0 when the header has no meters (infer from tab). }
+function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
+begin
+  AMeterNum := 0;
+  AMeterDen := 0;
+  if Length(ABlock.Meters) = 0 then
+    Exit(False);
+  AMeterNum := ABlock.Meters[ABarIndex mod Length(ABlock.Meters)].Num;
+  AMeterDen := ABlock.Meters[ABarIndex mod Length(ABlock.Meters)].Den;
+  Exit(True);
+end;
+
 function ParseTabLines(ALines: TStrings; const AFileName: string): TTabBlocks;
 var
-  I, P, N: Integer;
-  Line, Head, Word, Problem: string;
+  I, P, N, MN, MD: Integer;
+  Line, Head, Word, NormalizedWord, Problem: string;
   Parts: TStringList;
   Open: Boolean;
   Cur: TTabBlock;
@@ -137,14 +159,22 @@ begin
           end
           else if Pos('/', Word) > 0 then
           begin
-            if (Cur.MeterNum <> 0) or
-               not TryParseMeter(Word, Cur.MeterNum, Cur.MeterDen) then
-              raise Exception.Create(TabMessage(AFileName, I + 1,
-                Format('"%s" is not a meter like 7/8 (or the header has two meters)', [Word])));
-            Problem := MeterProblem(Cur.MeterNum, Cur.MeterDen);
-            if Problem <> '' then
-              raise Exception.Create(TabMessage(AFileName, I + 1,
-                Format('meter %d/%d: %s', [Cur.MeterNum, Cur.MeterDen, Problem])));
+            { Collect meter words like 7/8 from the header. }
+            { Underscore notation like _6_8_ is NOT accepted - only proper N/D. }
+            if TryParseMeter(Word, MN, MD) then
+            begin
+              N := Length(Cur.Meters);
+              SetLength(Cur.Meters, N + 1);
+              Cur.Meters[N].Num := MN;
+              Cur.Meters[N].Den := MD;
+            end
+            else
+            begin
+              { Not a valid meter - treat as regular word }
+              N := Length(Cur.Words);
+              SetLength(Cur.Words, N + 1);
+              Cur.Words[N] := LowerCase(Word);
+            end;
           end
           else
           begin

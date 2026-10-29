@@ -39,6 +39,7 @@ type
     ExportArdour: Boolean; // generate --ardour: also write the <output>.ardour session
     ListType: String; // 'genres', 'styles', 'drummers'
     IsSongCommand: Boolean; // --song flag from regen_all.bat
+    StrictMeter: Boolean; // --strict-meter: only use patterns matching --time-sig
   end;
 
 type
@@ -151,6 +152,10 @@ begin
       W := MeterProblem(Result.MeterNum, Result.MeterDen);
       if W <> '' then
         raise Exception.CreateFmt('Invalid --time-sig "%s": %s', [Args[I], W]);
+    end
+    else if (Args[I] = '--strict-meter') then
+    begin
+      Result.StrictMeter := True;
     end
     else if (Args[I] = '--segment') then
     begin
@@ -411,6 +416,7 @@ begin
   Writeln('  --humanization <0-1> Humanization intensity (default: 0.3)');
   Writeln('  --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1');
   Writeln('  --time-sig <n/d>     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)');
+  Writeln('  --strict-meter       Only use patterns matching --time-sig');
   Writeln('  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8');
   Writeln('                       (bpm - keeps the song tempo); mix freely with --section');
   Writeln('  --section <n:bars[@bpm]>  Song structure; repeat once per section, in order');
@@ -464,7 +470,8 @@ begin
     0.6,              // ADynamics - default dynamics
     Args.Humanization, // AHumanization - humanization intensity from CLI
     Args.Swing,
-    SongMeterNum(Args), SongMeterDen(Args)  // ASwing - swing feel from CLI
+    SongMeterNum(Args), SongMeterDen(Args),
+    Args.StrictMeter  // AStrictMeter - only use patterns matching --time-sig
   );
 
   PrintGeneratorWarnings;
@@ -512,7 +519,9 @@ begin
   FGenerator.DrumKit := DrumKit;
 
   Pattern := FGenerator.GeneratePattern(
-    Args.Genre, 'verse', DrumKit, Args.Style, SongMeterNum(Args), SongMeterDen(Args));
+    Args.Genre, 'verse', DrumKit, Args.Style,
+    SongMeterNum(Args), SongMeterDen(Args),
+    Args.StrictMeter);
   try
     if (Args.OutputFile = '') then
       OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])

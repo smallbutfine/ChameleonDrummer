@@ -78,11 +78,9 @@ begin
       if not TryStrToFloat(Value, Energy, FS) or (Energy < 0) or (Energy > 1) then
         raise Exception.Create(TabMessage(AFileName, B.HeaderLine,
           Format('energy must be a number from 0 to 1, not "%s"', [Value])));
+    { Meter from header (if any) is passed to BuildDrumTabPattern }
     try
-      if B.MeterNum = 0 then
-        Pattern := BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1)
-      else
-        Pattern := BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, B.MeterNum, B.MeterDen);
+      Pattern := BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, B.Meters);
       Pattern.Free;
     except
       on E: Exception do
@@ -100,6 +98,7 @@ var
   B: TTabBlock;
   Fill: TFill;
   Num, Den: Integer;
+  FillMeters: array of TMeterPair;
 begin
   Result := nil;
   if ADrummer = '' then
@@ -120,17 +119,26 @@ begin
   Result := specialize TList<TFill>.Create;
   for B in Blocks do
   begin
-    Num := B.MeterNum;
-    Den := B.MeterDen;
-    if Num = 0 then
+    { Get meter from header (first meter if any, else 4/4) }
+    Num := 4;
+    Den := 4;
+    if Length(B.Meters) > 0 then
     begin
-      Num := 4;
-      Den := 4;
+      Num := B.Meters[0].Num;
+      Den := B.Meters[0].Den;
     end;
     if (Num <> AMeterNum) or (Den <> AMeterDen) then
       Continue;
+    { Build meters array from single meter }
+    SetLength(FillMeters, 0);
+    if Num <> 0 then
+    begin
+      SetLength(FillMeters, 1);
+      FillMeters[0].Num := Num;
+      FillMeters[0].Den := Den;
+    end;
     try
-      Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, Num, Den));
+      Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, FillMeters));
       Fill.Energy := EnergyOf(B);
       Result.Add(Fill);
     except

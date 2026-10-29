@@ -7,7 +7,8 @@ unit patterns_templates;
 interface
 
 uses
-  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song, time_signature;
+  Classes, SysUtils, Math, Generics.Collections, Kit, Pattern, Song, time_signature,
+  TabFiles;
 
 type
   { Lines of a drum tab (see TDrumTab). }
@@ -127,15 +128,18 @@ type
     N/D has N units (1/D notes), and k steps per unit, k = 1, 2, 3, 4, 6 or 8.
     7/8 therefore takes 7 (eighths), 14 (sixteenths), 21, 28, 42 or 56 steps;
     4/4 takes 4, 8, 12, 16, 24 or 32. }
-  TDrumTab = class(TPatternTemplate)
+TDrumTab = class(TPatternTemplate)
   private
     FLines: TStringList;
     FBarCount: Integer;
+    FMeters: array of TabFiles.TMeterPair;  { header meters, empty = infer from tab }
   public
     constructor Create(const ALines: array of string);
     destructor Destroy; override;
     function Generate(Builder: TPatternBuilder; const Kwargs: specialize TDictionary<string, string>): TPatternBuilder; override;
     property BarCount: Integer read FBarCount;
+    { Set header meters. Empty = infer meter per bar from tab structure. }
+    procedure SetMeters(const AMeters: array of TabFiles.TMeterPair);
   end;
 
   TTemplateComposer = class(TObject)
@@ -176,7 +180,7 @@ function BuildTaggedGroove(const AName, AKind: string; AVariant: Integer;
 { Builds a pattern from drum-tab lines (see TDrumTab), in the given meter. }
 function BuildDrumTabPattern(const AName: string; const ALines: array of string;
   AComplexity: Double; AMinBars: Integer = 2;
-  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
+  const AMeters: array of TabFiles.TMeterPair): TPattern;
 
 { A plain groove for a meter that has no groove in the files: kick on the
   downbeat, snare at the start of every later beat group, hi-hat on every
@@ -192,6 +196,14 @@ function BuildMeterFallbackFill(const AName: string; AMeterNum, AMeterDen: Integ
 
 { The step counts a bar of the meter may have, e.g. '7, 14, 21, 28, 42 or 56'. }
 function TabStepCountsText(AMeterNum: Integer): string;
+
+{ Infers a time signature from a bar's step count. Returns True when a valid
+  meter was found. Prefers 4/4, then common subdivisions (eighths, sixteenths,
+  quarters), then smaller numerators. }
+function InferMeterFromSteps(ASteps: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
+
+{ Infers meter from the first line's first bar step count. Raises on failure. }
+procedure InferMeterFromTab(const ALines: TStringList; out AMeterNum, AMeterDen: Integer);
 
 implementation
 
@@ -591,6 +603,15 @@ begin
   inherited Destroy;
 end;
 
+procedure TDrumTab.SetMeters(const AMeters: array of TMeterPair);
+var
+  I: Integer;
+begin
+  SetLength(FMeters, Length(AMeters));
+  for I := 0 to High(AMeters) do
+    FMeters[I] := AMeters[I];
+end;
+
 function TDrumTab.Generate(Builder: TPatternBuilder;
   const Kwargs: specialize TDictionary<string, string>): TPatternBuilder;
 var
@@ -601,29 +622,28 @@ var
   MinComplexity, Complexity: Double;
   Vel: Integer;
   Ghost, Accent: Boolean;
-  MeterNum, MeterDen, PerUnit: Integer;
+  BarMeterNum, BarMeterDen, PerUnit: Integer;
   BarQuarters: Double;
+  PositionOffset: Double;
 begin
   Result := Builder;
   FS := DefaultFormatSettings;
   FS.DecimalSeparator := '.';
   Complexity := TemplateComplexity(Kwargs);
   BarIdx := StrToIntDef(Kwargs.Items['bar'], 0);
-  MeterNum := 4;
-  MeterDen := 4;
-  if Kwargs.ContainsKey('meter_num') then
-    MeterNum := StrToIntDef(Kwargs.Items['meter_num'], 4);
-  if Kwargs.ContainsKey('meter_den') then
-    MeterDen := StrToIntDef(Kwargs.Items['meter_den'], 4);
-  BarQuarters := MeterNum * 4.0 / MeterDen;
+  PositionOffset := StrToFloatDef(Kwargs.Items['position_offset'], 0.0, DefaultFormatSettings);
   Bars := TStringList.Create;
   try
     Bars.StrictDelimiter := True;
     Bars.Delimiter := '|';
     for I := 0 to FLines.Count - 1 do
     begin
-      Line := FLines[I];
+      Line := Trim(FLines[I]);
+      if Line = '' then
+        Continue;
       P := Pos(' ', Line);
+      if P = 0 then
+        Continue;
       Token := Copy(Line, 1, P - 1);
       MinComplexity := 0.0;
       AtPos := Pos('@', Token);
@@ -640,13 +660,30 @@ begin
           [Token, Line]);
 
       Bars.DelimitedText := Copy(Line, P + 1, MaxInt);
-      Seg := StringReplace(Bars[BarIdx mod Bars.Count], ' ', '', [rfReplaceAll]);
+      if BarIdx >= Bars.Count then
+        BarIdx := BarIdx mod Bars.Count;
+      Seg := StringReplace(Bars[BarIdx], ' ', '', [rfReplaceAll]);
       StepCount := Length(Seg);
-      PerUnit := StepCount div MeterNum;
-      if (StepCount mod MeterNum <> 0) or not (PerUnit in [1, 2, 3, 4, 6, 8]) then
+      if StepCount = 0 then
+        Continue;
+
+      (* Use header meter if available, else infer from step count *)
+      if Length(FMeters) > 0 then
+      begin
+        BarMeterNum := FMeters[BarIdx mod Length(FMeters)].Num;
+        BarMeterDen := FMeters[BarIdx mod Length(FMeters)].Den;
+      end
+      else if not InferMeterFromSteps(StepCount, BarMeterNum, BarMeterDen) then
+        raise Exception.CreateFmt(
+          'Cannot infer meter from %d steps in "%s".', [StepCount, Line]);
+
+      PerUnit := StepCount div BarMeterNum;
+      if (StepCount mod BarMeterNum <> 0) or not (PerUnit in [1, 2, 3, 4, 6, 8]) then
         raise Exception.CreateFmt(
           'A %d/%d drum tab bar must have %s steps, got %d in "%s"',
-          [MeterNum, MeterDen, TabStepCountsText(MeterNum), StepCount, Line]);
+          [BarMeterNum, BarMeterDen, TabStepCountsText(BarMeterNum), StepCount, Line]);
+
+      BarQuarters := BarMeterNum * 4.0 / BarMeterDen;
 
       for P := 1 to StepCount do
       begin
@@ -662,7 +699,7 @@ begin
           raise Exception.CreateFmt('Unknown drum tab step "%s" in "%s"',
             [Seg[P], Line]);
         end;
-        Builder.Hit(InstName, (P - 1) * BarQuarters / StepCount, Vel, Ghost, Accent);
+        Builder.Hit(InstName, (P - 1) * BarQuarters / StepCount + PositionOffset, Vel, Ghost, Accent);
       end;
     end;
   finally
@@ -687,18 +724,124 @@ begin
   end;
 end;
 
+{ Score a candidate meter for step-count inference. Higher = better. }
+function ScoreMeter(ANum, ADen, AKind: Integer): Integer;
+begin
+  Result := 0;
+  if (ANum = 4) and (ADen = 4) then
+    Result := 1000; { strongly prefer 4/4 }
+  { Common subdivisions }
+  if (AKind = 1) and (ADen = 8) then
+    Inc(Result, 100); { eighth notes in 8-based meter }
+  if (AKind = 2) and (ADen = 4) then
+    Inc(Result, 100); { eighth notes in 4-based meter }
+  if (AKind = 4) and (ADen = 4) then
+    Inc(Result, 90);  { sixteenth notes in 4-based meter }
+  if (AKind = 1) and (ADen = 4) then
+    Inc(Result, 80);  { quarter notes }
+  if (AKind = 2) and (ADen = 8) then
+    Inc(Result, 80);  { sixteenth notes in 8-based meter }
+  if (AKind = 1) and (ADen = 2) then
+    Inc(Result, 70);  { half notes }
+  if (AKind = 3) and (ADen = 4) then
+    Inc(Result, 85);  { triplet eighths }
+  if (AKind = 6) and (ADen = 8) then
+    Inc(Result, 85);  { triplet sixteenths }
+  if (AKind = 1) and (ADen = 16) then
+    Inc(Result, 60);  { thirty-second notes }
+  if (AKind = 8) and (ADen = 8) then
+    Inc(Result, 50);  { thirty-second notes in 8-based }
+end;
+
+function InferMeterFromSteps(ASteps: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
+const
+  ValidDen: array[0..3] of Integer = (2, 4, 8, 16);
+  ValidK: array[0..5] of Integer = (1, 2, 3, 4, 6, 8);
+var
+  D, K, N, I, J: Integer;
+  BestScore, Score: Integer;
+  BestNum, BestDen: Integer;
+  Problem: string;
+begin
+  Result := False;
+  AMeterNum := 0;
+  AMeterDen := 0;
+  BestScore := -1;
+  BestNum := 0;
+  BestDen := 0;
+
+  for I := 0 to High(ValidDen) do
+  begin
+    D := ValidDen[I];
+    for J := 0 to High(ValidK) do
+    begin
+      K := ValidK[J];
+      if ASteps mod K <> 0 then
+        Continue;
+      N := ASteps div K;
+      if (N < MIN_METER_NUMERATOR) or (N > MAX_METER_NUMERATOR) then
+        Continue;
+      Problem := MeterProblem(N, D);
+      if Problem <> '' then
+        Continue;
+
+      Score := ScoreMeter(N, D, K);
+      { Tiebreaker: smaller numerator, then smaller denominator }
+      if (Score > BestScore) or
+         ((Score = BestScore) and ((N < BestNum) or ((N = BestNum) and (D < BestDen)))) then
+      begin
+        BestScore := Score;
+        BestNum := N;
+        BestDen := D;
+      end;
+    end;
+  end;
+
+  if BestScore >= 0 then
+  begin
+    AMeterNum := BestNum;
+    AMeterDen := BestDen;
+    Result := True;
+  end;
+end;
+
+procedure InferMeterFromTab(const ALines: TStringList; out AMeterNum, AMeterDen: Integer);
+var
+  FirstLine, Content, FirstBar: string;
+  P2: Integer;
+  Bars: TStringList;
+  StepCount: Integer;
+begin
+  if ALines.Count = 0 then
+    raise Exception.CreateFmt('InferMeterFromTab: no tab lines.', []);
+  FirstLine := Trim(ALines[0]);
+  P2 := Pos(' ', FirstLine);
+  if P2 = 0 then
+    raise Exception.CreateFmt('InferMeterFromTab: cannot parse first tab line "%s".', [FirstLine]);
+  Content := Copy(FirstLine, P2 + 1, MaxInt);
+  Bars := TStringList.Create;
+  Bars.StrictDelimiter := True;
+  Bars.Delimiter := '|';
+  Bars.DelimitedText := Content;
+  FirstBar := Trim(Bars[0]);
+  Bars.Free;
+  StepCount := Length(StringReplace(FirstBar, ' ', '', [rfReplaceAll]));
+  if not InferMeterFromSteps(StepCount, AMeterNum, AMeterDen) then
+    raise Exception.CreateFmt('InferMeterFromTab: cannot infer meter from %d steps in "%s".', [StepCount, FirstLine]);
+end;
+
 function BuildDrumTabPattern(const AName: string; const ALines: array of string;
-  AComplexity: Double; AMinBars: Integer; AMeterNum, AMeterDen: Integer): TPattern;
+  AComplexity: Double; AMinBars: Integer; const AMeters: array of TabFiles.TMeterPair): TPattern;
 var
   Tab: TDrumTab;
   Composer: TTemplateComposer;
   Bars: Integer;
 begin
   Tab := TDrumTab.Create(ALines);
+  Tab.SetMeters(AMeters);
   Bars := Max(Tab.BarCount, AMinBars);
   Composer := TTemplateComposer.Create(AName);
   try
-    Composer.SetMeter(AMeterNum, AMeterDen);
     Composer.Add(Tab);
     Result := Composer.Build(Bars, AComplexity);
     Result.Metadata.AddOrSetValue('phrase_bars', IntToStr(Bars));
@@ -762,8 +905,17 @@ function BuildTaggedGroove(const AName, AKind: string; AVariant: Integer;
   AMeterNum, AMeterDen: Integer): TPattern;
 var
   Lo, Hi: Double;
+  Meters: array of TabFiles.TMeterPair;
 begin
-  Result := BuildDrumTabPattern(AName, ALines, AComplexity, 2, AMeterNum, AMeterDen);
+  if AMeterNum <> 0 then
+  begin
+    SetLength(Meters, 1);
+    Meters[0].Num := AMeterNum;
+    Meters[0].Den := AMeterDen;
+  end
+  else
+    SetLength(Meters, 0);
+  Result := BuildDrumTabPattern(AName, ALines, AComplexity, 2, Meters);
   GrooveBand(AKind, AVariant, Lo, Hi);
   TagIntensityBand(Result, Lo, Hi);
 end;
@@ -846,8 +998,8 @@ begin
   inherited Create;
   FPName := AName;
   FTemplates := specialize TList<TPatternTemplate>.Create;
-  FMeterNum := 4;
-  FMeterDen := 4;
+  FMeterNum := 0; { 0 means: infer from tab structure }
+  FMeterDen := 0;
 end;
 
 procedure TTemplateComposer.SetMeter(ANum, ADen: Integer);
@@ -883,9 +1035,11 @@ var
   Template: TPatternTemplate;
   Kwargs: specialize TDictionary<string, string>;
   BarIndex: Integer;
+  CumulativeQuarters: Double;
+  BarMeterNum, BarMeterDen: Integer;
   BarQuarters: Double;
+  FirstTab: TDrumTab;
 begin
-  BarQuarters := FMeterNum * 4.0 / FMeterDen;
   if ABars <= 0 then
     raise Exception.CreateFmt('Template pattern bars must be positive, got %d',
       [ABars]);
@@ -894,21 +1048,43 @@ begin
   try
     Kwargs.Add('bars', IntToStr(ABars));
     Kwargs.Add('complexity', FloatToStr(AComplexity));
-    Kwargs.Add('meter_num', IntToStr(FMeterNum));
-    Kwargs.Add('meter_den', IntToStr(FMeterDen));
+    CumulativeQuarters := 0.0;
+    FirstTab := nil;
+    if FTemplates.Count > 0 then
+      FirstTab := TDrumTab(FTemplates[0]);
     for BarIndex := 0 to ABars - 1 do
     begin
-      Builder.PositionOffset := BarIndex * BarQuarters;
+      { Get meter for this bar index: from header meters, else infer }
+      BarMeterNum := 0;
+      BarMeterDen := 0;
+      if Assigned(FirstTab) and (Length(FirstTab.FMeters) > 0) then
+      begin
+        BarMeterNum := FirstTab.FMeters[BarIndex mod Length(FirstTab.FMeters)].Num;
+        BarMeterDen := FirstTab.FMeters[BarIndex mod Length(FirstTab.FMeters)].Den;
+      end
+      else if Assigned(FirstTab) and (FirstTab.FLines.Count > 0) then
+      begin
+        { Infer from first bar's step count }
+        try
+          InferMeterFromTab(FirstTab.FLines, BarMeterNum, BarMeterDen);
+        except
+          BarMeterNum := 4;
+          BarMeterDen := 4;
+        end;
+      end
+      else
+      begin
+        BarMeterNum := 4;
+        BarMeterDen := 4;
+      end;
+      BarQuarters := BarMeterNum * 4.0 / BarMeterDen;
+      Kwargs.AddOrSetValue('position_offset', FloatToStr(CumulativeQuarters));
       Kwargs.AddOrSetValue('bar', IntToStr(BarIndex));
       for Template in FTemplates do
         Template.Generate(Builder, Kwargs);
+      CumulativeQuarters := CumulativeQuarters + BarQuarters;
     end;
     Result := Builder.Build;
-    if (FMeterNum <> 4) or (FMeterDen <> 4) then
-    begin
-      Result.TimeSignature.Free;
-      Result.TimeSignature := TTimeSignature.Create(FMeterNum, FMeterDen);
-    end;
   finally
     Kwargs.Free;
     Builder.Free;

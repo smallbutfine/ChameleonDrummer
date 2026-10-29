@@ -28,6 +28,9 @@ type
     SongMapFile: String;
     WriteTimeline: String;
     ListType: String; // 'genres', 'styles', 'drummers'
+    TimeSigNum: Integer; // --time-sig numerator (0 = not specified)
+    TimeSigDen: Integer; // --time-sig denominator (0 = not specified)
+    StrictMeter: Boolean; // --strict-meter: only use patterns matching the requested meter
   end;
 
 type
@@ -73,6 +76,9 @@ begin
   Args.Complexity := 0.5;
   Args.Humanization := 0.3;
   Args.Mapping := 'gm'; // Default to GM mapping
+  Args.TimeSigNum := 0;
+  Args.TimeSigDen := 0;
+  Args.StrictMeter := False;
 
   I := 1;
   while (I <= Length(Argv)) do
@@ -132,6 +138,26 @@ begin
       Inc(I);
       if (I <= Length(Argv)) then Args.WriteTimeline := Argv[I];
     end
+    else if (Argv[I] = '--time-sig') then
+    begin
+      Inc(I);
+      if (I <= Length(Argv)) then
+      begin
+        var S := Argv[I];
+        var P := Pos('/', S);
+        if P > 0 then
+        begin
+          Val(Copy(S, 1, P - 1), Args.TimeSigNum);
+          Val(Copy(S, P + 1, MaxInt), Args.TimeSigDen);
+        end
+        else
+          Val(S, Args.TimeSigNum);
+      end;
+    end
+    else if (Argv[I] = '--strict-meter') then
+    begin
+      Args.StrictMeter := True;
+    end
     else if (Argv[I] = '--list') then
     begin
       Inc(I);
@@ -181,6 +207,8 @@ begin
   Writeln('  --mapping <name>     Keymap to use: gm (default), ad2, ezd3, xg');
   Writeln('  --sidecar <file>     Read section structure from sidecar JSON');
   Writeln('  --song-map <file>    Read song map JSON for per-bar tempo/meter');
+  Writeln('  --time-sig <N/D>     Time signature (e.g., 7/8, 5/4, 3/4)');
+  Writeln('  --strict-meter       Only use patterns matching --time-sig');
   Writeln('  --write-timeline     Write timeline JSON after generation');
   Writeln('  --list <type>        List: genres, styles, drummers');
   Writeln;
@@ -211,7 +239,10 @@ begin
     Args.Style,
     Args.Tempo,
     nil,   // AStructure - use genre default
-    DrumKit // Pass pre-loaded keymap
+    DrumKit, // Pass pre-loaded keymap
+    Args.TimeSigNum,
+    Args.TimeSigDen,
+    Args.StrictMeter
   );
 
   try
@@ -244,7 +275,9 @@ begin
   FGenerator.DrumKit := DrumKit;
 
   Pattern := FGenerator.GeneratePattern(
-    Args.Genre, 'verse', DrumKit, Args.Style);
+    Args.Genre, 'verse', DrumKit, Args.Style,
+    Args.TimeSigNum, Args.TimeSigDen,
+    Args.StrictMeter);
 
   if (Args.OutputFile = '') then
     OutputFile := Format('%s_%s_pattern.mid', [Args.Genre, Args.Style])

@@ -166,12 +166,9 @@ begin
     if BlockKey(B, 'intensity', Value) and not ParseBand(Value, Lo, Hi) then
       raise Exception.Create(TabMessage(AFileName, B.HeaderLine,
         Format('intensity must look like 0.2-0.6 (between 0 and 1, low first), not "%s"', [Value])));
-    { Building it checks the instruments, the step characters and grid sizes. }
+    { Meter from header (if any) is passed to BuildDrumTabPattern }
     try
-      if B.MeterNum = 0 then
-        Pattern := BuildDrumTabPattern('check', B.Lines, 1.0)
-      else
-        Pattern := BuildDrumTabPattern('check', B.Lines, 1.0, 2, B.MeterNum, B.MeterDen);
+      Pattern := BuildDrumTabPattern('check', B.Lines, 1.0, 2, B.Meters);
       Pattern.Free;
     except
       on E: Exception do
@@ -209,12 +206,21 @@ begin
     V.HasBand := BlockKey(B, 'intensity', Value);
     if V.HasBand then
       ParseBand(Value, V.BandMin, V.BandMax);
-    Key := B.Words[0] + '|' + B.Words[1] + '|' + MeterKey(B.MeterNum, B.MeterDen);
+    if Length(B.Meters) = 0 then
+      Key := B.Words[0] + '|' + B.Words[1]
+    else
+    begin
+      Key := B.Words[0] + '|' + B.Words[1];
+      for I := 0 to High(B.Meters) do
+        Key := Key + '|' + IntToStr(B.Meters[I].Num) + '/' + IntToStr(B.Meters[I].Den);
+    end;
     if not AGenre.Kinds.TryGetValue(Key, List) then
       List := nil;
     SetLength(List, Length(List) + 1);
     List[High(List)] := V;
-    AGenre.Kinds.AddOrSetValue(Key, List);
+    if AGenre.Kinds.ContainsKey(Key) then
+      AGenre.Kinds.Remove(Key);
+    AGenre.Kinds.Add(Key, List);
   end;
 end;
 
@@ -325,14 +331,22 @@ function FileGrooveVariants(const AGenre, AStyle, AKind: string;
   AMeterNum, AMeterDen: Integer): TGrooveVariants;
 var
   G: TGenreGrooves;
-  Meter, Style: string;
+  MeterKeyStr, Style: string;
   I: Integer;
 
   { The grooves of one style for the kind, else its verse grooves. }
   function OfStyle(const AStyleName: string; out AVariants: TGrooveVariants): Boolean;
+  var
+    KeyNoMeter, KeyWithMeter: string;
   begin
-    Result := G.Kinds.TryGetValue(AStyleName + '|' + AKind + '|' + Meter, AVariants) or
-      G.Kinds.TryGetValue(AStyleName + '|verse|' + Meter, AVariants);
+    KeyNoMeter := AStyleName + '|' + AKind;
+    KeyWithMeter := KeyNoMeter;
+    if AMeterNum <> 0 then
+      KeyWithMeter := KeyWithMeter + '|' + IntToStr(AMeterNum) + '/' + IntToStr(AMeterDen);
+    Result := G.Kinds.TryGetValue(KeyWithMeter, AVariants) or
+      G.Kinds.TryGetValue(KeyNoMeter, AVariants) or
+      G.Kinds.TryGetValue(AStyleName + '|verse|' + KeyWithMeter, AVariants) or
+      G.Kinds.TryGetValue(AStyleName + '|verse', AVariants);
   end;
 
 begin
@@ -340,14 +354,13 @@ begin
   Result := nil;
   if not GGenres.TryGetValue(LowerCase(AGenre), G) then
     Exit;
-  Meter := MeterKey(AMeterNum, AMeterDen);
   Style := LowerCase(AStyle);
   if G.Styles.IndexOf(Style) >= 0 then
     if OfStyle(Style, Result) then
       Exit;
   { For a meter other than 4/4 the genre may have grooves for it in another
     style: that is closer than a plain groove. 4/4 keeps the built-ins. }
-  if Meter <> '4/4' then
+  if AMeterNum <> 0 then
     for I := 0 to G.Styles.Count - 1 do
       if OfStyle(G.Styles[I], Result) then
         Exit;
@@ -377,6 +390,7 @@ var
   Lo, Hi: Double;
   Kind: string;
   Index: Integer;
+  ItemMeters: array of TMeterPair;
 begin
   V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen);
   if Length(V) = 0 then
@@ -404,10 +418,18 @@ begin
     Index := 0;
   Item := V[Index];
   Kind := AKind;
+  { Build meters array from single meter }
+  SetLength(ItemMeters, 0);
+  if AMeterNum <> 0 then
+  begin
+    SetLength(ItemMeters, 1);
+    ItemMeters[0].Num := AMeterNum;
+    ItemMeters[0].Den := AMeterDen;
+  end;
   try
     Result := BuildDrumTabPattern(
       Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, Index]), Item.Lines,
-      AComplexity, 2, AMeterNum, AMeterDen);
+      AComplexity, 2, ItemMeters);
   except
     on E: Exception do
     begin

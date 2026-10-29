@@ -48,3 +48,9 @@ ChameleonDrummer.obj
 ChameleonDrummer.res
 ChameleonDrummer.rc
 __pycache__/
+
+# Tab file backups (test material, do not commit)
+backups/
+
+# Test output files
+test_*.mid

@@ -118,7 +118,8 @@ public
     const Structure: array of TSectionDef; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6;
     AHumanization: Double = 0.5; ASwing: Double = 0.0;
-    ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4): TSong;
+    ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4;
+    AStrictMeter: Boolean = False): TSong;
 
   property PluginManager: PluginRegistry.TPluginManager read FPluginManager write FPluginManager;
 end;
@@ -719,7 +720,8 @@ function TComposerV2.CreateSong(const Genre, Style: string; ATempo: Integer;
   const Structure: array of TSectionDef; ADrummer: string = '';
   AComplexity: Double = 0.5; ADynamics: Double = 0.6;
   AHumanization: Double = 0.5; ASwing: Double = 0.0;
-  ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4): TSong;
+  ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4;
+  AStrictMeter: Boolean = False): TSong;
 var
   SectionMeterNum, SectionMeterDen: Integer;
   MeterText: string;
@@ -930,6 +932,23 @@ begin
       for FlavorItem in Flavors do
         if Assigned(FlavorItem) then
           Available.Add(FlavorItem);
+
+      { Strict meter filtering: when --strict-meter is set, only keep patterns
+        whose time signature matches the requested song meter. }
+      if AStrictMeter and (ASongMeterNum <> 0) and (ASongMeterDen <> 0) then
+      begin
+        J := Available.Count - 1;
+        while J >= 0 do
+        begin
+          if (Available[J].TimeSignature.Numerator <> ASongMeterNum) or
+             (Available[J].TimeSignature.Denominator <> ASongMeterDen) then
+          begin
+            Available[J].Free;
+            Available.Delete(J);
+          end;
+          Dec(J);
+        end;
+      end;
 
       { Macro-composer phase tracking }
       MacroComposer := TMacroComposer.Create(FRng.NextInt(10000));

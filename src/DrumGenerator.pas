@@ -59,14 +59,16 @@ public
     const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
     ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
     AHumanization: Double = 0.5; ASwing: Double = 0.0;
-    AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
+    AMeterNum: Integer = 4; AMeterDen: Integer = 4;
+    AStrictMeter: Boolean = False): TSong;
 
   { Create a complete song — always uses V2 (bar-by-bar evolution). }
   function CreateSong(const Genre, Style: string; ATempo: Integer = 0;
     const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
     ADrummer: string = ''; AComplexity: Double = 0.5;
     ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-    ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
+    ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4;
+    AStrictMeter: Boolean = False): TSong;
 
   { The default song structure of a genre as it is before it is fitted to a
     song length: config/sections/<genre>.json, else the built-in one. }
@@ -80,7 +82,8 @@ public
 
   { Generate a single pattern for a genre/section. }
   function GeneratePattern(const Genre, SectionName: string; const ADk: TDrumKit;
-    const AStyle: string = ''; AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
+    const AStyle: string = ''; AMeterNum: Integer = 4; AMeterDen: Integer = 4;
+    AStrictMeter: Boolean = False): TPattern;
 
   { Problems the pattern check found in the song made by the last CreateSong
 
@@ -513,7 +516,8 @@ function TDrumGenerator.CreateSongV2(const Genre, Style: string; ATempo: Integer
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
   AHumanization: Double = 0.5; ASwing: Double = 0.0;
-  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4;
+  AStrictMeter: Boolean = False): TSong;
 { Bar-by-bar pattern evolution (Engine V2). }
 var
   Tempo: Integer;
@@ -616,10 +620,12 @@ function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer =
   const AStructure: specialize TArray<TStructureEntry> = nil; ADrumKit: TDrumKit = nil;
   ADrummer: string = ''; AComplexity: Double = 0.5;
   ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-  ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4): TSong;
+  ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4;
+  AStrictMeter: Boolean = False): TSong;
 begin
   Exit(CreateSongV2(Genre, Style, ATempo, AStructure, ADrumKit, ADrummer,
-    AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen));
+    AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen,
+    AStrictMeter));
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);
@@ -1121,7 +1127,8 @@ end;
 {  V1 helpers  pattern generation, variations, fills. â”€â”€ }
 
 function TDrumGenerator.GeneratePattern(const Genre, SectionName: string;
-  const ADk: TDrumKit; const AStyle: string; AMeterNum, AMeterDen: Integer): TPattern;
+  const ADk: TDrumKit; const AStyle: string; AMeterNum, AMeterDen: Integer;
+    AStrictMeter: Boolean = False): TPattern;
 var
   GenrePlugin: TObject;
   Params: TGenerationParameters;

@@ -55,40 +55,40 @@ C X... .... .... ....
 
 [copeland_fill_odd_7_8 energy=0.4]
 S .... x... x...
-T2 .... .x.. .x..
+T2 .... .x.. .x.
 
 [copeland_fill_odd_5_4 energy=0.6]
 S .... x... x... x...
-T2 .... .x.. .x.. .x..
+T2 .... .x.. .x.. .x.
 
 [copeland_fill_odd_3_4 energy=0.5]
 S .... x... x...
-T2 .... .x.. .x..
+T2 .... .x.. .x.
 
 [copeland_fill_odd_7_8 energy=0.4]
 S .... x... x...
-T2 .... .x.. .x..
+T2 .... .x.. .x.
 
 [copeland_fill_odd_5_4 energy=0.6]
 S .... x... x... x...
-T2 .... .x.. .x.. .x..
+T2 .... .x.. .x.. .x.
 
 [copeland_fill_odd_3_4 energy=0.5]
 S .... x... x...
-T2 .... .x.. .x..
+T2 .... .x.. .x.
 [copeland_fill_odd_7_8 energy=0.4]
 S .... .... .... x.x.
 K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.6]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.5]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.3]
 S .... .... .... x.x.
@@ -96,13 +96,13 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.7]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.4]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.2]
 S .... .... .... x.x.
@@ -110,13 +110,13 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.8]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.3]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.1]
 S .... .... .... x.x.
@@ -124,13 +124,13 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.9]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.2]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.4]
 S .... .... .... x.x.
@@ -138,13 +138,13 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.6]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.5]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.3]
 S .... .... .... x.x.
@@ -152,13 +152,13 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.7]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.4]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.2]
 S .... .... .... x.x.
@@ -166,13 +166,13 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.8]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.3]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.1]
 S .... .... .... x.x.
@@ -180,17 +180,17 @@ K .... .... .... .x.x
 
 [copeland_fill_odd_5_4 energy=0.9]
 S .... .... x..x ....
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_3_4 energy=0.2]
 S .... .... .... x.x.
-T1 .... .... .... x...
-K .... .... .... x...
+T1 .... .... .... x..
+K .... .... .... x..
 
 [copeland_fill_odd_7_8 energy=0.4]
 S .... x... x...
-T2 .... .x.. .x..
+T2 .... .x.. .x.
 
 [copeland_fill_odd_5_4 energy=0.6]
 S .... x... x... x...
@@ -199,7 +199,7 @@ HP x... .... ....
 
 [copeland_fill_odd_3_4 energy=0.5]
 S .... x... x...
-T2 .... .x.. .x..
+T2 .... .x.. .x.
 
 [copeland_fill_odd_7_8 energy=0.3]
 S .... .... ...x ....
@@ -215,7 +215,7 @@ S .... .... ...x ....
 SP .... .... .... ..x.
 
 [copeland_fill_odd_7_8 energy=0.2]
-S .... .... .... ...x 
+S .... .... .... ...x ....
 SP .... .... .... ..x.
 
 [copeland_fill_odd_5_4 energy=0.8]
@@ -228,7 +228,7 @@ S .... .... ...x ....
 SP .... .... .... ..x.
 
 [copeland_fill_odd_7_8 energy=0.1]
-S .... .... .... ...x 
+S .... .... .... ...x ....
 SP .... .... .... ..x.
 
 [copeland_fill_odd_5_4 energy=0.9]

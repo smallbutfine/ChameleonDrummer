@@ -86,7 +86,7 @@ function TDrummerPlugin.MakeTabFill(const AName: string; AEnergy: Double;
   const ALines: array of string): TFill;
 begin
   { Complexity 1.0 so no line is gated away; a fill is exactly one bar. }
-  Result := TFill.Create(BuildDrumTabPattern(AName, ALines, 1.0, 1));
+  Result := TFill.Create(BuildDrumTabPattern(AName, ALines, 1.0, 1, []));
   Result.Energy := AEnergy;
 end;
 
