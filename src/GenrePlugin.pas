@@ -85,17 +85,15 @@ end;
 
 constructor TGenrePlugin.Create;
 begin
+  WriteLn('TGenrePlugin.Create: START');
   inherited Create;
+  WriteLn('TGenrePlugin.Create: after inherited');
   FMeterNum := 4;
   FMeterDen := 4;
+  WriteLn('TGenrePlugin.Create: after meter init');
   FIntensityProfile := specialize TDictionary<string, Double>.Create;
-  { Default: neutral (0.5) for all dimensions. }
-  FIntensityProfile.Add('aggression', 0.5);
-  FIntensityProfile.Add('speed', 0.5);
-  FIntensityProfile.Add('density', 0.5);
-  FIntensityProfile.Add('power', 0.5);
-  FIntensityProfile.Add('complexity', 0.5);
-  FIntensityProfile.Add('darkness', 0.5);
+  WriteLn('TGenrePlugin.Create: after FIntensityProfile');
+  WriteLn('TGenrePlugin.Create: END');
 end;
 
 destructor TGenrePlugin.Destroy;

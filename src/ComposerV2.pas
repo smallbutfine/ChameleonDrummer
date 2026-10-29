@@ -155,7 +155,9 @@ begin
   for I := 0 to Available.Count - 1 do
   begin
     TryGetIntensityRange(Available[I], PMin, PMax);
+    WriteLn(Format('ComposerV2.SelectPatternForPhrase: about to compute PMid = (PMin + PMax) / 2.0 = (%f + %f) / 2.0', [PMin, PMax]));
     PMid := (PMin + PMax) / 2.0;
+    WriteLn(Format('ComposerV2.SelectPatternForPhrase: PMid = %f', [PMid]));
     if PMid > MidOfHeaviest then begin MidOfHeaviest := PMid; Heaviest := I; end;
     if PMid < MidOfLightest then begin MidOfLightest := PMid; Lightest := I; end;
     { 1.0 at the middle of the groove's band, falling to 0.1 a quarter away
@@ -344,7 +346,14 @@ begin
   if IntensityPt <= THRESHOLD then Exit;
 
   { 0 at the threshold, 15 percent at full intensity. }
-  Result := Random < MAX_CHANCE * (IntensityPt - THRESHOLD) / (1.0 - THRESHOLD);
+  if THRESHOLD >= 1.0 then
+    Result := False
+  else
+  begin
+    WriteLn(Format('TFillPicker.SelectFillType: about to compute (IntensityPt - THRESHOLD) / (1.0 - THRESHOLD) = (%f - %f) / (1.0 - %f)', [IntensityPt, THRESHOLD, THRESHOLD]));
+    Result := Random < MAX_CHANCE * (IntensityPt - THRESHOLD) / (1.0 - THRESHOLD);
+    WriteLn(Format('TFillPicker.SelectFillType: Result=%f', [Result]));
+  end;
 end;
 
 function TFillPicker.SelectFillType(const Genre: string; const SectionName: string; ABarIndex: Integer; IntensityPt: Double): String;
@@ -859,6 +868,12 @@ begin
     { The meter of this section: its own, else the song's. }
     SectionMeterNum := ASongMeterNum;
     SectionMeterDen := ASongMeterDen;
+    WriteLn(Format('ComposerV2.CreateSong: section %s, song meter %d/%d, section def meter %d/%d',
+        [SectionName, SectionMeterNum, SectionMeterDen, SectionDef.MeterNum, SectionDef.MeterDen]));
+    if SectionMeterDen = 0 then
+      raise Exception.CreateFmt('ComposerV2.CreateSong: SectionMeterDen is 0 for section %s!', [SectionName]);
+    if SectionMeterNum = 0 then
+      raise Exception.CreateFmt('ComposerV2.CreateSong: SectionMeterNum is 0 for section %s!', [SectionName]);
     if SectionDef.MeterNum > 0 then
     begin
       MeterText := MeterProblem(SectionDef.MeterNum, SectionDef.MeterDen);
@@ -951,6 +966,15 @@ begin
           end;
           Dec(J);
         end;
+        { If strict filtering removed everything, fall back to unfiltered patterns
+          rather than crashing with no patterns available. }
+        if Available.Count = 0 then
+        begin
+          Available := specialize TList<TPattern>.Create;
+          for FlavorItem in Flavors do
+            if Assigned(FlavorItem) then
+              Available.Add(FlavorItem);
+        end;
       end
       else
       { Non-strict meter filtering: when --time-sig is set without --strict-meter,
@@ -974,6 +998,14 @@ begin
             end;
           end;
           Dec(J);
+        end;
+        { If non-strict filtering removed everything, fall back to unfiltered patterns. }
+        if Available.Count = 0 then
+        begin
+          Available := specialize TList<TPattern>.Create;
+          for FlavorItem in Flavors do
+            if Assigned(FlavorItem) then
+              Available.Add(FlavorItem);
         end;
       end;
 
@@ -1157,8 +1189,10 @@ begin
                 NewFill := TFill.Create(SignatureFill.Pattern.Copy);
                 NewFill.Energy := SignatureFill.Energy;
                 NewFill.TargetBar := FillBarIndices[J];
-                NewFill.TriggerProbability := VocabShare * FillEnergyWeight(
+                WriteLn(Format('ComposerV2.CreateSong: about to compute VocabShare * FillEnergyWeight / WeightSum = %f * %f / %f', [VocabShare, FillEnergyWeight(SignatureFill, SectionIntensities[FillBarIndices[J]]), WeightSum]));
+    NewFill.TriggerProbability := VocabShare * FillEnergyWeight(
                   SignatureFill, SectionIntensities[FillBarIndices[J]]) / WeightSum;
+    WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
                 Fills.Add(NewFill);
               end;
           end;
@@ -1186,12 +1220,19 @@ begin
           if (FlavorItem.DurationBars <= Bars) and
              (FlavorItem.Beats.Count > 0) then
             Inc(GmdCount);
+        WriteLn(Format('ComposerV2.CreateSong: GmdCount=%d for section %s, meter %d/%d',
+          [GmdCount, SectionName, SectionMeterNum, SectionMeterDen]));
+        if GmdCount = 0 then
+          raise Exception.CreateFmt('ComposerV2.CreateSong: GmdCount is 0 for section %s, meter %d/%d',
+            [SectionName, SectionMeterNum, SectionMeterDen]);
         for FlavorItem in GMDFlavors do
           if (FlavorItem.DurationBars <= Bars) and
              (FlavorItem.Beats.Count > 0) then
           begin
             NewFill := TFill.Create(FlavorItem.Copy);
-            NewFill.TriggerProbability := GmdShare / GmdCount;
+            WriteLn(Format('ComposerV2.CreateSong: about to compute GmdShare / GmdCount = %f / %d', [GmdShare, GmdCount]));
+    NewFill.TriggerProbability := GmdShare / GmdCount;
+    WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
             Fills.Add(NewFill);
           end;
       finally
@@ -1334,7 +1375,9 @@ begin
   if ABars <= 1 then
     Exit(0.5);
 
+  WriteLn(Format('ComposerV2.GetIntensityPt: about to compute Ratio = ABarIndex / (ABars - 1) = %d / (%d - 1)', [ABarIndex, ABars]));
   Ratio := ABarIndex / (ABars - 1);
+  WriteLn(Format('ComposerV2.GetIntensityPt: Ratio = %f', [Ratio]));
 
   { Get curve type for this section and apply appropriate interpolation }
   if not CurveMap.TryGetValue(SectionName, CurveType) then

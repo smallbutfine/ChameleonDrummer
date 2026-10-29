@@ -328,7 +328,10 @@ end;
 
 constructor TCLIInterface.Create;
 begin
+  WriteLn('CLIInterface.Create: START');
+  WriteLn('CLIInterface.Create: before TDrumGenerator.Create');
   FGenerator := TDrumGenerator.Create;
+  WriteLn('CLIInterface.Create: after TDrumGenerator.Create');
 end;
 
 destructor TCLIInterface.Destroy;
@@ -449,6 +452,8 @@ var
   OutputFile: string;
   DrummerName: String;
 begin
+  WriteLn(Format('CLIInterface.HandleGenerate: genre=%s style=%s tempo=%d meter=%d/%d strict=%s',
+    [Args.Genre, Args.Style, Args.Tempo, Args.MeterNum, Args.MeterDen, BoolToStr(Args.StrictMeter, True)]));
   if (Args.Genre = '') then
     raise Exception.Create('--genre is required for generate command');
 
@@ -459,6 +464,8 @@ begin
   DrummerName := Args.Drummer;
 
   { Create song with all parameters wired through to ComposerV2 }
+  WriteLn(Format('CLIInterface.HandleGenerate: calling CreateSong genre=%s style=%s tempo=%d meter=%d/%d strict=%s',
+    [Args.Genre, Args.Style, Args.Tempo, Args.MeterNum, Args.MeterDen, BoolToStr(Args.StrictMeter, True)]));
   Song := FGenerator.CreateSong(
     Args.Genre,
     Args.Style,
@@ -685,10 +692,12 @@ function TCLIInterface.Run(Argc: Integer; const Argv: specialize TArray<String>)
 var
   Args: TCLIArgs;
 begin
+  WriteLn('CLIInterface.Run: starting...');
   FillChar(Args, SizeOf(Args), 0);
 
   try
     Args := ParseArgs(Argv);
+    WriteLn(Format('CLIInterface.Run: command=%s', [Args.Command]));
 
     if (Args.Command = '') then
     begin

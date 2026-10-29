@@ -26,6 +26,8 @@ var
 
 begin
   Randomize;
+  WriteLn('CHAMELEONDRUMMER: starting...');
+  Flush(Output);
 
   // Parse command-line arguments from program parameters
   ArgCount := ParamCount;
@@ -35,10 +37,21 @@ begin
   for I := 1 to ArgCount do
     Args[I] := ParamStr(I);
 
+  WriteLn(Format('CHAMELEONDRUMMER: args=%d', [ArgCount]));
+  Flush(Output);
+
   // Create and run CLI interface
+  WriteLn('CHAMELEONDRUMMER: creating CLI interface...');
+  Flush(Output);
   CLI := TCLIInterface.Create;
+  WriteLn('CHAMELEONDRUMMER: CLI interface created.');
+  Flush(Output);
   try
+    WriteLn('CHAMELEONDRUMMER: calling CLI.Run...');
+    Flush(Output);
     ExitCode := CLI.Run(ArgCount, Args);
+    WriteLn(Format('CHAMELEONDRUMMER: CLI.Run exit code=%d', [ExitCode]));
+    Flush(Output);
   finally
     CLI.Free;
   end;

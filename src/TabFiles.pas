@@ -163,10 +163,21 @@ begin
             { Underscore notation like _6_8_ is NOT accepted - only proper N/D. }
             if TryParseMeter(Word, MN, MD) then
             begin
-              N := Length(Cur.Meters);
-              SetLength(Cur.Meters, N + 1);
-              Cur.Meters[N].Num := MN;
-              Cur.Meters[N].Den := MD;
+              Problem := MeterProblem(MN, MD);
+              if Problem <> '' then
+              begin
+                { Invalid meter - treat as regular word }
+                N := Length(Cur.Words);
+                SetLength(Cur.Words, N + 1);
+                Cur.Words[N] := LowerCase(Word);
+              end
+              else
+              begin
+                N := Length(Cur.Meters);
+                SetLength(Cur.Meters, N + 1);
+                Cur.Meters[N].Num := MN;
+                Cur.Meters[N].Den := MD;
+              end;
             end
             else
             begin

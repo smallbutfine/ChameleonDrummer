@@ -677,13 +677,23 @@ begin
         raise Exception.CreateFmt(
           'Cannot infer meter from %d steps in "%s".', [StepCount, Line]);
 
+      { Safety guards against division by zero }
+      if BarMeterNum = 0 then
+        BarMeterNum := 4;
+      if BarMeterDen = 0 then
+        BarMeterDen := 4;
+
       PerUnit := StepCount div BarMeterNum;
       if (StepCount mod BarMeterNum <> 0) or not (PerUnit in [1, 2, 3, 4, 6, 8]) then
         raise Exception.CreateFmt(
           'A %d/%d drum tab bar must have %s steps, got %d in "%s"',
           [BarMeterNum, BarMeterDen, TabStepCountsText(BarMeterNum), StepCount, Line]);
 
+      WriteLn(Format('TDrumTab.Generate: about to compute BarQuarters = %d * 4.0 / %d', [BarMeterNum, BarMeterDen]));
+      if BarMeterDen = 0 then
+        raise Exception.CreateFmt('TDrumTab.Generate: BarMeterDen is 0! line=%s bar=%d', [Line, BarIdx]);
       BarQuarters := BarMeterNum * 4.0 / BarMeterDen;
+      WriteLn(Format('TDrumTab.Generate: BarQuarters=%f', [BarQuarters]));
 
       for P := 1 to StepCount do
       begin
@@ -699,8 +709,17 @@ begin
           raise Exception.CreateFmt('Unknown drum tab step "%s" in "%s"',
             [Seg[P], Line]);
         end;
-        Builder.Hit(InstName, (P - 1) * BarQuarters / StepCount + PositionOffset, Vel, Ghost, Accent);
+        try
+          Builder.Hit(InstName, (P - 1) * BarQuarters / StepCount + PositionOffset, Vel, Ghost, Accent);
+        except
+          on E: Exception do
+            raise Exception.CreateFmt(
+              'TDrumTab.Generate: division error at line "%s", bar %d, step %d, meter %d/%d, BarQuarters=%f, StepCount=%d, PositionOffset=%f',
+              [Line, BarIdx, P, BarMeterNum, BarMeterDen, BarQuarters, StepCount, PositionOffset]);
+        end;
       end;
+      WriteLn(Format('TDrumTab.Generate: line "%s" processed OK, meter %d/%d, BarQuarters=%f',
+        [Line, BarMeterNum, BarMeterDen, BarQuarters]));
     end;
   finally
     Bars.Free;
