@@ -155,9 +155,9 @@ begin
   for I := 0 to Available.Count - 1 do
   begin
     TryGetIntensityRange(Available[I], PMin, PMax);
-    WriteLn(Format('ComposerV2.SelectPatternForPhrase: about to compute PMid = (PMin + PMax) / 2.0 = (%f + %f) / 2.0', [PMin, PMax]));
+    //WriteLn(Format('ComposerV2.SelectPatternForPhrase: about to compute PMid = (PMin + PMax) / 2.0 = (%f + %f) / 2.0', [PMin, PMax]));
     PMid := (PMin + PMax) / 2.0;
-    WriteLn(Format('ComposerV2.SelectPatternForPhrase: PMid = %f', [PMid]));
+    //WriteLn(Format('ComposerV2.SelectPatternForPhrase: PMid = %f', [PMid]));
     if PMid > MidOfHeaviest then begin MidOfHeaviest := PMid; Heaviest := I; end;
     if PMid < MidOfLightest then begin MidOfLightest := PMid; Lightest := I; end;
     { 1.0 at the middle of the groove's band, falling to 0.1 a quarter away
@@ -868,8 +868,8 @@ begin
     { The meter of this section: its own, else the song's. }
     SectionMeterNum := ASongMeterNum;
     SectionMeterDen := ASongMeterDen;
-    WriteLn(Format('ComposerV2.CreateSong: section %s, song meter %d/%d, section def meter %d/%d',
-        [SectionName, SectionMeterNum, SectionMeterDen, SectionDef.MeterNum, SectionDef.MeterDen]));
+   // WriteLn(Format('ComposerV2.CreateSong: section %s, song meter %d/%d, section def meter %d/%d',
+  //      [SectionName, SectionMeterNum, SectionMeterDen, SectionDef.MeterNum, SectionDef.MeterDen]));
     if SectionMeterDen = 0 then
       raise Exception.CreateFmt('ComposerV2.CreateSong: SectionMeterDen is 0 for section %s!', [SectionName]);
     if SectionMeterNum = 0 then
@@ -1189,10 +1189,10 @@ begin
                 NewFill := TFill.Create(SignatureFill.Pattern.Copy);
                 NewFill.Energy := SignatureFill.Energy;
                 NewFill.TargetBar := FillBarIndices[J];
-                WriteLn(Format('ComposerV2.CreateSong: about to compute VocabShare * FillEnergyWeight / WeightSum = %f * %f / %f', [VocabShare, FillEnergyWeight(SignatureFill, SectionIntensities[FillBarIndices[J]]), WeightSum]));
+               // WriteLn(Format('ComposerV2.CreateSong: about to compute VocabShare * FillEnergyWeight / WeightSum = %f * %f / %f', [VocabShare, FillEnergyWeight(SignatureFill, SectionIntensities[FillBarIndices[J]]), WeightSum]));
     NewFill.TriggerProbability := VocabShare * FillEnergyWeight(
                   SignatureFill, SectionIntensities[FillBarIndices[J]]) / WeightSum;
-    WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
+    //WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
                 Fills.Add(NewFill);
               end;
           end;
@@ -1220,19 +1220,20 @@ begin
           if (FlavorItem.DurationBars <= Bars) and
              (FlavorItem.Beats.Count > 0) then
             Inc(GmdCount);
-        WriteLn(Format('ComposerV2.CreateSong: GmdCount=%d for section %s, meter %d/%d',
-          [GmdCount, SectionName, SectionMeterNum, SectionMeterDen]));
-        if GmdCount = 0 then
-          raise Exception.CreateFmt('ComposerV2.CreateSong: GmdCount is 0 for section %s, meter %d/%d',
-            [SectionName, SectionMeterNum, SectionMeterDen]);
+       // WriteLn(Format('ComposerV2.CreateSong: GmdCount=%d for section %s, meter %d/%d',
+        //  [GmdCount, SectionName, SectionMeterNum, SectionMeterDen]));
+        //if GmdCount = 0 then
+        //  raise Exception.CreateFmt('ComposerV2.CreateSong: GmdCount is 0 for section %s, meter %d/%d',
+         //   [SectionName, SectionMeterNum, SectionMeterDen]);
         for FlavorItem in GMDFlavors do
           if (FlavorItem.DurationBars <= Bars) and
              (FlavorItem.Beats.Count > 0) then
           begin
             NewFill := TFill.Create(FlavorItem.Copy);
-            WriteLn(Format('ComposerV2.CreateSong: about to compute GmdShare / GmdCount = %f / %d', [GmdShare, GmdCount]));
-    NewFill.TriggerProbability := GmdShare / GmdCount;
-    WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
+        //    WriteLn(Format('ComposerV2.CreateSong: about to compute GmdShare / GmdCount = %f / %d', [GmdShare, GmdCount]));
+       if GmdCount= 0 then NewFill.TriggerProbability := 1.0 else
+      NewFill.TriggerProbability := GmdShare / GmdCount;
+   // WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
             Fills.Add(NewFill);
           end;
       finally
@@ -1375,9 +1376,9 @@ begin
   if ABars <= 1 then
     Exit(0.5);
 
-  WriteLn(Format('ComposerV2.GetIntensityPt: about to compute Ratio = ABarIndex / (ABars - 1) = %d / (%d - 1)', [ABarIndex, ABars]));
+ // WriteLn(Format('ComposerV2.GetIntensityPt: about to compute Ratio = ABarIndex / (ABars - 1) = %d / (%d - 1)', [ABarIndex, ABars]));
   Ratio := ABarIndex / (ABars - 1);
-  WriteLn(Format('ComposerV2.GetIntensityPt: Ratio = %f', [Ratio]));
+ // WriteLn(Format('ComposerV2.GetIntensityPt: Ratio = %f', [Ratio]));
 
   { Get curve type for this section and apply appropriate interpolation }
   if not CurveMap.TryGetValue(SectionName, CurveType) then
