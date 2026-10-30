@@ -186,8 +186,8 @@ S .... .... gxgx
 K .... .... ..x.
 
 [chambers_fill_odd_7/8 energy=0.2]
-S .... .... .... xgxg
-K .... .... .... ...x
+S .... .... .... xg
+K .... .... .... ..
 
 [chambers_fill_odd_5_4 energy=0.8]
 S .... gxgx xxxx gxgx
