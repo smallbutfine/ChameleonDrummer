@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Documentación</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <nav>
+      <a href="index.html">INICIO</a>
+      <a href="concepts.html">CONCEPTOS</a>
+      <a href="docs.html">MANUAL</a>
+      <a href="download.html">DESCARGAR</a>
+      <a href="../index.html">EN</a>
+      <a href="../de/index.html">DE</a>
+    </nav>
+  </div>
+</header>
+
+<section class="docs-section">
+  <div class="container">
+    <h2>Documentación</h2>
+    <p>La documentación de ChameleonDrummer está organizada en varios archivos clave que explican el sistema, su uso y los principios subyacentes.</p>
+    
+    <div class="docs-grid">
+      <article class="doc-card">
+        <h3>Manual de Usuario</h3>
+        <p>El manual completo con instrucciones de instalación, guía de inicio rápido, referencias CLI y GUI, características avanzadas, archivos de datos externos, conversión MIDI → tab y solución de problemas.</p>
+        <a href="manual.html" class="btn">Leer Manual</a>
+      </article>
+      
+      <article class="doc-card">
+        <h3>Documentación de Programas Pascal</h3>
+        <p>Análisis detallado de los dos programas Pascal (CLI y GUI) con estructura de archivos, puntos de entrada, análisis de comandos y detalles de implementación.</p>
+        <a href="PASCAL_PROGRAMS.md" class="btn">Leer Docs Pascal</a>
+      </article>
+      
+      <article class="doc-card">
+        <h3>Explicación de Conceptos</h3>
+        <p>Inmersión profunda en los principios de generación MIDI: modelo de patrón, estructura de canción, evolución bar-por-bar, curvas de intensidad, compositor macro, motor de groove, fills, humanización y restricciones físicas.</p>
+        <a href="concepts.html" class="btn">Leer Conceptos</a>
+      </article>
+    </div>
+
+    <div class="quick-reference">
+      <h3>Referencia Rápida</h3>
+      <p>Para uso inmediato, consulta:</p>
+      <ul>
+        <li><strong>Comandos CLI</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li>
+        <li><strong>Uso GUI</strong> — Selecciona género, estilo, baterista, mapeo, luego clic Generar</li>
+        <li><strong>Opciones Disponibles</strong> — <code>chameleondrummer list genres</code>, <code>chameleondrummer list styles --genre jazz</code>, <code>chameleondrummer list drummers</code></li>
+        <li><strong>Referencia Formato de Patrón</strong> — <a href="README.md">README.md</a> (sintaxis completa groove/fill, compases, instrumentos)</li>
+        <li><strong>Compases Impares</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
+      </ul>
+    </div>
+
+    <div class="pattern-format">
+      <h3>Referencia Rápida Formato de Patrón</h3>
+      <p>Grooves y fills son archivos de texto plano que puedes editar en cualquier editor. No se necesita recompilar.</p>
+      
+      <h4>Bloque Groove (<code>config/grooves/<genre>.tab</code>)</h4>
+      <pre><code>[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+      <ul>
+        <li><strong>Cabecera</strong>: <code>[style kind intensity=low-high]</code> — ej., <code>[metal verse 7/8 intensity=0.40-0.90]</code></li>
+        <li><strong>Instrumentos</strong>: K=bombo, S=caja, H=hi-hat, HO=hi-hat abierto, HP=pedal hi-hat, R=tom rack, RB=tom bajo, C=crash, C2=segundo crash, CH=china, SP=splash, T1-T4=toms</li>
+        <li><strong>Pasos</strong>: <code>.</code>=silencio, <code>x</code>=hit, <code>X</code>=acento, <code>o</code>=suave, <code>g</code>=fantasma</li>
+        <li><strong>Compases</strong>: Separados por <code>|</code>; espacios ignorados; líneas más cortas se repiten</li>
+      </ul>
+
+      <h4>Bloque Fill (<code>config/fills/<drummer>.tab</code>)</h4>
+      <pre><code>[bonham_fill_short energy=0.3]
+S ... ... ... xxx</code></pre>
+      <ul>
+        <li><strong>Cabecera</strong>: <code>[name energy=0.3]</code> — energía coincide con intensidad del compás (0–1)</li>
+        <li><strong>Mismo formato de instrumento/paso que grooves</strong></li>
+      </ul>
+    </div>
+
+    <div class="engine-overview">
+      <h3>Cómo Funciona el Motor (En Breve)</h3>
+      <ol>
+        <li><strong>Modelo de Patrón</strong> — Cada beat tiene posición, instrumento, velocidad, duración, flags ghost/accent</li>
+        <li><strong>Estructura de Canción</strong> — Secciones (intro, verse, chorus, bridge) con tempo, compás, complejidad</li>
+        <li><strong>Selección Bar-por-Bar</strong> — Selección aleatoria ponderada de groove basada en coincidencia de intensidad</li>
+        <li><strong>Fases Macro</strong> — Establecer → Mantener → Construir → Giro (como un director musical)</li>
+        <li><strong>Fills</strong> — Insertados en límites de sección, energía-coincidente con intensidad actual</li>
+        <li><strong>Humanización</strong> — Jitter de timing, variación de velocity, feel de swing</li>
+        <li><strong>Restricciones Físicas</strong> — Máx. 3 hits/paso, reglas de coordinación de extremidades</li>
+        <li><strong>Plugins de Baterista</strong> — 17 bateristas aplican modificaciones específicas (BehindBeat, GhostNotes, etc.)</li>
+        <li><strong>Sistema Keymap</strong> — JSON mapea nombres de nota a notas MIDI (GM, AD2, EZD3, XG, custom)</li>
+        <li><strong>Exportación MIDI</strong> — SMF Formato 0 con eventos tempo/compás, funciona con todos los DAWs/VSTs</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus Generación de MIDI para Batería.</p>
+    <p>Fuente: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Docs Pascal: <code>docs/PASCAL_PROGRAMS.md</code> · Formato de patrón: <code>README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

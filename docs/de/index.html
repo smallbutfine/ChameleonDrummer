@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Dynamische MIDI-Schlagzeug-Erzeugung</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <p class="subtitle">Dynamische MIDI-Schlagzeug-Erzeugung — FreePascal / Lazarus</p>
+    <p class="tagline">Ich hatte keinen Schlagzeuger, also habe ich einen geschaffen.</p>
+    <nav>
+      <a href="index.html">START</a>
+      <a href="concepts.html">KONZEPTE</a>
+      <a href="docs.html">HANDBUCH</a>
+      <a href="download.html">HERUNTERLADEN</a>
+      <a href="../index.html">EN</a>
+      <a href="../es/index.html">ES</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h2>ERZEUGE REALISTISCHE SCHLAGZEUG-TRACKS</h2>
+    <p>5 Genres · 38 Stile · 17 Schlagzeuger · Ungerade Taktarten · Externe Grooves/Fills · REAPER & Ardour Export</p>
+    <div class="cta">
+      <a href="docs.html" class="btn">HANDBUCH LESEN</a>
+      <a href="concepts.html" class="btn btn-secondary">WIE ES FUNKTIONIERT</a>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>FUNKTIONEN</h2>
+    <div class="grid">
+      <article>
+        <h3>MULTI-GENRE</h3>
+        <p>Metal, Rock, Jazz, Funk, Electronic — jeweils mit 26 authentischen Stilen.</p>
+      </article>
+      <article>
+        <h3>SCHLAGZEUGER-IMITATION</h3>
+        <p>Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart, Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues.</p>
+      </article>
+      <article>
+        <h3>UNGERADE TAKTARTEN</h3>
+        <p>2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … bis 32/16. Taktwechsel pro Abschnitt unterstützt.</p>
+      </article>
+      <article>
+        <h3>EXTERNE DATEN</h3>
+        <p>Grooves, Fills, Defaults und Strukturen sind reine Text-/JSON-Dateien — bearbeiten ohne Neukompilierung.</p>
+      </article>
+      <article>
+        <h3>DAW-INTEGRATION</h3>
+        <p>MIDI-Export mit REAPER .rpp-Projekten oder Ardour .ardour-Sitzungen.</p>
+      </article>
+      <article>
+        <h3>HUMANISIERUNG</h3>
+        <p>Timing-/Velocity-Jitter, Ghost-Notes, Swing, physikalische Spielbarkeitsbeschränkungen.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="concepts-preview">
+  <div class="container">
+    <h2>DIE PRINZIPIEN HINTER DER MIDI-ERZEUGUNG</h2>
+    <p>Von <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, und <code>MidiIO.pas</code> — der Quellcode zeigt eine strukturierte Pipeline:</p>
+    <ol>
+      <li><strong>Pattern-Modell</strong> — Beats mit Position, Instrument, Velocity, Ghost/Accent-Flags.</li>
+      <li><strong>Song-Struktur</strong> — Abschnitte mit Mustern, Fills, Segmenten und Groove-Offsets.</li>
+      <li><strong>Bar-für-Bar-Evolution</strong> — Gewichtete zufällige Musterauswahl mit Intensitätsbändern, Makrophasen, kontextbewussten Fills.</li>
+      <li><strong>Physikalische Beschränkungen</strong> — Pattern-Fixer entfernt unmögliche Hits.</li>
+      <li><strong>Humanisierung</strong> — Timing- und Velocity-Variation für Realismus.</li>
+      <li><strong>MIDI-Export</strong> — VLQ-codierte Events mit BPM/PPQ-Metadaten.</li>
+    </ol>
+    <a href="concepts.html" class="btn">VOLLE ERKLÄRUNG LESEN</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI-Schlagzeug-Erzeugung.</p>
+    <p>Quelle: <code>ChameleonDrummer/</code> · Handbuch: <code>docs/USER_MANUAL.md</code> · Groove-Format: <code>README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

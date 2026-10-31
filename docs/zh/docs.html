@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ChameleonDrummer — 文档</title><link rel="stylesheet" href="style.css"></head><body>
+<header><div class="container"><h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1><nav><a href="index.html">首页</a><a href="concepts.html">概念</a><a href="docs.html">手册</a><a href="download.html">下载</a><a href="../index.html">EN</a><a href="../de/index.html">DE</a><a href="../es/index.html">ES</a></nav></div></header>
+<section class="docs-section"><div class="container"><h2>文档</h2><p>ChameleonDrummer 的文档组织在几个关键文件中。</p>
+<div class="docs-grid"><article class="doc-card"><h3>用户手册</h3><p>完整的用户手册，包含安装说明、快速入门指南、CLI 和 GUI 参考、高级功能、外部数据文件、MIDI → tab 转换和故障排除。</p><a href="manual.html" class="btn">阅读手册</a></article>
+<article class="doc-card"><h3>Pascal 程序文档</h3><p>对两个 Pascal 程序（CLI 和 GUI）的详细分析，包含文件结构、入口点、命令解析和实现细节。</p><a href="PASCAL_PROGRAMS.md" class="btn">阅读 Pascal 文档</a></article>
+<article class="doc-card"><h3>概念解释</h3><p>深入探讨 MIDI 生成原理：模式模型、歌曲结构、逐小节演变、强度曲线、宏作曲家、鼓点引擎、填充、人性化和物理限制。</p><a href="concepts.html" class="btn">阅读概念</a></article></div>
+<div class="quick-reference"><h3>快速参考</h3><ul><li><strong>CLI 命令</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li><li><strong>GUI 使用</strong> — 选择风格、鼓手、映射，然后点击生成</li><li><strong>可用选项</strong> — <code>chameleondrummer list genres</code> 等</li><li><strong>模式格式参考</strong> — <a href="README.md">README.md</a></li><li><strong>奇数拍</strong> — <code>--time-sig 7/8</code></li></ul></div>
+<div class="pattern-format"><h3>模式格式快速参考</h3><h4>鼓点块 (<code>config/grooves/&lt;genre&gt;.tab</code>)</h4><pre><code>[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre><ul><li><strong>标题</strong>: <code>[style kind intensity=low-high]</code></li><li><strong>乐器</strong>: K=鼓, S=军鼓, H=踩镲, HO=开踩镲, HP=踩镲踏板, R=架子鼓, RB=低音鼓, C=碰镲, C2=第二碰镲, CH=中国镲, SP=溅镲, T1-T4=鼓</li><li><strong>步骤</strong>: <code>.</code>=休止, <code>x</code>=击打, <code>X</code>=强调, <code>o</code>=柔和, <code>g</code>=幽灵</li><li><strong>小节</strong>: 用 <code>|</code> 分隔; 忽略空格; 较短的行重复</li></ul><h4>填充块 (<code>config/fills/&lt;drummer&gt;.tab</code>)</h4><pre><code>[bonham_fill_short energy=0.3]
+S ... ... ... xxx</code></pre></div>
+<div class="engine-overview"><h3>引擎工作原理（简要）</h3><ol><li><strong>模式模型</strong> — 每个节拍有位置、乐器、速度、持续时间、幽灵/强调标志</li><li><strong>歌曲结构</strong> — 包含模式、填充、片段、鼓点偏移的部分</li><li><strong>逐小节选择</strong> — 基于强度匹配的加权随机模式选择</li><li><strong>宏阶段</strong> — 建立 → 保持 → 构建 → 转折</li><li><strong>填充</strong> — 插入在段落边界，强度匹配</li><li><strong>人性化</strong> — 时间抖动，速度变化，摇摆感</li><li><strong>物理限制</strong> — 最多 3 次击打/步骤，肢体协调规则</li><li><strong>鼓手插件</strong> — 17 位鼓手应用特定修改</li><li><strong>Keymap 系统</strong> — JSON 将音符名称映射到 MIDI 音符 (GM, AD2, EZD3, XG, custom)</li><li><strong>MIDI 导出</strong> — SMF 格式 0，带节奏/拍号事件</li></ol></div></div></section>
+<footer><div class="container"><p>ChameleonDrummer — FreePascal / Lazarus 动态 MIDI 鼓生成。</p><p>来源: <code>ChameleonDrummer/</code> · 手册: <code>docs/USER_MANUAL.md</code> · Pascal 文档: <code>docs/PASCAL_PROGRAMS.md</code> · 模式格式: <code>README.md</code></p></div></footer>
+</body></html>

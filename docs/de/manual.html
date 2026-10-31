@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — User Manual</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <nav>
+      <a href="index.html">START</a>
+      <a href="concepts.html">KONZEPTE</a>
+      <a href="docs.html">HANDBUCH</a>
+      <a href="download.html">HERUNTERLADEN</a>
+      <a href="de/index.html">DE</a>
+      <a href="es/index.html">ES</a>
+      <a href="fr/index.html">FR</a>
+      <a href="pt/index.html">PT</a>
+    </nav>
+  </div>
+</header>
+
+<section class="main-content">
+  <div class="container">
+    <h2>USER MANUAL</h2>
+    <h1 id="chameleondrummer-full-user-manual">ChameleonDrummer — Full User Manual</h1>
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<p>1. <a href="#introduction">Introduction</a></p>
+<p>2. <a href="#installation">Installation</a></p>
+<p>3. <a href="#quick-start">Quick Start</a></p>
+<p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
+<p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>6. <a href="#reaper-integration">REAPER Integration</a></p>
+<p>7. <a href="#ardour-integration">Ardour Integration</a></p>
+<p>8. <a href="#the-cli-program">The CLI Program</a></p>
+<p>9. <a href="#advanced-features">Advanced Features</a></p>
+<p>10. <a href="#external-data-files">External Data Files</a></p>
+<p>11. <a href="#midi-tab-conversion">MIDI → Tab Conversion</a></p>
+<p>12. <a href="#troubleshooting">Troubleshooting</a></p>
+<p>13. <a href="#appendix-source-code-principles">Appendix: Source Code Principles</a></p>
+
+<hr>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 8 styles per genre (38 total), and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
+
+<p>Two executables are produced:</p>
+
+<li><code>ChameleonDrummer.exe</code> — command-line interface</li>
+<li><code>chameleondrummer_gui.exe</code> — graphical interface (Lazarus/LCL)</li>
+
+<hr>
+
+<h2 id="installation">Installation</h2>
+
+<h3 id="requirements">Requirements</h3>
+
+<li>Windows (primary target; Linux/macOS possible with FPC/LCL)</li>
+<li>Free Pascal Compiler (FPC) 3.2.2+</li>
+<li>Lazarus IDE (optional, for GUI development)</li>
+<li>Python 3.10+ (optional, for the <code>tools/midi_to_tab.py</code> converter)</li>
+
+<h3 id="building-from-source">Building from Source</h3>
+
+<pre><code class="lang-bash"># CLI executable
+cd B:\dev\github\ChameleonDrummer
+"%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
+
+# GUI executable
+cd gui
+cmd /c "build_gui.bat &lt; NUL"</code></pre>
+
+<h3 id="running-the-executable">Running the Executable</h3>
+
+<p>Both executables are self-contained. Place <code>chameleondrummer.exe</code> and <code>chameleondrummer_gui.exe</code> in the same directory, or reference the CLI from the GUI's working directory.</p>
+
+<hr>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<h3 id="cli-generate-a-metal-song">CLI — Generate a Metal Song</h3>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
+
+<h3 id="cli-generate-a-rock-pattern-with-bonham-style">CLI — Generate a Rock Pattern with Bonham Style</h3>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre rock --style classic --drummer bonham --output bonham_verse.mid</code></pre>
+
+<h3 id="cli-generate-in-an-odd-meter">CLI — Generate in an Odd Meter</h3>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre rock --style classic --time-sig 7/8 --output rock_7_8.mid</code></pre>
+
+<h3 id="cli-list-available-options">CLI — List Available Options</h3>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe list genres
+ChameleonDrummer.exe list styles --genre jazz
+ChameleonDrummer.exe list drummers</code></pre>
+
+<h3 id="gui-interactive-generation">GUI — Interactive Generation</h3>
+
+<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
+<p>2. Select <strong>Genre</strong>: <code>metal</code>.</p>
+<p>3. Select <strong>Style</strong>: <code>death</code>.</p>
+<p>4. Select <strong>Drummer</strong>: <code>hoglan</code>.</p>
+<p>5. Select <strong>Mapping</strong>: <code>ad2</code>.</p>
+<p>6. Set <strong>Tempo</strong>: <code>195</code>.</p>
+<p>7. Adjust <strong>Complexity</strong> and <strong>Humanization</strong> sliders.</p>
+<p>8. Click <strong>Generate</strong>.</p>
+<p>9. View output in the log panel.</p>
+
+<hr>
+
+<h2 id="concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</h2>
+
+<p>This section explains the underlying principles derived from the source code (<code>ComposerV2.pas</code>, <code>DrumGenerator.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, <code>MidiIO.pas</code>).</p>
+
+<h3 id="1-pattern-and-beat-model-codepatternpascode">1. Pattern and Beat Model (<code>Pattern.pas</code>)</h3>
+
+<p>A <code>TPattern</code> is a container of <code>TBeat</code> objects. Each beat has:</p>
+
+<li><code>Position</code> (<code>Double</code>): Time in beats (e.g., 0.0, 0.5, 1.0). Position 1.0 = the second beat, position 2.0 = the third beat, etc.</li>
+<li><code>Instrument</code> (<code>TDrumInstrument</code>): The drum instrument (kick, snare, hi-hat, etc.). Instrument identity comes from a JSON keymap file — no notes are hardcoded in Pascal code.</li>
+<li><code>Velocity</code> (<code>Integer</code>): MIDI velocity from 0 (silent) to 127 (maximum). This is what makes some hits sound louder or softer.</li>
+<li><code>Duration</code> (<code>Double</code>): Note length in beats. Most drum hits are very short (~0.1 beats), but some can be longer for effect.</li>
+<li><code>GhostNote</code> (<code>Boolean</code>): Subtle, low-velocity note for groove feel. Think of this as the drummer lightly tapping the rim of a drum between the main hits.</li>
+<li><code>Accent</code> (<code>Boolean</code>): Emphasized hit. This is how the drummer puts emphasis on certain beats (like the snare on beats 2 and 4 in rock).</li>
+<li><code>InstrumentPromoted</code> (<code>Boolean</code>): Provenance flag. True only when this beat's instrument was changed in place by a genre plugin promoting an existing hi-hat beat to a higher-energy cymbal for a high-energy section.</li>
+
+<h3 id="2-song-and-section-model-codesongpascode">2. Song and Section Model (<code>Song.pas</code>)</h3>
+
+<p>A <code>TSong</code> contains sections (<code>TSection</code>), each with its own patterns, fills, tempo, and meter. Sections are arranged in a standard song order: intro, verse, pre_chorus, chorus, bridge, breakdown, solo, outro.</p>
+
+<p>Each section has its own:</p>
+
+<li><strong>Tempo</strong> — speed in beats per minute (BPM). 0 means inherit the song tempo.</li>
+<li><strong>Meter</strong> — the time signature (4/4, 7/8, 5/4, etc.). The first number is how many beats per bar, the second note value gets one beat.</li>
+<li><strong>Complexity</strong> — how varied the patterns are. Only used when <code>HasComplexity</code> is set; zero-filled records inherit the song's complexity.</li>
+<li><strong>Default patterns</strong> — which grooves/fills the engine should choose from for this section.</li>
+
+<p>Sections are stored in plain JSON files. You can add your own sections, change the order, or give each section its own tempo and meter.</p>
+
+<h3 id="3-bar-by-bar-pattern-evolution-codecomposerv2pascode">3. Bar-by-Bar Pattern Evolution (<code>ComposerV2.pas</code>)</h3>
+
+<p><code>TBarSelector.SelectPatternForPhrase</code> picks a groove for each bar using a weighted random draw:</p>
+
+<li><strong>Intensity matching</strong>: Each groove's weight is based on how well its intensity band fits the bar's intensity. Grooves whose band contains the bar's intensity get a bonus.</li>
+<li><strong>Recency weighting</strong>: The previous pattern's weight is reduced to 0.25× so it can return but rarely repeats consecutively. This prevents the same pattern from playing bar after bar.</li>
+<li><strong>Macro phases</strong>: The song evolves in four phases:</li>
+<li><code>mpEstablish</code> (early bars): tries lighter grooves to set the feel</li>
+<li><code>mpMaintain</code> (middle bars): keeps whatever's working</li>
+<li><code>mpBuild</code> (toward climax): favors heavier, more intense grooves</li>
+<li><code>mpTurnaround</code> (ending): leads back to the beginning or chorus</li>
+<li><strong>Thread-safe randomness</strong>: Selection uses <code>TThreadedRandom</code> for consistent results across threads.</li>
+
+<h3 id="4-intensity-curves-codecomposerv2pascode">4. Intensity Curves (<code>ComposerV2.pas</code>)</h3>
+
+<p>Intensity varies across the song: intro/verse are lighter, chorus is heavier, bridge/breakdown vary. The intensity curve drives both pattern selection and fill placement. Typical curves:</p>
+
+<li><code>icAscending</code> — getting louder toward the climax</li>
+<li><code>icDescending</code> — starting loud, fading out</li>
+<li><code>icPlateau</code> — roughly constant intensity</li>
+<li><code>icDipRise</code> — dips then rises (common for verse-chorus-verse)</li>
+<li><code>icSteps</code> — distinct intensity changes at section boundaries</li>
+
+<h3 id="5-macro-composer-codecomposerv2pascode">5. Macro Composer (<code>ComposerV2.pas</code>)</h3>
+
+<p>The macro phase biases pattern selection per section. The four phases (<code>mpEstablish</code>, <code>mpMaintain</code>, <code>mpBuild</code>, <code>mpTurnaround</code>) control how the groove evolves throughout the song, like a musical director saying "start simple, build energy, then bring it home."</p>
+
+<h3 id="6-groove-engine-codecomposerv2pascode">6. Groove Engine (<code>ComposerV2.pas</code>)</h3>
+
+<p>Grooves are loaded from <code>config/grooves/<genre>.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
+
+<p><strong>Groove block format:</strong></p>
+
+<pre><code class="lang-">[style kind intensity=low-high]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+
+<li><strong>Header</strong>: <code>[style kind intensity=low-high]</code></li>
+<li><code>style</code> — e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>, <code>funk</code>, <code>electronic</code></li>
+<li><code>kind</code> — <code>verse</code>, <code>chorus</code> or <code>bridge</code></li>
+<li><code>intensity=low-high</code> — the bar intensities (0–1) this groove suits, e.g., <code>intensity=0.20-0.60</code></li>
+<li><strong>Add meter after kind</strong>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> for odd-meter grooves</li>
+<li><strong>Instrument lines</strong>: One line per instrument. Format: <code>INSTRUMENT STEP STEP STEP | STEP STEP STEP</code></li>
+<li><code>K</code> = kick, <code>S</code> = snare, <code>RS</code> = ride cymbal short, <code>SS</code> = splash, <code>H</code> = hi-hat, <code>HO</code> = hi-hat open, <code>HP</code> = hi-hat pedal, <code>R</code> = rack tom, <code>RB</code> = bass tom, <code>C</code> = crash cymbal, <code>C2</code> = second crash, <code>CH</code> = china, <code>SP</code> = splash, <code>T1</code> = tom 1, <code>T2</code> = tom 2, <code>T3</code> = tom 3, <code>T4</code> = tom 4</li>
+<li>Step characters: <code>.</code> = rest (no hit), <code>x</code> = hit, <code>X</code> = accented hit, <code>o</code> = soft note, <code>g</code> = ghost note</li>
+<li>Spaces inside a bar are ignored (they improve readability only)</li>
+<li>Bars are separated by <code>|</code>. The engine uses the longest line's bar count; shorter lines repeat their pattern</li>
+<li><strong>Example</strong> (from <code>rock.tab</code>):</li>
+
+<pre><code class="lang-">[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+
+<h3 id="7-fill-system-codecomposerv2pascode">7. Fill System (<code>ComposerV2.pas</code>)</h3>
+
+<p>Fills are loaded from <code>config/fills/<drummer>.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
+
+<p><strong>Fill block format:</strong></p>
+
+<pre><code class="lang-">[bonham_fill_short energy=0.3]
+S ... ... ... xxx</code></pre>
+
+<li><strong>Header</strong>: <code>[name energy=0.3]</code></li>
+<li><code>name</code> — e.g., <code>bonham_fill_short</code>, <code>peart_fill_odd_7_8</code></li>
+<li><code>energy=0.3</code> — the bar intensity (0–1) the fill suits best</li>
+<li><strong>Same instrument/step format as grooves</strong>: Same step characters (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), same bar/bars separator rules.</li>
+
+<h3 id="8-humanization-codeadvancedhumanizationpascode">8. Humanization (<code>AdvancedHumanization.pas</code>)</h3>
+
+<p>Timing and velocity jitter are applied per note, scaled by the humanization setting. Ghost notes and accents are preserved.</p>
+
+<li><strong>Timing jitter</strong>: Each note is shifted forward or backward by a few milliseconds. Small enough to feel natural, large enough to avoid the "machine gun" effect.</li>
+<li><strong>Velocity variation</strong>: Some hits are slightly louder or softer than expected.</li>
+<li><strong>Swing</strong>: A feel where straight eighth notes are played with a slight 2:1 or 3:1 ratio, like a classic rock or funk groove. Controlled by the <code>--swing</code> CLI flag or GUI slider (0 = straight, 0.67 = classic 2:1 swing, 1 = 3:1).</li>
+
+<p>You control all of this with the <strong>Humanization</strong> slider in the GUI (0–1). At 0, it's perfectly on the grid. At 1, it has maximum feel.</p>
+
+<h3 id="9-physical-constraints-codephysicalconstraintspascode-codepatternfixerpascode">9. Physical Constraints (<code>PhysicalConstraints.pas</code> / <code>PatternFixer.pas</code>)</h3>
+
+<p>The pattern fixer removes impossible hits:</p>
+
+<li><strong>At most 3 hits on one step</strong>: A drummer can't hit the kick, snare, and two toms all at once in one motion.</li>
+<li><strong>Limb coordination patterns</strong>:</li>
+<li>Right hand: typically plays crash or ride cymbal</li>
+<li>Left hand: hi-hat or ride cymbal</li>
+<li>Right foot: kick pedal</li>
+<li>Left foot: hi-hat pedal</li>
+<li>This prevents the engine from generating patterns a real drummer couldn't physically play.</li>
+
+<h3 id="10-plugin-architecture-codepluginregistrypascode-codedrumgeneratorpascode">10. Plugin Architecture (<code>PluginRegistry.pas</code>, <code>DrumGenerator.pas</code>)</h3>
+
+<p>Genre plugins and drummer plugins are discovered dynamically at runtime from <code>.pas</code> files. Each drummer applies 2–4 modifications:</p>
+
+<li><strong>BehindBeat</strong>: The drummer plays slightly behind the beat for a laid-back feel.</li>
+<li><strong>GhostNotes</strong>: Adds subtle rim shots and quiet notes.</li>
+<li><strong>LinearCoordination</strong>: Typical limb patterns for that drummer (e.g., Bonham's distinctive kick-snare patterns).</li>
+<li><strong>ShuffleFeel</strong>: Swing feel specific to that style.</li>
+<li><strong>FillPatterns</strong>: Typical fill vocabulary for that drummer.</li>
+
+<p>Modifications are composable and applied in order. Genre plugins (Metal, Rock, Jazz, Funk, Electronic) define the typical intensity bands, which grooves make sense for that style, and default song structure.</p>
+
+<h3 id="11-keymap-system-codekitpascode">11. Keymap System (<code>Kit.pas</code>)</h3>
+
+<p>MIDI notes are resolved through JSON keymap files in <code>mappings/</code>. <strong>No hardcoded notes exist in Pascal code.</strong></p>
+
+<li>Keymap files map note names (kick, snare, hi-hat, tom1, crash, etc.) to MIDI notes.</li>
+<li>The same generation engine can use any keymap — GM (General MIDI), AD2 (Addictive Drums 2), EZD3 (EZDrummer 3), XG, or user-created.</li>
+<li>You can edit keymap JSON files to customize which note triggers which drum.</li>
+<li>This is why the system works with so many different drum libraries and why the GUI doesn't hardcode drum names.</li>
+
+<h3 id="12-midi-export-codemidiiopascode-codemidiparserpascode">12. MIDI Export (<code>MidiIO.pas</code>, <code>MidiParser.pas</code>)</h3>
+
+<p>Raw SMF Format 0 writer with VLQ encoding, tempo/meter meta events, compatible with all DAWs and drum VSTs.</p>
+
+<li><strong>Tracks</strong>: One MIDI track containing all drum notes.</li>
+<li><strong>Tempo events</strong>: BPM changes as the song progresses.</li>
+<li><strong>Meter events</strong>: Time signature changes.</li>
+<li><strong>Note data</strong>: Pitch (which drum), velocity, start time, duration.</li>
+
+<p>This MIDI file works with any DAW (Reaper, Ardour, Ableton, Logic, etc.) and any drum VST plugin (EZDrummer, Superior Drummer, Addictive Drums, etc.).</p>
+
+<hr>
+
+<h2 id="the-gui-program">The GUI Program</h2>
+
+<p>The GUI (<code>chameleondrummer_gui.exe</code>) links the engine directly — it produces exactly what the command-line tool produces, without shelling out to it.</p>
+
+<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
+<p>2. Pick genre, style, drummer, keymap, tempo, complexity and humanization from the interface.</p>
+<p>3. Click <strong>Generate</strong> — a MIDI file is written.</p>
+<p>4. Optionally export a REAPER project (<code>.rpp</code>) or Ardour session (<code>.ardour</code>) next to it.</p>
+<p>5. Dark mode is available via <code>View > System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
+
+<p>The GUI provides interactive access to all CLI generation options plus visual feedback:</p>
+
+<li>Real-time preview of selected genre/style/drummer combinations</li>
+<li>Dynamic section controls added at runtime based on genre defaults</li>
+<li>Dark mode support (compiled only for Windows)</li>
+<li>Configuration persistence via <code>gui.ini</code></li>
+
+<p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<hr>
+
+<h2 id="reaper-integration">REAPER Integration</h2>
+
+<p>ChameleonDrummer integrates with REAPER via a Lua panel (<code>reaper_chameleon/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your REAPER project.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>1. Copy the <code>reaper_chameleon/</code> directory into your REAPER scripts folder.</p>
+<p>2. Open REAPER and load <code>chameleon_panel.lua</code> via Actions > Show action list > New > ReaScript.</p>
+<p>3. The panel appears as a dockable window with four tabs.</p>
+
+<h3 id="tabs">Tabs</h3>
+
+<p><strong>Song Sections</strong></p>
+
+<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
+<li>Generate MIDI via CLI and import into the current REAPER project</li>
+<li>Export REAPER project (<code>.rpp</code>) alongside the MIDI</li>
+
+<p><strong>Additive Rhythm</strong></p>
+
+<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
+<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
+<li>Generate additive rhythm patterns with per-bar time signatures</li>
+<li>Optional timeline JSON export for REAPER tempo markers</li>
+
+<p><strong>Step Editor</strong></p>
+
+<li>Load a MIDI item from the current project</li>
+<li>Edit on a grid with drummer application (timing/velocity variance)</li>
+<li>Apply drummer style to existing patterns</li>
+
+<p><strong>Settings</strong></p>
+
+<li>Configure CLI executable path</li>
+<li>Set default genre/style/drummer/mapping</li>
+<li>Refresh options from CLI list commands</li>
+
+<p><strong>Log</strong></p>
+
+<li>Real-time log output from CLI commands</li>
+<li>Status messages during generation</li>
+
+<h3 id="cli-commands-used-by-reaper-panel">CLI Commands Used by REAPER Panel</h3>
+
+<pre><code class="lang-">ChameleonDrummer list genres --json
+ChameleonDrummer list styles --genre metal --json
+ChameleonDrummer list drummers --json
+ChameleonDrummer list mappings --json
+ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
+ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
+
+<p>See <code>REAPER_INTEGRATION_PLAN.md</code> for the full integration architecture and implementation details.</p>
+
+<hr>
+
+<h2 id="ardour-integration">Ardour Integration</h2>
+
+<p>ChameleonDrummer integrates with Ardour via a Lua panel (<code>ardour/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your Ardour session.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>1. Copy the <code>ardour/</code> directory into your Ardour scripts folder (typically <code>~/.config/ardour/scripts/</code> on Linux, <code>~/Library/Application Support/Ardour/scripts/</code> on macOS, or <code>%APPDATA%\Ardour\scripts\</code> on Windows).</p>
+<p>2. Open Ardour and load <code>chameleon_panel.lua</code> via Window > Scripting > Script Manager > New Script.</p>
+<p>3. The panel appears as a dockable window with four tabs.</p>
+
+<h3 id="tabs">Tabs</h3>
+
+<p><strong>Song Sections</strong></p>
+
+<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
+<li>Generate MIDI via CLI and import into the current Ardour session</li>
+<li>Export Ardour session (<code>.ardour</code>) alongside the MIDI</li>
+
+<p><strong>Additive Rhythm</strong></p>
+
+<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
+<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
+<li>Generate additive rhythm patterns with per-bar time signatures</li>
+<li>Optional timeline JSON export for Ardour tempo markers</li>
+
+<p><strong>Step Editor</strong></p>
+
+<li>Load a MIDI item from the current session</li>
+<li>Edit on a grid with drummer application (timing/velocity variance)</li>
+<li>Apply drummer style to existing patterns</li>
+
+<p><strong>Settings</strong></p>
+
+<li>Configure CLI executable path</li>
+<li>Set default genre/style/drummer/mapping</li>
+<li>Refresh options from CLI list commands</li>
+
+<p><strong>Log</strong></p>
+
+<li>Real-time log output from CLI commands</li>
+<li>Status messages during generation</li>
+
+<h3 id="cli-commands-used-by-ardour-panel">CLI Commands Used by Ardour Panel</h3>
+
+<pre><code class="lang-">ChameleonDrummer list genres --json
+ChameleonDrummer list styles --genre metal --json
+ChameleonDrummer list drummers --json
+ChameleonDrummer list mappings --json
+ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
+ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
+
+<h3 id="accessing-the-panel-in-ardour">Accessing the Panel in Ardour</h3>
+
+<p>Once installed, the ChameleonDrummer panel can be accessed in Ardour via:</p>
+
+<li><strong>Window > Scripting > ChameleonDrummer</strong> (if registered as a menu action)</li>
+<li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</strong></li>
+<li>Assign a keyboard shortcut in <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</strong></li>
+
+<p>The panel uses Ardour's Lua API (<code>Session</code>, <code>Temporal</code>, <code>ARDOUR</code> namespaces) for session manipulation, tempo map creation, and MIDI region import.</p>
+
+<p>See <code>ardour/import_chameleon_song.lua</code> for the headless session builder used by the CLI <code>--ardour</code> export.</p>
+
+<hr>
+
+<h2 id="the-cli-program">The CLI Program</h2>
+
+<h3 id="command-reference">Command Reference</h3>
+
+<pre><code class="lang-">Usage: chameleondrummer &lt;command&gt; [options]
+
+Commands:
+  generate   Generate a complete song (multi-bar pattern)
+  pattern    Generate a single 1-4 bar pattern
+  list       List available genres, styles, or drummers
+  info       Show system information
+  reaper     Create a REAPER project (sub-command: export)
+  ardour     Create an Ardour session (sub-command: export)
+
+Options:
+  --genre &lt;name&gt;       Genre (metal, rock, jazz, funk, electronic)
+  --style &lt;name&gt;       Style within genre (heavy, classic, swing, ...)
+  --tempo &lt;bpm&gt;        Tempo in BPM (default: genre/style value)
+  --complexity &lt;0-1&gt;   Pattern complexity (default: 0.5)
+  --humanization &lt;0-1&gt; Humanization intensity (default: 0.3)
+  --swing &lt;0-1&gt;        Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
+  --time-sig &lt;n/d&gt;     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --segment &lt;n:bars:bpm:n/d&gt;  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+                       (bpm - keeps the song tempo); mix freely with --section
+  --section &lt;n:bars[@bpm]&gt;  Song structure; repeat once per section, in order
+                       e.g. --section intro:4 --section verse:8 --section chorus:8@140
+                       (without --section the genre default structure is used)
+  --drummer &lt;name&gt;     Drummer style (e.g., bonham, peart, carey)
+  --output &lt;file&gt;      Output MIDI file path
+  --reaper, --ardour   With generate: also write &lt;output&gt;.rpp / the &lt;output&gt;.ardour session
+  --mapping &lt;name&gt;     Keymap to use: gm (default), ad2, ezd3, xg
+  --structure &lt;file&gt;   Song structure from a JSON file (sections with bars, tempo,
+                       complexity; optional genre, style, tempo). Command-line
+                       genre/style/tempo win over the file. Not with --section.
+  --sidecar &lt;file&gt;     Same as --structure (the REAPER sidecar format works)
+  --song-map &lt;file&gt;    Read song map JSON for per-bar tempo/meter
+  --write-timeline     Write timeline JSON after generation
+  --list &lt;type&gt;        List: genres, styles, drummers</code></pre>
+
+<h3 id="examples">Examples</h3>
+
+<p><strong>Generate a complete song:</strong></p>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
+
+<p><strong>Generate a single pattern:</strong></p>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre jazz --style swing --output swing_verse.mid</code></pre>
+
+<p><strong>Create REAPER project:</strong></p>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe reaper export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.rpp</code></pre>
+
+<p><strong>Create Ardour session:</strong></p>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe ardour export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.ardour</code></pre>
+
+<hr>
+
+<h2 id="advanced-features">Advanced Features</h2>
+
+<h3 id="song-maps-and-sidecars">Song Maps and Sidecars</h3>
+
+<p><strong>Sections (<code>--section</code>)</strong>: Describes the song structure directly on the command line, one <code>--section</code> per section, in playing order:</p>
+
+<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --section intro:4 --section verse:8 --section chorus:8 --section bridge:4 --output song.mid</code></pre>
+
+<p><strong>Sidecar (<code>--sidecar</code>)</strong>: A JSON file describing sections with bars, tempo, complexity, and optional genre/style/tempo overrides. The command-line genre/style/tempo win over the file.</p>
+
+<p><strong>Song Map (<code>--song-map</code>)</strong>: A JSON file describing per-bar tempo and meter changes for complex progressive songs.</p>
+
+<h3 id="odd-meters">Odd Meters</h3>
+
+<p>The engine supports meters from 2/4 to 32/16. Use <code>--time-sig n/d</code> or <code>--segment</code> to specify. Grooves and fills are loaded from <code>.tab</code> files that declare their meter in the block header (e.g., <code>[metal verse 7/8 intensity=0.40-0.90]</code>).</p>
+
+<h3 id="your-own-grooves-fills-and-defaults">Your Own Grooves, Fills and Defaults</h3>
+
+<p>Edit files in <code>config/</code>:</p>
+
+<li><code>config/grooves/<genre>.tab</code> — add new grooves, change intensity bands</li>
+<li><code>config/fills/<drummer>.tab</code> — add new fills, change energy levels</li>
+<li><code>config/defaults/<genre>.ini</code> — change default tempo/style/drummer</li>
+<li><code>config/sections/<genre>.json</code> — change default song structure</li>
+
+<p>No recompilation needed — the engine reads these at runtime.</p>
+
+<h3 id="lookup-order">Lookup Order</h3>
+
+<p>1. The folder in the environment variable <code>CHAMELEON_CONFIG</code>, if set</p>
+<p>2. <code>%APPDATA%\ChameleonDrummer\config</code> (Linux: <code>~/.config/ChameleonDrummer/config</code>)</p>
+<p>3. <code>config</code> next to the program</p>
+<p>4. <code>..\config</code> (development builds)</p>
+
+<hr>
+
+<h2 id="midi-tab-conversion">MIDI → Tab Conversion</h2>
+
+<p><code>tools/midi_to_tab.py</code> converts a MIDI file to the <code>.tab</code> groove/fill format. Pure Python, no external dependencies.</p>
+
+<pre><code class="lang-bash">python tools/midi_to_tab.py input.mid [output.tab]
+python tools/midi_to_tab.py input.mid --fill --name bonham_fill --energy 0.6
+python tools/midi_to_tab.py input.mid --meter 7/8 --resolution 16
+python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<p>Options:</p>
+
+<table>
+<tr><th>Option</th><th>Description</th></tr>
+</table>
+<p>|--------|-------------|</p>
+<table>
+<tr><th>`--fill`</th><th>Output a fill block instead of a groove block</th></tr>
+<tr><td>`--name <name>`</td><td>Fill name (default: `fill`)</td></tr>
+<tr><td>`--energy <0-1>`</td><td>Fill energy (default: 0.5)</td></tr>
+<tr><td>`--meter <n/d>`</td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
+<tr><td>`--resolution <n>`</td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
+<tr><td>`--mapping <file>`</td><td>Keymap JSON file (default: built-in GM map)</td></tr>
+<tr><td>`--style <name>`</td><td>Groove style name (default: `midi`)</td></tr>
+<tr><td>`--kind <name>`</td><td>Groove kind: verse/chorus/bridge (default: `verse`)</td></tr>
+<tr><td>`--intensity <low-high>`</td><td>Groove intensity band (default: `0.2-0.6`)</td></tr>
+</table>
+
+<p>Output is written with CRLF line endings, ready to drop into <code>config/grooves/</code> or <code>config/fills/</code>.</p>
+
+<hr>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<h3 id="common-issues">Common Issues</h3>
+
+<table>
+<tr><th>Problem</th><th>Cause / Fix</th></tr>
+</table>
+<p>|---------|-------------|</p>
+<table>
+<tr><th>`FPC fehlgeschlagen`</th><th>Run from the project root with `-Fusrc` include path</th></tr>
+<tr><td>`method identifier expected`</td><td>Syntax error in a `.pas` file — check the named line</td></tr>
+<tr><td>`Identifier not found "GetSectionFlavors"`</td><td>Missing unit or method — rebuild all units</td></tr>
+<tr><td>`Syntax error, "." expected but ";" found`</td><td>Missing comma/semicolon in Pascal source</td></tr>
+<tr><td>`Comment level 2 found`</td><td>Warning only — nested `(* *)` comments</td></tr>
+<tr><td>`function result variable ... does not seem to be initialized`</td><td>Warning only — result variable not assigned on all paths</td></tr>
+<tr><td>`[Warning] ... metal.tab (12): ...`</td><td>Tab file syntax error — that file is ignored, built-in plays instead</td></tr>
+</table>
+
+<hr>
+
+<h2 id="appendix-source-code-principles">Appendix: Source Code Principles</h2>
+
+<h3 id="design-patterns">Design Patterns</h3>
+
+<li><strong>Plugin architecture</strong> — Genre and drummer plugins loaded at runtime from <code>.pas</code> files</li>
+<li><strong>No hardcoded MIDI notes</strong> — All notes come from JSON keymap files</li>
+<li><strong>File-driven configuration</strong> — Grooves, fills, defaults, sections are plain text/JSON</li>
+<li><strong>Same engine for GUI and CLI</strong> — No separate code paths</li>
+
+<h3 id="key-constants">Key Constants</h3>
+
+<li><code>TDrumInstrument</code> — dynamic drum identity (name, description, metadata)</li>
+<li><code>TPattern</code> / <code>TBeat</code> — pattern and beat data models</li>
+<li><code>TComposerV2</code> — bar-by-bar composition engine</li>
+<li><code>TBarSelector</code> — groove selection per bar</li>
+<li><code>TFillPicker</code> — fill placement and selection</li>
+<li><code>TMacroComposer</code> — macro phase management</li>
+<li><code>TAdvancedHumanizer</code> — timing/velocity jitter</li>
+<li><code>TPhysicalConstraints</code> / <code>TPatternFixer</code> — playability limits</li>
+
+<h3 id="pattern-template-system">Pattern Template System</h3>
+
+<p>Grooves and fills are defined in <code>.tab</code> files with block headers that declare style, meter, and intensity. The engine selects patterns based on these declarations, not hardcoded rules.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

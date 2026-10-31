@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Manuel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <p class="subtitle">Génération MIDI Dynamique — FreePascal / Lazarus</p>
+    <p class="tagline">Je n'avais pas de batteur, alors j'en ai créé un.</p>
+    <nav>
+      <a href="index.html">ACCUEIL</a>
+      <a href="concepts.html">CONCEPTS</a>
+      <a href="docs.html">MANUEL</a>
+      <a href="download.html">TÉLÉCHARGER</a>
+      <a href="../index.html">EN</a>
+      <a href="../de/index.html">DE</a>
+      <a href="../es/index.html">ES</a>
+      <a href=\"fr/index.html\">FR</a>
+    </nav>
+  </div>
+</header>
+<section class="hero">
+  <div class="container">
+    <h2>GÉNÉRER DES PISTES DE BATTERIE RÉALISTES</h2>
+    <p>5 genres · 38 styles · 17 batteurs · Compases impairs · Grooves/fills externes · Export REAPER & Ardour</p>
+    <div class="cta">
+      <a href="docs.html" class="btn">LIRE LE MANUEL</a>
+      <a href="concepts.html" class="btn btn-secondary">COMMENT ÇA MARCHE</a>
+    </div>
+  </div>
+</section>
+<section class="features">
+  <div class="container">
+    <h2>CARACTÉRISTIQUES</h2>
+    <div class="grid">
+      <article>
+        <h3>MULTI-GENRE</h3>
+        <p>Metal, Rock, Jazz, Funk, Electronic — chacun avec 26 styles authentiques.</p>
+      </article>
+      <article>
+        <h3>IMITATION DE BATTEURS</h3>
+        <p>Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart, Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues.</p>
+      </article>
+      <article>
+        <h3>MESURES IMPAIRES</h3>
+        <p>2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … jusqu'à 32/16. Changements de mesure par section supportés.</p>
+      </article>
+      <article>
+        <h3>DONNÉES EXTERNES</h3>
+        <p>Grooves, fills, valeurs par défaut et structures sont des fichiers texte/JSON — modifiez sans recompiler.</p>
+      </article>
+      <article>
+        <h3>INTÉGRATION DAW</h3>
+        <p>Export MIDI avec projets REAPER .rpp ou sessions Ardour .ardour.</p>
+      </article>
+      <article>
+        <h3>HUMANISATION</h3>
+        <p>Jitter de timing/vélocité, notes fantômes, swing, contraintes de jouabilité physique.</p>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="concepts-preview"><div class="container"><h2>LES PRINCIPES DERRIÈRE LA GÉNÉRATION MIDI</h2><p>De <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, et <code>MidiIO.pas</code> — le code source révèle un pipeline structuré.</p><ol><li><strong>Modèle de Motif</strong> — Pulses avec position, instrument, vélocité, flags ghost/accent.</li><li><strong>Structure de Chanson</strong> — Sections avec motifs, fills, segments et offsets de groove.</li><li><strong>Évolution Bar par Bar</strong> — Sélection aléatoire pondérée avec bandes d'intensité, phases macro, fills contextuels.</li><li><strong>Contraintes Physiques</strong> — Le correcteur de motifs élimine les hits impossibles.</li><li><strong>Humanisation</strong> — Variation de timing et vélocité pour le réalisme.</li><li><strong>Export MIDI</strong> — Événements VLQ-encodés avec métadonnées BPM/PPQ.</li></ol><a href="docs.html" class="btn">LIRE LE MANUEL COMPLET</a></div></section>
+<footer><div class="container"><p>ChameleonDrummer — FreePascal / Lazarus Génération MIDI Batterie.</p><p>Source: <code>ChameleonDrummer/</code> · Manuel: <code>docs/USER_MANUAL.md</code> · Format groove: <code>README.md</code></p></div></footer>
+</body>
+</html>

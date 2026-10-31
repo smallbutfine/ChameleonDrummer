@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Konzepte</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <p class="subtitle">Dynamische MIDI-Schlagzeug-Erzeugung</p>
+    <nav>
+      <a href="index.html">START</a>
+      <a href="concepts.html">KONZEPTE</a>
+      <a href="docs.html">HANDBUCH</a>
+      <a href="download.html">HERUNTERLADEN</a>
+      <a href="../index.html">EN</a>
+      <a href="../es/index.html">ES</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h2>WIE CHAMELEONDRUMMER DEINE SCHLAGZEUG-TRACKS ERZEUGT</h2>
+    <p>Von <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, und <code>MidiIO.pas</code> — der Quellcode zeigt eine strukturierte Pipeline, die jeder Musiker verstehen kann.</p>
+    <ol>
+      <li><strong>Pattern-Modell</strong> — Beats mit Position, Instrument, Velocity, Ghost/Accent-Flags.</li>
+      <li><strong>Song-Struktur</strong> — Abschnitte mit Mustern, Fills, Segmenten und Groove-Offsets.</li>
+      <li><strong>Bar-für-Bar-Evolution</strong> — Gewichtete zufällige Musterauswahl mit Intensitätsbändern, Makrophasen, kontextbewussten Fills.</li>
+      <li><strong>Physikalische Beschränkungen</strong> — Pattern-Fixer entfernt unmögliche Hits.</li>
+      <li><strong>Humanisierung</strong> — Timing- und Velocity-Variation für Realismus.</li>
+      <li><strong>MIDI-Export</strong> — VLQ-codierte Events mit BPM/PPQ-Metadaten.</li>
+    </ol>
+    <a href="docs.html" class="btn">VOLLES HANDBUCH LESEN</a>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>ARCHITEKTUR-HIGHLIGHTS</h2>
+    <div class="grid">
+      <article>
+        <h3>MIDI-MOTOR (KEINE ABHÄNGIGKEITEN)</h3>
+        <p>Direkter SMF-Format-0-Schreiber • VLQ-Kodierung • Korrekte Tempo/Compas-Meta-Events • Kompatibel mit allen DAWs und Drum-VSTs</p>
+      </article>
+      <article>
+        <h3>Mustergenerierung</h3>
+        <p>8 Vorlagen • Vollständige genrespezifische Stildefinitionen (5 Genres × 8 Stile = 38 gesamt) • Musterblöcke deklarieren Takt, Intensität und Instrumentenlinien</p>
+      </article>
+      <article>
+        <h3>Schlagzeuger-Plugins</h3>
+        <p>Alle 17 Schlagzeuger mit vollständiger komponierbarer Modifikationsunterstützung übersetzt • BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, FillPatterns</p>
+      </article>
+      <article>
+        <h3>Dynamisches Keymap-System</h3>
+        <p>Überall im Pascal-Code keine hardcodierten MIDI-Noten • Alle Notenauflösung fließt durch Template-JSON → Keymap-JSON → InstrumentRegistry zur Laufzeit</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="concepts-preview">
+  <div class="container">
+    <h2>DER MOTOR IN EINER SPRACHE</h2>
+    <p>ChameleonDrummer baut Schlagzeug-Tracks wie ein musikalischer Direktor mit einer Session-Band. Es wählt Muster für jeden Takt basierend auf Intensität, vermeidet Wiederholungen, fügt Fills an strukturellen Punkten ein und wendet schlagzeugerspezifische Stilmodifikationen an — alles aus reinen Textdateien, die du bearbeiten kannst.</p>
+    
+    <h3>Musterformat (Was Du Bearbeiten Kannst)</h3>
+    <p>Grooves und Fills leben in <code>config/grooves/&lt;genre&gt;.tab</code> und <code>config/fills/&lt;drummer&gt;.tab</code>. Jeder Block hat eine Kopfzeile, die Stil, Takt und Intensität deklariert, gefolgt von Instrumentenlinien mit einfachen Zeichen:</p>
+    <ul>
+      <li><code>.</code> = Pause (kein Hit)</li>
+      <li><code>x</code> = Hit</li>
+      <li><code>X</code> = Akzent-Hit</li>
+      <li><code>o</code> = Weiche Note</li>
+      <li><code>g</code> = Ghost-Note</li>
+      <li><code>|</code> = Takt-Trenner</li>
+    </ul>
+    <p>Beispiel Groove-Block aus <code>rock.tab</code>:</p>
+    <pre><code>[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+    
+    <h3>Wie Der Motor Funktioniert</h3>
+    <p>Für jeden Takt wählt der Motor einen Groove mit gewichteter Zufälligkeit basierend auf Intensitätsübereinstimmung. Vier Makrophasen (etablieren, halten, aufbauen, wenden) steuern, wie sich das Lied entwickelt. Fills werden an strukturellen Punkten eingefügt. Humanisierung fügt Timing- und Velocity-Variation hinzu. Physikalische Beschränkungen verhindern unmögliche Muster.</p>
+    
+    <a href="docs.html" class="btn">VOLLES HANDBUCH LESEN</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI-Schlagzeug-Erzeugung.</p>
+    <p>Quelle: <code>ChameleonDrummer/</code> · Handbuch: <code>docs/USER_MANUAL.md</code> · Groove-Format: <code>README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

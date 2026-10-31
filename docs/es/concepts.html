@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Conceptos</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <p class="subtitle">Generación Dinámica de MIDI</p>
+    <nav>
+      <a href="index.html">INICIO</a>
+      <a href="concepts.html">CONCEPTOS</a>
+      <a href="docs.html">MANUAL</a>
+      <a href="download.html">DESCARGAR</a>
+      <a href="../index.html">EN</a>
+      <a href="../de/index.html">DE</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h2>CÓMO CHAMELEONDRUMMER CREA TUS TRACKS DE BATERÍA</h2>
+    <p>Desde <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, y <code>MidiIO.pas</code> — el código fuente revela un pipeline estructurado que cualquier músico puede entender.</p>
+    <ol>
+      <li><strong>Modelo de Patrón</strong> — Pulsos con posición, instrumento, velocidad, flags de nota fantasma/acento.</li>
+      <li><strong>Estructura de Canción</strong> — Secciones con patrones, fills, segmentos y offsets de groove.</li>
+      <li><strong>Evolución Bar por Bar</strong> — Selección aleatoria ponderada de patrones con bandas de intensidad, fases macro, fills context-aware.</li>
+      <li><strong>Restricciones Físicas</strong> — El fijador de patrones elimina hits imposibles.</li>
+      <li><strong>Humanización</strong> — Variación de tiempo y velocidad para realismo.</li>
+      <li><strong>Exportación MIDI</strong> — Eventos VLQ-encodeados con metadatos BPM/PPQ.</li>
+    </ol>
+    <a href="docs.html" class="btn">LEER MANUAL COMPLETO</a>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>DESTACADOS DE ARQUITECTURA</h2>
+    <div class="grid">
+      <article>
+        <h3>MOTOR MIDI (CERO DEPENDENCIAS)</h3>
+        <p>Escritor SMF Formato 0 directo • Codificación VLQ • Eventos meta de tempo/compás correctos • Compatible con todos los DAWs y VSTs de batería</p>
+      </article>
+      <article>
+        <h3>Generación de Patrones</h3>
+        <p>8 plantillas • Definiciones de estilo específicas por género (5 géneros × 8 estilos = 38 total) • Los bloques de patrón declaran compás, intensidad y líneas de instrumento</p>
+      </article>
+      <article>
+        <h3>Plugins de Bateristas</h3>
+        <p>Todos los 17 bateristas traducidos con soporte completo de modificaciones componibles • BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, FillPatterns</p>
+      </article>
+      <article>
+        <h3>Sistema Dinámico de Keymap</h3>
+        <p>Sin notas MIDI hardcodeadas en el código Pascal • Toda la resolución de notas fluye a través de JSON de plantilla → JSON de keymap → InstrumentRegistry en tiempo de ejecución</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="concepts-preview">
+  <div class="container">
+    <h2>EL MOTOR EN LENGUAJE LLANO</h2>
+    <p>ChameleonDrummer construye tracks de batería como un director musical trabajando con una banda de sesión. Selecciona patrones para cada compás basándose en la intensidad, evita repeticiones, inserta fills en los límites de sección y aplica modificaciones de estilo específicas del baterista — todo desde archivos de texto plano que puedes editar.</p>
+    
+    <h3>Formato de Patrón (Lo Que Puedes Editar)</h3>
+    <p>Grooves y fills viven en <code>config/grooves/<genre>.tab</code> y <code>config/fills/<drummer>.tab</code>. Cada bloque tiene una cabecera declarando estilo, compás e intensidad, seguido de líneas de instrumento usando caracteres simples:</p>
+    <ul>
+      <li><code>.</code> = silencio (sin hit)</li>
+      <li><code>x</code> = hit</li>
+      <li><code>X</code> = hit acentuado</li>
+      <li><code>o</code> = nota suave</li>
+      <li><code>g</code> = nota fantasma</li>
+      <li><code>|</code> = separador de compás</li>
+    </ul>
+    <p>Ejemplo de bloque groove desde <code>rock.tab</code>:</p>
+    <pre><code>[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+    
+    <h3>Cómo Funciona el Motor</h3>
+    <p>Para cada compás, el motor selecciona un groove usando aleatoriedad ponderada basada en coincidencia de intensidad. Cuatro fases macro (establecer, mantener, construir, giro) controlan cómo evoluciona la canción. Los fills se insertan en puntos estructurales. La humanización añade variación de tiempo y velocidad. Las restricciones físicas previenen patrones imposibles.</p>
+    
+    <a href="docs.html" class="btn">LEER MANUAL COMPLETO</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus Generación de MIDI para Batería.</p>
+    <p>Fuente: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Formato de groove: <code>README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

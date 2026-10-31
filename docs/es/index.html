@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Generación Dinámica de MIDI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <p class="subtitle">Generación Dinámica de MIDI — FreePascal / Lazarus</p>
+    <p class="tagline">No tenía un baterista, así que creé uno.</p>
+    <nav>
+      <a href="index.html">INICIO</a>
+      <a href="concepts.html">CONCEPTOS</a>
+      <a href="docs.html">MANUAL</a>
+      <a href="download.html">DESCARGAR</a>
+      <a href="../index.html">EN</a>
+      <a href="../de/index.html">DE</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h2>GENERA RITMOS DE BATERÍA REALISTAS</h2>
+    <p>5 géneros · 38 estilos · 17 bateristas · Compases impares · Grooves y fills externos · Exportación REAPER & Ardour</p>
+    <div class="cta">
+      <a href="docs.html" class="btn">LEER EL MANUAL</a>
+      <a href="concepts.html" class="btn btn-secondary">CÓMO FUNCIONA</a>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>CARACTERÍSTICAS</h2>
+    <div class="grid">
+      <article>
+        <h3>MULTI-GÉNERO</h3>
+        <p>Metal, Rock, Jazz, Funk, Electronic — cada uno con 26 estilos auténticos.</p>
+      </article>
+      <article>
+        <h3>IMITACIÓN DE BATERISTAS</h3>
+        <p>Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart, Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues.</p>
+      </article>
+      <article>
+        <h3>COMPASES IMPARES</h3>
+        <p>2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … hasta 32/16. Cambios de compás por sección soportados.</p>
+      </article>
+      <article>
+        <h3>DATOS EXTERNOS</h3>
+        <p>Grooves, fills, valores por defecto y estructuras son archivos de texto/JSON — edita sin recompilar.</p>
+      </article>
+      <article>
+        <h3>INTEGRACIÓN DAW</h3>
+        <p>Exporta MIDI con proyectos REAPER .rpp o sesiones Ardour .ardour.</p>
+      </article>
+      <article>
+        <h3>HUMANIZACIÓN</h3>
+        <p>Jitter de tiempo/velocidad, notas fantasma, swing, restricciones de jugabilidad física.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="concepts-preview">
+  <div class="container">
+    <h2>LOS PRINCIPIOS DETRÁS DE LA GENERACIÓN DE MIDI</h2>
+    <p>Desde <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, y <code>MidiIO.pas</code> — el código fuente revela un pipeline estructurado:</p>
+    <ol>
+      <li><strong>Modelo de Patrón</strong> — Pulsos con posición, instrumento, velocidad, flags de nota fantasma/acento.</li>
+      <li><strong>Estructura de Canción</strong> — Secciones con patrones, fills, segmentos y offsets de groove.</li>
+      <li><strong>Evolución Bar por Bar</strong> — Selección aleatoria ponderada de patrones con bandas de intensidad, fases macro, fills context-aware.</li>
+      <li><strong>Restricciones Físicas</strong> — El fijador de patrones elimina hits imposibles.</li>
+      <li><strong>Humanización</strong> — Variación de tiempo y velocidad para realismo.</li>
+      <li><strong>Exportación MIDI</strong> — Eventos VLQ-encodeados con metadatos BPM/PPQ.</li>
+    </ol>
+    <a href="concepts.html" class="btn">LEER EXPLICACIÓN COMPLETA</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus Generación de MIDI para Batería.</p>
+    <p>Fuente: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Formato de groove: <code>README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>
