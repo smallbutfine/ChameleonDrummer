@@ -34,16 +34,17 @@
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#the-cli-program">The CLI Program</a></p>
-<p>8. <a href="#external-data-files">External Data Files</a></p>
-<p>9. <a href="#midi-tab-conversion">MIDI → Tab Conversion</a></p>
-<p>10. <a href="#troubleshooting">Troubleshooting</a></p>
-<p>11. <a href="#appendix-source-code-principles">Appendix: Source Code Principles</a></p>
+<p>8. <a href="#advanced-features">Advanced Features</a></p>
+<p>9. <a href="#external-data-files">External Data Files</a></p>
+<p>10. <a href="#midi-tab-conversion">MIDI → Tab Conversion</a></p>
+<p>11. <a href="#troubleshooting">Troubleshooting</a></p>
+<p>12. <a href="#appendix-source-code-principles">Appendix: Source Code Principles</a></p>
 
 <hr>
 
 <h2 id="introduction">Introduction</h2>
 
-<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic), 8 styles per genre (38 total), and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
+<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 8 styles per genre (38 total), and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
 
 <p>Two executables are produced:</p>
 
@@ -167,7 +168,7 @@ ChameleonDrummer.exe list drummers</code></pre>
 
 <h3 id="10-plugin-architecture-codepluginregistrypascode-codedrumgeneratorpascode">10. Plugin Architecture (<code>PluginRegistry.pas</code>, <code>DrumGenerator.pas</code>)</h3>
 
-<p>Genre plugins and drummer plugins are discovered dynamically. Each drummer applies 2–4 modifications: BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, etc.</p>
+<p>Genre plugins and drummer plugins are discovered dynamically. Each drummer applies 2–4 modifications: BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, etc. Modifications are composable and applied in order.</p>
 
 <h3 id="11-keymap-system-codekitpascode">11. Keymap System (<code>Kit.pas</code>)</h3>
 
@@ -176,6 +177,82 @@ ChameleonDrummer.exe list drummers</code></pre>
 <h3 id="12-midi-export-codemidiiopascode-codemidiparserpascode">12. MIDI Export (<code>MidiIO.pas</code>, <code>MidiParser.pas</code>)</h3>
 
 <p>Raw SMF Format 0 writer with VLQ encoding, tempo/meter meta events, compatible with all DAWs and drum VSTs.</p>
+
+<hr>
+
+<h2 id="the-gui-program">The GUI Program</h2>
+
+<p>The GUI (<code>chameleondrummer_gui.exe</code>) links the engine directly — it produces exactly what the command-line tool produces, without shelling out to it.</p>
+
+<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
+<p>2. Pick genre, style, drummer, keymap, tempo, complexity and humanization.</p>
+<p>3. Click <strong>Generate</strong> — a MIDI file is written.</p>
+<p>4. Optionally export a REAPER project or Ardour session next to it.</p>
+<p>5. Dark mode is available via <code>View > System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
+
+<p>The GUI provides interactive access to all CLI generation options plus visual feedback:</p>
+
+<li>Real-time preview of selected genre/style/drummer combinations</li>
+<li>Dynamic section controls added at runtime based on genre defaults</li>
+<li>Dark mode support (compiled only for Windows)</li>
+<li>Configuration persistence via <code>gui.ini</code></li>
+
+<p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<hr>
+
+<h2 id="reaper-integration">REAPER Integration</h2>
+
+<p>ChameleonDrummer integrates with REAPER via a Lua panel (<code>reaper_chameleon/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your REAPER project.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>1. Copy the <code>reaper_chameleon/</code> directory into your REAPER scripts folder.</p>
+<p>2. Open REAPER and load <code>chameleon_panel.lua</code> via Actions > Show action list > New > ReaScript.</p>
+<p>3. The panel appears as a dockable window with four tabs.</p>
+
+<h3 id="tabs">Tabs</h3>
+
+<p><strong>Song Sections</strong></p>
+
+<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
+<li>Generate MIDI via CLI and import into the current REAPER project</li>
+<li>Export REAPER project (<code>.rpp</code>) alongside the MIDI</li>
+
+<p><strong>Additive Rhythm</strong></p>
+
+<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
+<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
+<li>Generate additive rhythm patterns with per-bar time signatures</li>
+<li>Optional timeline JSON export for REAPER tempo markers</li>
+
+<p><strong>Step Editor</strong></p>
+
+<li>Load a MIDI item from the current project</li>
+<li>Edit on a grid with drummer application (timing/velocity variance)</li>
+<li>Apply drummer style to existing patterns</li>
+
+<p><strong>Settings</strong></p>
+
+<li>Configure CLI executable path</li>
+<li>Set default genre/style/drummer/mapping</li>
+<li>Refresh options from CLI list commands</li>
+
+<p><strong>Log</strong></p>
+
+<li>Real-time log output from CLI commands</li>
+<li>Status messages during generation</li>
+
+<h3 id="cli-commands-used-by-reaper-panel">CLI Commands Used by REAPER Panel</h3>
+
+<pre><code class="lang-">ChameleonDrummer list genres --json
+ChameleonDrummer list styles --genre metal --json
+ChameleonDrummer list drummers --json
+ChameleonDrummer list mappings --json
+ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
+ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
+
+<p>See <code>REAPER_INTEGRATION_PLAN.md</code> for the full integration architecture and implementation details.</p>
 
 <hr>
 
@@ -234,20 +311,6 @@ Options:
 <p><strong>Create Ardour session:</strong></p>
 
 <pre><code class="lang-bash">ChameleonDrummer.exe ardour export --genre funk --style classic --mapping ezd3 --output funk_classic.ardour</code></pre>
-
-<hr>
-
-<h2 id="the-gui-program">The GUI Program</h2>
-
-<p>The GUI (<code>chameleondrummer_gui.exe</code>) links the engine directly — it produces exactly what the command-line tool produces, without shelling out to it.</p>
-
-<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
-<p>2. Pick genre, style, drummer, keymap, tempo, complexity and humanization.</p>
-<p>3. Click <strong>Generate</strong> — a MIDI file is written.</p>
-<p>4. Optionally export a REAPER project or Ardour session next to it.</p>
-<p>5. Dark mode is available via <code>View > System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
-
-<p>See <code>gui/README.md</code> for details.</p>
 
 <hr>
 
@@ -314,25 +377,10 @@ ChameleonDrummer.exe generate --genre rock --style classic --tempo 120   --secti
 
 <pre><code class="lang-">[heavy verse intensity=0.4-0.8]
 K  x... ..x. x... ..x. | x... ....
-S  .... x... .... x... | .... x...
+S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x.</code></pre>
 
 <p><code>x</code> hits, <code>X</code> accents, <code>o</code> is soft, <code>g</code> a ghost note, <code>.</code> a rest; one row per instrument, bars separated by <code>|</code>. To add a groove, add a block; to add a style, use a new style name; to give a drummer another fill, add a block to the file named after the drummer. Copy a file to <code>%APPDATA%\ChameleonDrummer\config\...</code> and edit the copy — it is used instead of the installed one, and survives a reinstall. A mistake in a file prints a <code>[Warning]</code> with the file and line and that file is ignored. <code>config\README.md</code> describes the format and the instrument names in full.</p>
-
-<h3 id="reaper-integration">REAPER Integration</h3>
-
-<p>The <code>reaper/create_song_sections.lua</code> script provides bi-directional integration:</p>
-
-<li><strong>REAPER Mode</strong>: Reads <code>REAPER_SECTIONS</code> table and writes <code>midi_drums_sections.json</code></li>
-<li><strong>Python Sidecar Mode</strong>: Reads existing sidecar JSON</li>
-<li><strong>AI Agent Mode</strong>: Uses AI to choose song structure</li>
-<li><strong>Song Map Mode</strong>: Reads song map JSON for per-bar tempo/meter</li>
-
-<p>The script calls Python via <code>io.popen()</code> and writes markers and regions in the REAPER project.</p>
-
-<h3 id="ardour-integration">Ardour Integration</h3>
-
-<p>Similar to REAPER, the Ardour bridge creates <code>.ardour</code> session directories with MIDI files and session metadata.</p>
 
 <hr>
 
@@ -473,7 +521,6 @@ python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --
 <h3 id="drummer-modification-registry">Drummer Modification Registry</h3>
 
 <p>Each drummer applies 2–4 modifications: BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, etc. Modifications are composable and applied in order.</p>
-
   </div>
 </section>
 
