@@ -8,14 +8,15 @@ uses
   Classes, SysUtils, Generics.Collections, fpjson,
   Pattern, Song,
   DrumGenerator, ComposerV2, DrumMidiLoader, SongStructure,
-  PluginRegistry, Kit, ReaperAPI, ArdourAPI, ConfigFiles, time_signature;
+  PluginRegistry, Kit, ReaperAPI, ArdourAPI, ConfigFiles, time_signature,
+  AdditiveRhythm;
 
 // ============================================================================
 // TCLIArgs - command-line arguments structure
 // ============================================================================
 type
   TCLIArgs = record
-    Command: String; // 'generate', 'pattern', 'list', 'info', 'reaper'
+    Command: String; // 'generate', 'pattern', 'list', 'info', 'reaper', 'additive-rhythm'
     SubCommand: String; // sub-command (e.g., 'export')
     Genre: String;
     Style: String;
@@ -37,9 +38,13 @@ type
     PresetOnly: Boolean; // --preset-only (accepted for reaper/ardour export)
     ExportReaper: Boolean; // generate --reaper: also write <output>.rpp
     ExportArdour: Boolean; // generate --ardour: also write the <output>.ardour session
-    ListType: String; // 'genres', 'styles', 'drummers'
+    ListType: String; // 'genres', 'styles', 'drummers', 'mappings'
     IsSongCommand: Boolean; // --song flag from regen_all.bat
     StrictMeter: Boolean; // --strict-meter: only use patterns matching --time-sig
+    JsonOutput: Boolean; // --json flag for list commands
+    Grouping: String; // --grouping for additive-rhythm
+    GridResolution: Integer; // --grid for additive-rhythm
+    DrummerIntensity: Double; // --drummer-intensity for additive-rhythm
   end;
 
 type
@@ -54,6 +59,7 @@ type
     procedure HandleInfo;
     procedure HandleReaperExport(const Args: TCLIArgs);
     procedure HandleArdourExport(const Args: TCLIArgs);
+    procedure HandleAdditiveRhythm(const Args: TCLIArgs);
     procedure PrintGeneratorWarnings;
     procedure PrintConfigWarnings;
     procedure WriteReaperProject(ASong: TSong; const AMidiFile: string);
@@ -86,6 +92,7 @@ end;
 
 function TCLIInterface.ParseArgs(const Args: specialize TArray<String>): TCLIArgs;
 var
+  DrumKit: TDrumKit;
   I, ValCode: Integer;
 
   Name: String;
@@ -245,6 +252,28 @@ begin
       else raise Exception.Create('--list requires a value');
       Result.Command := 'list';
     end
+    else if (Args[I] = '--json') then
+    begin
+      Result.JsonOutput := True;
+    end
+    else if (Args[I] = '--grouping') then
+    begin
+      Inc(I);
+      if (I < Length(Args)) then Result.Grouping := Args[I]
+      else raise Exception.Create('--grouping requires a value');
+    end
+    else if (Args[I] = '--grid') then
+    begin
+      Inc(I);
+      if (I < Length(Args)) then Val(Args[I], Result.GridResolution)
+      else raise Exception.Create('--grid requires a value');
+    end
+    else if (Args[I] = '--drummer-intensity') then
+    begin
+      Inc(I);
+      if (I < Length(Args)) then Val(Args[I], Result.DrummerIntensity)
+      else raise Exception.Create('--drummer-intensity requires a value');
+    end
     else if (Args[I] = '--help') or (Args[I] = '-h') then
     begin
       ShowUsage;
@@ -287,6 +316,10 @@ begin
         Result.SubCommand := LowerCase(Args[I]);
       if (I >= Length(Args)) then
         raise Exception.Create('ardour requires a sub-command');
+    end
+    else if (Args[I] = 'additive-rhythm') then
+    begin
+      Result.Command := 'additive-rhythm';
     end;
 
     Inc(I);
@@ -342,6 +375,7 @@ end;
 
 procedure TCLIInterface.WriteReaperProject(ASong: TSong; const AMidiFile: string);
 var
+  DrumKit: TDrumKit;
   Bridge: TReaperBridge;
 begin
   { The project is written next to the MIDI file, with the extension .rpp. }
@@ -358,6 +392,7 @@ end;
 
 procedure TCLIInterface.WriteArdourSession(ASong: TSong; const AMidiFile, ASessionDir: string);
 var
+  DrumKit: TDrumKit;
   Bridge: TArdourBridge;
 begin
   Bridge := TArdourBridge.Create;
@@ -373,6 +408,7 @@ end;
 
 procedure TCLIInterface.PrintConfigWarnings;
 var
+  DrumKit: TDrumKit;
   I: Integer;
 begin
   { Mistakes in the user's groove, fill, section and defaults files. The
@@ -385,6 +421,7 @@ end;
 procedure TCLIInterface.PrintGeneratorWarnings;
 
 var
+  DrumKit: TDrumKit;
   I: Integer;
 
 begin
@@ -447,8 +484,8 @@ end;
 
 procedure TCLIInterface.HandleGenerate(const Args: TCLIArgs);
 var
-  Song: TSong;
   DrumKit: TDrumKit;
+  Song: TSong;
   OutputFile: string;
   DrummerName: String;
 begin
@@ -513,8 +550,8 @@ end;
 
 procedure TCLIInterface.HandlePattern(const Args: TCLIArgs);
 var
-  Pattern: TPattern;
   DrumKit: TDrumKit;
+  Pattern: TPattern;
   OutputFile: string;
   Tempo: Integer;
 begin
@@ -549,16 +586,33 @@ end;
 
 procedure TCLIInterface.HandleList(const Args: TCLIArgs);
 var
-  Genres, Styles, Drummers: specialize TArray<String>;
+  DrumKit: TDrumKit;
+  Genres, Styles, Drummers, Mappings: specialize TArray<String>;
   I: Integer;
+  JsonObj: TJSONObject;
+  JsonArr: TJSONArray;
+  S: String;
 begin
   case Args.ListType of
     'genres':
       begin
-        Writeln('Available genres:');
         Genres := GetPluginRegistry.GetAvailableGenres;
-        for I := 0 to Length(Genres) - 1 do
-          Writeln(Format('  - %s', [Genres[I]]));
+        if Args.JsonOutput then
+        begin
+          JsonObj := TJSONObject.Create;
+          JsonArr := TJSONArray.Create;
+          for S in Genres do
+            JsonArr.Add(S);
+          JsonObj.Add('genres', JsonArr);
+          Writeln(JsonObj.FormatJSON());
+          JsonObj.Free;
+        end
+        else
+        begin
+          Writeln('Available genres:');
+          for I := 0 to Length(Genres) - 1 do
+            Writeln(Format('  - %s', [Genres[I]]));
+        end;
       end;
     'styles':
       begin
@@ -568,19 +622,65 @@ begin
           Exit;
         end;
         Styles := GetPluginRegistry.GetStylesForGenre(Args.Genre);
-        Writeln(Format('Styles for genre "%s":', [Args.Genre]));
-        for I := 0 to Length(Styles) - 1 do
-          Writeln(Format('  - %s', [Styles[I]]));
+        if Args.JsonOutput then
+        begin
+          JsonObj := TJSONObject.Create;
+          JsonArr := TJSONArray.Create;
+          for S in Styles do
+            JsonArr.Add(S);
+          JsonObj.Add('styles', JsonArr);
+          Writeln(JsonObj.FormatJSON());
+          JsonObj.Free;
+        end
+        else
+        begin
+          Writeln(Format('Styles for genre "%s":', [Args.Genre]));
+          for I := 0 to Length(Styles) - 1 do
+            Writeln(Format('  - %s', [Styles[I]]));
+        end;
       end;
     'drummers':
       begin
-        Writeln('Available drummers:');
         Drummers := GetPluginRegistry.GetAvailableDrummers;
-        for I := 0 to Length(Drummers) - 1 do
-          Writeln(Format('  - %s', [Drummers[I]]));
+        if Args.JsonOutput then
+        begin
+          JsonObj := TJSONObject.Create;
+          JsonArr := TJSONArray.Create;
+          for S in Drummers do
+            JsonArr.Add(S);
+          JsonObj.Add('drummers', JsonArr);
+          Writeln(JsonObj.FormatJSON());
+          JsonObj.Free;
+        end
+        else
+        begin
+          Writeln('Available drummers:');
+          for I := 0 to Length(Drummers) - 1 do
+            Writeln(Format('  - %s', [Drummers[I]]));
+        end;
+      end;
+    'mappings':
+      begin
+        Mappings := GetPluginRegistry.GetAvailableMappings;
+        if Args.JsonOutput then
+        begin
+          JsonObj := TJSONObject.Create;
+          JsonArr := TJSONArray.Create;
+          for S in Mappings do
+            JsonArr.Add(S);
+          JsonObj.Add('mappings', JsonArr);
+          Writeln(JsonObj.FormatJSON());
+          JsonObj.Free;
+        end
+        else
+        begin
+          Writeln('Available mappings:');
+          for I := 0 to Length(Mappings) - 1 do
+            Writeln(Format('  - %s', [Mappings[I]]));
+        end;
       end;
   else
-    Writeln('[Error] Unknown list type. Use: genres, styles, drummers');
+    Writeln('[Error] Unknown list type. Use: genres, styles, drummers, mappings');
   end;
 end;
 
@@ -595,8 +695,8 @@ end;
 
 procedure TCLIInterface.HandleReaperExport(const Args: TCLIArgs);
 var
-  Song: TSong;
   DrumKit: TDrumKit;
+  Song: TSong;
   MidiFile, RppFile: string;
 begin
   if (Args.Genre = '') then
@@ -642,8 +742,8 @@ end;
 
 procedure TCLIInterface.HandleArdourExport(const Args: TCLIArgs);
 var
-  Song: TSong;
   DrumKit: TDrumKit;
+  Song: TSong;
   MidiFile, SessionDir: string;
 begin
   if (Args.Genre = '') then
@@ -688,8 +788,91 @@ begin
   end;
 end;
 
+procedure TCLIInterface.HandleAdditiveRhythm(const Args: TCLIArgs);
+var
+  Pattern: TPattern;
+  Groups: TAdditiveGroupDynArray;
+  TimeSigs: TTimeSignatureDynArray;
+  I: Integer;
+  JsonObj: TJSONObject;
+  JsonArr: TJSONArray;
+  TimelinePath: String;
+begin
+  { Validate required arguments }
+  if (Args.Grouping = '') then
+    raise Exception.Create('--grouping is required for additive-rhythm');
+  if (Args.OutputFile = '') then
+    raise Exception.Create('--output is required for additive-rhythm');
+  if (Args.Tempo = 0) then
+    raise Exception.Create('--tempo is required for additive-rhythm');
+  if (Args.GridResolution = 0) then
+    raise Exception.Create('--grid is required for additive-rhythm');
+
+  { Parse the grouping string }
+  Groups := ParseAdditiveGrouping(Args.Grouping, Args.GridResolution);
+  if Length(Groups) = 0 then
+    raise Exception.Create('Invalid grouping string: no valid groups found');
+
+  { Resolve time signatures from groups }
+  TimeSigs := ResolveTimeSignatures(Groups, Args.GridResolution);
+  if Length(TimeSigs) = 0 then
+    raise Exception.Create('Could not resolve time signatures from grouping');
+
+
+  { Generate pattern }
+  Pattern := GenerateAdditivePattern(Groups, Args.GridResolution, Args.Tempo,
+    Args.Drummer, Args.DrummerIntensity);
+
+  { Save MIDI }
+  FGenerator.SavePatternMidi(Pattern, Args.OutputFile, Args.Tempo);
+  Writeln(Format('Additive rhythm pattern generated: %s', [Args.OutputFile]));
+  Writeln(Format('Groups: %d, Bars: %d', [Length(Groups), Length(TimeSigs)]));
+  for I := 0 to Length(TimeSigs) - 1 do
+    Writeln(Format('  Bar %d: %s', [I + 1, MeterName(TimeSigs[I].Numerator, TimeSigs[I].Denominator)]));
+
+  { Write timeline JSON if requested }
+  if (Args.WriteTimelinePath <> '') then
+  begin
+    TimelinePath := Args.WriteTimelinePath;
+    JsonObj := TJSONObject.Create;
+    try
+      JsonArr := TJSONArray.Create;
+      for I := 0 to Length(TimeSigs) - 1 do
+      begin
+        JsonObj := TJSONObject.Create;
+        JsonObj.Add('time', TJSONFloatNumber.Create(I * TimeSigs[I].Numerator * 4.0 / TimeSigs[I].Denominator));
+        JsonObj.Add('bpm', TJSONIntegerNumber.Create(Args.Tempo));
+        JsonObj.Add('num', TJSONIntegerNumber.Create(TimeSigs[I].Numerator));
+        JsonObj.Add('denom', TJSONIntegerNumber.Create(TimeSigs[I].Denominator));
+        JsonArr.Add(JsonObj);
+      end;
+      JsonObj := TJSONObject.Create;
+      JsonObj.Add('tempo_points', JsonArr);
+      JsonObj.Add('regions', TJSONArray.Create);
+      JsonObj.Add('color_groups', TJSONObject.Create);
+      { Write timeline JSON to file }
+      with TStringList.Create do
+      try
+        Text := JsonObj.FormatJSON();
+        SaveToFile(TimelinePath);
+      finally
+        Free;
+      end;
+      Writeln(Format('Timeline written to: %s', [TimelinePath]));
+    finally
+      JsonObj.Free;
+    end;
+  end;
+
+  Pattern.Free;
+  { Free time signature objects }
+  for I := 0 to Length(TimeSigs) - 1 do
+    TimeSigs[I].Free;
+end;
+
 function TCLIInterface.Run(Argc: Integer; const Argv: specialize TArray<String>): Integer;
 var
+  DrumKit: TDrumKit;
   Args: TCLIArgs;
 begin
   WriteLn('CLIInterface.Run: starting...');
@@ -734,6 +917,8 @@ begin
           Result := -1;
           Exit;
         end;
+      'additive-rhythm':
+        HandleAdditiveRhythm(Args);
     else
       Writeln('[Error] Unknown command: ', Args.Command);
       ShowUsage;

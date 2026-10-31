@@ -52,6 +52,7 @@ public
   function GetAvailableDrummers: TStringArray;
   function GetStylesForGenre(const Genre: string): TStringArray;
   function GetPreferredDrummersForGenre(const Genre: string): TStringArray;
+  function GetAvailableMappings: TStringArray;
 end;
 
 TPluginDiscovery = class(TObject)
@@ -358,7 +359,34 @@ begin
   Result := [];
 end;
 
-{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
+function TPluginRegistry.GetAvailableMappings: TStringArray;
+var
+  Dir, Filename: String;
+  SearchRec: TSearchRec;
+  Count: Integer;
+begin
+  Result := nil;
+  Dir := ExtractFilePath(ParamStr(0)) + 'mappings' + DirectorySeparator;
+  if not DirectoryExists(Dir) then Exit;
+
+  Count := 0;
+  if FindFirst(Dir + '*.json', faAnyFile, SearchRec) = 0 then
+  try
+    repeat
+      if (SearchRec.Name <> '.') and (SearchRec.Name <> '..') then
+      begin
+        Filename := ChangeFileExt(SearchRec.Name, '');
+        SetLength(Result, Count + 1);
+        Result[Count] := LowerCase(Filename);
+        Inc(Count);
+      end;
+    until FindNext(SearchRec) <> 0;
+  finally
+    FindClose(SearchRec);
+  end;
+end;
+
+{ â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
 { â•  TPluginDiscovery                                            }
 { â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• }
 
