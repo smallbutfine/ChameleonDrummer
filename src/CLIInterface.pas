@@ -361,10 +361,7 @@ end;
 
 constructor TCLIInterface.Create;
 begin
-  WriteLn('CLIInterface.Create: START');
-  WriteLn('CLIInterface.Create: before TDrumGenerator.Create');
   FGenerator := TDrumGenerator.Create;
-  WriteLn('CLIInterface.Create: after TDrumGenerator.Create');
 end;
 
 destructor TCLIInterface.Destroy;
@@ -875,12 +872,9 @@ var
   DrumKit: TDrumKit;
   Args: TCLIArgs;
 begin
-  WriteLn('CLIInterface.Run: starting...');
   FillChar(Args, SizeOf(Args), 0);
-
   try
     Args := ParseArgs(Argv);
-    WriteLn(Format('CLIInterface.Run: command=%s', [Args.Command]));
 
     if (Args.Command = '') then
     begin

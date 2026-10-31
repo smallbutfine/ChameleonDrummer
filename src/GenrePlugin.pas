@@ -85,15 +85,10 @@ end;
 
 constructor TGenrePlugin.Create;
 begin
-  WriteLn('TGenrePlugin.Create: START');
   inherited Create;
-  WriteLn('TGenrePlugin.Create: after inherited');
   FMeterNum := 4;
   FMeterDen := 4;
-  WriteLn('TGenrePlugin.Create: after meter init');
   FIntensityProfile := specialize TDictionary<string, Double>.Create;
-  WriteLn('TGenrePlugin.Create: after FIntensityProfile');
-  WriteLn('TGenrePlugin.Create: END');
 end;
 
 destructor TGenrePlugin.Destroy;

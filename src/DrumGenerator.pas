@@ -237,18 +237,10 @@ begin
   inherited Create;
   FComposerEngine := AComposerEngine;
 
-  WriteLn('TDrumGenerator.Create: before FLastWarnings');
   FLastWarnings := TStringList.Create;
-  WriteLn('TDrumGenerator.Create: after FLastWarnings');
-  WriteLn('TDrumGenerator.Create: before FPluginManager');
   FPluginManager := TPluginManager.Create();
-  WriteLn('TDrumGenerator.Create: after FPluginManager');
-  WriteLn('TDrumGenerator.Create: before FDrumKit');
   FDrumKit := TDrumKit.FromKeymapName('gm'); { Default GM keymap. }
-  WriteLn('TDrumGenerator.Create: after FDrumKit');
-  WriteLn('TDrumGenerator.Create: before LoadPlugins');
   LoadPlugins;
-  WriteLn('TDrumGenerator.Create: after LoadPlugins');
 end;
 
 destructor TDrumGenerator.Destroy;
@@ -310,268 +302,77 @@ var
   end;
 
 begin
-  WriteLn('LoadPlugins: START');
   {  Register drummer plugins first, so the genres can check their preferred
      drummers against them. }
   SetLength(DG, 0);
 
   { bonham  rock, metal, blues }
-  WriteLn('LoadPlugins: creating bonham plugin');
   SetLength(DG, 3); DG[0] := 'rock'; DG[1] := 'metal'; DG[2] := 'blues';
-  WriteLn('LoadPlugins: about to create bonham plugin');
-  WriteLn('LoadPlugins: about to create bonham plugin');
-  WriteLn('LoadPlugins: about to create bonham plugin');
-  WriteLn('LoadPlugins: about to create bonham plugin');
-  WriteLn('LoadPlugins: about to create bonham plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('bonham', TBonhamPlugin.Create, DG);
-  WriteLn('LoadPlugins: bonham plugin created');
-  WriteLn('LoadPlugins: bonham plugin created');
 
   { porcaro  rock, funk, pop }
-  WriteLn('LoadPlugins: creating porcaro plugin');
   SetLength(DG, 0); SetLength(DG, 3); DG[0] := 'rock'; DG[1] := 'funk'; DG[2] := 'pop';
-  WriteLn('LoadPlugins: about to create porcaro plugin');
-  WriteLn('LoadPlugins: about to create porcaro plugin');
-  WriteLn('LoadPlugins: about to create porcaro plugin');
-  WriteLn('LoadPlugins: about to create porcaro plugin');
-  WriteLn('LoadPlugins: about to create porcaro plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('porcaro', TPorcaroPlugin.Create, DG);
-  WriteLn('LoadPlugins: porcaro plugin created');
-  WriteLn('LoadPlugins: porcaro plugin created');
-  WriteLn('LoadPlugins: porcaro plugin created');
-  WriteLn('LoadPlugins: porcaro plugin created');
-  WriteLn('LoadPlugins: porcaro plugin created');
-  WriteLn('LoadPlugins: porcaro plugin created');
-  WriteLn('LoadPlugins: porcaro plugin created');
 
   { weckl  jazz, fusion, rock }
-  WriteLn('LoadPlugins: creating weckl plugin');
   SetLength(DG, 0); SetLength(DG, 3); DG[0] := 'jazz'; DG[1] := 'fusion'; DG[2] := 'rock';
-  WriteLn('LoadPlugins: about to create weckl plugin');
-  WriteLn('LoadPlugins: about to create weckl plugin');
-  WriteLn('LoadPlugins: about to create weckl plugin');
-  WriteLn('LoadPlugins: about to create weckl plugin');
-  WriteLn('LoadPlugins: about to create weckl plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('weckl', TWecklPlugin.Create, DG);
-  WriteLn('LoadPlugins: weckl plugin created');
-  WriteLn('LoadPlugins: weckl plugin created');
-  WriteLn('LoadPlugins: weckl plugin created');
-  WriteLn('LoadPlugins: weckl plugin created');
-  WriteLn('LoadPlugins: weckl plugin created');
-  WriteLn('LoadPlugins: weckl plugin created');
-  WriteLn('LoadPlugins: weckl plugin created');
 
   { chambers  funk, rock }
-  WriteLn('LoadPlugins: creating chambers plugin');
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'funk'; DG[1] := 'rock';
-  WriteLn('LoadPlugins: about to create chambers plugin');
-  WriteLn('LoadPlugins: about to create chambers plugin');
-  WriteLn('LoadPlugins: about to create chambers plugin');
-  WriteLn('LoadPlugins: about to create chambers plugin');
-  WriteLn('LoadPlugins: about to create chambers plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('chambers', TChambersPlugin.Create, DG);
-  WriteLn('LoadPlugins: chambers plugin created');
-  WriteLn('LoadPlugins: chambers plugin created');
-  WriteLn('LoadPlugins: chambers plugin created');
-  WriteLn('LoadPlugins: chambers plugin created');
-  WriteLn('LoadPlugins: chambers plugin created');
-  WriteLn('LoadPlugins: chambers plugin created');
-  WriteLn('LoadPlugins: chambers plugin created');
 
   { roeder metal, doom }
-  WriteLn('LoadPlugins: creating roeder plugin');
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'doom';
-  WriteLn('LoadPlugins: about to create roeder plugin');
-  WriteLn('LoadPlugins: about to create roeder plugin');
-  WriteLn('LoadPlugins: about to create roeder plugin');
-  WriteLn('LoadPlugins: about to create roeder plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('roeder', TRoederPlugin.Create, DG);
-  WriteLn('LoadPlugins: roeder plugin created');
-  WriteLn('LoadPlugins: roeder plugin created');
-  WriteLn('LoadPlugins: roeder plugin created');
-  WriteLn('LoadPlugins: roeder plugin created');
-  WriteLn('LoadPlugins: roeder plugin created');
-  WriteLn('LoadPlugins: roeder plugin created');
 
   { dee metal, rock }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'rock';
-  WriteLn('LoadPlugins: creating dee plugin');
-  WriteLn('LoadPlugins: about to create dee plugin');
-  WriteLn('LoadPlugins: about to create dee plugin');
-  WriteLn('LoadPlugins: about to create dee plugin');
-  WriteLn('LoadPlugins: about to create dee plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('dee', TDeePlugin.Create, DG);
-  WriteLn('LoadPlugins: dee plugin created');
-  WriteLn('LoadPlugins: dee plugin created');
-  WriteLn('LoadPlugins: dee plugin created');
-  WriteLn('LoadPlugins: dee plugin created');
-  WriteLn('LoadPlugins: dee plugin created');
-  WriteLn('LoadPlugins: dee plugin created');
 
   { hoglan metal, progressive }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'progressive';
-  WriteLn('LoadPlugins: creating hoglan plugin');
-  WriteLn('LoadPlugins: about to create hoglan plugin');
-  WriteLn('LoadPlugins: about to create hoglan plugin');
-  WriteLn('LoadPlugins: about to create hoglan plugin');
-  WriteLn('LoadPlugins: about to create hoglan plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('hoglan', THoglanPlugin.Create, DG);
-  WriteLn('LoadPlugins: hoglan plugin created');
-  WriteLn('LoadPlugins: hoglan plugin created');
-  WriteLn('LoadPlugins: hoglan plugin created');
-  WriteLn('LoadPlugins: hoglan plugin created');
-  WriteLn('LoadPlugins: hoglan plugin created');
-  WriteLn('LoadPlugins: hoglan plugin created');
 
   { peart  progressive, metal }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'progressive'; DG[1] := 'metal';
-  WriteLn('LoadPlugins: creating peart plugin');
-  WriteLn('LoadPlugins: about to create peart plugin');
-  WriteLn('LoadPlugins: about to create peart plugin');
-  WriteLn('LoadPlugins: about to create peart plugin');
-  WriteLn('LoadPlugins: about to create peart plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('peart', TPeartPlugin.Create, DG);
-  WriteLn('LoadPlugins: peart plugin created');
-  WriteLn('LoadPlugins: peart plugin created');
-  WriteLn('LoadPlugins: peart plugin created');
-  WriteLn('LoadPlugins: peart plugin created');
-  WriteLn('LoadPlugins: peart plugin created');
-  WriteLn('LoadPlugins: peart plugin created');
 
   { rich  jazz, rock }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'rock';
-  WriteLn('LoadPlugins: creating rich plugin');
-  WriteLn('LoadPlugins: about to create rich plugin');
-  WriteLn('LoadPlugins: about to create rich plugin');
-  WriteLn('LoadPlugins: about to create rich plugin');
-  WriteLn('LoadPlugins: about to create rich plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('rich', TRichPlugin.Create, DG);
-  WriteLn('LoadPlugins: rich plugin created');
-  WriteLn('LoadPlugins: rich plugin created');
-  WriteLn('LoadPlugins: rich plugin created');
-  WriteLn('LoadPlugins: rich plugin created');
-  WriteLn('LoadPlugins: rich plugin created');
-  WriteLn('LoadPlugins: rich plugin created');
 
   { copeland  rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
-  WriteLn('LoadPlugins: creating copeland plugin');
-  WriteLn('LoadPlugins: about to create copeland plugin');
-  WriteLn('LoadPlugins: about to create copeland plugin');
-  WriteLn('LoadPlugins: about to create copeland plugin');
-  WriteLn('LoadPlugins: about to create copeland plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('copeland', TCopelandPlugin.Create, DG);
-  WriteLn('LoadPlugins: copeland plugin created');
-  WriteLn('LoadPlugins: copeland plugin created');
-  WriteLn('LoadPlugins: copeland plugin created');
-  WriteLn('LoadPlugins: copeland plugin created');
-  WriteLn('LoadPlugins: copeland plugin created');
-  WriteLn('LoadPlugins: copeland plugin created');
 
   { carey metal, progressive }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'progressive';
-  WriteLn('LoadPlugins: creating carey plugin');
-  WriteLn('LoadPlugins: about to create carey plugin');
-  WriteLn('LoadPlugins: about to create carey plugin');
-  WriteLn('LoadPlugins: about to create carey plugin');
-  WriteLn('LoadPlugins: about to create carey plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('carey', TCareyPlugin.Create, DG);
-  WriteLn('LoadPlugins: carey plugin created');
-  WriteLn('LoadPlugins: carey plugin created');
-  WriteLn('LoadPlugins: carey plugin created');
-  WriteLn('LoadPlugins: carey plugin created');
-  WriteLn('LoadPlugins: carey plugin created');
-  WriteLn('LoadPlugins: carey plugin created');
 
   { smith  rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
-  WriteLn('LoadPlugins: creating smith plugin');
-  WriteLn('LoadPlugins: about to create smith plugin');
-  WriteLn('LoadPlugins: about to create smith plugin');
-  WriteLn('LoadPlugins: about to create smith plugin');
-  WriteLn('LoadPlugins: about to create smith plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('smith', TSmithPlugin.Create, DG);
-  WriteLn('LoadPlugins: smith plugin created');
-  WriteLn('LoadPlugins: smith plugin created');
-  WriteLn('LoadPlugins: smith plugin created');
-  WriteLn('LoadPlugins: smith plugin created');
-  WriteLn('LoadPlugins: smith plugin created');
-  WriteLn('LoadPlugins: smith plugin created');
 
   { moon rock, funk }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'funk';
-  WriteLn('LoadPlugins: creating moon plugin');
-  WriteLn('LoadPlugins: about to create moon plugin');
-  WriteLn('LoadPlugins: about to create moon plugin');
-  WriteLn('LoadPlugins: about to create moon plugin');
-  WriteLn('LoadPlugins: about to create moon plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('moon', TMoonPlugin.Create, DG);
-  WriteLn('LoadPlugins: moon plugin created');
-  WriteLn('LoadPlugins: moon plugin created');
-  WriteLn('LoadPlugins: moon plugin created');
-  WriteLn('LoadPlugins: moon plugin created');
-  WriteLn('LoadPlugins: moon plugin created');
-  WriteLn('LoadPlugins: moon plugin created');
 
   { watts rock, metal }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'rock'; DG[1] := 'metal';
-  WriteLn('LoadPlugins: creating watts plugin');
-  WriteLn('LoadPlugins: about to create watts plugin');
-  WriteLn('LoadPlugins: about to create watts plugin');
-  WriteLn('LoadPlugins: about to create watts plugin');
-  WriteLn('LoadPlugins: about to create watts plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('watts', TWattsPlugin.Create, DG);
-  WriteLn('LoadPlugins: watts plugin created');
-  WriteLn('LoadPlugins: watts plugin created');
-  WriteLn('LoadPlugins: watts plugin created');
-  WriteLn('LoadPlugins: watts plugin created');
-  WriteLn('LoadPlugins: watts plugin created');
-  WriteLn('LoadPlugins: watts plugin created');
 
   { haake metal, progressive }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'metal'; DG[1] := 'progressive';
-  WriteLn('LoadPlugins: creating haake plugin');
-  WriteLn('LoadPlugins: about to create haake plugin');
-  WriteLn('LoadPlugins: about to create haake plugin');
-  WriteLn('LoadPlugins: about to create haake plugin');
-  WriteLn('LoadPlugins: about to create haake plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('haake', THaakePlugin.Create, DG);
-  WriteLn('LoadPlugins: haake plugin created');
-  WriteLn('LoadPlugins: haake plugin created');
-  WriteLn('LoadPlugins: haake plugin created');
-  WriteLn('LoadPlugins: haake plugin created');
-  WriteLn('LoadPlugins: haake plugin created');
-  WriteLn('LoadPlugins: haake plugin created');
 
   { halpern jazz, fusion }
   SetLength(DG, 0); SetLength(DG, 2); DG[0] := 'jazz'; DG[1] := 'fusion';
-  WriteLn('LoadPlugins: creating halpern plugin');
-  WriteLn('LoadPlugins: about to create halpern plugin');
-  WriteLn('LoadPlugins: about to create halpern plugin');
-  WriteLn('LoadPlugins: about to create halpern plugin');
-  WriteLn('LoadPlugins: about to create halpern plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('halpern', THalpernPlugin.Create, DG);
-  WriteLn('LoadPlugins: halpern plugin created');
-  WriteLn('LoadPlugins: halpern plugin created');
-  WriteLn('LoadPlugins: halpern plugin created');
-  WriteLn('LoadPlugins: halpern plugin created');
-  WriteLn('LoadPlugins: halpern plugin created');
-  WriteLn('LoadPlugins: halpern plugin created');
 
   { doomblues metal, rock, blues }
   SetLength(DG, 0); SetLength(DG, 3); DG[0] := 'metal'; DG[1] := 'rock'; DG[2] := 'blues';
-  WriteLn('LoadPlugins: creating doomblues plugin');
-  WriteLn('LoadPlugins: about to create doomblues plugin');
-  WriteLn('LoadPlugins: about to create doomblues plugin');
-  WriteLn('LoadPlugins: about to create doomblues plugin');
-  WriteLn('LoadPlugins: about to create doomblues plugin');
   FPluginManager.Registry.RegisterDrummerPlugin('doomblues', TDoomBluesPlugin.Create, DG);
-  WriteLn('LoadPlugins: doomblues plugin created');
-  WriteLn('LoadPlugins: doomblues plugin created');
-  WriteLn('LoadPlugins: doomblues plugin created');
-  WriteLn('LoadPlugins: doomblues plugin created');
-  WriteLn('LoadPlugins: doomblues plugin created');
-  WriteLn('LoadPlugins: doomblues plugin created');
 
   {  Register genre plugins. The styles come from the plugin itself, so a
      style that only a groove file defines is registered too. }
