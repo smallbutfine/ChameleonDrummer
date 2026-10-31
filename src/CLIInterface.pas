@@ -343,7 +343,7 @@ begin
       raise Exception.Create('--section and --segment cannot be combined with --structure; put all sections in one place');
     Info := LoadStructureFile(Result.StructureFile);
     for W in Info.Warnings do
-      Writeln('[Warning] ', Result.StructureFile, ': ', W);
+      WriteLn(StdErr, '[Warning] ', Result.StructureFile, ': ', W);
 
     Result.Sections := Info.Sections;
     if (Result.Genre = '') then Result.Genre := Info.Genre;
@@ -381,7 +381,7 @@ begin
     if Bridge.CreateFromSong(ASong, AMidiFile) then
       Writeln('REAPER project exported to:', ChangeFileExt(AMidiFile, '.rpp'))
     else
-      Writeln('[Warning] Failed to create REAPER project from song sections');
+      WriteLn(StdErr, '[Warning] Failed to create REAPER project from song sections');
   finally
     Bridge.Free;
   end;
@@ -397,7 +397,7 @@ begin
     if Bridge.CreateFromSong(ASong, AMidiFile, ASessionDir) then
       Writeln('Ardour session created:', ASessionDir)
     else
-      Writeln('[Warning] Failed to create Ardour session');
+      WriteLn(StdErr, '[Warning] Failed to create Ardour session');
   finally
     Bridge.Free;
   end;
@@ -411,7 +411,7 @@ begin
   { Mistakes in the user's groove, fill, section and defaults files. The
     engine ignored the file and used what is built in. }
   for I := 0 to ConfigWarnings.Count - 1 do
-    Writeln('[Warning] ', ConfigWarnings[I]);
+    WriteLn(StdErr, '[Warning] ', ConfigWarnings[I]);
   ConfigWarnings.Clear;
 end;
 
@@ -425,7 +425,7 @@ begin
 
   for I := 0 to FGenerator.LastWarnings.Count - 1 do
 
-    Writeln('[Warning] ', FGenerator.LastWarnings[I]);
+    WriteLn(StdErr, '[Warning] ', FGenerator.LastWarnings[I]);
 
 end;
 

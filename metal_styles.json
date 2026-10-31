@@ -1,0 +1,58 @@
+{
+  "styles" : [
+    "heavy",
+    "death",
+    "power",
+    "progressive",
+    "thrash",
+    "doom",
+    "breakdown",
+    "metal"
+  ]
+}
+[Warning] electronic.tab (240): [electronic verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 8 in "HO    x. x. x. x." - this groove is skipped
+[Warning] electronic.tab (245): [electronic verse]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "HO    xx xx xxx" - this groove is skipped
+[Warning] electronic.tab (249): [electronic chorus]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped
+[Warning] electronic.tab (255): [electronic chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 12 in "K     x.. ..x x.. ..x" - this groove is skipped
+[Warning] electronic.tab (261): [electronic chorus]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "HO    xx xx xxx" - this groove is skipped
+[Warning] electronic.tab (267): [electronic bridge]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 16 in "K     x... .... x... .... | x... .... x... ...." - this groove is skipped
+[Warning] electronic.tab (277): [electronic verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 8 in "HO    x. x. x. x." - this groove is skipped
+[Warning] electronic.tab (282): [electronic verse]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "HO    xx xx xxx" - this groove is skipped
+[Warning] electronic.tab (286): [electronic chorus]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped
+[Warning] electronic.tab (292): [electronic chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 12 in "K     x.. ..x x.. ..x" - this groove is skipped
+[Warning] electronic.tab (298): [electronic chorus]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "HO    xx xx xxx" - this groove is skipped
+[Warning] jazz.tab (467): [swing verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 8 in "R     xx ... xxx" - this groove is skipped
+[Warning] jazz.tab (540): [swing verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 8 in "R     xx ... xxx" - this groove is skipped
+[Warning] jazz.tab (598): [swing verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 8 in "S     ... x. x.." - this groove is skipped
+[Warning] jazz.tab (604): [swing verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 8 in "S     ... x. x.." - this groove is skipped
+[Warning] jazz.tab (610): [swing verse]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] jazz.tab (616): [swing chorus]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped
+[Warning] jazz.tab (622): [swing chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 12 in "K     x.. ..x x.. ..x" - this groove is skipped
+[Warning] jazz.tab (628): [swing chorus]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] jazz.tab (634): [swing bridge]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 16 in "K     x... .... x... .... | x... .... x... ...." - this groove is skipped
+[Warning] jazz.tab (639): [swing verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 8 in "S     ... x. x.." - this groove is skipped
+[Warning] jazz.tab (645): [swing verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 8 in "S     ... x. x.." - this groove is skipped
+[Warning] jazz.tab (651): [swing verse]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] jazz.tab (657): [swing chorus]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped
+[Warning] jazz.tab (663): [swing chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 12 in "K     x.. ..x x.. ..x" - this groove is skipped
+[Warning] jazz.tab (669): [swing chorus]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] jazz.tab (675): [swing bridge]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 16 in "K     x... .... x... .... | x... .... x... ...." - this groove is skipped
+[Warning] metal.tab (431): [heavy verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 11 in "K     x.xx xx xx x.x" - this groove is skipped
+[Warning] metal.tab (443): [heavy chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "K     x. .x x. x.." - this groove is skipped
+[Warning] metal.tab (455): [heavy verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "S@0.6 .g .. .. g.." - this groove is skipped
+[Warning] metal.tab (468): [heavy chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "K     x. .x x. x.." - this groove is skipped
+[Warning] metal.tab (474): [heavy bridge]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped
+[Warning] metal.tab (487): [metal verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "S@0.6 .g .. .. g.." - this groove is skipped
+[Warning] metal.tab (493): [metal verse]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] metal.tab (505): [metal chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "K     x. .x x. x.." - this groove is skipped
+[Warning] metal.tab (511): [metal chorus]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] metal.tab (523): [metal verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 11 in "K     x.xx xx xx x.x" - this groove is skipped
+[Warning] metal.tab (535): [metal chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "K     x. .x x. x.." - this groove is skipped
+[Warning] metal.tab (541): [metal bridge]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped
+[Warning] rock.tab (676): [rock verse]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "S@0.6 .g .. .. g.." - this groove is skipped
+[Warning] rock.tab (682): [rock verse]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] rock.tab (694): [rock chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "K     x. .x x. x.." - this groove is skipped
+[Warning] rock.tab (700): [rock chorus]: A 3/4 drum tab bar must have 3, 6, 9, 12, 18 or 24 steps, got 7 in "H     xx xx xxx" - this groove is skipped
+[Warning] rock.tab (712): [rock verse]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 11 in "K     x.xx xx xx x.x" - this groove is skipped
+[Warning] rock.tab (724): [rock chorus]: A 5/4 drum tab bar must have 5, 10, 15, 20, 30 or 40 steps, got 9 in "K     x. .x x. x.." - this groove is skipped
+[Warning] rock.tab (730): [rock bridge]: A 7/8 drum tab bar must have 7, 14, 21, 28, 42 or 56 steps, got 12 in "K     x.. x.. x.. x.." - this groove is skipped

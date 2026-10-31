@@ -354,11 +354,11 @@ begin
               FLoadedKeymaps.Add(FileStem, JsonValue);
             except
               on E: Exception do
-                WriteLn('[Warning] Failed to add keymap ' + FileStem + ': ' + E.Message);
+                WriteLn(StdErr, '[Warning] Failed to add keymap ' + FileStem + ': ' + E.Message);
             end;
         except
           on E: Exception do
-            WriteLn('[Warning] Failed to load ' + FilePath + ': ' + E.Message);
+            WriteLn(StdErr, '[Warning] Failed to load ' + FilePath + ': ' + E.Message);
         end;
       end;
     until FindNext(DirHandle) <> 0;

@@ -393,7 +393,7 @@ var
 begin
   { Log warning if pattern has no beats - aids debugging }
   if FBeats.Count = 0 then
-    WriteLn('[WARNING] Pattern ' + FName + ' has no beats - copying empty pattern.');
+    WriteLn(StdErr, '[WARNING] Pattern ' + FName + ' has no beats - copying empty pattern.');
 
   Result := TPattern.Create(FName);
   for Beat in FBeats do
