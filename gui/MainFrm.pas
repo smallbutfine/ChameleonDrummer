@@ -23,6 +23,8 @@ type
   TIntDynArray = array of Integer;
   TStrDynArray = array of String;
 
+  { TMainForm }
+
   TMainForm = class(TForm)
     gbSong: TGroupBox;
     sbSections: TScrollBox;
@@ -81,6 +83,8 @@ type
     pbProgress: TProgressBar;
     StatusBar: TStatusBar;
     procedure FormCreate(Sender: TObject);
+    procedure lblHintClick(Sender: TObject);
+    procedure lblMeterHintClick(Sender: TObject);
     procedure rgModeChange(Sender: TObject);
     procedure cbGenreChange(Sender: TObject);
     procedure tbComplexityChange(Sender: TObject);
@@ -142,7 +146,7 @@ var
 implementation
 
 { The form file is named after the form class, not after this unit }
-{$R TMainForm.lfm}
+{$R MainFrm.lfm}
 
 { Numbers handed to the command line must use a '.' decimal separator whatever
   the system locale is: the CLI would not understand '0,67'. }
@@ -237,6 +241,9 @@ begin
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged; SetTheme(LoadThemeChoice, False);{$ENDIF}
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
+
+
+
 
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
@@ -514,6 +521,8 @@ begin
       Width := 80; Height := 14;
       Caption := Format('Section %d', [I+1]);
       AutoSize := False;
+      ShowHint := True;
+      Hint := 'Section ' + IntToStr(I+1) + ' type';
     end;
     cmbSection := TComboBox.Create(sbSections);
     with cmbSection do begin
@@ -522,6 +531,8 @@ begin
       Left := 100; Top := Y - 2;
       Width := 160; Height := 24;
       Style := csDropDownList;
+      ShowHint := True;
+      Hint := 'Section ' + IntToStr(I+1) + ' type (intro/verse/chorus/bridge/outro)';
       Items.Add('intro');
       Items.Add('verse');
       Items.Add('chorus');
@@ -538,6 +549,8 @@ begin
       MinValue := 1;
       MaxValue := 64;
       Value := FSectionBars[I];
+      ShowHint := True;
+      Hint := 'Section ' + IntToStr(I+1) + ' bar count (1-64)';
     end;
     btnDelete := TButton.Create(sbSections);
     with btnDelete do begin
@@ -547,6 +560,8 @@ begin
       Width := 28; Height := 24;
       Caption := '-';
       OnClick := @BtnSectionDeleteClick;
+      ShowHint := True;
+      Hint := 'Delete section ' + IntToStr(I+1);
     end;
     Inc(Y, 30);
   end;
@@ -560,6 +575,8 @@ begin
     Width := 100; Height := 28;
     Caption := '+ Add Section';
     OnClick := @BtnAddSectionClick;
+    ShowHint := True;
+    Hint := 'Add a new section to the song structure';
   end;
 
   { Reset Structure button }
@@ -571,6 +588,8 @@ begin
     Width := 100; Height := 28;
     Caption := 'Reset';
     OnClick := @BtnResetStructureClick;
+    ShowHint := True;
+    Hint := 'Reset to default song structure for the selected genre';
   end;
 
   { Update scroll range }
@@ -1066,6 +1085,16 @@ begin
     Dlg.Free;
   end;
 end;
+procedure TMainForm.lblHintClick(Sender: TObject);
+begin
+  // Label click handler
+end;
+
+procedure TMainForm.lblMeterHintClick(Sender: TObject);
+begin
+  // Label click handler
+end;
+
 procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
 var
   CB: TComboBox;
