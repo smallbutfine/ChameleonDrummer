@@ -23,8 +23,8 @@
 
 <section class="hero">
   <div class="container">
-    <h2>THE PRINCIPLES BEHIND MIDI GENERATION</h2>
-    <p>From <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, and <code>MidiIO.pas</code> — the source code reveals a structured pipeline:</p>
+    <h2>HOW CHAMELEONDRUMMER CREATES YOUR DRUM TRACKS</h2>
+    <p>From <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, and <code>MidiIO.pas</code> — the source code reveals a structured pipeline that any musician can understand.</p>
     <ol>
       <li><strong>Pattern Model</strong> — Beats with position, instrument, velocity, ghost/accent flags.</li>
       <li><strong>Song Structure</strong> — Sections with patterns, fills, segments, and groove offsets.</li>
@@ -33,7 +33,7 @@
       <li><strong>Humanization</strong> — Timing and velocity variance for realism.</li>
       <li><strong>MIDI Export</strong> — VLQ-encoded events with BPM/PPQ metadata.</li>
     </ol>
-    <a href="docs.html" class="btn">READ THE MANUAL</a>
+    <a href="docs.html" class="btn">READ FULL MANUAL</a>
   </div>
 </section>
 
@@ -47,11 +47,11 @@
       </article>
       <article>
         <h3>Pattern Generation</h3>
-        <p>8 templates • Full genre-specific style definitions (5 genres × 8 styles (38 total))</p>
+        <p>8 templates • Full genre-specific style definitions (5 genres × 8 styles = 38 total) • Pattern blocks declare meter, intensity, and instrument lines</p>
       </article>
       <article>
         <h3>Drummer Plugins</h3>
-        <p>All 17 drummers translated with full composable modification support • Each drummer applies 2–4 modifications</p>
+        <p>All 17 drummers translated with full composable modification support • BehindBeat, GhostNotes, LinearCoordination, ShuffleFeel, FillPatterns</p>
       </article>
       <article>
         <h3>Dynamic Keymap System</h3>
@@ -61,10 +61,38 @@
   </div>
 </section>
 
+<section class="concepts-preview">
+  <div class="container">
+    <h2>THE ENGINE IN PLAIN LANGUAGE</h2>
+    <p>ChameleonDrummer builds drum tracks like a musical director working with a session band. It picks patterns for each bar based on intensity, avoids repetition, inserts fills at section boundaries, and applies drummer-specific style modifications — all from plain text files you can edit.</p>
+    
+    <h3>Pattern Format (What You Can Edit)</h3>
+    <p>Grooves and fills live in <code>config/grooves/&lt;genre&gt;.tab</code> and <code>config/fills/&lt;drummer&gt;.tab</code>. Each block has a header declaring style, meter, and intensity, followed by instrument lines using simple characters:</p>
+    <ul>
+      <li><code>.</code> = rest (no hit)</li>
+      <li><code>x</code> = hit</li>
+      <li><code>X</code> = accented hit</li>
+      <li><code>o</code> = soft note</li>
+      <li><code>g</code> = ghost note</li>
+      <li><code>|</code> = bar separator</li>
+    </ul>
+    <p>Example groove block from <code>rock.tab</code>:</p>
+    <pre><code>[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+    
+    <h3>How the Engine Works</h3>
+    <p>For each bar, the engine selects a groove using weighted randomness based on intensity matching. Four macro phases (establish, maintain, build, turnaround) control how the song evolves. Fills are inserted at structural points. Humanization adds timing and velocity variation. Physical constraints prevent impossible patterns.</p>
+    
+    <a href="docs.html" class="btn">READ FULL MANUAL</a>
+  </div>
+</section>
+
 <footer>
   <div class="container">
     <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
-    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Groove format: <code>config/README.md</code></p>
   </div>
 </footer>
 
