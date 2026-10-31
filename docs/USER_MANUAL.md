@@ -243,6 +243,73 @@ See `REAPER_INTEGRATION_PLAN.md` for the full integration architecture and imple
 
 ---
 
+## Ardour Integration
+
+ChameleonDrummer integrates with Ardour via a Lua panel (`ardour/chameleon_panel.lua`) that drives the CLI for drum generation and imports results directly into your Ardour session.
+
+### Installation
+
+1. Copy the `ardour/` directory into your Ardour scripts folder (typically `~/.config/ardour/scripts/` on Linux, `~/Library/Application Support/Ardour/scripts/` on macOS, or `%APPDATA%\Ardour\scripts\` on Windows).
+2. Open Ardour and load `chameleon_panel.lua` via Window > Scripting > Script Manager > New Script.
+3. The panel appears as a dockable window with four tabs.
+
+### Tabs
+
+**Song Sections**
+
+- Select genre, style, drummer, mapping, tempo, and number of bars
+- Generate MIDI via CLI and import into the current Ardour session
+- Export Ardour session (`.ardour`) alongside the MIDI
+
+**Additive Rhythm**
+
+- Enter additive grouping notation (e.g., `3-3-3-3-2-2`)
+- Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity
+- Generate additive rhythm patterns with per-bar time signatures
+- Optional timeline JSON export for Ardour tempo markers
+
+**Step Editor**
+
+- Load a MIDI item from the current session
+- Edit on a grid with drummer application (timing/velocity variance)
+- Apply drummer style to existing patterns
+
+**Settings**
+
+- Configure CLI executable path
+- Set default genre/style/drummer/mapping
+- Refresh options from CLI list commands
+
+**Log**
+
+- Real-time log output from CLI commands
+- Status messages during generation
+
+### CLI Commands Used by Ardour Panel
+
+```
+ChameleonDrummer list genres --json
+ChameleonDrummer list styles --genre metal --json
+ChameleonDrummer list drummers --json
+ChameleonDrummer list mappings --json
+ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
+ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]
+```
+
+### Accessing the Panel in Ardour
+
+Once installed, the ChameleonDrummer panel can be accessed in Ardour via:
+
+- **Window > Scripting > ChameleonDrummer** (if registered as a menu action)
+- **Window > Scripting > Script Manager > ChameleonDrummer > Run**
+- Assign a keyboard shortcut in **Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut**
+
+The panel uses Ardour's Lua API (`Session`, `Temporal`, `ARDOUR` namespaces) for session manipulation, tempo map creation, and MIDI region import.
+
+See `ardour/import_chameleon_song.lua` for the headless session builder used by the CLI `--ardour` export.
+
+---
+
 ## The CLI Program
 
 ### Command Reference
