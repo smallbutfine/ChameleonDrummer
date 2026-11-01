@@ -1,0 +1,408 @@
+object MainForm: TMainForm
+  Left = 160
+  Top = 120
+  Caption = 'ChameleonDrummer'
+  ClientHeight = 671
+  ClientWidth = 960
+  Menu = MainMenu
+  OnCreate = FormCreate
+  object MainMenu: TMainMenu
+    object mnuFile: TMenuItem
+      Caption = '&File'
+      object mnuGenerate: TMenuItem
+        Caption = '&Generate'
+        ShortCut = 16455
+        OnClick = btnGenerateClick
+      end
+      object mnuOpenFolder: TMenuItem
+        Caption = '&Open Output Folder'
+        OnClick = btnOpenFolderClick
+      end
+      object N2: TMenuItem
+        Caption = '-'
+      end
+      object mnuExportConfig: TMenuItem
+        Caption = '&Export Configuration...'
+        OnClick = mnuExportConfigClick
+      end
+      object mnuImportConfig: TMenuItem
+        Caption = '&Import Configuration...'
+        OnClick = mnuImportConfigClick
+      end
+      object N1: TMenuItem
+        Caption = '-'
+      end
+      object mnuQuit: TMenuItem
+        Caption = 'E&xit'
+        OnClick = mnuQuitClick
+      end
+    end
+    object mnuEdit: TMenuItem
+      Caption = '&Edit'
+      object mnuAddSection: TMenuItem
+        Caption = '&Add Section'
+        ShortCut = 16449
+        OnClick = mnuAddSectionClick
+      end
+      object mnuDeleteSection: TMenuItem
+        Caption = '&Delete Section'
+        ShortCut = 16430
+        OnClick = mnuDeleteSectionClick
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
+      object mnuResetStructure: TMenuItem
+        Caption = '&Reset Structure'
+        OnClick = mnuResetStructureClick
+      end
+    end
+    object mnuView: TMenuItem
+      Caption = '&View'
+      object mnuThemeSystem: TMenuItem
+        Caption = '&System colours'
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = mnuThemeClick
+      end
+      object mnuThemeLight: TMenuItem
+        Caption = '&Light'
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = mnuThemeClick
+      end
+      object mnuThemeDark: TMenuItem
+        Caption = '&Dark'
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = mnuThemeClick
+      end
+    end
+    object mnuHelp: TMenuItem
+      Caption = '&Help'
+      object mnuAbout: TMenuItem
+        Caption = '&About'
+        OnClick = mnuAboutClick
+      end
+    end
+  end
+  object gbSong: TGroupBox
+    Left = 12
+    Top = 1
+    Width = 416
+    Height = 520
+    Caption = 'Song'
+    object rbPattern: TRadioButton
+      Left = 12
+      Top = 9
+      Width = 180
+      Height = 20
+      Caption = 'Pattern (single pattern)'
+      Checked = False
+      OnClick = rgModeChange
+    end
+    object rbSong: TRadioButton
+      Left = 200
+      Top = 9
+      Width = 180
+      Height = 20
+      Caption = 'Song (full structure)'
+      Checked = True
+      OnClick = rgModeChange
+    end
+    object lblGenre: TLabel
+      Left = 12
+      Top = 45
+      Width = 60
+      Height = 14
+      Caption = 'Genre'
+    end
+    object cbGenre: TComboBox
+      Left = 80
+      Top = 41
+      Width = 180
+      Height = 24
+      Style = csDropDownList
+      OnChange = cbGenreChange
+    end
+    object lblStyle: TLabel
+      Left = 12
+      Top = 77
+      Width = 60
+      Height = 14
+      Caption = 'Style'
+    end
+    object cbStyle: TComboBox
+      Left = 80
+      Top = 73
+      Width = 180
+      Height = 24
+      Style = csDropDownList
+    end
+    object lblDrummer: TLabel
+      Left = 12
+      Top = 109
+      Width = 60
+      Height = 14
+      Caption = 'Drummer'
+    end
+    object cbDrummer: TComboBox
+      Left = 80
+      Top = 105
+      Width = 180
+      Height = 24
+      Style = csDropDownList
+    end
+    object lblMapping: TLabel
+      Left = 12
+      Top = 145
+      Width = 60
+      Height = 14
+      Caption = 'Keymap'
+    end
+    object cbMapping: TComboBox
+      Left = 80
+      Top = 141
+      Width = 180
+      Height = 24
+      Style = csDropDownList
+    end
+    object lblMeter: TLabel
+      Left = 12
+      Top = 177
+      Width = 60
+      Height = 14
+      Caption = 'Meter'
+    end
+    object cbMeter: TComboBox
+      Left = 80
+      Top = 173
+      Width = 80
+      Height = 24
+      Style = csDropDownList
+    end
+    object chkStrictMeter: TCheckBox
+      Left = 170
+      Top = 177
+      Width = 120
+      Height = 18
+      Caption = 'Strict meter'
+      Checked = True
+    end
+    object lblMeterHint: TLabel
+      Left = 300
+      Top = 177
+      Width = 220
+      Height = 14
+      Caption = 'e.g. 7/8 - type any, 2/4 to 32/16'
+    end
+  end
+  object gbOutput: TGroupBox
+    Left = 436
+    Top = 1
+    Width = 396
+    Height = 210
+    Caption = 'Output'
+    object lblExport: TLabel
+      Left = 12
+      Top = 13
+      Width = 60
+      Height = 14
+      Caption = 'Export'
+    end
+    object cbExport: TComboBox
+      Left = 80
+      Top = 9
+      Width = 300
+      Height = 24
+      Style = csDropDownList
+    end
+    object lblFile: TLabel
+      Left = 12
+      Top = 47
+      Width = 60
+      Height = 14
+      Caption = 'File'
+    end
+    object edOutput: TEdit
+      Left = 80
+      Top = 43
+      Width = 248
+      Height = 26
+      Text = 'song'
+    end
+    object btnBrowse: TButton
+      Left = 336
+      Top = 41
+      Width = 48
+      Height = 28
+      Caption = '...'
+      OnClick = btnBrowseClick
+    end
+    object chkOpenFolder: TCheckBox
+      Left = 12
+      Top = 81
+      Width = 370
+      Height = 18
+      Caption = 'Open the output folder when finished'
+    end
+    object lblHint: TLabel
+      Left = 12
+      Top = 111
+      Width = 370
+      Height = 72
+      Caption = 'Writes <name>.mid, and with the export mode also <name>.rpp and <name>.ardour\'
+      WordWrap = True
+    end
+  end
+  object gbPerformance: TGroupBox
+    Left = 436
+    Top = 225
+    Width = 396
+    Height = 176
+    Caption = 'Performance'
+    object lblTempo: TLabel
+      Left = 12
+      Top = 13
+      Width = 60
+      Height = 14
+      Caption = 'Tempo'
+    end
+    object seTempo: TSpinEdit
+      Left = 80
+      Top = 9
+      Width = 80
+      Height = 24
+      MaxValue = 300
+      MinValue = 0
+      Value = 0
+    end
+    object lblTempoHint: TLabel
+      Left = 170
+      Top = 13
+      Width = 210
+      Height = 14
+      Caption = 'BPM  (0 = style default)'
+    end
+    object lblComplexity: TLabel
+      Left = 12
+      Top = 51
+      Width = 64
+      Height = 14
+      Caption = 'Complexity'
+    end
+    object tbComplexity: TTrackBar
+      Left = 80
+      Top = 47
+      Width = 180
+      Height = 24
+      Max = 100
+      Min = 0
+      Position = 50
+      OnChange = tbComplexityChange
+    end
+    object lblComplexityValue: TLabel
+      Left = 268
+      Top = 51
+      Width = 50
+      Height = 14
+      Caption = '0.50'
+    end
+    object lblHumanization: TLabel
+      Left = 12
+      Top = 87
+      Width = 64
+      Height = 14
+      Caption = 'Humanization'
+    end
+    object tbHumanization: TTrackBar
+      Left = 80
+      Top = 83
+      Width = 180
+      Height = 24
+      Max = 100
+      Min = 0
+      Position = 30
+      OnChange = tbHumanizationChange
+    end
+    object lblHumanizationValue: TLabel
+      Left = 268
+      Top = 87
+      Width = 50
+      Height = 14
+      Caption = '0.30'
+    end
+    object lblSwing: TLabel
+      Left = 12
+      Top = 123
+      Width = 64
+      Height = 14
+      Caption = 'Swing'
+    end
+    object tbSwing: TTrackBar
+      Left = 80
+      Top = 119
+      Width = 180
+      Height = 24
+      Max = 100
+      Min = 0
+      Position = 0
+      OnChange = tbSwingChange
+    end
+    object lblSwingValue: TLabel
+      Left = 268
+      Top = 123
+      Width = 120
+      Height = 14
+      Caption = 'straight'
+    end
+  end
+  object btnGenerate: TButton
+    Left = 436
+    Top = 409
+    Width = 196
+    Height = 40
+    Caption = 'Generate'
+    OnClick = btnGenerateClick
+  end
+  object btnOpenFolder: TButton
+    Left = 644
+    Top = 409
+    Width = 188
+    Height = 40
+    Caption = 'Open output folder'
+    OnClick = btnOpenFolderClick
+  end
+  object chkRadioLength: TCheckBox
+    Left = 436
+    Top = 455
+    Width = 396
+    Height = 18
+    Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
+    OnClick = chkRadioLengthClick
+  end
+  object gbLog: TGroupBox
+    Left = 12
+    Top = 521
+    Width = 820
+    Height = 120
+    Caption = 'Log'
+    object memLog: TMemo
+      Left = 8
+      Top = 20
+      Width = 804
+      Height = 110
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      ReadOnly = True
+      ScrollBars = ssVertical
+      WordWrap = True
+    end
+  end
+  object pbProgress: TProgressBar
+    Left = 700
+    Top = 625
+    Width = 120
+    Height = 16
+    Visible = False
+  end
+end
