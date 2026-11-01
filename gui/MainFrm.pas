@@ -569,7 +569,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnAddSection';
-    Left := 100; Top := Y + 4;
+    Left := 12; Top := Y + 4;
     Width := 100; Height := 28;
     Caption := '+ Add Section';
     OnClick := @BtnAddSectionClick;
@@ -582,7 +582,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnResetStructure';
-    Left := 210; Top := Y + 4;
+    Left := 124; Top := Y + 4;
     Width := 100; Height := 28;
     Caption := 'Reset';
     OnClick := @BtnResetStructureClick;
@@ -595,7 +595,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnSaveConfig';
-    Left := 310; Top := Y + 4;
+    Left := 236; Top := Y + 4;
     Width := 80; Height := 28;
     Caption := 'Save';
     OnClick := @mnuExportConfigClick;
@@ -608,7 +608,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnLoadConfig';
-    Left := 392; Top := Y + 4;
+    Left := 328; Top := Y + 4;
     Width := 80; Height := 28;
     Caption := 'Load';
     OnClick := @mnuImportConfigClick;
