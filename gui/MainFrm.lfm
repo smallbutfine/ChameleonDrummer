@@ -2,11 +2,14 @@ object MainForm: TMainForm
   ClientHeight = 667
   ClientWidth = 844
   Caption = 'ChameleonDrummer'
-  BorderStyle = bsDialog
+  BorderStyle = bsSizeable
   Menu = MainMenu
   Position = poScreenCenter
+  Constraints.MinWidth = 800
+  Constraints.MinHeight = 600
   ShowHint = True
   OnCreate = FormCreate
+  OnResize = FormResize
   object MainMenu: TMainMenu
     object mnuFile: TMenuItem
       Caption = '&File'
@@ -412,6 +415,7 @@ object MainForm: TMainForm
     Hint = 'Generate a radio-length song (3:00-3:45) using the genre''s default structure'
   end
   object gbLog: TGroupBox
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Left = 12
     Top = 522
     Width = 820

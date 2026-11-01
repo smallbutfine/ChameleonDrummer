@@ -134,6 +134,7 @@ type
     procedure SyncSectionArraysFromControls;
     procedure ComboBoxDropDown(Sender: TObject);
     procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
+    procedure FormResize(Sender: TObject);
   public
     procedure BtnAddSectionClick(Sender: TObject);
     procedure BtnResetStructureClick(Sender: TObject);
@@ -244,9 +245,13 @@ begin
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
 
-
-
-
+procedure TMainForm.FormResize(Sender: TObject);
+begin
+  pbProgress.Left := ClientWidth - 130;
+  pbProgress.Top := ClientHeight - 30;
+  chkRadioLength.Left := 436;
+  chkRadioLength.Top := ClientHeight - 60;
+end;
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
 begin
