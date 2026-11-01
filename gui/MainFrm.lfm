@@ -9,7 +9,6 @@ object MainForm: TMainForm
   Constraints.MinHeight = 600
   ShowHint = True
   OnCreate = FormCreate
-  OnResize = FormResize
   object MainMenu: TMainMenu
     object mnuFile: TMenuItem
       Caption = '&File'
