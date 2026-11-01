@@ -418,7 +418,7 @@ object MainForm: TMainForm
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
-      Top = 3
+      Top = 1
       Width = 804
       Height = 79
       Anchors = [akLeft, akTop, akRight, akBottom]
