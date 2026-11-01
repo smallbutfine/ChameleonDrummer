@@ -414,13 +414,13 @@ object MainForm: TMainForm
     Left = 12
     Top = 522
     Width = 820
-    Height = 100
+    Height = 85
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
       Top = 6
       Width = 804
-      Height = 94
+      Height = 79
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
@@ -431,7 +431,7 @@ object MainForm: TMainForm
   end
   object pbProgress: TProgressBar
     Left = 700
-    Top = 625
+    Top = 610
     Width = 120
     Height = 16
     Visible = False
