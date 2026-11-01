@@ -590,6 +590,32 @@ begin
     Hint := 'Reset to default song structure for the selected genre';
   end;
 
+  { Save Config button }
+  btnAdd := TButton.Create(sbSections);
+  with btnAdd do begin
+    Parent := sbSections;
+    Name := 'btnSaveConfig';
+    Left := 310; Top := Y + 4;
+    Width := 80; Height := 28;
+    Caption := 'Save';
+    OnClick := @mnuExportConfigClick;
+    ShowHint := True;
+    Hint := 'Save song configuration as JSON';
+  end;
+
+  { Load Config button }
+  btnAdd := TButton.Create(sbSections);
+  with btnAdd do begin
+    Parent := sbSections;
+    Name := 'btnLoadConfig';
+    Left := 392; Top := Y + 4;
+    Width := 80; Height := 28;
+    Caption := 'Load';
+    OnClick := @mnuImportConfigClick;
+    ShowHint := True;
+    Hint := 'Load song configuration from JSON';
+  end;
+
   { Update scroll range }
   sbSections.VertScrollBar.Range := Y + 40;
 
