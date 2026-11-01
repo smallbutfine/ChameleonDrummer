@@ -414,13 +414,13 @@ object MainForm: TMainForm
     Left = 12
     Top = 522
     Width = 820
-    Height = 115
+    Height = 100
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
       Top = 6
       Width = 804
-      Height = 97
+      Height = 94
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
