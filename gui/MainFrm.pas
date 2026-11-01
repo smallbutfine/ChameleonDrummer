@@ -166,6 +166,8 @@ const
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  inherited;
+
   cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
   cbMeter.ItemIndex := 0;
   chkStrictMeter.Checked := True;

@@ -1,10 +1,10 @@
 object MainForm: TMainForm
-  Left = 160
-  Top = 120
+  ClientHeight = 667
+  ClientWidth = 844
   Caption = 'ChameleonDrummer'
-  ClientHeight = 1006
-  ClientWidth = 1274
+  BorderStyle = bsDialog
   Menu = MainMenu
+  Position = poScreenCenter
   ShowHint = True
   OnCreate = FormCreate
   object MainMenu: TMainMenu
@@ -203,13 +203,6 @@ object MainForm: TMainForm
       Checked = True
       ShowHint = True
       Hint = 'Only use patterns with exactly this time signature'
-    end
-    object lblMeterHint: TLabel
-      Left = 300
-      Top = 177
-      Width = 220
-      Height = 14
-      Caption = 'e.g. 7/8 - type any, 2/4 to 32/16'
     end
   end
   object gbOutput: TGroupBox
@@ -420,15 +413,15 @@ object MainForm: TMainForm
   end
   object gbLog: TGroupBox
     Left = 12
-    Top = 521
+    Top = 522
     Width = 820
-    Height = 120
+    Height = 115
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
-      Top = 20
+      Top = 6
       Width = 804
-      Height = 110
+      Height = 97
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
