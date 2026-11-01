@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ChameleonDrummer — 概念</title><link rel="stylesheet" href="style.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ChameleonDrummer — 概念</title><link rel="stylesheet" href="../style.css"></head>
 <body>
 <header><div class="container"><h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1><p class="subtitle">动态 MIDI 鼓生成</p><nav><a href="index.html">首页</a><a href="concepts.html">概念</a><a href="docs.html">手册</a><a href="download.html">下载</a><a href="../index.html">EN</a><a href="../de/index.html">DE</a><a href="../es/index.html">ES</a></nav></div></header>
 <section class="hero"><div class="container"><h2>CHAMELEONDRUMMER 如何创建您的鼓曲目</h2><p>来自 <code>ComposerV2.pas</code>、<code>Pattern.pas</code>、<code>Song.pas</code> 和 <code>MidiIO.pas</code> — 源代码揭示了任何音乐家都能理解的结构化管道。</p><ol><li><strong>模式模型</strong> — 具有位置、乐器、速度、幽灵/强调标志的节拍。</li><li><strong>歌曲结构</strong> — 包含模式、填充、片段和鼓点偏移的部分。</li><li><strong>逐小节演变</strong> — 基于强度匹配的加权随机模式选择，宏阶段，情境感知填充。</li><li><strong>物理限制</strong> — 模式修复器删除不可能的击打。</li><li><strong>人性化</strong> — 时间和速度变化以实现真实感。</li><li><strong>MIDI 导出</strong> — VLQ 编码事件，包含 BPM/PPQ 元数据。</li></ol><a href="docs.html" class="btn">阅读完整手册</a></div></section>
