@@ -508,6 +508,7 @@ var
   Header: string;
   Found: Boolean;
   HW0, HW1: string;
+  BarText: string;
 begin
   Lines := TStringList.Create;
   BarStrings := TStringList.Create;
@@ -577,8 +578,17 @@ begin
         end;
         BarStrings.Add(Grouped);
       end;
-      Lines.Add(Format('%-4s  %s', [Inst,
-        StringReplace(BarStrings.CommaText, ',', ' | ', [rfReplaceAll])]));
+
+      { Join bars manually with " | " — do NOT use CommaText, which quotes
+        strings containing spaces. The engine expects unquoted tab strings. }
+      BarText := '';
+      for K := 0 to BarStrings.Count - 1 do
+      begin
+        if K > 0 then
+          BarText := BarText + ' | ';
+        BarText := BarText + BarStrings[K];
+      end;
+      Lines.Add(Format('%-4s  %s', [Inst, BarText]));
     end;
 
     Output := Lines.Text;
