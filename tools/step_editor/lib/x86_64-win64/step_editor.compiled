@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" Date="1556502373"/>
+  <Params Value="-MObjFPC -Scghi -O2 -g -gl -WG -l -vewnhibq -FuB:\dev\github\ChameleonDrummer\tools\step_editor\ -FuC:\lazarus\lcl\units\x86_64-win64\win32 -FuC:\lazarus\lcl\units\x86_64-win64 -FuC:\lazarus\components\freetype\lib\x86_64-win64 -FuC:\lazarus\components\lazutils\lib\x86_64-win64 -FuC:\lazarus\packager\units\x86_64-win64 -FUB:\dev\github\ChameleonDrummer\tools\step_editor\lib\x86_64-win64\ -FEB:\dev\github\ChameleonDrummer\tools\ -oB:\dev\github\ChameleonDrummer\tools\step_editor.exe -dLCL -dLCLwin32 step_editor.lpr"/>
+</CONFIG>
