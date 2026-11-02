@@ -64,10 +64,9 @@ type
     lblPageInfo: TLabel;
 
     pnlBottom: TPanel;
-    btnConvert: TButton;
     btnExportGroove: TButton;
     btnExportFill: TButton;
-    btnSplitPattern: TButton;
+    btnSavePatternAs: TButton;
     memStatus: TMemo;
     sbStatus: TStatusBar;
 
@@ -76,10 +75,9 @@ type
     procedure btnBrowseInputClick(Sender: TObject);
     procedure btnBrowseOutputClick(Sender: TObject);
     procedure edInputChange(Sender: TObject);
-    procedure btnConvertClick(Sender: TObject);
     procedure btnExportGrooveClick(Sender: TObject);
     procedure btnExportFillClick(Sender: TObject);
-    procedure btnSplitPatternClick(Sender: TObject);
+    procedure btnSavePatternAsClick(Sender: TObject);
     procedure sgTabSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
     procedure sgTabClick(Sender: TObject);
@@ -112,7 +110,7 @@ type
     function CharToStepChar(C: Char): TStepChar;
     function StepCharToChar(SC: TStepChar): Char;
     procedure UpdateStatus(const AMsg: string);
-    function RunMidiToTab(const AArgs: array of string): string;
+    function RunMidiToTab(const AExe: string; const AArgs: array of string): string;
     procedure UpdatePageInfo;
     procedure UpdateControls;
     function BuildTabText: string;
@@ -124,6 +122,7 @@ var
   MainForm: TMainForm;
 
 implementation
+{$R *.lfm}
 
 constructor TMainForm.Create(AOwner: TComponent);
 begin
@@ -174,7 +173,7 @@ begin
   sgTab.RowCount := 1;
   sgTab.FixedCols := 1;
   sgTab.FixedRows := 0;
-  sgTab.Options := sgTab.Options + [goRowSelect];
+  sgTab.Options := sgTab.Options - [goRowSelect] + [goRangeSelect, goAlwaysShowEditor];
   sgTab.OnSelectCell := @sgTabSelectCell;
   sgTab.OnClick := @sgTabClick;
 
@@ -235,6 +234,7 @@ begin
     begin
       edInput.Text := OD.FileName;
       FInputPath := OD.FileName;
+      LoadMidiAndConvert;
     end;
   finally
     OD.Free;
@@ -266,7 +266,6 @@ var
   Args: array of string;
   I: Integer;
   ResultStr: string;
-  OutPath: string;
   MidiToTab: string;
 begin
   if FInputPath = '' then
@@ -285,9 +284,7 @@ begin
   SetLength(Args, 1);
   Args[0] := FInputPath;
 
-  OutPath := FOutputDir + PathDelim + 'temp_convert.tab';
-  SetLength(Args, Length(Args) + 1);
-  Args[High(Args)] := OutPath;
+  // No output file — we read tab data from stdout
 
   if cbMapping.ItemIndex > 0 then
   begin
@@ -350,25 +347,24 @@ begin
     end;
   end;
 
-  MidiToTab := GetCurrentDir + PathDelim + 'midi_to_tab.exe';
-  if not FileExists(MidiToTab) then
-    MidiToTab := GetCurrentDir + PathDelim + '..' + PathDelim + 'midi_to_tab.exe';
+  // Always resolve midi_to_tab.exe relative to this exe's parent directory
+  MidiToTab := ExtractFilePath(ParamStr(0)) + '..' + PathDelim + 'midi_to_tab.exe';
+  
   if not FileExists(MidiToTab) then
   begin
-    UpdateStatus('midi_to_tab.exe not found. Build it first.');
+    UpdateStatus('midi_to_tab.exe not found at: ' + MidiToTab);
     Exit;
   end;
 
-  SetLength(Args, Length(Args) + 1);
-  for I := High(Args) downto 1 do
-    Args[I] := Args[I - 1];
-  Args[0] := MidiToTab;
-  ResultStr := RunMidiToTab(Args);
-  if ResultStr = '' then
-  begin
-    UpdateStatus('Conversion failed.');
-    Exit;
-  end;
+  ResultStr := RunMidiToTab(MidiToTab, Args);
+  
+  // Show raw output in memo for debugging
+  memStatus.Lines.Add('--- RAW OUTPUT (' + IntToStr(Length(ResultStr)) + ' bytes) ---');
+  if Length(ResultStr) > 500 then
+    memStatus.Lines.Add(Copy(ResultStr, 1, 500) + '...')
+  else
+    memStatus.Lines.Add(ResultStr);
+  memStatus.Lines.Add('--- END OUTPUT ---');
 
   FTabData := ResultStr;
   ParseTabOutput(FTabData);
@@ -377,30 +373,42 @@ begin
     IntToStr(FStepsPerBar) + ' steps/bar, ' + IntToStr(FResolution) + ' resolution.');
 end;
 
-function TMainForm.RunMidiToTab(const AArgs: array of string): string;
+function TMainForm.RunMidiToTab(const AExe: string; const AArgs: array of string): string;
 var
-  Proc: TProcess;
-  SL: TStringList;
-  I: Integer;
+  P: TProcess;
+  Buf: array[0..4095] of Byte;
+  N, I: Integer;
+  Chunk: string;
 begin
   Result := '';
-  Proc := TProcess.Create(nil);
+  P := TProcess.Create(nil);
   try
-    Proc.Executable := AArgs[0];
-    for I := 1 to High(AArgs) do
-      Proc.Parameters.Add(AArgs[I]);
-    Proc.Options := Proc.Options + [poWaitOnExit, poUsePipes];
-    Proc.Execute;
-
-    SL := TStringList.Create;
+    P.Executable := AExe;
+    for I := 0 to High(AArgs) do
+      P.Parameters.Add(AArgs[I]);
+    P.Options := [poUsePipes, poStderrToOutput, poNoConsole];
     try
-      SL.LoadFromStream(Proc.Output);
-      Result := SL.Text;
-    finally
-      SL.Free;
+      P.Execute;
+    except
+      on E: Exception do
+      begin
+        UpdateStatus('Cannot start ' + AExe + ': ' + E.Message);
+        Exit;
+      end;
     end;
+    { Reading until the pipe closes keeps the tool from blocking on a full pipe. }
+    repeat
+      N := P.Output.Read(Buf, SizeOf(Buf));
+      if N > 0 then
+      begin
+        SetLength(Chunk, N);
+        Move(Buf[0], Chunk[1], N);
+        Result := Result + Chunk;
+      end;
+    until N <= 0;
+    P.WaitOnExit;
   finally
-    Proc.Free;
+    P.Free;
   end;
 end;
 
@@ -408,21 +416,25 @@ procedure TMainForm.ParseTabOutput(const ATabText: string);
 var
   Lines: TStringList;
   Bars: TStringList;
-  I, J, K, BarIdx, CharIdx: Integer;
+  I, J, K, BarIdx, CharIdx, MaxSteps: Integer;
   Line: string;
   Inst: string;
   GridStr: string;
   BarStr: string;
 begin
   FTabBars := nil;
+  MaxSteps := 0;
   Lines := TStringList.Create;
   Bars := TStringList.Create;
   try
+    if ATabText = '' then
+      Exit;
+
     Lines.Text := ATabText;
 
     I := 0;
     if Lines.Count > 0 then
-      I := 1;
+      I := 1; // Skip header line [midi ...]
 
     while I < Lines.Count do
     begin
@@ -433,13 +445,38 @@ begin
         Continue;
       end;
 
-      Inst := Trim(Copy(Line, 1, 4));
-      GridStr := Trim(Copy(Line, 6, MaxInt));
+      // Try to detect instrument abbreviation (first 3-4 non-space chars)
+      Inst := Copy(Line, 1, MaxInt);
+      J := 1;
+      while (J <= Length(Inst)) and (Inst[J] = ' ') do Inc(J);
+      K := J;
+      while (K <= Length(Inst)) and (Inst[K] <> ' ') do Inc(K);
+      Inst := Copy(Inst, J, K - J); // e.g. "K" or "HH"
+      
+      // GridStr starts after the first whitespace block
+      GridStr := Trim(Copy(Line, K + 1, MaxInt));
+      
+      if GridStr = '' then 
+      begin
+        Inc(I);
+        Continue;
+      end;
 
       Bars.Clear;
-      Bars.StrictDelimiter := True;
-      Bars.Delimiter := '|';
-      Bars.DelimitedText := GridStr;
+      // Handle both pipe-delimited and space-delimited bars (fallback)
+      if Pos('|', GridStr) > 0 then
+      begin
+        Bars.StrictDelimiter := True;
+        Bars.Delimiter := '|';
+        Bars.DelimitedText := GridStr;
+      end
+      else
+      begin
+        // If no pipes, treat the whole string as one bar's raw steps 
+        // OR split by multiple spaces if it looks like fixed width.
+        // For now, fallback to treating it as 1 bar if valid chars exist.
+        Bars.Add(GridStr);
+      end;
 
       while Length(FTabBars) < Bars.Count do
       begin
@@ -471,8 +508,7 @@ begin
           SetLength(FTabBars[BarIdx].InstChars, J + 1);
           FTabBars[BarIdx].InstChars[J].Abbr := Inst;
           SetLength(FTabBars[BarIdx].InstChars[J].Chars, CharIdx);
-          for K := 0 to CharIdx - 1 do
-            FTabBars[BarIdx].InstChars[J].Chars[K] := '.';
+          FillChar(FTabBars[BarIdx].InstChars[J].Chars[0], CharIdx, '.');
         end;
 
         CharIdx := 0;
@@ -485,13 +521,14 @@ begin
           end;
 
         FTabBars[BarIdx].Steps := CharIdx;
+        if CharIdx > MaxSteps then MaxSteps := CharIdx;
       end;
 
       Inc(I);
     end;
 
     if Length(FTabBars) > 0 then
-      FStepsPerBar := FTabBars[0].Steps
+      FStepsPerBar := MaxSteps // Use max found steps per bar
     else
       FStepsPerBar := FResolution;
 
@@ -584,22 +621,22 @@ end;
 
 function TMainForm.CharToStepChar(C: Char): TStepChar;
 begin
-  if C = '.' then Result := scDot
-  else if C = 'x' then Result := scX
-  else if C = 'X' then Result := scAccent
-  else if C = 'o' then Result := scSoft
-  else if C = 'g' then Result := scGhost
+  if Ord(C) = 46 then Result := scDot
+  else if Ord(C) = 120 then Result := scX
+  else if Ord(C) = 88 then Result := scAccent
+  else if Ord(C) = 111 then Result := scSoft
+  else if Ord(C) = 103 then Result := scGhost
   else Result := scDot;
 end;
 
 function TMainForm.StepCharToChar(SC: TStepChar): Char;
 begin
-  if SC = scDot then Result := '.'
-  else if SC = scX then Result := 'x'
-  else if SC = scAccent then Result := 'X'
-  else if SC = scSoft then Result := 'o'
-  else if SC = scGhost then Result := 'g'
-  else Result := '.';
+  if SC = scDot then Result := Chr(46)
+  else if SC = scX then Result := Chr(120)
+  else if SC = scAccent then Result := Chr(88)
+  else if SC = scSoft then Result := Chr(111)
+  else if SC = scGhost then Result := Chr(103)
+  else Result := Chr(46);
 end;
 
 procedure TMainForm.sgTabSelectCell(Sender: TObject; aCol, aRow: Integer;
@@ -661,7 +698,7 @@ begin
   btnNextPage.Enabled := FCurPage < FTotalPages - 1;
   btnExportGroove.Enabled := Length(FTabBars) > 0;
   btnExportFill.Enabled := Length(FTabBars) > 0;
-  btnSplitPattern.Enabled := Length(FTabBars) > 0;
+  btnSavePatternAs.Enabled := Length(FTabBars) > 0;
 end;
 
 procedure TMainForm.UpdateStatus(const AMsg: string);
@@ -689,11 +726,6 @@ end;
 procedure TMainForm.chkAddFillChange(Sender: TObject);
 begin
   edFillDrummer.Enabled := chkAddFill.Checked;
-end;
-
-procedure TMainForm.btnConvertClick(Sender: TObject);
-begin
-  LoadMidiAndConvert;
 end;
 
 procedure TMainForm.btnExportGrooveClick(Sender: TObject);
@@ -797,7 +829,8 @@ begin
     for I := 0 to High(FInstOrder) do
     begin
       Line := FInstOrder[I];
-      for K2 := 1 to 4 - Length(FInstOrder[I]) do Line := Line + '.';
+      for K := 1 to 4 - Length(FInstOrder[I]) do
+        Line := Line + ' ';
       if Length(Line) < 4 then Line := Line + ' ';
       Line := Line + '  ';
 
@@ -808,7 +841,8 @@ begin
         for K := 0 to High(FTabBars[J].InstChars) do
           if FTabBars[J].InstChars[K].Abbr = FInstOrder[I] then
           begin
-            for K2 := 0 to High(FTabBars[J].InstChars[K].Chars) do Line := Line + FTabBars[J].InstChars[K].Chars[K2];
+            for K2 := 0 to High(FTabBars[J].InstChars[K].Chars) do
+              Line := Line + FTabBars[J].InstChars[K].Chars[K2];
             Found := True;
             Break;
           end;
@@ -825,9 +859,121 @@ begin
   end;
 end;
 
-procedure TMainForm.btnSplitPatternClick(Sender: TObject);
+procedure TMainForm.btnSavePatternAsClick(Sender: TObject);
+var
+  SelLeft, SelRight, SelTop, SelBottom, J, K, BarIdx, StepInBar:
+    Integer;
+  SL: TStringList;
+  Header, Line: string;
+  InstAbbr: string;
+  Col, Row: Integer;
+  CumSteps: Integer;
+  OutFile: string;
+  Valid: Boolean;
 begin
-  UpdateStatus('Pattern splitting not yet implemented.');
+  if Length(FTabBars) = 0 then
+  begin
+    UpdateStatus('No MIDI data loaded. Load a file first.');
+    Exit;
+  end;
+
+  SelLeft := sgTab.Selection.Left;
+  SelRight := sgTab.Selection.Right;
+  SelTop := sgTab.Selection.Top;
+  SelBottom := sgTab.Selection.Bottom;
+
+  if SelLeft > SelRight then J := SelLeft else J := SelRight;
+  SelLeft := Min(SelLeft, SelRight);
+  SelRight := Max(J, SelLeft);
+
+  if SelTop > SelBottom then J := SelTop else J := SelBottom;
+  SelTop := Min(SelTop, SelBottom);
+  SelBottom := Max(J, SelTop);
+
+  if SelRight < 1 then
+  begin
+    UpdateStatus('Please select grid cells (data columns only).');
+    Exit;
+  end;
+
+  if chkFill.Checked then
+    Header := Format('[%s energy=%s]', [edFillName.Text, edFillEnergy.Text])
+  else
+    Header := Format('[%s %s intensity=0.2-0.6]',
+      [edStyle.Text, edKind.Text]);
+
+  SL := TStringList.Create;
+  try
+    SL.Add(Header);
+
+    for Row := SelTop to SelBottom do
+    begin
+      InstAbbr := FInstOrder[Row];
+      if InstAbbr = '' then Continue;
+
+      Line := InstAbbr;
+      for K := 1 to 4 - Length(InstAbbr) do Line := Line + ' ';
+      if Length(Line) < 4 then Line := Line + ' ';
+      Line := Line + '  ';
+
+      CumSteps := 0;
+      for BarIdx := FCurPage * FPageSize to Min(FCurPage * FPageSize + FPageSize,
+        Length(FTabBars)) - 1 do
+      begin
+        if BarIdx > 0 then Line := Line + ' | ';
+        for Col := SelLeft to SelRight do
+        begin
+          if (Col >= 1) and (Col <= CumSteps + FTabBars[BarIdx].Steps) then
+          begin
+            StepInBar := Col - CumSteps - 1;
+            for K := 0 to High(FTabBars[BarIdx].InstChars) do
+              if FTabBars[BarIdx].InstChars[K].Abbr = InstAbbr then
+              begin
+                if (StepInBar >= 0) and
+                   (StepInBar < Length(
+                    FTabBars[BarIdx].InstChars[K].Chars)) then
+                  Line := Line +
+                    FTabBars[BarIdx].InstChars[K].Chars[StepInBar]
+                else
+                  Line := Line + '.';
+                Break;
+              end;
+          end
+          else
+            Line := Line + '.';
+        end;
+        CumSteps := CumSteps + FTabBars[BarIdx].Steps;
+      end;
+      SL.Add(Line);
+    end;
+
+    if chkAddFill.Checked then
+      OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'fills' +
+        IncludeTrailingPathDelimiter(edFillDrummer.Text)
+    else if chkAddGroove.Checked then
+      OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves' +
+        IncludeTrailingPathDelimiter(edGrooveGenre.Text)
+    else
+    begin
+      UpdateStatus('Enable "Save as Groove" or "Save as Fill" checkbox.');
+      Exit;
+    end;
+
+    Valid := True;
+    if not DirectoryExists(OutFile) then
+      Valid := CreateDir(OutFile);
+
+    if Valid then
+    begin
+      OutFile := IncludeTrailingPathDelimiter(OutFile) + 'custom.tab';
+      SL.SaveToFile(OutFile, TEncoding.UTF8);
+      UpdateStatus('Pattern saved to: ' + OutFile);
+    end
+    else
+      UpdateStatus('Failed to create directory: ' + OutFile);
+  finally
+    SL.Free;
+  end;
 end;
 
 end.

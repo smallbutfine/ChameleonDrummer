@@ -124,15 +124,6 @@ jobs:
 
           if [ -f "$CONFIG_FILE" ]; then
             sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$REAL_FPC</CompilerFilename>|" "$CONFIG_FILE"
-          else
-            cat > "$CONFIG_FILE" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<CONFIG>
-  <EnvironmentOptions>
-    <CompilerFilename Value="$REAL_FPC"/>
-  </EnvironmentOptions>
-</CONFIG>
-EOF
           fi
 
           # Also fix the lazbuild call to use the correct lazarusdir
