@@ -323,7 +323,8 @@ begin
   until (b and $80) = 0;
 end;
 
-function LoadMidiFile(const FileName: string; out Events: TMidiEventArray; out PPQ: Integer): Boolean;
+function LoadMidiFile(const FileName: string; out Events: TMidiEventArray; out PPQ: Integer;
+  out MeterNum, MeterDen: Integer): Boolean;
 var
   FS: TFileStream;
   Header: array[0..3] of Char;
@@ -332,11 +333,14 @@ var
   uStatus, uLastStatus, uMetaType, uNote, uVel, uReadByte: Byte;
   Division: Word;
   TrackStart: Int64;
+  MetaLen: Int64;
   I: Integer;
 begin
   Result := False;
   Events := nil;
   PPQ := 480;
+  MeterNum := 4;
+  MeterDen := 4;
 
   if not FileExists(FileName) then Exit;
 
@@ -405,8 +409,23 @@ begin
           else if uStatus = $FF then
           begin
             FS.Read(uMetaType, 1);
-            if not ReadVLQ(FS, Delta) then Break;
-            FS.Seek(Delta, soFromCurrent);
+            if not ReadVLQ(FS, MetaLen) then Break;
+            if uMetaType = $58 then
+            begin
+              { Time signature meta event: FF 58 04 nn dd cc bb }
+              if MetaLen >= 4 then
+              begin
+                FS.Read(uReadByte, 1); { numerator }
+                MeterNum := uReadByte;
+                FS.Read(uReadByte, 1); { denominator as power of 2 }
+                MeterDen := 1 shl uReadByte;
+                FS.Seek(2, soFromCurrent); { skip cc and bb }
+              end
+              else
+                FS.Seek(MetaLen, soFromCurrent);
+            end
+            else
+              FS.Seek(MetaLen, soFromCurrent);
           end
           else if uStatus in [$F0, $F7] then
           begin
@@ -787,9 +806,19 @@ begin
     Inc(I);
   end;
 
-  { Determine meter }
-  MeterNum := 4;
-  MeterDen := 4;
+  { Load MIDI — this also detects time signature from the file }
+  if not LoadMidiFile(InputPath, Events, PPQ, MeterNum, MeterDen) then
+
+  begin
+    WriteLn('Error: could not read MIDI file: ', InputPath);
+    Halt(1);
+  end;
+  if Length(Events) = 0 then
+  begin
+    WriteLn('Error: no drum notes found in MIDI file: ', InputPath);
+    Halt(1);
+  end;
+  { CLI --meter overrides detected time signature }
   if MeterStr <> '' then
   begin
     P := Pos('/', MeterStr);
@@ -800,18 +829,6 @@ begin
       MeterNum := StrToIntDef(A, 4);
       MeterDen := StrToIntDef(B, 4);
     end;
-  end;
-
-  { Load MIDI }
-  if not LoadMidiFile(InputPath, Events, PPQ) then
-  begin
-    WriteLn('Error: could not read MIDI file: ', InputPath);
-    Halt(1);
-  end;
-  if Length(Events) = 0 then
-  begin
-    WriteLn('Error: no drum notes found in MIDI file: ', InputPath);
-    Halt(1);
   end;
 
   { Load mapping }
