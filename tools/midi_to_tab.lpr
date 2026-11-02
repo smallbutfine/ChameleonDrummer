@@ -22,6 +22,8 @@ program midi_to_tab;
   With --add-groove GENRE the block is appended to config/grooves/GENRE.tab
   (header: [style kind intensity=...]). With --add-fill DRUMMER the block is
   appended to config/fills/DRUMMER.tab (header: [name energy=...]).
+  Mixed meters are auto-detected from MIDI time signature events (FF 58).
+  --meter overrides all detected meters with a single value.
 
   Self-contained MIDI parser — no modifications to src/ units required.
 }
@@ -53,9 +55,18 @@ type
 
   TBarGrid = record
     InstChars: array of TInstCharEntry;
+    Steps: Integer;   { steps in this bar (varies with mixed meters) }
   end;
 
   TBarGridArray = array of TBarGrid;
+
+  TMeterChange = record
+    Tick: Int64;      { absolute MIDI tick where this meter starts }
+    Num: Integer;     { numerator }
+    Den: Integer;     { denominator }
+  end;
+
+  TMeterChangeArray = array of TMeterChange;
 
   TMapFlag = record
     Flag: string;   { e.g. "-ad2" }
@@ -167,7 +178,6 @@ begin
   if FindFirst('mappings' + PathDelim + '*.json', faAnyFile, SR) = 0 then
   begin
     repeat
-      { Strip .json extension and build flag like -ad2 }
       NameOnly := SR.Name;
       I := Pos('.json', NameOnly);
       if I > 0 then
@@ -308,6 +318,7 @@ end;
 
 { ------------------------------------------------------------------ }
 { Self-contained MIDI parser                                         }
+{ Collects all time signature changes (FF 58) for mixed-meter support }
 { ------------------------------------------------------------------ }
 
 function ReadVLQ(Stream: TStream; out Value: Int64): Boolean;
@@ -324,7 +335,7 @@ begin
 end;
 
 function LoadMidiFile(const FileName: string; out Events: TMidiEventArray; out PPQ: Integer;
-  out MeterNum, MeterDen: Integer): Boolean;
+  out MeterChanges: TMeterChangeArray): Boolean;
 var
   FS: TFileStream;
   Header: array[0..3] of Char;
@@ -335,12 +346,13 @@ var
   TrackStart: Int64;
   MetaLen: Int64;
   I: Integer;
+  MeterChangeIdx: Integer;
 begin
   Result := False;
   Events := nil;
   PPQ := 480;
-  MeterNum := 4;
-  MeterDen := 4;
+  MeterChanges := nil;
+  MeterChangeIdx := 0;
 
   if not FileExists(FileName) then Exit;
 
@@ -401,40 +413,53 @@ begin
               Events[I].Velocity := uVel;
             end;
           end
-          else if (uStatus >= $80) and (uStatus <= $EF) then
+          else
           begin
-            if uStatus in [$C0..$DF] then FS.Seek(1, soFromCurrent)
-            else FS.Seek(2, soFromCurrent);
-          end
-          else if uStatus = $FF then
-          begin
-            FS.Read(uMetaType, 1);
-            if not ReadVLQ(FS, MetaLen) then Break;
-            if uMetaType = $58 then
+            if (uStatus >= $80) and (uStatus <= $EF) then
             begin
-              { Time signature meta event: FF 58 04 nn dd cc bb }
-              if MetaLen >= 4 then
-              begin
-                FS.Read(uReadByte, 1); { numerator }
-                MeterNum := uReadByte;
-                FS.Read(uReadByte, 1); { denominator as power of 2 }
-                MeterDen := 1 shl uReadByte;
-                FS.Seek(2, soFromCurrent); { skip cc and bb }
-              end
-              else
-                FS.Seek(MetaLen, soFromCurrent);
+              if uStatus in [$C0..$DF] then FS.Seek(1, soFromCurrent)
+              else FS.Seek(2, soFromCurrent);
             end
             else
-              FS.Seek(MetaLen, soFromCurrent);
-          end
-          else if uStatus in [$F0, $F7] then
-          begin
-            if not ReadVLQ(FS, Delta) then Break;
-            FS.Seek(Delta, soFromCurrent);
+            begin
+              if uStatus = $FF then
+              begin
+                FS.Read(uMetaType, 1);
+                if not ReadVLQ(FS, MetaLen) then Break;
+                if uMetaType = $58 then
+                begin
+                  { Time signature meta event: FF 58 04 nn dd cc bb }
+                  if MetaLen >= 4 then
+                  begin
+                    FS.Read(uReadByte, 1); { numerator }
+                    MeterChangeIdx := Length(MeterChanges);
+                    SetLength(MeterChanges, MeterChangeIdx + 1);
+                    MeterChanges[MeterChangeIdx].Tick := AbsoluteTick;
+                    MeterChanges[MeterChangeIdx].Num := uReadByte;
+                    FS.Read(uReadByte, 1); { denominator as power of 2 }
+                    MeterChanges[MeterChangeIdx].Den := 1 shl uReadByte;
+                    FS.Seek(2, soFromCurrent); { skip cc and bb }
+                  end
+                  else
+                    FS.Seek(MetaLen, soFromCurrent);
+                end
+                else
+                  FS.Seek(MetaLen, soFromCurrent);
+              end
+              else
+              begin
+                if uStatus in [$F0, $F7] then
+                begin
+                  if not ReadVLQ(FS, Delta) then Break;
+                  FS.Seek(Delta, soFromCurrent);
+                end;
+              end;
+            end;
           end;
         end;
+
+        FS.Position := TrackStart + ChunkSize;
       end;
-      FS.Position := TrackStart + ChunkSize;
     end;
 
     Result := True;
@@ -445,26 +470,74 @@ end;
 
 { ------------------------------------------------------------------ }
 { Convert MIDI events to tab grid data                               }
+{ Supports mixed meters via TMeterChangeArray                        }
 { ------------------------------------------------------------------ }
 
 procedure ConvertMidiToTab(const Events: array of TMidiEvent; PPQ: Integer;
-  MeterNum, MeterDen, Resolution: Integer; const Map: TInstMap;
-  out StepsPerBar: Integer; out Bars: TBarGridArray);
+  const MeterChanges: TMeterChangeArray; Resolution: Integer;
+  const Map: TInstMap;
+  out Bars: TBarGridArray);
+type
+  TMeterSeg = record
+    StepStart: Integer;
+    StepsPerBar: Integer;
+    CumBars: Integer;
+  end;
 var
   StepTicks: Double;
-  I, Step, BarIdx, StepInBar: Integer;
+  Segs: array of TMeterSeg;
+  NSegs: Integer;
+  I, Step, BarIdx, StepInBar, StepInSeg: Integer;
+  SegIdx: Integer;
   Abbr: string;
   C: Char;
   Existing: Char;
   J, K, LIdx: Integer;
   Found: Boolean;
   Idx: Integer;
+  S, D: Integer;
+  TotalBars: Integer;
 begin
-  StepsPerBar := MeterNum * Resolution div MeterDen;
-  if StepsPerBar < 1 then
-    StepsPerBar := Resolution;
-
   StepTicks := PPQ * 4.0 / Resolution;
+
+  { Build meter segments from meter changes }
+  NSegs := 0;
+
+  { Default 4/4 segment at start if no meter change at tick 0 }
+  if (Length(MeterChanges) = 0) or (MeterChanges[0].Tick > 0) then
+  begin
+    NSegs := 1;
+    SetLength(Segs, 1);
+    Segs[0].StepStart := 0;
+    Segs[0].StepsPerBar := 4 * Resolution div 4;
+    if Segs[0].StepsPerBar < 1 then
+      Segs[0].StepsPerBar := Resolution;
+    Segs[0].CumBars := 0;
+  end;
+
+  { Add segments for each meter change }
+  for I := 0 to High(MeterChanges) do
+  begin
+    S := MeterChanges[I].Num;
+    D := MeterChanges[I].Den;
+    Step := Round(MeterChanges[I].Tick / StepTicks);
+
+    NSegs := NSegs + 1;
+    SetLength(Segs, NSegs);
+    Segs[NSegs - 1].StepStart := Step;
+    Segs[NSegs - 1].StepsPerBar := S * Resolution div D;
+    if Segs[NSegs - 1].StepsPerBar < 1 then
+      Segs[NSegs - 1].StepsPerBar := Resolution;
+    Segs[NSegs - 1].CumBars := 0; { filled in below }
+  end;
+
+  { Compute cumulative bars before each segment }
+  TotalBars := 0;
+  for I := 0 to NSegs - 1 do
+  begin
+    Segs[I].CumBars := TotalBars;
+    TotalBars := TotalBars + 1;
+  end;
 
   Bars := nil;
 
@@ -474,14 +547,35 @@ begin
       Continue;
 
     Step := Round(Events[I].DeltaTick / StepTicks);
-    BarIdx := Step div StepsPerBar;
-    StepInBar := Step mod StepsPerBar;
 
+    { Find which meter segment this step falls into }
+    SegIdx := 0;
+    for J := NSegs - 1 downto 0 do
+      if Step >= Segs[J].StepStart then
+      begin
+        SegIdx := J;
+        Break;
+      end;
+
+    { Steps into this segment }
+    StepInSeg := Step - Segs[SegIdx].StepStart;
+
+    { Bar index within this segment }
+    BarIdx := Segs[SegIdx].CumBars + (StepInSeg div Segs[SegIdx].StepsPerBar);
+    StepInBar := StepInSeg mod Segs[SegIdx].StepsPerBar;
+
+    { Grow Bars array if needed }
     while Length(Bars) <= BarIdx do
     begin
-      SetLength(Bars, Length(Bars) + 1);
-      Bars[High(Bars)].InstChars := nil;
+      Idx := Length(Bars);
+      SetLength(Bars, Idx + 1);
+      Bars[Idx].InstChars := nil;
+      Bars[Idx].Steps := 0;
     end;
+
+    { Ensure this bar has the right step count }
+    if Bars[BarIdx].Steps = 0 then
+      Bars[BarIdx].Steps := Segs[SegIdx].StepsPerBar;
 
     { Find or create instrument entry in this bar }
     Found := False;
@@ -497,8 +591,8 @@ begin
       Idx := Length(Bars[BarIdx].InstChars);
       SetLength(Bars[BarIdx].InstChars, Idx + 1);
       Bars[BarIdx].InstChars[Idx].Abbr := Abbr;
-      SetLength(Bars[BarIdx].InstChars[Idx].Chars, StepsPerBar);
-      for K := 0 to StepsPerBar - 1 do
+      SetLength(Bars[BarIdx].InstChars[Idx].Chars, Bars[BarIdx].Steps);
+      for K := 0 to Bars[BarIdx].Steps - 1 do
         Bars[BarIdx].InstChars[Idx].Chars[K] := '.';
       J := Idx;
     end;
@@ -512,10 +606,11 @@ end;
 
 { ------------------------------------------------------------------ }
 { Write tab output                                                   }
+{ Supports per-bar step counts for mixed meters                      }
 { ------------------------------------------------------------------ }
 
-procedure WriteTab(const Bars: TBarGridArray; StepsPerBar, MeterNum, MeterDen,
-  Resolution: Integer; Mode: string; HeaderWords: array of string;
+procedure WriteTab(const Bars: TBarGridArray; Resolution: Integer;
+  Mode: string; HeaderWords: array of string;
   IntensityLow, IntensityHigh: Double; FillName: string; FillEnergy: Double;
   var Output: string);
 var
@@ -528,6 +623,7 @@ var
   Found: Boolean;
   HW0, HW1: string;
   BarText: string;
+  BSteps: Integer;
 begin
   Lines := TStringList.Create;
   BarStrings := TStringList.Create;
@@ -555,14 +651,15 @@ begin
     end;
     Lines.Add(Header);
 
-    StepsPerUnit := Max(1, Resolution div MeterDen);
-
     for I := 0 to High(INST_ORDER) do
     begin
       Inst := INST_ORDER[I];
       BarStrings.Clear;
       for J := 0 to High(Bars) do
       begin
+        BSteps := Bars[J].Steps;
+        StepsPerUnit := Max(1, Resolution div 4);
+
         Grouped := '';
         Found := False;
         for K := 0 to High(Bars[J].InstChars) do
@@ -576,7 +673,7 @@ begin
           for K := 0 to High(Bars[J].InstChars) do
             if Bars[J].InstChars[K].Abbr = Inst then
             begin
-              for LIdx := 0 to StepsPerBar - 1 do
+              for LIdx := 0 to BSteps - 1 do
               begin
                 if (LIdx > 0) and (LIdx mod StepsPerUnit = 0) then
                   Grouped := Grouped + ' ';
@@ -588,7 +685,7 @@ begin
         if Grouped = '' then
         begin
           Grouped := '';
-          for LIdx := 0 to StepsPerBar - 1 do
+          for LIdx := 0 to BSteps - 1 do
           begin
             if (LIdx > 0) and (LIdx mod StepsPerUnit = 0) then
               Grouped := Grouped + ' ';
@@ -640,7 +737,7 @@ begin
   WriteLn('  --fill              Treat as fill block (energy header)');
   WriteLn('  --name NAME         Fill name (default: fill)');
   WriteLn('  --energy VAL        Fill energy 0.0-1.0 (default: 0.5)');
-  WriteLn('  --meter N/D         Time signature (default: 4/4)');
+  WriteLn('  --meter N/D         Time signature (default: detected from MIDI)');
   WriteLn('  --resolution N      Grid resolution 4, 8, 16, 32 (default: 16)');
   WriteLn('  --mapping PATH      JSON mapping file path');
   for I := 0 to High(MapFlags) do
@@ -667,12 +764,11 @@ var
   AddFillDrummer: string;
   AppendGroove: Boolean;
   AppendFill: Boolean;
-  MeterNum, MeterDen: Integer;
+  MeterChanges: TMeterChangeArray;
   Events: TMidiEventArray;
   PPQ: Integer;
   Map: TInstMap;
   UseDefaultMap: Boolean;
-  StepsPerBar: Integer;
   Bars: TBarGridArray;
   Output: string;
   F: TextFile;
@@ -680,6 +776,7 @@ var
   P: Integer;
   A, B: string;
   IntensityStr: string;
+  S, D: Integer;
 begin
   if ParamCount = 0 then
   begin
@@ -807,8 +904,7 @@ begin
   end;
 
   { Load MIDI — this also detects time signature from the file }
-  if not LoadMidiFile(InputPath, Events, PPQ, MeterNum, MeterDen) then
-
+  if not LoadMidiFile(InputPath, Events, PPQ, MeterChanges) then
   begin
     WriteLn('Error: could not read MIDI file: ', InputPath);
     Halt(1);
@@ -818,7 +914,7 @@ begin
     WriteLn('Error: no drum notes found in MIDI file: ', InputPath);
     Halt(1);
   end;
-  { CLI --meter overrides detected time signature }
+  { CLI --meter overrides all detected time signatures }
   if MeterStr <> '' then
   begin
     P := Pos('/', MeterStr);
@@ -826,8 +922,13 @@ begin
     begin
       A := Copy(MeterStr, 1, P - 1);
       B := Copy(MeterStr, P + 1, MaxInt);
-      MeterNum := StrToIntDef(A, 4);
-      MeterDen := StrToIntDef(B, 4);
+      S := StrToIntDef(A, 4);
+      D := StrToIntDef(B, 4);
+      { Replace all meter changes with a single one }
+      SetLength(MeterChanges, 1);
+      MeterChanges[0].Tick := 0;
+      MeterChanges[0].Num := S;
+      MeterChanges[0].Den := D;
     end;
   end;
 
@@ -848,11 +949,11 @@ begin
     DefaultGMMap(Map);
 
   { Convert }
-  ConvertMidiToTab(Events, PPQ, MeterNum, MeterDen,
-    Resolution, Map, StepsPerBar, Bars);
+  ConvertMidiToTab(Events, PPQ, MeterChanges,
+    Resolution, Map, Bars);
 
   { Write output }
-  WriteTab(Bars, StepsPerBar, MeterNum, MeterDen, Resolution,
+  WriteTab(Bars, Resolution,
     Mode, HeaderWords, IntensityLow, IntensityHigh, FillName, FillEnergy, Output);
 
   { Write to output file or stdout }
@@ -863,8 +964,7 @@ begin
     Write(F, Output);
     CloseFile(F);
     WriteLn('Wrote ', OutputPath, ' (', Length(Events),
-      ' notes -> ', Length(Bars), ' bars, ', MeterNum, '/', MeterDen,
-      ', ', StepsPerBar, ' steps/bar)');
+      ' notes -> ', Length(Bars), ' bars, mixed meters)');
   end
   else
     Write(Output);
