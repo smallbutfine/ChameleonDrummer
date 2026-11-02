@@ -9,11 +9,14 @@ program midi_to_tab;
     midi_to_tab input.mid --fill --name bonham_fill --energy 0.6
     midi_to_tab input.mid --meter 7/8 --resolution 16
     midi_to_tab input.mid --mapping mappings/ad2.json
-    midi_to_tab input.mid --mapping mappings/gm.json --style metal --kind verse --intensity 0.2-0.6
+    midi_to_tab input.mid -ad2 --style metal --kind verse --intensity 0.2-0.6
+    midi_to_tab input.mid -gm -ezd3 -xg -template
 
   Reads MIDI notes (channel 10 / percussion zone), quantizes to a grid, groups
   into bars, and writes [style kind intensity=...] or [name energy=...] blocks.
   Supports GM and AD2 (extended) mappings via JSON files in the mappings folder.
+  Short flags (-ad2, -gm, -ezd3, -xg, -template, ...) are auto-discovered from
+  the mappings/ directory.
 
   Self-contained MIDI parser — no modifications to src/ units required.
 }
@@ -48,6 +51,13 @@ type
   end;
 
   TBarGridArray = array of TBarGrid;
+
+  TMapFlag = record
+    Flag: string;   { e.g. "-ad2" }
+    Path: string;   { e.g. "mappings/ad2.json" }
+  end;
+
+  TMapFlags = array of TMapFlag;
 
 const
   VEL_GHOST = 32;
@@ -134,6 +144,34 @@ begin
       LStream.ReadBuffer(Pointer(Result)^, LStream.Size);
   finally
     LStream.Free;
+  end;
+end;
+
+{ ------------------------------------------------------------------ }
+{ DiscoverMappingFlags — scan mappings/ for *.json files and build   }
+{ short flags like -ad2, -gm, -ezd3, -xg, -template                  }
+{ ------------------------------------------------------------------ }
+
+procedure DiscoverMappingFlags(out Flags: TMapFlags);
+var
+  SR: TSearchRec;
+  NameOnly: string;
+  I: Integer;
+begin
+  Flags := nil;
+  if FindFirst('mappings' + PathDelim + '*.json', faAnyFile, SR) = 0 then
+  begin
+    repeat
+      { Strip .json extension and build flag like -ad2 }
+      NameOnly := SR.Name;
+      I := Pos('.json', NameOnly);
+      if I > 0 then
+        NameOnly := Copy(NameOnly, 1, I - 1);
+      SetLength(Flags, Length(Flags) + 1);
+      Flags[High(Flags)].Flag := '-' + LowerCase(NameOnly);
+      Flags[High(Flags)].Path := 'mappings' + PathDelim + SR.Name;
+    until FindNext(SR) <> 0;
+    FindClose(SR);
   end;
 end;
 
@@ -551,7 +589,9 @@ end;
 { CLI parsing                                                        }
 { ------------------------------------------------------------------ }
 
-procedure PrintUsage;
+procedure PrintUsage(const MapFlags: TMapFlags);
+var
+  I: Integer;
 begin
   WriteLn('midi_to_tab — Convert a MIDI file to ChameleonDrummer .tab format.');
   WriteLn('');
@@ -560,7 +600,7 @@ begin
   WriteLn('  midi_to_tab input.mid --fill --name bonham_fill --energy 0.6');
   WriteLn('  midi_to_tab input.mid --meter 7/8 --resolution 16');
   WriteLn('  midi_to_tab input.mid --mapping mappings/ad2.json');
-  WriteLn('  midi_to_tab input.mid --mapping mappings/gm.json --style metal --kind verse --intensity 0.2-0.6');
+  WriteLn('  midi_to_tab input.mid -ad2 --style metal --kind verse --intensity 0.2-0.6');
   WriteLn('');
   WriteLn('Options:');
   WriteLn('  --fill              Treat as fill block (energy header)');
@@ -568,7 +608,9 @@ begin
   WriteLn('  --energy VAL        Fill energy 0.0-1.0 (default: 0.5)');
   WriteLn('  --meter N/D         Time signature (default: 4/4)');
   WriteLn('  --resolution N      Grid resolution 4, 8, 16, 32 (default: 16)');
-  WriteLn('  --mapping PATH      JSON mapping file (gm, ad2, ezd3, xg, template)');
+  WriteLn('  --mapping PATH      JSON mapping file path');
+  for I := 0 to High(MapFlags) do
+    WriteLn('  ' + MapFlags[I].Flag + '      Use mapping ' + MapFlags[I].Path);
   WriteLn('  --style WORD        Style word for groove header');
   WriteLn('  --kind WORD         Kind word for groove header');
   WriteLn('  --intensity LOW-HIGH Intensity range (default: 0.2-0.6)');
@@ -580,6 +622,7 @@ var
   MeterStr: string;
   Resolution: Integer;
   MappingPath: string;
+  MapFlags: TMapFlags;
   HeaderWords: array of string;
   IntensityLow, IntensityHigh: Double;
   FillName: string;
@@ -593,14 +636,15 @@ var
   Bars: TBarGridArray;
   Output: string;
   F: TextFile;
-  I: Integer;
+  I, J: Integer;
   P: Integer;
   A, B: string;
   IntensityStr: string;
 begin
   if ParamCount = 0 then
   begin
-    PrintUsage;
+    DiscoverMappingFlags(MapFlags);
+    PrintUsage(MapFlags);
     Halt(0);
   end;
 
@@ -610,11 +654,15 @@ begin
   MeterStr := '';
   Resolution := 16;
   MappingPath := '';
+  MapFlags := nil;
   HeaderWords := nil;
   IntensityLow := 0.2;
   IntensityHigh := 0.6;
   FillName := 'fill';
   FillEnergy := 0.5;
+
+  { Auto-discover mapping flags from mappings/ directory }
+  DiscoverMappingFlags(MapFlags);
 
   I := 1;
   while I <= ParamCount do
@@ -680,18 +728,28 @@ begin
         end
         else
           IntensityLow := StrToFloatDef(IntensityStr, 0.2);
-      end;
-    end
-    else if ParamStr(I)[1] = '-' then
-    begin
-      { skip unknown flags }
+      end
     end
     else
     begin
-      if InputPath = '' then
-        InputPath := ParamStr(I)
+      { Check for mapping short flags like -ad2, -gm, -ezd3, -xg }
+      for J := 0 to High(MapFlags) do
+        if ParamStr(I) = MapFlags[J].Flag then
+        begin
+          MappingPath := MapFlags[J].Path;
+          Break;
+        end;
+      if ParamStr(I)[1] = '-' then
+      begin
+        { skip unknown flags }
+      end
       else
-        OutputPath := ParamStr(I);
+      begin
+        if InputPath = '' then
+          InputPath := ParamStr(I)
+        else
+          OutputPath := ParamStr(I);
+      end;
     end;
     Inc(I);
   end;
@@ -731,7 +789,7 @@ begin
     begin
       WriteLn('Warning: failed to load mapping "', MappingPath, '", using default GM map.');
       UseDefaultMap := True;
-    end;
+    end
   end
   else
     UseDefaultMap := True;
