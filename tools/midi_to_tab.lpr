@@ -11,12 +11,17 @@ program midi_to_tab;
     midi_to_tab input.mid --mapping mappings/ad2.json
     midi_to_tab input.mid -ad2 --style metal --kind verse --intensity 0.2-0.6
     midi_to_tab input.mid -gm -ezd3 -xg -template
+    midi_to_tab input.mid -ad2 --style metal --kind verse --add-groove metal
+    midi_to_tab input.mid -ad2 --fill --name bonham_fill --add-fill bonham
 
   Reads MIDI notes (channel 10 / percussion zone), quantizes to a grid, groups
   into bars, and writes [style kind intensity=...] or [name energy=...] blocks.
   Supports GM and AD2 (extended) mappings via JSON files in the mappings folder.
   Short flags (-ad2, -gm, -ezd3, -xg, -template, ...) are auto-discovered from
   the mappings/ directory.
+  With --add-groove GENRE the block is appended to config/grooves/GENRE.tab
+  (header: [style kind intensity=...]). With --add-fill DRUMMER the block is
+  appended to config/fills/DRUMMER.tab (header: [name energy=...]).
 
   Self-contained MIDI parser — no modifications to src/ units required.
 }
@@ -614,6 +619,8 @@ begin
   WriteLn('  --style WORD        Style word for groove header');
   WriteLn('  --kind WORD         Kind word for groove header');
   WriteLn('  --intensity LOW-HIGH Intensity range (default: 0.2-0.6)');
+  WriteLn('  --add-groove GENRE   Append groove block to config/grooves/GENRE.tab');
+  WriteLn('  --add-fill DRUMMER     Append fill block to config/fills/DRUMMER.tab');
 end;
 
 var
@@ -627,6 +634,10 @@ var
   IntensityLow, IntensityHigh: Double;
   FillName: string;
   FillEnergy: Double;
+  AddGrooveGenre: string;
+  AddFillDrummer: string;
+  AppendGroove: Boolean;
+  AppendFill: Boolean;
   MeterNum, MeterDen: Integer;
   Events: TMidiEventArray;
   PPQ: Integer;
@@ -660,6 +671,8 @@ begin
   IntensityHigh := 0.6;
   FillName := 'fill';
   FillEnergy := 0.5;
+  AddGrooveGenre := '';
+  AddFillDrummer := '';
 
   { Auto-discover mapping flags from mappings/ directory }
   DiscoverMappingFlags(MapFlags);
@@ -729,6 +742,16 @@ begin
         else
           IntensityLow := StrToFloatDef(IntensityStr, 0.2);
       end
+    end
+    else if ParamStr(I) = '--add-groove' then
+    begin
+      Inc(I);
+      if I <= ParamCount then AddGrooveGenre := ParamStr(I);
+    end
+    else if ParamStr(I) = '--add-fill' then
+    begin
+      Inc(I);
+      if I <= ParamCount then AddFillDrummer := ParamStr(I);
     end
     else
     begin
@@ -805,6 +828,7 @@ begin
   WriteTab(Bars, StepsPerBar, MeterNum, MeterDen, Resolution,
     Mode, HeaderWords, IntensityLow, IntensityHigh, FillName, FillEnergy, Output);
 
+  { Write to output file or stdout }
   if OutputPath <> '' then
   begin
     AssignFile(F, OutputPath);
@@ -817,4 +841,40 @@ begin
   end
   else
     Write(Output);
+
+  { Append to config/grooves/<genre>.tab }
+  if AddGrooveGenre <> '' then
+  begin
+    if not DirectoryExists('config' + PathDelim + 'grooves') then
+      CreateDir('config' + PathDelim + 'grooves');
+    AppendGroove := FileExists('config' + PathDelim + 'grooves' + PathDelim + AddGrooveGenre + '.tab');
+    AssignFile(F, 'config' + PathDelim + 'grooves' + PathDelim + AddGrooveGenre + '.tab');
+    if AppendGroove then
+      Append(F)
+    else
+      Rewrite(F);
+    if AppendGroove then
+      WriteLn(F, '');
+    Write(F, Output);
+    CloseFile(F);
+    WriteLn('Appended groove to config/grooves/', AddGrooveGenre, '.tab');
+  end;
+
+  { Append to config/fills/<drummer>.tab }
+  if AddFillDrummer <> '' then
+  begin
+    if not DirectoryExists('config' + PathDelim + 'fills') then
+      CreateDir('config' + PathDelim + 'fills');
+    AppendFill := FileExists('config' + PathDelim + 'fills' + PathDelim + AddFillDrummer + '.tab');
+    AssignFile(F, 'config' + PathDelim + 'fills' + PathDelim + AddFillDrummer + '.tab');
+    if AppendFill then
+      Append(F)
+    else
+      Rewrite(F);
+    if AppendFill then
+      WriteLn(F, '');
+    Write(F, Output);
+    CloseFile(F);
+    WriteLn('Appended fill to config/fills/', AddFillDrummer, '.tab');
+  end;
 end.
