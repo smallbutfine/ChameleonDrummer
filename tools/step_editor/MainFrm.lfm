@@ -2,8 +2,8 @@ object MainForm: TMainForm
   Left = 0
   Top = 0
   Caption = 'ChameleonDrummer — Step Editor'
-  ClientHeight = 768
-  ClientWidth = 1024
+  ClientHeight = 680
+  ClientWidth = 800
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignTimePPI = 96
@@ -226,10 +226,10 @@ object MainForm: TMainForm
     OnClick = btnSavePatternAsClick
   end
   object memStatus: TMemo
-    Left = 728
+    Left = 16
     Top = 504
     Width = 280
-    Height = 160
+    Height = 80
     TabOrder = 4
   end
   object sbStatus: TStatusBar
