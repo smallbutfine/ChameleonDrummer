@@ -42,16 +42,30 @@ object MainForm: TMainForm
       TabOrder = 1
       OnClick = btnBrowseInputClick
     end
-    object btnBrowseInput: TButton
+    object lblOutputDir: TLabel
+      Left = 16
+      Top = 48
+      Width = 60
+      Height = 15
+      Caption = 'Output Dir:'
+    end
+    object edOutputDir: TEdit
+      Left = 96
+      Top = 44
+      Width = 400
+      Height = 23
+      TabOrder = 2
+      Text = ''
+    end
+    object btnBrowseOutput: TButton
       Left = 504
-      Top = 13
+      Top = 42
       Width = 75
       Height = 25
       Caption = 'Browse...'
-      TabOrder = 1
-      OnClick = btnBrowseInputClick
+      TabOrder = 3
+      OnClick = btnBrowseOutputClick
     end
-  end
   end
   object pnlParams: TPanel
     Left = 0
