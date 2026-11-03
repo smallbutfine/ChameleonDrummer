@@ -28,9 +28,6 @@ type
     lblInput: TLabel;
     edInput: TEdit;
     btnBrowseInput: TButton;
-    lblOutputDir: TLabel;
-    edOutputDir: TEdit;
-    btnBrowseOutput: TButton;
 
     pnlParams: TPanel;
     lblMapping: TLabel;
@@ -63,8 +60,6 @@ type
     lblPageInfo: TLabel;
 
     pnlBottom: TPanel;
-    btnExportGroove: TButton;
-    btnExportFill: TButton;
     btnSavePatternAs: TButton;
     memStatus: TMemo;
     sbStatus: TStatusBar;
@@ -72,10 +67,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnBrowseInputClick(Sender: TObject);
-    procedure btnBrowseOutputClick(Sender: TObject);
     procedure edInputChange(Sender: TObject);
-    procedure btnExportGrooveClick(Sender: TObject);
-    procedure btnExportFillClick(Sender: TObject);
     procedure btnSavePatternAsClick(Sender: TObject);
     procedure sgTabSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
@@ -136,7 +128,7 @@ constructor TMainForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FInputPath := '';
-  FOutputDir := '';
+  FOutputDir := GetCurrentDir + PathDelim + 'config';
   FTabData := '';
   FTabBars := nil;
   FStepsPerBar := 16;
@@ -226,8 +218,6 @@ begin
   cbEnergy.ItemIndex := 4; // default to 0.5
   cbEnergy.Enabled := False; // disabled when Groove mode selected
 
-  edOutputDir.Text := GetCurrentDir + PathDelim + 'config';
-  FOutputDir := edOutputDir.Text;
 
   // Populate kind combobox with available kinds based on selected style
   LoadKindList;
@@ -259,7 +249,6 @@ begin
   ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
   {$ENDIF}
 
-  edOutputDir.Text := GetCurrentDir + PathDelim + 'config';
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -286,28 +275,7 @@ begin
   finally
     OD.Free;
   end;
-end;
-
-procedure TMainForm.btnBrowseOutputClick(Sender: TObject);
-var
-  SD: TSelectDirectoryDialog;
-begin
-  SD := TSelectDirectoryDialog.Create(nil);
-  try
-    SD.Title := 'Select output directory';
-    SD.InitialDir := edOutputDir.Text;
-    begin
-      edOutputDir.Text := SD.FileName;
-      FOutputDir := SD.FileName;
-      if radGroove.Checked then
-        LoadGrooveList
-      else
-        LoadDrummerList;
-    end;
-  finally
-    SD.Free;
   end;
-end;
 
 procedure TMainForm.edInputChange(Sender: TObject);
 begin
@@ -743,9 +711,6 @@ end;
 procedure TMainForm.UpdateControls;
 begin
   btnPrevPage.Enabled := FCurPage > 0;
-  btnNextPage.Enabled := FCurPage < FTotalPages - 1;
-  btnExportGroove.Enabled := Length(FTabBars) > 0;
-  btnExportFill.Enabled := Length(FTabBars) > 0;
   btnSavePatternAs.Enabled := Length(FTabBars) > 0;
 end;
 
@@ -780,83 +745,6 @@ begin
     LoadDrummerList;
   end;
 end;
-
-procedure TMainForm.btnExportGrooveClick(Sender: TObject);
-var
-  Genre: string;
-  OutPath: string;
-  SL: TStringList;
-begin
-  if Length(FTabBars) = 0 then
-  begin
-    UpdateStatus('No tab data to export.');
-    Exit;
-  end;
-
-  if cbStyle.ItemIndex < 0 then
-  begin
-    UpdateStatus('Please select a groove.');
-    Exit;
-  end;
-
-  Genre := cbStyle.Items[cbStyle.ItemIndex];
-
-  OutPath := FOutputDir + PathDelim + 'grooves' + PathDelim + Genre + '.tab';
-  if not DirectoryExists(FOutputDir + PathDelim + 'grooves') then
-    CreateDir(FOutputDir + PathDelim + 'grooves');
-
-  SL := TStringList.Create;
-  try
-    SL.Text := BuildTabText;
-    if FileExists(OutPath) then
-      SL.LoadFromFile(OutPath);
-    SL.Add('');
-    SL.Add(BuildTabText);
-    SL.SaveToFile(OutPath);
-  finally
-    SL.Free;
-  end;
-  UpdateStatus('Exported groove to: ' + OutPath);
-end;
-
-procedure TMainForm.btnExportFillClick(Sender: TObject);
-var
-  Drummer: string;
-  OutPath: string;
-  SL: TStringList;
-begin
-  if Length(FTabBars) = 0 then
-  begin
-    UpdateStatus('No tab data to export.');
-    Exit;
-  end;
-
-  if cbStyle.ItemIndex < 0 then
-  begin
-    UpdateStatus('Please select a fill.');
-    Exit;
-  end;
-
-  Drummer := cbStyle.Items[cbStyle.ItemIndex];
-
-  OutPath := FOutputDir + PathDelim + 'fills' + PathDelim + Drummer + '.tab';
-  if not DirectoryExists(FOutputDir + PathDelim + 'fills') then
-    CreateDir(FOutputDir + PathDelim + 'fills');
-
-  SL := TStringList.Create;
-  try
-    SL.Text := BuildTabText;
-    if FileExists(OutPath) then
-      SL.LoadFromFile(OutPath);
-    SL.Add('');
-    SL.Add(BuildTabText);
-    SL.SaveToFile(OutPath);
-  finally
-    SL.Free;
-  end;
-  UpdateStatus('Exported fill to: ' + OutPath);
-end;
-
 function TMainForm.BuildTabText: string;
 var
   SL: TStringList;
