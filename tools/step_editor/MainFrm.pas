@@ -36,22 +36,21 @@ type
     lblMapping: TLabel;
     cbMapping: TComboBox;
     lblStyle: TLabel;
-    edStyle: TEdit;
+    cbStyle: TComboBox;
     lblKind: TLabel;
-    edKind: TEdit;
+    cbKind: TComboBox;
     lblIntensity: TLabel;
-    edIntensity: TEdit;
+    cbIntensity: TComboBox;
+    lblEnergy: TLabel;
+    cbEnergy: TComboBox;
     lblResolution: TLabel;
     cbResolution: TComboBox;
     lblMeter: TLabel;
-    edMeter: TEdit;
-    chkFill: TCheckBox;
-    edFillName: TEdit;
-    edFillEnergy: TEdit;
-    chkAddGroove: TCheckBox;
-    edGrooveGenre: TEdit;
-    chkAddFill: TCheckBox;
-    edFillDrummer: TEdit;
+    cbMeter: TComboBox;
+    radGroove: TRadioButton;
+    radFill: TRadioButton;
+    cbGrooveGenre: TComboBox;
+    cbFillDrummer: TComboBox;
 
     pnlEditor: TPanel;
     lblEditor: TLabel;
@@ -86,8 +85,7 @@ type
     procedure btnNextPageClick(Sender: TObject);
     procedure cbMappingChange(Sender: TObject);
     procedure chkFillChange(Sender: TObject);
-    procedure chkAddGrooveChange(Sender: TObject);
-    procedure chkAddFillChange(Sender: TObject);
+    procedure rbModeChange(Sender: TObject);
 
   private
     FInputPath: string;
@@ -114,6 +112,10 @@ type
     procedure UpdatePageInfo;
     procedure UpdateControls;
     function BuildTabText: string;
+    procedure LoadKindList;
+    procedure LoadGrooveList;
+    procedure LoadDrummerList;
+
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -196,6 +198,40 @@ begin
   cbMapping.Items.Add('(default GM)');
   cbMapping.ItemIndex := 0;
 
+  // Populate meter combobox with common time signatures
+  cbMeter.Items.Clear;
+  cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
+  // Populate meter combobox with common time signatures
+  cbMeter.Items.Clear;
+  cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
+  cbMeter.ItemIndex := 0;
+
+  // Populate intensity combobox with presets
+  cbIntensity.Items.Clear;
+  cbIntensity.Items.Add('0.1-0.3');  // soft
+  cbIntensity.Items.Add('0.2-0.6');  // medium
+  cbIntensity.Items.Add('0.4-0.8');  // heavy
+  cbIntensity.Items.Add('0.6-1.0');  // intense
+  cbIntensity.ItemIndex := 1;
+
+  // Populate energy combobox with 0.1 steps from 0.1 to 1.0
+  cbEnergy.Items.Clear;
+  cbEnergy.Items.CommaText := '0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0';
+  cbEnergy.ItemIndex := 4; // default to 0.5
+  cbEnergy.Enabled := False; // disabled when Groove mode selected
+
+  edOutputDir.Text := GetCurrentDir + PathDelim + 'config';
+  FOutputDir := edOutputDir.Text;
+
+  // Populate kind combobox with available kinds based on selected style
+  LoadKindList;
+
+  // Initialize export genre/drummer lists after output dir is set
+  if radGroove.Checked then
+    LoadGrooveList
+  else
+    LoadDrummerList;
+
   if DirectoryExists('mappings') then
   begin
     Files := TStringList.Create;
@@ -249,8 +285,14 @@ begin
   try
     SD.Title := 'Select output directory';
     SD.InitialDir := edOutputDir.Text;
-    if SD.Execute then
+    begin
       edOutputDir.Text := SD.FileName;
+      FOutputDir := SD.FileName;
+      if radGroove.Checked then
+        LoadGrooveList
+      else
+        LoadDrummerList;
+    end;
   finally
     SD.Free;
   end;
@@ -293,25 +335,32 @@ begin
     Args[High(Args)] := 'mappings/' + cbMapping.Items[cbMapping.ItemIndex] + '.json';
   end;
 
-  if edStyle.Text <> '' then
+  if cbStyle.ItemIndex >= 0 then
   begin
     SetLength(Args, Length(Args) + 2);
     Args[High(Args) - 1] := '--style';
-    Args[High(Args)] := edStyle.Text;
+    Args[High(Args)] := cbStyle.Items[cbStyle.ItemIndex];
   end;
 
-  if edKind.Text <> '' then
+  if cbKind.ItemIndex >= 0 then
   begin
     SetLength(Args, Length(Args) + 2);
     Args[High(Args) - 1] := '--kind';
-    Args[High(Args)] := edKind.Text;
+    Args[High(Args)] := cbKind.Items[cbKind.ItemIndex];
   end;
 
-  if edIntensity.Text <> '' then
+  if cbIntensity.ItemIndex >= 0 then
   begin
     SetLength(Args, Length(Args) + 2);
     Args[High(Args) - 1] := '--intensity';
-    Args[High(Args)] := edIntensity.Text;
+    Args[High(Args)] := cbIntensity.Items[cbIntensity.ItemIndex];
+  end;
+
+  if cbEnergy.ItemIndex >= 0 then
+  begin
+    SetLength(Args, Length(Args) + 2);
+    Args[High(Args) - 1] := '--energy';
+    Args[High(Args)] := cbEnergy.Items[cbEnergy.ItemIndex];
   end;
 
   if cbResolution.ItemIndex >= 0 then
@@ -322,29 +371,17 @@ begin
     FResolution := StrToIntDef(cbResolution.Items[cbResolution.ItemIndex], 16);
   end;
 
-  if edMeter.Text <> '' then
+  if cbMeter.ItemIndex >= 0 then
   begin
     SetLength(Args, Length(Args) + 2);
     Args[High(Args) - 1] := '--meter';
-    Args[High(Args)] := edMeter.Text;
+    Args[High(Args)] := cbMeter.Items[cbMeter.ItemIndex];
   end;
 
-  if chkFill.Checked then
+  if radFill.Checked then
   begin
     SetLength(Args, Length(Args) + 1);
     Args[High(Args)] := '--fill';
-    if edFillName.Text <> '' then
-    begin
-      SetLength(Args, Length(Args) + 2);
-      Args[High(Args) - 1] := '--name';
-      Args[High(Args)] := edFillName.Text;
-    end;
-    if edFillEnergy.Text <> '' then
-    begin
-      SetLength(Args, Length(Args) + 2);
-      Args[High(Args) - 1] := '--energy';
-      Args[High(Args)] := edFillEnergy.Text;
-    end;
   end;
 
   // Always resolve midi_to_tab.exe relative to this exe's parent directory
@@ -714,18 +751,23 @@ end;
 
 procedure TMainForm.chkFillChange(Sender: TObject);
 begin
-  edFillName.Enabled := chkFill.Checked;
-  edFillEnergy.Enabled := chkFill.Checked;
+  // Placeholder for future fill preset selection
 end;
 
-procedure TMainForm.chkAddGrooveChange(Sender: TObject);
+procedure TMainForm.rbModeChange(Sender: TObject);
 begin
-  edGrooveGenre.Enabled := chkAddGroove.Checked;
-end;
-
-procedure TMainForm.chkAddFillChange(Sender: TObject);
-begin
-  edFillDrummer.Enabled := chkAddFill.Checked;
+  if radGroove.Checked then
+  begin
+    cbIntensity.Enabled := True;
+    cbEnergy.Enabled := False;
+    LoadGrooveList;
+  end
+  else
+  begin
+    cbIntensity.Enabled := False;
+    cbEnergy.Enabled := True;
+    LoadDrummerList;
+  end;
 end;
 
 procedure TMainForm.btnExportGrooveClick(Sender: TObject);
@@ -740,12 +782,13 @@ begin
     Exit;
   end;
 
-  Genre := edGrooveGenre.Text;
-  if Genre = '' then
+  if cbStyle.ItemIndex < 0 then
   begin
-    UpdateStatus('Please enter a genre name.');
+    UpdateStatus('Please select a groove.');
     Exit;
   end;
+
+  Genre := cbStyle.Items[cbStyle.ItemIndex];
 
   OutPath := FOutputDir + PathDelim + 'grooves' + PathDelim + Genre + '.tab';
   if not DirectoryExists(FOutputDir + PathDelim + 'grooves') then
@@ -777,12 +820,13 @@ begin
     Exit;
   end;
 
-  Drummer := edFillDrummer.Text;
-  if Drummer = '' then
+  if cbStyle.ItemIndex < 0 then
   begin
-    UpdateStatus('Please enter a drummer name.');
+    UpdateStatus('Please select a fill.');
     Exit;
   end;
+
+  Drummer := cbStyle.Items[cbStyle.ItemIndex];
 
   OutPath := FOutputDir + PathDelim + 'fills' + PathDelim + Drummer + '.tab';
   if not DirectoryExists(FOutputDir + PathDelim + 'fills') then
@@ -806,23 +850,23 @@ function TMainForm.BuildTabText: string;
 var
   SL: TStringList;
   I, J, K, K2: Integer;
-  Header: string;
-  Style: string;
-  Kind: string;
+  Header, StyleName, KindName: string;
   Line: string;
   Found: Boolean;
 begin
   SL := TStringList.Create;
   try
-    if chkFill.Checked then
-      Header := Format('[%s energy=%s]', [edFillName.Text, edFillEnergy.Text])
+    if radFill.Checked then
+      Header := Format('[%s energy=%s]', ['custom', cbEnergy.Items[cbEnergy.ItemIndex]])
     else
     begin
-      Style := edStyle.Text;
-      Kind := edKind.Text;
-      if Style = '' then Style := 'midi';
-      if Kind = '' then Kind := 'verse';
-      Header := Format('[%s %s intensity=0.2-0.6]', [Style, Kind]);
+      StyleName := 'midi';
+      KindName := 'verse';
+      if cbStyle.ItemIndex >= 0 then
+        StyleName := cbStyle.Items[cbStyle.ItemIndex];
+      if cbKind.ItemIndex >= 0 then
+        KindName := cbKind.Items[cbKind.ItemIndex];
+      Header := Format('[%s %s intensity=0.2-0.6]', [StyleName, KindName]);
     end;
     SL.Add(Header);
 
@@ -864,7 +908,7 @@ var
   SelLeft, SelRight, SelTop, SelBottom, J, K, BarIdx, StepInBar:
     Integer;
   SL: TStringList;
-  Header, Line: string;
+  Header, Line, StyleName, KindName: string;
   InstAbbr: string;
   Col, Row: Integer;
   CumSteps: Integer;
@@ -896,11 +940,18 @@ begin
     Exit;
   end;
 
-  if chkFill.Checked then
-    Header := Format('[%s energy=%s]', [edFillName.Text, edFillEnergy.Text])
+  if radFill.Checked then
+    Header := Format('[%s energy=%s]', ['custom', cbEnergy.Items[cbEnergy.ItemIndex]])
   else
-    Header := Format('[%s %s intensity=0.2-0.6]',
-      [edStyle.Text, edKind.Text]);
+  begin
+    StyleName := 'midi';
+    KindName := 'verse';
+    if cbStyle.ItemIndex >= 0 then
+      StyleName := cbStyle.Items[cbStyle.ItemIndex];
+    if cbKind.ItemIndex >= 0 then
+      KindName := cbKind.Items[cbKind.ItemIndex];
+    Header := Format('[%s %s intensity=0.2-0.6]', [StyleName, KindName]);
+  end;
 
   SL := TStringList.Create;
   try
@@ -947,17 +998,17 @@ begin
       SL.Add(Line);
     end;
 
-    if chkAddFill.Checked then
-      OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'fills' +
-        IncludeTrailingPathDelimiter(edFillDrummer.Text)
-    else if chkAddGroove.Checked then
-      OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves' +
-        IncludeTrailingPathDelimiter(edGrooveGenre.Text)
-    else
-    begin
-      UpdateStatus('Enable "Save as Groove" or "Save as Fill" checkbox.');
-      Exit;
-    end;
+  if radFill.Checked then
+    OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'fills' +
+      IncludeTrailingPathDelimiter(cbStyle.Items[cbStyle.ItemIndex]) + '.tab'
+  else if radGroove.Checked then
+    OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves' +
+      IncludeTrailingPathDelimiter(cbStyle.Items[cbStyle.ItemIndex]) + '.tab'
+  else
+  begin
+    UpdateStatus('Please select Groove or Fill mode.');
+    Exit;
+  end;
 
     Valid := True;
     if not DirectoryExists(OutFile) then
@@ -974,6 +1025,90 @@ begin
   finally
     SL.Free;
   end;
+end;
+
+procedure TMainForm.LoadGrooveList;
+var
+  Files: TStringList;
+  I: Integer;
+  FName, Base: string;
+  GrooveDir: string;
+begin
+  cbStyle.Items.Clear;
+  GrooveDir := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves';
+  if not DirectoryExists(GrooveDir) then
+  begin
+    CreateDir(GrooveDir);
+    cbStyle.Items.Add('(none yet)');
+    Exit;
+  end;
+
+  Files := TStringList.Create;
+  try
+    FindAllFiles(Files, GrooveDir, '*.tab', False);
+    for I := 0 to Files.Count - 1 do
+    begin
+      FName := ExtractFileName(Files[I]);
+      Base := ChangeFileExt(FName, '');
+      cbStyle.Items.Add(Base);
+    end;
+  finally
+    Files.Free;
+  end;
+
+  if cbStyle.Items.Count = 0 then
+    cbStyle.Items.Add('(none yet)');
+  if cbStyle.ItemIndex < 0 then
+    cbStyle.ItemIndex := 0;
+end;
+
+procedure TMainForm.LoadDrummerList;
+var
+  Files: TStringList;
+  I: Integer;
+  FName, Base: string;
+  FillDir: string;
+begin
+  cbStyle.Items.Clear;
+  FillDir := IncludeTrailingPathDelimiter(FOutputDir) + 'fills';
+  if not DirectoryExists(FillDir) then
+  begin
+    CreateDir(FillDir);
+    cbStyle.Items.Add('(none yet)');
+    Exit;
+  end;
+
+  Files := TStringList.Create;
+  try
+    FindAllFiles(Files, FillDir, '*.tab', False);
+    for I := 0 to Files.Count - 1 do
+    begin
+      FName := ExtractFileName(Files[I]);
+      Base := ChangeFileExt(FName, '');
+      cbStyle.Items.Add(Base);
+    end;
+  finally
+    Files.Free;
+  end;
+
+  if cbStyle.Items.Count = 0 then
+    cbStyle.Items.Add('(none yet)');
+  if cbStyle.ItemIndex < 0 then
+    cbStyle.ItemIndex := 0;
+end;
+
+procedure TMainForm.LoadKindList;
+begin
+  cbKind.Items.Clear;
+  cbKind.Items.Add('verse');
+  cbKind.Items.Add('chorus');
+  cbKind.Items.Add('bridge');
+  cbKind.Items.Add('intro');
+  cbKind.Items.Add('outro');
+  cbKind.Items.Add('fill');
+  
+  if cbKind.ItemIndex < 0 then
+    cbKind.ItemIndex := 0;
 end;
 
 end.
