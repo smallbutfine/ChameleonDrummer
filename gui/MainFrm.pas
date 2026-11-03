@@ -491,7 +491,7 @@ begin
         sbSections.Components[I].Free
       else if (C is TSpinEdit) and AnsiStartsStr('secSpn', C.Name) then
         sbSections.Components[I].Free
-      else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure')) then
+      else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure') or (C.Name = 'btnSaveConfig') or (C.Name = 'btnLoadConfig')) then
         sbSections.Components[I].Free;
     end;
   end;
