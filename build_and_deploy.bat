@@ -1,5 +1,10 @@
 @echo off
 chcp 65001
+cd tools
+cd step_editor
+build_gui.bat
+cd..
+cd..
 setlocal enabledelayedexpansion
 
 if "%GITHUB_ACTIONS%"=="true" ( set "IS_CI=1" ) else ( set "IS_CI=0" )
