@@ -217,8 +217,8 @@ object MainForm: TMainForm
     Caption = 'Page 1 of 1'
   end
   object btnSavePatternAs: TButton
-    Left = 240
-    Top = 504
+    Left = 16
+    Top = 440
     Width = 140
     Height = 30
     Caption = 'Save Selection as Pattern'
