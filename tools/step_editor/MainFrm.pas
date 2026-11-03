@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Dialogs,
-  Grids, FileUtil, Process, Math;
+  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}DarkTheme,{$ENDIF} Windows, Graphics;
 
 type
   TStepChar = (scDot, scX, scAccent, scSoft, scGhost);
@@ -99,6 +99,7 @@ type
     FTotalPages: Integer;
     FInstOrder: array of string;
     FInstColMap: array of Integer;
+    {$IFDEF MSWINDOWS}FDark: Boolean;{$ENDIF}
 
     procedure LoadMidiAndConvert;
     procedure ParseTabOutput(const ATabText: string);
@@ -115,6 +116,11 @@ type
     procedure LoadKindList;
     procedure LoadGrooveList;
     procedure LoadDrummerList;
+    {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
+    procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
+      ARect: TRect; State: TOwnerDrawState);
+    procedure ComboBoxDropDown(Sender: TObject);
+    procedure SystemThemeChanged(Sender: TObject);{$ENDIF}
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -247,6 +253,11 @@ begin
       Files.Free;
     end;
   end;
+
+  {$IFDEF MSWINDOWS}
+  OnSystemThemeChange := @SystemThemeChanged;
+  ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
+  {$ENDIF}
 
   edOutputDir.Text := GetCurrentDir + PathDelim + 'config';
 end;
@@ -1110,5 +1121,112 @@ begin
   if cbKind.ItemIndex < 0 then
     cbKind.ItemIndex := 0;
 end;
+
+{$IFDEF MSWINDOWS}
+procedure TMainForm.ApplyDarkTheme(ADark: Boolean);
+begin
+  FDark := ADark;
+  ApplyTheme(Self, FDark);
+  ThemeControlTree(Self, FDark);
+  // Update combo boxes for owner-draw
+  cbMapping.Style := csOwnerDrawFixed;
+  cbStyle.Style := csOwnerDrawFixed;
+  cbKind.Style := csOwnerDrawFixed;
+  cbResolution.Style := csOwnerDrawFixed;
+  cbMeter.Style := csOwnerDrawFixed;
+  cbIntensity.Style := csOwnerDrawFixed;
+  cbEnergy.Style := csOwnerDrawFixed;
+  cbZoom.Style := csOwnerDrawFixed;
+  cbMapping.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbStyle.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbKind.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbResolution.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbMeter.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbIntensity.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbEnergy.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbZoom.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+  cbMapping.OnDropDown := @ComboBoxDropDown;
+  cbStyle.OnDropDown := @ComboBoxDropDown;
+  cbKind.OnDropDown := @ComboBoxDropDown;
+  cbResolution.OnDropDown := @ComboBoxDropDown;
+  cbMeter.OnDropDown := @ComboBoxDropDown;
+  cbIntensity.OnDropDown := @ComboBoxDropDown;
+  cbEnergy.OnDropDown := @ComboBoxDropDown;
+  cbZoom.OnDropDown := @ComboBoxDropDown;
+end;
+
+procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer;
+  ARect: TRect; State: TOwnerDrawState);
+var
+  CB: TComboBox;
+  S: string;
+begin
+  CB := Control as TComboBox;
+  with CB.Canvas do
+  begin
+    if FDark then
+    begin
+      if odSelected in State then
+      begin
+        Brush.Color := $404040;
+        Font.Color := clWhite;
+      end
+      else
+      begin
+        Brush.Color := $2D2D2D;
+        Font.Color := clWhite;
+      end;
+    end
+    else
+    begin
+      if odSelected in State then
+      begin
+        Brush.Color := clHighlight;
+        Font.Color := clHighlightText;
+      end
+      else
+      begin
+        Brush.Color := clWindow;
+        Font.Color := clWindowText;
+      end;
+    end;
+    FillRect(ARect);
+    if Index >= 0 then
+    begin
+      S := CB.Items[Index];
+      TextOut(ARect.Left + 2, ARect.Top + 1, S);
+    end;
+  end;
+end;
+
+procedure TMainForm.ComboBoxDropDown(Sender: TObject);
+var
+  CB: TComboBox;
+  ListHandle: HWND;
+begin
+  if not FDark then Exit;
+  CB := Sender as TComboBox;
+  ListHandle := FindWindowEx(CB.Handle, 0, 'LCLLISTBOX', nil);
+  if ListHandle = 0 then
+    ListHandle := FindWindowEx(CB.Handle, 0, 'TListBox', nil);
+  if ListHandle = 0 then
+    ListHandle := GetWindow(CB.Handle, GW_CHILD);
+  if ListHandle <> 0 then
+  begin
+    SetWindowLong(ListHandle, GWL_STYLE, GetWindowLong(ListHandle, GWL_STYLE) or WS_BORDER);
+    SetWindowPos(ListHandle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
+    SendMessage(ListHandle, WM_ERASEBKGND, 0, 0);
+    InvalidateRect(ListHandle, nil, True);
+    SendMessage(ListHandle, LB_SETITEMHEIGHT, 0, 20);
+  end;
+end;
+{$ENDIF}
+{$IFDEF MSWINDOWS}
+procedure TMainForm.SystemThemeChanged(Sender: TObject);
+begin
+  { Windows switched between light and dark apps: follow it when asked to. }
+  ApplyDarkTheme(ResolveDark(LoadThemeChoice));
+end;
+{$ENDIF}
 
 end.

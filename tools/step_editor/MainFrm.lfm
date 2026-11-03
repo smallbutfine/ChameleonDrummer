@@ -26,7 +26,7 @@ object MainForm: TMainForm
       Caption = 'MIDI file:'
     end
     object edInput: TEdit
-      Left = 64
+      Left = 96
       Top = 13
       Width = 400
       Height = 23
@@ -34,8 +34,8 @@ object MainForm: TMainForm
       OnChange = edInputChange
     end
     object btnBrowseInput: TButton
-      Left = 472
-      Top = 11
+      Left = 504
+      Top = 13
       Width = 75
       Height = 25
       Caption = 'Browse...'
@@ -58,7 +58,7 @@ object MainForm: TMainForm
     end
     object btnBrowseOutput: TButton
       Left = 504
-      Top = 43
+      Top = 45
       Width = 75
       Height = 25
       Caption = 'Browse...'
