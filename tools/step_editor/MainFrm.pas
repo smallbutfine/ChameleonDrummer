@@ -24,12 +24,10 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
-    pnlTop: TPanel;
     lblInput: TLabel;
     edInput: TEdit;
     btnBrowseInput: TButton;
 
-    pnlParams: TPanel;
     lblMapping: TLabel;
     cbMapping: TComboBox;
     lblStyle: TLabel;
@@ -49,17 +47,13 @@ type
     cbGrooveGenre: TComboBox;
     cbFillDrummer: TComboBox;
 
-    pnlEditor: TPanel;
-    lblEditor: TLabel;
     sgTab: TStringGrid;
-    pnlGridControls: TPanel;
     lblZoom: TLabel;
     cbZoom: TComboBox;
     btnPrevPage: TButton;
     btnNextPage: TButton;
     lblPageInfo: TLabel;
 
-    pnlBottom: TPanel;
     btnSavePatternAs: TButton;
     memStatus: TMemo;
     sbStatus: TStatusBar;
