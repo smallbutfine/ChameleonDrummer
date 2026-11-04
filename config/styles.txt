@@ -3,7 +3,6 @@
 # Used by the step editor's style dropdown in Groove mode.
 # Fill mode uses drummers from config/fills/ instead.
 
-rock
 rock classic
 rock blues
 rock alternative
@@ -11,7 +10,6 @@ rock progressive
 rock punk
 rock hard
 rock pop
-metal
 metal heavy
 metal death
 metal power
@@ -19,7 +17,6 @@ metal progressive
 metal thrash
 metal doom
 metal breakdown
-jazz
 jazz swing
 jazz bebop
 jazz fusion
@@ -27,7 +24,6 @@ jazz latin
 jazz ballad
 jazz hard_bop
 jazz contemporary
-funk
 funk classic
 funk pfunk
 funk shuffle
@@ -35,7 +31,6 @@ funk new_orleans
 funk fusion
 funk minimal
 funk heavy
-electronic
 electronic house
 electronic techno
 electronic drum_and_bass
