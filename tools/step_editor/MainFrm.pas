@@ -294,15 +294,18 @@ var
   P: Integer;
   Num, Den: Integer;
 begin
-  Result := 0;
   P := Pos('/', AMeter);
   if P > 0 then
   begin
     Num := StrToIntDef(Trim(Copy(AMeter, 1, P - 1)), 0);
     Den := StrToIntDef(Trim(Copy(AMeter, P + 1, MaxInt)), 0);
     if Den > 0 then
-      Result := Num * 16 div Den;
-  end;
+      Result := Num * 16 div Den
+    else
+      Result := FResolution;
+  end
+  else
+    Result := FResolution;
 end;
 
 procedure TMainForm.btnNewPatternClick(Sender: TObject);
@@ -768,10 +771,11 @@ end;
 
 procedure TMainForm.cbZoomChange(Sender: TObject);
 begin
-  if cbZoom.ItemIndex = 0 then FPageSize := 8
-  else if cbZoom.ItemIndex = 1 then FPageSize := 16
-  else if cbZoom.ItemIndex = 2 then FPageSize := 32
-  else if cbZoom.ItemIndex = 3 then FPageSize := 64;
+  if cbZoom.ItemIndex = 0 then FResolution := 8
+  else if cbZoom.ItemIndex = 1 then FResolution := 16
+  else if cbZoom.ItemIndex = 2 then FResolution := 32
+  else if cbZoom.ItemIndex = 3 then FResolution := 64;
+  FPageSize := 16;
   FTotalPages := Max(1, (Length(FTabBars) + FPageSize - 1) div FPageSize);
   if FCurPage >= FTotalPages then FCurPage := FTotalPages - 1;
   RenderPage(FCurPage);
