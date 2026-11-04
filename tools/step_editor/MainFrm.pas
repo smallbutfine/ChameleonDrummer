@@ -1123,6 +1123,39 @@ begin
   cbIntensity.OnDropDown := @ComboBoxDropDown;
   cbEnergy.OnDropDown := @ComboBoxDropDown;
   cbZoom.OnDropDown := @ComboBoxDropDown;
+  // Update status bar panel colors for dark mode
+  if FDark then begin
+    sbStatus.Panels[0].Style := psOwnerDraw;
+  end else begin
+    sbStatus.Panels[0].Style := psText;
+  end;
+  sbStatus.OnDrawPanel := @StatusBarDrawPanel;
+  // Grid fixed cells (instrument labels + step numbers)
+  if FDark then
+    sgTab.FixedColor := DARK_PANEL
+  else
+    sgTab.FixedColor := clBtnFace;
+end;
+
+procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
+  const Rect: TRect);
+var
+  Flags: Longint;
+  R: TRect;
+begin
+  R := Rect;
+  with Sender.Canvas do begin
+    if FDark then begin
+      Brush.Color := $2D2D2D;
+      Font.Color := clWhite;
+    end else begin
+      Brush.Color := clBtnFace;
+      Font.Color := clWindowText;
+    end;
+    FillRect(R);
+    Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
+    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
+  end;
 end;
 
 procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer;

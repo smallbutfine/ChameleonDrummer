@@ -342,6 +342,11 @@ begin
     else if (AControl is TCustomTrackBar) or (AControl is TProgressBar) or
             (AControl is TScrollBar) then
       Access.Color := DARK_FORM
+    else if (AControl is TStatusBar) then
+    begin
+      Access.Color := DARK_FORM;
+      Access.Font.Color := DARK_TEXT;
+    end
     else if (AControl is TButtonControl) then
     begin
       { Buttons get dark form background and white text }
@@ -372,6 +377,11 @@ begin
     else if (AControl is TCustomTrackBar) or (AControl is TProgressBar) or
             (AControl is TScrollBar) then
       Access.Color := clBtnFace
+    else if (AControl is TStatusBar) then
+    begin
+      Access.Color := clBtnFace;
+      Access.Font.Color := clWindowText;
+    end
     else if (AControl is TButtonControl) then
     begin
       Access.Color := clBtnFace;
