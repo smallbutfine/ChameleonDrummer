@@ -1277,7 +1277,7 @@ procedure TMainForm.sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
 var
   Grid: TStringGrid;
   I, CumSteps: Integer;
-  IsBarBoundary: Boolean;
+  IsBarStart: Boolean;
 begin
   Grid := Sender as TStringGrid;
   with Grid.Canvas do begin
@@ -1292,25 +1292,25 @@ begin
     DrawText(Handle, PChar(Grid.Cells[ACol, ARow]), -1, ARect,
       DT_CENTER or DT_VCENTER or DT_SINGLELINE);
 
-    // Draw thicker vertical line at bar boundaries
-    IsBarBoundary := False;
+    // Draw thicker vertical line at the left edge of the first column of each new bar
+    IsBarStart := False;
     CumSteps := 0;
-    for I := 0 to High(FTabBars) do begin
+    for I := 0 to High(FTabBars) - 1 do begin
       CumSteps := CumSteps + FTabBars[I].Steps;
-      if ACol = CumSteps then begin
-        IsBarBoundary := True;
+      if ACol = CumSteps + 1 then begin
+        IsBarStart := True;
         Break;
       end;
     end;
 
-    if IsBarBoundary then begin
+    if IsBarStart then begin
       Pen.Width := 2;
       if FDark then
         Pen.Color := DARK_BORDER
       else
         Pen.Color := clBlack;
-      MoveTo(ARect.Right - 1, ARect.Top);
-      LineTo(ARect.Right - 1, ARect.Bottom);
+      MoveTo(ARect.Left, ARect.Top);
+      LineTo(ARect.Left, ARect.Bottom - 1);
     end;
   end;
 end;
