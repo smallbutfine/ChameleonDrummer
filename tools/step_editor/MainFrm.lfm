@@ -174,7 +174,7 @@ object MainForm: TMainForm
     Left = 296
     Top = 40
     Width = 632
-    Height = 260
+    Height = 254
     ColCount = 2
     RowCount = 2
     FixedCols = 1
