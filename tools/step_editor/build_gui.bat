@@ -7,8 +7,7 @@ REM executable is written to the project root, not into this folder.
 @echo off
 chcp 65001
 setlocal enabledelayedexpansion
-cd ..
-cd ..
+cd /d "%~dp0..\..
 if "%GITHUB_ACTIONS%"=="true" ( set "IS_CI=1" ) else ( set "IS_CI=0" )
 
 :: Jahr automatisch ermitteln
@@ -143,3 +142,4 @@ echo [OK] GUI gebaut: %~dp0..\step_editor.exe
 REM Continue with the CLI build and the installer; they work from the project root.
 
 cd /d "%~dp0.."
+call build.bat

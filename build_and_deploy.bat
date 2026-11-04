@@ -2,7 +2,7 @@
 chcp 65001
 cd tools
 cd step_editor
-build_gui.bat
+call build_gui.bat
 cd..
 cd..
 setlocal enabledelayedexpansion

@@ -31,6 +31,9 @@ program midi_to_tab;
 uses
   SysUtils, Classes, fpjson, jsonparser, Math;
 
+{$R *.res} // Standard Lazarus-Ressource (für das Icon)
+
+
 type
   TMidiEvent = record
     DeltaTick: Int64;
