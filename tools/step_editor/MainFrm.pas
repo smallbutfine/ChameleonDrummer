@@ -728,6 +728,7 @@ begin
   begin
     Dec(FCurPage);
     RenderPage(FCurPage);
+    UpdateControls;
     UpdatePageInfo;
   end;
 end;
@@ -738,6 +739,7 @@ begin
   begin
     Inc(FCurPage);
     RenderPage(FCurPage);
+    UpdateControls;
     UpdatePageInfo;
   end;
 end;
