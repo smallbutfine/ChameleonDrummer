@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Dokumentation</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <nav>
+      <a href="index.html">START</a>
+      <a href="concepts.html">KONZEPTE</a>
+      <a href="docs.html">HANDBUCH</a>
+      <a href="download.html">HERUNTERLADEN</a>
+      <a href="../index.html">EN</a>
+      <a href="../es/index.html">ES</a>
+      <a href="../fr/index.html">FR</a>
+      <a href="../pt/index.html">PT</a>
+      <a href="../ru/index.html">RU</a>
+      <a href="../zh/index.html">ZH</a>
+    </nav>
+  </div>
+</header>
+
+<section class="docs-section">
+  <div class="container">
+    <h2>Dokumentation</h2>
+    <p>Die ChameleonDrummer-Dokumentation ist in mehrere wichtige Dateien organisiert, die das System, seine Verwendung und die zugrunde liegenden Prinzipien erklären.</p>
+    
+    <div class="docs-grid">
+      <article class="doc-card">
+        <h3>Benutzerhandbuch</h3>
+        <p>Das vollständige Benutzerhandbuch mit Installationsanleitung, Schnellstartanleitung, CLI- und GUI-Referenzen, erweiterten Funktionen, externen Datendateien, MIDI → Tab-Konvertierung und Fehlerbehebung.</p>
+        <a href="manual.html" class="btn">Handbuch lesen</a>
+      </article>
+      
+      <article class="doc-card">
+        <h3>Pascal-Programmdokumentation</h3>
+        <p>Detaillierte Analyse der beiden Pascal-Programme (CLI und GUI) mit Dateistruktur, Einstiegspunkten, Befehlsanalyse und Implementierungsdetails.</p>
+        <a href="PASCAL_PROGRAMS.md" class="btn">Pascal-Docs lesen</a>
+      </article>
+      
+      <article class="doc-card">
+        <h3>Konzept-Erklärung</h3>
+        <p>Tiefer Einblick in die MIDI-Generierungsprinzipien: Muster-Modell, Song-Struktur, bar-für-bar-Evolution, Intensitätskurven, Makro-Komponist, Groove-Engine, Fills, Humanisierung und physikalische Einschränkungen.</p>
+        <a href="concepts.html" class="btn">Konzepte lesen</a>
+      </article>
+    </div>
+
+    <div class="quick-reference">
+      <h3>Schnellreferenz</h3>
+      <p>Für sofortige Verwendung, siehe:</p>
+      <ul>
+        <li><strong>CLI-Befehle</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li>
+        <li><strong>GUI-Verwendung</strong> — Genre, Stil, Drummer, Mapping auswählen, dann auf Generieren klicken</li>
+        <li><strong>Verfügbare Optionen</strong> — <code>chameleondrummer list genres</code>, <code>chameleondrummer list styles --genre jazz</code>, <code>chameleondrummer list drummers</code></li>
+        <li><strong>Pattern-Format-Referenz</strong> — <a href="README.md">README.md</a> (vollständige Groove/Fill-Syntax, Meter, Instrumente)</li>
+        <li><strong>Ungerade Meter</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
+      </ul>
+    </div>
+
+    <div class="pattern-format">
+      <h3>Pattern-Format Schnellreferenz</h3>
+      <p>Grooves und Fills sind reine Textdateien, die Sie in jedem Texteditor bearbeiten können. Keine Neukompilierung erforderlich.</p>
+      
+      <h4>Groove-Block (<code>config/grooves/<genre>.tab</code>)</h4>
+      <pre><code>[rock verse intensity=0.20-0.60]
+K  x... .... x... .... | x... .... x... ..x.
+S  .... x... .... x... | .... x... .... x...
+H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
+      <ul>
+        <li><strong>Header</strong>: <code>[style kind intensity=low-high]</code> — z. B. <code>[metal verse 7/8 intensity=0.40-0.90]</code></li>
+        <li><strong>Instrumente</strong>: K=Kick, S=Snare, H=Hi-Hat, HO=Hi-Hat offen, HP=Hi-Hat Pedal, R=Rack Tom, RB=Bass Tom, C=Crash, C2=zweiter Crash, CH=China, SP=Splash, T1-T4=Toms</li>
+        <li><strong>Schritte</strong>: <code>.</code>=Pause, <code>x</code>=Hit, <code>X</code>=Akzent, <code>o</code>=weich, <code>g</code>=Geisterschlag</li>
+        <li><strong>Takte</strong>: Getrennt durch <code>|</code>; Leerzeichen ignoriert; kürzere Zeilen wiederholen</li>
+      </ul>
+
+      <h4>Fill-Block (<code>config/fills/<drummer>.tab</code>)</h4>
+      <pre><code>[bonham_fill_short energy=0.3]
+S ... ... ... xxx</code></pre>
+      <ul>
+        <li><strong>Header</strong>: <code>[name energy=0.3]</code> — Energie passt zur Taktintensität (0–1)</li>
+        <li><strong>Gleiches Instrument/Schritt-Format wie Grooves</strong></li>
+      </ul>
+    </div>
+
+    <div class="engine-overview">
+      <h3>Wie die Engine funktioniert (Kurz gefasst)</h3>
+      <ol>
+        <li><strong>Pattern-Modell</strong> — Jeder Schlag hat Position, Instrument, Geschwindigkeit, Dauer, Geister-/Akzent-Flags</li>
+        <li><strong>Song-Struktur</strong> — Abschnitte (Intro, Verse, Chorus, Bridge) mit Tempo, Meter, Komplexität</li>
+        <li><strong>Bar-für-Bar-Auswahl</strong> — Gewichtete zufällige Groove-Auswahl basierend auf Intensitätsübereinstimmung</li>
+        <li><strong>Makro-Phasen</strong> — Etablieren → Beibehalten → Aufbauen → Wendepunkt (wie ein Musikdirektor)</li>
+        <li><strong>Fills</strong> — An Abschnittsgrenzen eingefügt, energie-abgestimmt auf aktuelle Intensität</li>
+        <li><strong>Humanisierung</strong> — Timing-Jitter, Geschwindigkeitsvarianz, Swing-Gefühl</li>
+        <li><strong>Physische Einschränkungen</strong> — Max. 3 Hits/Schritt, Gliederkoordinationsregeln</li>
+        <li><strong>Drummer-Plugins</strong> — 17 Drummer wenden stil-spezifische Modifikationen an (BehindBeat, GhostNotes, etc.)</li>
+        <li><strong>Keymap-System</strong> — JSON mapped Notennamen auf MIDI-Noten (GM, AD2, EZD3, XG, custom)</li>
+        <li><strong>MIDI-Export</strong> — SMF Format 0 mit Tempo/Meter-Events, funktioniert mit allen DAWs/VSTs</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI-Schlagzeug-Erzeugung.</p>
+    <p>Quelle: <code>ChameleonDrummer/</code> · Handbuch: <code>docs/USER_MANUAL.md</code> · Pascal-Docs: <code>docs/PASCAL_PROGRAMS.md</code> · Musterformat: <code>README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>
