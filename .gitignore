@@ -54,3 +54,4 @@ backups/
 
 # Test output files
 test_*.mid
+tools/step_editor/step_editor.rc
