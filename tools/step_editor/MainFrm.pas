@@ -630,7 +630,6 @@ begin
     BSteps := FTabBars[BarIdx].Steps;
     for K := 0 to BSteps - 1 do
     begin
-      sgTab.Cells[ColIdx, 0] := IntToStr(K + 1);
       for RowIdx := 0 to High(FInstOrder) do
       begin
         Found := False;
