@@ -88,7 +88,8 @@ type
     {$IFDEF MSWINDOWS}FDark: Boolean;{$ENDIF}
 
     procedure LoadMidiAndConvert;
-    procedure ParseTabOutput(const ATabText: string);
+    procedure LoadTabFile(const AFileName: string);
+    procedure ParseTabOutput(const ATabText: string; ASkipHeader: Boolean = True);
     procedure RefreshGrid;
     procedure RenderPage(APage: Integer);
     procedure ToggleCell(ACol, ARow: Integer);
@@ -258,13 +259,16 @@ var
 begin
   OD := TOpenDialog.Create(nil);
   try
-    OD.Filter := 'MIDI files (*.mid;*.midi)|*.mid;*.midi|All files (*.*)|*.*';
+    OD.Filter := 'MIDI and Tab files (*.mid;*.midi;*.tab)|*.mid;*.midi;*.tab|All files (*.*)|*.*';
     OD.DefaultExt := 'mid';
     if OD.Execute then
     begin
       edInput.Text := OD.FileName;
       FInputPath := OD.FileName;
-      LoadMidiAndConvert;
+      if SameText(ExtractFileExt(FInputPath), '.tab') then
+        LoadTabFile(FInputPath)
+      else
+        LoadMidiAndConvert;
     end;
   finally
     OD.Free;
@@ -381,6 +385,48 @@ begin
   RefreshGrid;
   UpdateStatus('Converted: ' + IntToStr(Length(FTabBars)) + ' bars, ' +
     IntToStr(FStepsPerBar) + ' steps/bar, ' + IntToStr(FResolution) + ' resolution.');
+  end;
+procedure TMainForm.LoadTabFile(const AFileName: string);
+var
+  SL: TStringList;
+  I: Integer;
+  Line: string;
+  TabText: string;
+begin
+  if not FileExists(AFileName) then
+  begin
+    UpdateStatus('Tab file not found: ' + AFileName);
+    Exit;
+  end;
+
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(AFileName);
+
+    TabText := '';
+    for I := 0 to SL.Count - 1 do
+    begin
+      Line := Trim(SL[I]);
+      if (Line = '') then Continue;
+      if Line[1] = '#' then Continue;
+      if Line[1] = '[' then Continue;
+      TabText := TabText + Line + #13#10;
+    end;
+
+    if TabText = '' then
+    begin
+      UpdateStatus('No data found in tab file: ' + AFileName);
+      Exit;
+    end;
+
+    ParseTabOutput(TabText, False);
+    RefreshGrid;
+    UpdateStatus('Loaded tab: ' + ExtractFileName(AFileName) +
+      ', ' + IntToStr(Length(FTabBars)) + ' bars, ' +
+      IntToStr(FStepsPerBar) + ' steps/bar.');
+  finally
+    SL.Free;
+  end;
 end;
 
 function TMainForm.RunMidiToTab(const AExe: string; const AArgs: array of string): string;
@@ -422,7 +468,7 @@ begin
   end;
 end;
 
-procedure TMainForm.ParseTabOutput(const ATabText: string);
+procedure TMainForm.ParseTabOutput(const ATabText: string; ASkipHeader: Boolean = True);
 var
   Lines: TStringList;
   Bars: TStringList;
@@ -443,7 +489,7 @@ begin
     Lines.Text := ATabText;
 
     I := 0;
-    if Lines.Count > 0 then
+    if ASkipHeader and (Lines.Count > 0) then
       I := 1; // Skip header line [midi ...]
 
     while I < Lines.Count do
