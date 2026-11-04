@@ -106,7 +106,7 @@ type
     procedure LoadKindList;
     procedure LoadGrooveList;
     procedure LoadDrummerList;
-    function MeterToSteps(const AMeter: string): Integer;
+    function MeterToSteps(const AMeter: string; AResolution: Integer): Integer;
     {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
@@ -286,7 +286,7 @@ begin
   end;
   end;
 
-function MeterToSteps(const AMeter: string): Integer;
+function MeterToSteps(const AMeter: string; AResolution: Integer): Integer;
 var
   P: Integer;
   Num, Den: Integer;
@@ -307,15 +307,15 @@ begin
     Den := StrToIntDef(Trim(Copy(AMeterBase, P + 1, MaxInt)), 0);
     if Den > 0 then
     begin
-      Result := Num * FResolution div Den;
+      Result := Num * AResolution div Den;
       if ATriplet then
         Result := Result * 3 div 2;
     end
     else
-      Result := FResolution;
+      Result := AResolution;
   end
   else
-    Result := FResolution;
+    Result := AResolution;
 end;
 
 procedure TMainForm.btnNewPatternClick(Sender: TObject);
@@ -323,7 +323,7 @@ var
   I, K, OldCount, ASteps: Integer;
 begin
   OldCount := Length(FTabBars);
-  ASteps := MeterToSteps(cbMeter.Text);
+  ASteps := MeterToSteps(cbMeter.Text, FResolution);
   SetLength(FTabBars, OldCount + 1);
   FTabBars[OldCount].Steps := ASteps;
   SetLength(FTabBars[OldCount].InstChars, Length(FInstOrder));
