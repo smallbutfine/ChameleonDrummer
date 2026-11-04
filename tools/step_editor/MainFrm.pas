@@ -1185,7 +1185,7 @@ begin
     end;
     FillRect(ARect);
     DrawText(Handle, PChar((Sender as TStringGrid).Cells[ACol, ARow]), -1, ARect,
-      DT_LEFT or DT_VCENTER or DT_SINGLELINE);
+      DT_CENTER or DT_VCENTER or DT_SINGLELINE);
   end;
 end;
 
