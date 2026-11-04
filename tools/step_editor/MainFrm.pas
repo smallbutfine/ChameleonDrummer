@@ -126,7 +126,7 @@ constructor TMainForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FInputPath := '';
-  FOutputDir := ExtractFilePath(ParamStr(0)) + '..' + PathDelim + 'config';
+  FOutputDir := ExtractFilePath(ParamStr(0)) + '..' + PathDelim + '..' + PathDelim + 'config';
   FTabData := '';
   FTabBars := nil;
   FStepsPerBar := 16;
