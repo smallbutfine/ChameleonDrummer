@@ -300,7 +300,7 @@ begin
     Num := StrToIntDef(Trim(Copy(AMeter, 1, P - 1)), 0);
     Den := StrToIntDef(Trim(Copy(AMeter, P + 1, MaxInt)), 0);
     if Den > 0 then
-      Result := Num * 16 div Den
+      Result := Num * FResolution div Den
     else
       Result := FResolution;
   end
