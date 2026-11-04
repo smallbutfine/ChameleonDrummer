@@ -290,22 +290,22 @@ begin
 
 procedure TMainForm.btnNewPatternClick(Sender: TObject);
 var
-  I, K: Integer;
+  I, K, OldCount: Integer;
 begin
-  FTabBars := nil;
-  SetLength(FTabBars, 1);
-  FTabBars[0].Steps := FResolution;
-  SetLength(FTabBars[0].InstChars, Length(FInstOrder));
+  OldCount := Length(FTabBars);
+  SetLength(FTabBars, OldCount + 1);
+  FTabBars[OldCount].Steps := FResolution;
+  SetLength(FTabBars[OldCount].InstChars, Length(FInstOrder));
   for I := 0 to High(FInstOrder) do
   begin
-    FTabBars[0].InstChars[I].Abbr := FInstOrder[I];
-    SetLength(FTabBars[0].InstChars[I].Chars, FResolution);
+    FTabBars[OldCount].InstChars[I].Abbr := FInstOrder[I];
+    SetLength(FTabBars[OldCount].InstChars[I].Chars, FResolution);
     for K := 0 to FResolution - 1 do
-      FTabBars[0].InstChars[I].Chars[K] := '.';
+      FTabBars[OldCount].InstChars[I].Chars[K] := '.';
   end;
   FStepsPerBar := FResolution;
   RefreshGrid;
-  UpdateStatus('New empty pattern created: ' + IntToStr(FResolution) + ' steps/bar, ' + IntToStr(Length(FInstOrder)) + ' instruments.');
+  UpdateStatus('Pattern added: ' + IntToStr(FResolution) + ' steps/bar, ' + IntToStr(Length(FInstOrder)) + ' instruments. Total bars: ' + IntToStr(Length(FTabBars)));
 end;
 
 procedure TMainForm.edInputChange(Sender: TObject);

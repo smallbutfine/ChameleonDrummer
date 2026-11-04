@@ -36,7 +36,7 @@ object MainForm: TMainForm
     Top = 13
     Width = 140
     Height = 25
-    Caption = 'New Empty Pattern'
+    Caption = 'Add Pattern'
     TabOrder = 2
     OnClick = btnNewPatternClick
   end
