@@ -145,6 +145,7 @@ var
   FName: string;
   Base: string;
 begin
+  SetCurrentDir(ExtractFilePath(ParamStr(0)));
   Caption := 'ChameleonDrummer — Step Editor';
   DefaultMonitor := dmMainForm;
 
