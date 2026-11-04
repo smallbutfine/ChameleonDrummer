@@ -1003,7 +1003,7 @@ var
   StyleFile: string;
 begin
   cbStyle.Items.Clear;
-  StyleFile := ExpandFileName(IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt');
+  StyleFile := IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt';
   if not FileExists(StyleFile) then
   begin
     cbStyle.Items.Add('(none yet)');
