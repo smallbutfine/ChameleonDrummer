@@ -186,14 +186,14 @@ object MainForm: TMainForm
   end
   object lblZoom: TLabel
     Left = 296
-    Top = 488
+    Top = 330
     Width = 32
     Height = 15
     Caption = 'Zoom:'
   end
   object cbZoom: TComboBox
     Left = 332
-    Top = 485
+    Top = 327
     Width = 121
     Height = 23
     TabOrder = 0
@@ -202,7 +202,7 @@ object MainForm: TMainForm
   end
   object btnPrevPage: TButton
     Left = 464
-    Top = 486
+    Top = 327
     Width = 75
     Height = 25
     Caption = 'Prev'
@@ -211,7 +211,7 @@ object MainForm: TMainForm
   end
   object btnNextPage: TButton
     Left = 544
-    Top = 486
+    Top = 327
     Width = 75
     Height = 25
     Caption = 'Next'
@@ -220,7 +220,7 @@ object MainForm: TMainForm
   end
   object lblPageInfo: TLabel
     Left = 624
-    Top = 490
+    Top = 331
     Width = 58
     Height = 15
     Caption = 'Page 1 of 1'
@@ -236,7 +236,7 @@ object MainForm: TMainForm
   end
   object memStatus: TMemo
     Left = 16
-    Top = 520
+    Top = 360
     Width = 280
     Height = 80
     TabOrder = 4
