@@ -90,6 +90,7 @@ type
     procedure LoadMidiAndConvert;
     procedure LoadTabFile(const AFileName: string);
     procedure ParseTabOutput(const ATabText: string; ASkipHeader: Boolean = True);
+    function GetStyleNameFromItem(const AItem: string): string;
     procedure RefreshGrid;
     procedure RenderPage(APage: Integer);
     procedure ToggleCell(ACol, ARow: Integer);
@@ -316,7 +317,7 @@ begin
   begin
     SetLength(Args, Length(Args) + 2);
     Args[High(Args) - 1] := '--style';
-    Args[High(Args)] := cbStyle.Items[cbStyle.ItemIndex];
+    Args[High(Args)] := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
   end;
 
   if cbKind.ItemIndex >= 0 then
@@ -803,7 +804,7 @@ begin
       StyleName := 'midi';
       KindName := 'verse';
       if cbStyle.ItemIndex >= 0 then
-        StyleName := cbStyle.Items[cbStyle.ItemIndex];
+        StyleName := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
       if cbKind.ItemIndex >= 0 then
         KindName := cbKind.Items[cbKind.ItemIndex];
       Header := Format('[%s %s intensity=0.2-0.6]', [StyleName, KindName]);
@@ -887,7 +888,7 @@ begin
     StyleName := 'midi';
     KindName := 'verse';
     if cbStyle.ItemIndex >= 0 then
-      StyleName := cbStyle.Items[cbStyle.ItemIndex];
+      StyleName := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
     if cbKind.ItemIndex >= 0 then
       KindName := cbKind.Items[cbKind.ItemIndex];
     Header := Format('[%s %s intensity=0.2-0.6]', [StyleName, KindName]);
@@ -940,10 +941,10 @@ begin
 
   if radFill.Checked then
     OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'fills' +
-      IncludeTrailingPathDelimiter(cbStyle.Items[cbStyle.ItemIndex]) + '.tab'
+      IncludeTrailingPathDelimiter(GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex])) + '.tab'
   else if radGroove.Checked then
     OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves' +
-      IncludeTrailingPathDelimiter(cbStyle.Items[cbStyle.ItemIndex]) + '.tab'
+      IncludeTrailingPathDelimiter(GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex])) + '.tab'
   else
   begin
     UpdateStatus('Please select Groove or Fill mode.');
@@ -999,6 +1000,18 @@ begin
     cbStyle.Items.Add('(none yet)');
   if cbStyle.ItemIndex < 0 then
     cbStyle.ItemIndex := 0;
+end;
+
+
+
+function TMainForm.GetStyleNameFromItem(const AItem: string): string;
+var
+  P: Integer;
+begin
+  Result := AItem;
+  P := Pos(' ', AItem);
+  if P > 0 then
+    Result := Copy(AItem, P + 1, MaxInt);
 end;
 
 procedure TMainForm.LoadDrummerList;
