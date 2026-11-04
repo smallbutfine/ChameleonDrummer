@@ -75,6 +75,11 @@ type
     procedure cbMappingChange(Sender: TObject);
     procedure chkFillChange(Sender: TObject);
     procedure rbModeChange(Sender: TObject);
+    procedure cbMeterChange(Sender: TObject);
+    procedure cbIntensityChange(Sender: TObject);
+    procedure cbEnergyChange(Sender: TObject);
+    procedure cbStyleChange(Sender: TObject);
+    procedure cbKindChange(Sender: TObject);
 
   private
     FInputPath: string;
@@ -107,6 +112,7 @@ type
     procedure LoadKindList;
     procedure LoadGrooveList;
     procedure LoadDrummerList;
+    procedure UpdateHeaderPreview;
     {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
@@ -247,6 +253,7 @@ begin
   ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
   {$ENDIF}
   sbStatus.Panels[0].Text := 'Ready';
+  UpdateHeaderPreview;
 
   // Initialize export genre/drummer lists after output dir is set
   // (must run after ApplyDarkTheme, which sets cbStyle.Style and can clear items)
@@ -337,6 +344,7 @@ begin
   FStepsPerBar := ASteps;
   RefreshGrid;
   UpdateStatus('Pattern added: ' + IntToStr(ASteps) + ' steps/bar (' + cbMeter.Text + '), ' + IntToStr(Length(FInstOrder)) + ' instruments. Total bars: ' + IntToStr(Length(FTabBars)));
+  UpdateHeaderPreview;
 end;
 
 procedure TMainForm.edInputChange(Sender: TObject);
@@ -671,7 +679,6 @@ procedure TMainForm.RenderPage(APage: Integer);
 var
   StartBar, EndBar, BarIdx, ColIdx, RowIdx, K, BSteps, J: Integer;
   Found: Boolean;
-  StyleName, KindName: string;
 begin
   if Length(FTabBars) = 0 then
     Exit;
@@ -721,19 +728,7 @@ begin
   for RowIdx := 0 to High(FInstOrder) do
     sgTab.RowHeights[RowIdx + 1] := 14;
 
-  // Header preview
-  if radFill.Checked then
-    lblHeaderPreview.Caption := Format('[%s energy=%s]', ['custom', cbEnergy.Items[cbEnergy.ItemIndex]])
-  else
-  begin
-    StyleName := 'midi';
-    KindName := 'verse';
-    if cbStyle.ItemIndex >= 0 then
-      StyleName := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
-    if cbKind.ItemIndex >= 0 then
-      KindName := cbKind.Items[cbKind.ItemIndex];
-    lblHeaderPreview.Caption := Format('[%s %s intensity=0.2-0.6]', [StyleName, KindName]);
-  end;
+  UpdateHeaderPreview;
 end;
 
 procedure TMainForm.ToggleCell(ACol, ARow: Integer);
@@ -834,6 +829,24 @@ begin
   lblPageInfo.Caption := Format('Page %d of %d (%d bars)', [FCurPage + 1, FTotalPages, Length(FTabBars)]);
 end;
 
+procedure TMainForm.UpdateHeaderPreview;
+var
+  StyleName, KindName: string;
+begin
+  if radFill.Checked then
+    lblHeaderPreview.Caption := Format('[%s energy=%s]', ['custom', cbEnergy.Items[cbEnergy.ItemIndex]])
+  else
+  begin
+    StyleName := 'midi';
+    KindName := 'verse';
+    if cbStyle.ItemIndex >= 0 then
+      StyleName := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
+    if cbKind.ItemIndex >= 0 then
+      KindName := cbKind.Items[cbKind.ItemIndex];
+    lblHeaderPreview.Caption := Format('[%s %s meter=%s intensity=0.2-0.6]', [StyleName, KindName, cbMeter.Text]);
+  end;
+end;
+
 procedure TMainForm.UpdateControls;
 begin
   btnPrevPage.Enabled := FCurPage > 0;
@@ -871,6 +884,32 @@ begin
     LoadDrummerList;
   end;
 end;
+
+procedure TMainForm.cbMeterChange(Sender: TObject);
+begin
+  UpdateHeaderPreview;
+end;
+
+procedure TMainForm.cbIntensityChange(Sender: TObject);
+begin
+  UpdateHeaderPreview;
+end;
+
+procedure TMainForm.cbEnergyChange(Sender: TObject);
+begin
+  UpdateHeaderPreview;
+end;
+
+procedure TMainForm.cbStyleChange(Sender: TObject);
+begin
+  UpdateHeaderPreview;
+end;
+
+procedure TMainForm.cbKindChange(Sender: TObject);
+begin
+  UpdateHeaderPreview;
+end;
+
 function TMainForm.BuildTabText: string;
 var
   SL: TStringList;
