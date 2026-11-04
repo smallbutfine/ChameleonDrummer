@@ -77,6 +77,7 @@ type
     lblHint: TLabel;
     btnGenerate: TButton;
     btnOpenFolder: TButton;
+    btnOpenStepEditor: TButton;
     chkRadioLength: TCheckBox;
     gbLog: TGroupBox;
     memLog: TMemo;
@@ -93,6 +94,7 @@ type
     procedure btnGenerateClick(Sender: TObject);
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
+    procedure btnOpenStepEditorClick(Sender: TObject);
     procedure chkRadioLengthClick(Sender: TObject);
     procedure mnuQuitClick(Sender: TObject);
     procedure mnuAddSectionClick(Sender: TObject);
@@ -872,6 +874,26 @@ begin
   Base := OutputBasePath;
   if Base = '' then begin Log('No output file chosen.'); Exit; end;
   OpenFolder(ExtractFilePath(ExpandFileName(Base)));
+end;
+
+procedure TMainForm.btnOpenStepEditorClick(Sender: TObject);
+var
+  P: TProcess;
+  StepExe: String;
+begin
+  StepExe := ExtractFilePath(ParamStr(0)) + 'tools' + PathDelim + 'step_editor' + PathDelim + 'step_editor.exe';
+  if not FileExists(StepExe) then begin
+    Log('Step editor not found: ' + StepExe);
+    Exit;
+  end;
+  P := TProcess.Create(nil);
+  try
+    P.Executable := StepExe;
+    P.Options := P.Options + [poNoConsole];
+    P.Execute;
+  finally
+    P.Free;
+  end;
 end;
 
 procedure TMainForm.OpenFolder(const APath: String);

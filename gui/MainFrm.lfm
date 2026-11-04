@@ -400,6 +400,16 @@ object MainForm: TMainForm
     ShowHint = True
     Hint = 'Open the output folder after generation'
   end
+  object btnOpenStepEditor: TButton
+    Left = 436
+    Top = 473
+    Width = 196
+    Height = 40
+    Caption = 'Open Step Editor'
+    OnClick = btnOpenStepEditorClick
+    ShowHint = True
+    Hint = 'Open the step editor for visual tab editing'
+  end
   object chkRadioLength: TCheckBox
     Left = 436
     Top = 455
