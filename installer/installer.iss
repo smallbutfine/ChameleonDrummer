@@ -32,6 +32,7 @@ Source: "..\Assets\GMD\ATTRIBUTION.txt"; DestDir: "{app}\Assets\GMD"; Flags: ign
 Source: "..\ardour\*.lua"; DestDir: "{app}\ardour"; Flags: ignoreversion
 Source: "..\config\*.ini"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "..\config\*.json"; DestDir: "{app}\config"; Flags: ignoreversion
+Source: "..\config\*.txt"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "..\config\grooves\*.tab"; DestDir: "{app}\config\grooves"; Flags: ignoreversion
 Source: "..\config\fills\*.tab"; DestDir: "{app}\config\fills"; Flags: ignoreversion
 Source: "..\config\defaults\*.ini"; DestDir: "{app}\config\defaults"; Flags: ignoreversion
