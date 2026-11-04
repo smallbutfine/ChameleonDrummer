@@ -54,6 +54,7 @@ type
     btnPrevPage: TButton;
     btnNextPage: TButton;
     lblPageInfo: TLabel;
+    lblHeaderPreview: TLabel;
 
     btnSavePatternAs: TButton;
     memStatus: TMemo;
@@ -670,6 +671,7 @@ procedure TMainForm.RenderPage(APage: Integer);
 var
   StartBar, EndBar, BarIdx, ColIdx, RowIdx, K, BSteps, J: Integer;
   Found: Boolean;
+  StyleName, KindName: string;
 begin
   if Length(FTabBars) = 0 then
     Exit;
@@ -718,6 +720,20 @@ begin
   sgTab.RowHeights[0] := 16;
   for RowIdx := 0 to High(FInstOrder) do
     sgTab.RowHeights[RowIdx + 1] := 14;
+
+  // Header preview
+  if radFill.Checked then
+    lblHeaderPreview.Caption := Format('[%s energy=%s]', ['custom', cbEnergy.Items[cbEnergy.ItemIndex]])
+  else
+  begin
+    StyleName := 'midi';
+    KindName := 'verse';
+    if cbStyle.ItemIndex >= 0 then
+      StyleName := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
+    if cbKind.ItemIndex >= 0 then
+      KindName := cbKind.Items[cbKind.ItemIndex];
+    lblHeaderPreview.Caption := Format('[%s %s intensity=0.2-0.6]', [StyleName, KindName]);
+  end;
 end;
 
 procedure TMainForm.ToggleCell(ACol, ARow: Integer);
