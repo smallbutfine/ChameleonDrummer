@@ -13,6 +13,7 @@ type
 
   TTabBar = record
     Steps: Integer;
+    Meter: string;
     InstChars: array of record
       Abbr: string;
       Chars: array of Char;
@@ -333,6 +334,7 @@ begin
   ASteps := MeterToSteps(cbMeter.Text, FResolution);
   SetLength(FTabBars, OldCount + 1);
   FTabBars[OldCount].Steps := ASteps;
+  FTabBars[OldCount].Meter := cbMeter.Text;
   SetLength(FTabBars[OldCount].InstChars, Length(FInstOrder));
   for I := 0 to High(FInstOrder) do
   begin
@@ -611,6 +613,7 @@ begin
         J := Length(FTabBars);
         SetLength(FTabBars, J + 1);
         FTabBars[J].Steps := 0;
+        FTabBars[J].Meter := cbMeter.Text;
         FTabBars[J].InstChars := nil;
       end;
 
@@ -831,7 +834,9 @@ end;
 
 procedure TMainForm.UpdateHeaderPreview;
 var
-  StyleName, KindName: string;
+  StyleName, KindName, Meters: string;
+  I: Integer;
+  MeterList: TStringList;
 begin
   if radFill.Checked then
     lblHeaderPreview.Caption := Format('[%s energy=%s]', ['custom', cbEnergy.Items[cbEnergy.ItemIndex]])
@@ -843,7 +848,16 @@ begin
       StyleName := GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex]);
     if cbKind.ItemIndex >= 0 then
       KindName := cbKind.Items[cbKind.ItemIndex];
-    lblHeaderPreview.Caption := Format('[%s %s meter=%s intensity=0.2-0.6]', [StyleName, KindName, cbMeter.Text]);
+    MeterList := TStringList.Create;
+    try
+      for I := 0 to High(FTabBars) do
+        if MeterList.IndexOf(FTabBars[I].Meter) < 0 then
+          MeterList.Add(FTabBars[I].Meter);
+      Meters := MeterList.CommaText;
+    finally
+      MeterList.Free;
+    end;
+    lblHeaderPreview.Caption := Format('[%s %s meter=%s intensity=0.2-0.6]', [StyleName, KindName, Meters]);
   end;
 end;
 
