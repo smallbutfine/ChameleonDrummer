@@ -27,6 +27,7 @@ type
     lblInput: TLabel;
     edInput: TEdit;
     btnBrowseInput: TButton;
+    btnNewPattern: TButton;
 
     lblMapping: TLabel;
     cbMapping: TComboBox;
@@ -61,6 +62,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnBrowseInputClick(Sender: TObject);
+    procedure btnNewPatternClick(Sender: TObject);
     procedure edInputChange(Sender: TObject);
     procedure btnSavePatternAsClick(Sender: TObject);
     procedure sgTabSelectCell(Sender: TObject; aCol, aRow: Integer;
@@ -275,6 +277,26 @@ begin
     OD.Free;
   end;
   end;
+
+procedure TMainForm.btnNewPatternClick(Sender: TObject);
+var
+  I, K: Integer;
+begin
+  FTabBars := nil;
+  SetLength(FTabBars, 1);
+  FTabBars[0].Steps := FResolution;
+  SetLength(FTabBars[0].InstChars, Length(FInstOrder));
+  for I := 0 to High(FInstOrder) do
+  begin
+    FTabBars[0].InstChars[I].Abbr := FInstOrder[I];
+    SetLength(FTabBars[0].InstChars[I].Chars, FResolution);
+    for K := 0 to FResolution - 1 do
+      FTabBars[0].InstChars[I].Chars[K] := '.';
+  end;
+  FStepsPerBar := FResolution;
+  RefreshGrid;
+  UpdateStatus('New empty pattern created: ' + IntToStr(FResolution) + ' steps/bar, ' + IntToStr(Length(FInstOrder)) + ' instruments.');
+end;
 
 procedure TMainForm.edInputChange(Sender: TObject);
 begin
