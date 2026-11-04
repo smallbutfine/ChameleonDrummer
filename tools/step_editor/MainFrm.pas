@@ -651,7 +651,7 @@ begin
   for BarIdx := StartBar to EndBar - 1 do
     ColIdx := ColIdx + FTabBars[BarIdx].Steps;
 
-  sgTab.ColCount := ColIdx + 1;
+  sgTab.ColCount := ColIdx;
   sgTab.RowCount := Length(FInstOrder) + 1;
 
   for RowIdx := 0 to High(FInstOrder) do
