@@ -106,6 +106,7 @@ type
     procedure LoadKindList;
     procedure LoadGrooveList;
     procedure LoadDrummerList;
+    function MeterToSteps(const AMeter: string): Integer;
     {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
@@ -288,24 +289,43 @@ begin
   end;
   end;
 
+function MeterToSteps(const AMeter: string): Integer;
+var
+  P: Integer;
+  Num, Den: Integer;
+begin
+  Result := FResolution;
+  P := Pos('/', AMeter);
+  if P > 0 then
+  begin
+    Num := StrToIntDef(Trim(Copy(AMeter, 1, P - 1)), 4);
+    Den := StrToIntDef(Trim(Copy(AMeter, P + 1, MaxInt)), 4);
+    if Den > 0 then
+      Result := Num * 16 div Den
+    else
+      Result := FResolution;
+  end;
+end;
+
 procedure TMainForm.btnNewPatternClick(Sender: TObject);
 var
-  I, K, OldCount: Integer;
+  I, K, OldCount, ASteps: Integer;
 begin
   OldCount := Length(FTabBars);
+  ASteps := MeterToSteps(cbMeter.Text);
   SetLength(FTabBars, OldCount + 1);
-  FTabBars[OldCount].Steps := FResolution;
+  FTabBars[OldCount].Steps := ASteps;
   SetLength(FTabBars[OldCount].InstChars, Length(FInstOrder));
   for I := 0 to High(FInstOrder) do
   begin
     FTabBars[OldCount].InstChars[I].Abbr := FInstOrder[I];
-    SetLength(FTabBars[OldCount].InstChars[I].Chars, FResolution);
-    for K := 0 to FResolution - 1 do
+    SetLength(FTabBars[OldCount].InstChars[I].Chars, ASteps);
+    for K := 0 to ASteps - 1 do
       FTabBars[OldCount].InstChars[I].Chars[K] := '.';
   end;
-  FStepsPerBar := FResolution;
+  FStepsPerBar := ASteps;
   RefreshGrid;
-  UpdateStatus('Pattern added: ' + IntToStr(FResolution) + ' steps/bar, ' + IntToStr(Length(FInstOrder)) + ' instruments. Total bars: ' + IntToStr(Length(FTabBars)));
+  UpdateStatus('Pattern added: ' + IntToStr(ASteps) + ' steps/bar (' + cbMeter.Text + '), ' + IntToStr(Length(FInstOrder)) + ' instruments. Total bars: ' + IntToStr(Length(FTabBars)));
 end;
 
 procedure TMainForm.edInputChange(Sender: TObject);
