@@ -220,12 +220,6 @@ begin
   // Populate kind combobox with available kinds based on selected style
   LoadKindList;
 
-  // Initialize export genre/drummer lists after output dir is set
-  if radGroove.Checked then
-    LoadGrooveList
-  else
-    LoadDrummerList;
-
   if DirectoryExists('mappings') then
   begin
     Files := TStringList.Create;
@@ -246,6 +240,13 @@ begin
   OnSystemThemeChange := @SystemThemeChanged;
   ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
   {$ENDIF}
+
+  // Initialize export genre/drummer lists after output dir is set
+  // (must run after ApplyDarkTheme, which sets cbStyle.Style and can clear items)
+  if radGroove.Checked then
+    LoadGrooveList
+  else
+    LoadDrummerList;
 
 end;
 
