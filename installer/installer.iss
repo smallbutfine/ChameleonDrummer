@@ -25,6 +25,7 @@ WizardStyle=modern
 ; ANPASSUNG: Alle Source-Pfade holen sich die Dateien aus den neuen Unterordnern (..\)
 Source: "..\chameleondrummer_gui.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#MyExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\tools\*.exe"; DestDir: "{app}\tools"; Flags: ignoreversion
 Source: "..\src\mappings\*.json"; DestDir: "{app}\mappings"; Flags: ignoreversion
 Source: "..\Assets\GMD\gmd_patterns.json"; DestDir: "{app}\Assets\GMD"; Flags: ignoreversion
 Source: "..\Assets\GMD\ATTRIBUTION.txt"; DestDir: "{app}\Assets\GMD"; Flags: ignoreversion
