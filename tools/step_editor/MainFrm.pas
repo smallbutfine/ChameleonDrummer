@@ -1274,8 +1274,13 @@ end;
 
 procedure TMainForm.sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
   ARect: TRect; AState: TGridDrawState);
+var
+  Grid: TStringGrid;
+  I, CumSteps: Integer;
+  IsBarBoundary: Boolean;
 begin
-  with (Sender as TStringGrid).Canvas do begin
+  Grid := Sender as TStringGrid;
+  with Grid.Canvas do begin
     if FDark then begin
       Brush.Color := DARK_PANEL;
       Font.Color := DARK_TEXT;
@@ -1284,8 +1289,29 @@ begin
       Font.Color := clWindowText;
     end;
     FillRect(ARect);
-    DrawText(Handle, PChar((Sender as TStringGrid).Cells[ACol, ARow]), -1, ARect,
+    DrawText(Handle, PChar(Grid.Cells[ACol, ARow]), -1, ARect,
       DT_CENTER or DT_VCENTER or DT_SINGLELINE);
+
+    // Draw thicker vertical line at bar boundaries
+    IsBarBoundary := False;
+    CumSteps := 0;
+    for I := 0 to High(FTabBars) do begin
+      CumSteps := CumSteps + FTabBars[I].Steps;
+      if ACol = CumSteps then begin
+        IsBarBoundary := True;
+        Break;
+      end;
+    end;
+
+    if IsBarBoundary then begin
+      Pen.Width := 2;
+      if FDark then
+        Pen.Color := DARK_BORDER
+      else
+        Pen.Color := clBlack;
+      MoveTo(ARect.Right - 1, ARect.Top);
+      LineTo(ARect.Right - 1, ARect.Bottom);
+    end;
   end;
 end;
 
