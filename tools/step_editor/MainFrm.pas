@@ -183,7 +183,7 @@ begin
   sgTab.RowCount := 1;
   sgTab.FixedCols := 1;
   sgTab.FixedRows := 1;
-  sgTab.Options := sgTab.Options - [goRowSelect] + [goRangeSelect, goAlwaysShowEditor];
+  sgTab.Options := sgTab.Options - [goRowSelect, goVertLine] + [goRangeSelect, goAlwaysShowEditor];
   sgTab.OnSelectCell := @sgTabSelectCell;
   sgTab.OnClick := @sgTabClick;
   sgTab.OnDrawCell := @sgTabDrawCell;
@@ -1292,7 +1292,16 @@ begin
     DrawText(Handle, PChar(Grid.Cells[ACol, ARow]), -1, ARect,
       DT_CENTER or DT_VCENTER or DT_SINGLELINE);
 
-    // Draw thicker vertical line at the left edge of the first column of each new bar
+    // Draw vertical line at left edge of every cell (replaces goVertLine)
+    Pen.Width := 1;
+    if FDark then
+      Pen.Color := DARK_BORDER
+    else
+      Pen.Color := clSilver;
+    MoveTo(ARect.Left, ARect.Top);
+    LineTo(ARect.Left, ARect.Bottom - 1);
+
+    // Draw thicker vertical line at bar boundaries
     IsBarStart := False;
     CumSteps := 0;
     for I := 0 to High(FTabBars) - 1 do begin
@@ -1304,13 +1313,24 @@ begin
     end;
 
     if IsBarStart then begin
-      Pen.Width := 2;
+      Pen.Width := 3;
       if FDark then
         Pen.Color := DARK_BORDER
       else
         Pen.Color := clBlack;
       MoveTo(ARect.Left, ARect.Top);
       LineTo(ARect.Left, ARect.Bottom - 1);
+    end;
+
+    // Draw right edge of last column
+    if ACol = Grid.ColCount - 1 then begin
+      Pen.Width := 1;
+      if FDark then
+        Pen.Color := DARK_BORDER
+      else
+        Pen.Color := clSilver;
+      MoveTo(ARect.Right - 1, ARect.Top);
+      LineTo(ARect.Right - 1, ARect.Bottom - 1);
     end;
   end;
 end;
