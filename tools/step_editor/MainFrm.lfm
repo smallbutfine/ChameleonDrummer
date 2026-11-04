@@ -235,7 +235,7 @@ object MainForm: TMainForm
     OnClick = btnSavePatternAsClick
   end
   object memStatus: TMemo
-    Left = 16
+    Left = 296
     Top = 355
     Width = 280
     Height = 80
