@@ -969,31 +969,30 @@ end;
 
 procedure TMainForm.LoadGrooveList;
 var
-  Files: TStringList;
+  SL: TStringList;
   I: Integer;
-  FName, Base: string;
-  GrooveDir: string;
+  Line: string;
+  StyleFile: string;
 begin
   cbStyle.Items.Clear;
-  GrooveDir := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves';
-  if not DirectoryExists(GrooveDir) then
+  StyleFile := IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt';
+  if not FileExists(StyleFile) then
   begin
-    CreateDir(GrooveDir);
     cbStyle.Items.Add('(none yet)');
     Exit;
   end;
 
-  Files := TStringList.Create;
+  SL := TStringList.Create;
   try
-    FindAllFiles(Files, GrooveDir, '*.tab', False);
-    for I := 0 to Files.Count - 1 do
+    SL.LoadFromFile(StyleFile);
+    for I := 0 to SL.Count - 1 do
     begin
-      FName := ExtractFileName(Files[I]);
-      Base := ChangeFileExt(FName, '');
-      cbStyle.Items.Add(Base);
+      Line := Trim(SL[I]);
+      if (Line = '') or (Line[1] = '#') then Continue;
+      cbStyle.Items.Add(Line);
     end;
   finally
-    Files.Free;
+    SL.Free;
   end;
 
   if cbStyle.Items.Count = 0 then
