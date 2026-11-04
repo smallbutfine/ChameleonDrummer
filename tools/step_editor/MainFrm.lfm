@@ -236,7 +236,7 @@ object MainForm: TMainForm
   end
   object memStatus: TMemo
     Left = 16
-    Top = 360
+    Top = 355
     Width = 280
     Height = 80
     TabOrder = 4
