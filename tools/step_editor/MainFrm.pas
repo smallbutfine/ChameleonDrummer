@@ -126,7 +126,7 @@ constructor TMainForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FInputPath := '';
-  FOutputDir := ExtractFilePath(ParamStr(0)) + '..' + PathDelim +  'config';
+  FOutputDir := ExtractFilePath(ParamStr(0))+ PathDelim + '..' + PathDelim +  'config';
   FTabData := '';
   FTabBars := nil;
   FStepsPerBar := 16;
@@ -1004,7 +1004,8 @@ var
   StyleFile: string;
 begin
   cbStyle.Items.Clear;
-  StyleFile := ExpandFileName(IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt');
+  StyleFile := IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt';
+  UpdateStatus('Style file: ' + StyleFile);
   if not FileExists(StyleFile) then
   begin
     cbStyle.Items.Add('(none yet)');
@@ -1050,7 +1051,7 @@ var
   FillDir: string;
 begin
   cbStyle.Items.Clear;
-  FillDir := ExpandFileName(IncludeTrailingPathDelimiter(FOutputDir) + 'fills');
+  FillDir := IncludeTrailingPathDelimiter(FOutputDir) + 'fills';
   if not DirectoryExists(FillDir) then
   begin
     CreateDir(FillDir);
