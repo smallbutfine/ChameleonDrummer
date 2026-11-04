@@ -172,7 +172,7 @@ object MainForm: TMainForm
   end
   object sgTab: TStringGrid
     Left = 296
-    Top = 40
+    Top = 67
     Width = 632
     Height = 254
     ColCount = 2
