@@ -126,7 +126,7 @@ constructor TMainForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FInputPath := '';
-  FOutputDir := ExtractFilePath(ParamStr(0)) + '..' + PathDelim + '..' + PathDelim + 'config';
+  FOutputDir := ExtractFilePath(ParamStr(0)) + '..' + PathDelim +  'config';
   FTabData := '';
   FTabBars := nil;
   FStepsPerBar := 16;
@@ -386,7 +386,7 @@ begin
 
   // Always resolve midi_to_tab.exe relative to this exe's parent directory
   MidiToTab := ExtractFilePath(ParamStr(0)) + 'midi_to_tab.exe';
-  
+
   if not FileExists(MidiToTab) then
   begin
     UpdateStatus('midi_to_tab.exe not found at: ' + MidiToTab);
@@ -394,7 +394,7 @@ begin
   end;
 
   ResultStr := RunMidiToTab(MidiToTab, Args);
-  
+
   // Show raw output in memo for debugging
   memStatus.Lines.Add('--- RAW OUTPUT (' + IntToStr(Length(ResultStr)) + ' bytes) ---');
   if Length(ResultStr) > 500 then
@@ -531,11 +531,11 @@ begin
       K := J;
       while (K <= Length(Inst)) and (Inst[K] <> ' ') do Inc(K);
       Inst := Copy(Inst, J, K - J); // e.g. "K" or "HH"
-      
+
       // GridStr starts after the first whitespace block
       GridStr := Trim(Copy(Line, K + 1, MaxInt));
-      
-      if GridStr = '' then 
+
+      if GridStr = '' then
       begin
         Inc(I);
         Continue;
@@ -551,7 +551,7 @@ begin
       end
       else
       begin
-        // If no pipes, treat the whole string as one bar's raw steps 
+        // If no pipes, treat the whole string as one bar's raw steps
         // OR split by multiple spaces if it looks like fixed width.
         // For now, fallback to treating it as 1 bar if valid chars exist.
         Bars.Add(GridStr);
@@ -1003,7 +1003,7 @@ var
   StyleFile: string;
 begin
   cbStyle.Items.Clear;
-  StyleFile := IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt';
+  StyleFile := ExpandFileName(IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt');
   if not FileExists(StyleFile) then
   begin
     cbStyle.Items.Add('(none yet)');
@@ -1085,7 +1085,7 @@ begin
   cbKind.Items.Add('intro');
   cbKind.Items.Add('outro');
   cbKind.Items.Add('fill');
-  
+
   if cbKind.ItemIndex < 0 then
     cbKind.ItemIndex := 0;
 end;
