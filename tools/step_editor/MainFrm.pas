@@ -110,7 +110,9 @@ type
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
       ARect: TRect; State: TOwnerDrawState);
     procedure ComboBoxDropDown(Sender: TObject);
-    procedure SystemThemeChanged(Sender: TObject);{$ENDIF}
+    procedure SystemThemeChanged(Sender: TObject);
+    procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
+      const Rect: TRect);{$ENDIF}
 
   public
     constructor Create(AOwner: TComponent); override;
