@@ -242,6 +242,7 @@ begin
   OnSystemThemeChange := @SystemThemeChanged;
   ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
   {$ENDIF}
+  sbStatus.Panels[0].Text := 'Ready';
 
   // Initialize export genre/drummer lists after output dir is set
   // (must run after ApplyDarkTheme, which sets cbStyle.Style and can clear items)
@@ -1137,6 +1138,11 @@ begin
     sgTab.FixedColor := DARK_PANEL
   else
     sgTab.FixedColor := clBtnFace;
+  // Grid cell text color
+  if FDark then
+    sgTab.Font.Color := DARK_TEXT
+  else
+    sgTab.Font.Color := clWindowText;
 end;
 
 procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
