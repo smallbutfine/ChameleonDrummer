@@ -146,4 +146,3 @@ call build_gui.bat
 cd /d "%~dp0.."
 
 call build_and_deploy.bat
-pause

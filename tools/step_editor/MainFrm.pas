@@ -170,7 +170,7 @@ begin
   sgTab.ColCount := 1;
   sgTab.RowCount := 1;
   sgTab.FixedCols := 1;
-  sgTab.FixedRows := 0;
+  sgTab.FixedRows := 1;
   sgTab.Options := sgTab.Options - [goRowSelect] + [goRangeSelect, goAlwaysShowEditor];
   sgTab.OnSelectCell := @sgTabSelectCell;
   sgTab.OnClick := @sgTabClick;
@@ -641,11 +641,11 @@ begin
   for BarIdx := StartBar to EndBar - 1 do
     ColIdx := ColIdx + FTabBars[BarIdx].Steps;
 
-  sgTab.ColCount := ColIdx;
-  sgTab.RowCount := Length(FInstOrder);
+  sgTab.ColCount := ColIdx + 1;
+  sgTab.RowCount := Length(FInstOrder) + 1;
 
   for RowIdx := 0 to High(FInstOrder) do
-    sgTab.Cells[0, RowIdx] := FInstOrder[RowIdx];
+    sgTab.Cells[0, RowIdx + 1] := FInstOrder[RowIdx];
 
   ColIdx := 1;
   for BarIdx := StartBar to EndBar - 1 do
@@ -653,18 +653,19 @@ begin
     BSteps := FTabBars[BarIdx].Steps;
     for K := 0 to BSteps - 1 do
     begin
+      sgTab.Cells[ColIdx, 0] := IntToStr(K + 1);
       for RowIdx := 0 to High(FInstOrder) do
       begin
         Found := False;
         for J := 0 to High(FTabBars[BarIdx].InstChars) do
           if FTabBars[BarIdx].InstChars[J].Abbr = FInstOrder[RowIdx] then
           begin
-            sgTab.Cells[ColIdx, RowIdx] := FTabBars[BarIdx].InstChars[J].Chars[K];
+            sgTab.Cells[ColIdx, RowIdx + 1] := FTabBars[BarIdx].InstChars[J].Chars[K];
             Found := True;
             Break;
           end;
         if not Found then
-          sgTab.Cells[ColIdx, RowIdx] := '.';
+          sgTab.Cells[ColIdx, RowIdx + 1] := '.';
       end;
       Inc(ColIdx);
     end;
@@ -673,6 +674,10 @@ begin
   sgTab.ColWidths[0] := 40;
   for ColIdx := 1 to sgTab.ColCount - 1 do
     sgTab.ColWidths[ColIdx] := 20;
+
+  sgTab.RowHeights[0] := 16;
+  for RowIdx := 0 to High(FInstOrder) do
+    sgTab.RowHeights[RowIdx + 1] := 14;
 end;
 
 procedure TMainForm.ToggleCell(ACol, ARow: Integer);
@@ -680,7 +685,7 @@ var
   C: Char;
   SC: TStepChar;
 begin
-  if (ACol < 1) or (ARow < 0) or (ACol >= sgTab.ColCount) or (ARow >= sgTab.RowCount) then
+  if (ACol < 1) or (ARow < 1) or (ACol >= sgTab.ColCount) or (ARow >= sgTab.RowCount) then
     Exit;
 
   C := sgTab.Cells[ACol, ARow][1];
@@ -720,7 +725,7 @@ end;
 procedure TMainForm.sgTabSelectCell(Sender: TObject; aCol, aRow: Integer;
   var CanSelect: Boolean);
 begin
-  CanSelect := (aCol > 0) and (aRow >= 0);
+  CanSelect := (aCol > 0) and (aRow > 0);
 end;
 
 procedure TMainForm.sgTabClick(Sender: TObject);
