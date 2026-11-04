@@ -203,12 +203,9 @@ begin
   cbMapping.Items.Add('(default GM)');
   cbMapping.ItemIndex := 0;
 
-  // Populate meter combobox with common time signatures
+  // Populate meter combobox with common time signatures (append T for triplet feel)
   cbMeter.Items.Clear;
-  cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
-  // Populate meter combobox with common time signatures
-  cbMeter.Items.Clear;
-  cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
+  cbMeter.Items.CommaText := '4/4,4/4T,2/4,2/4T,3/4,3/4T,5/4,5/4T,6/8,6/8T,7/8,7/8T,9/8,9/8T,11/8,11/8T,13/8,13/8T,15/16,15/16T';
   cbMeter.ItemIndex := 0;
 
   // Populate intensity combobox with presets
@@ -293,14 +290,27 @@ function MeterToSteps(const AMeter: string): Integer;
 var
   P: Integer;
   Num, Den: Integer;
+  ATriplet: Boolean;
+  AMeterBase: string;
 begin
-  P := Pos('/', AMeter);
+  ATriplet := False;
+  AMeterBase := AMeter;
+  if (Length(AMeter) > 0) and (AMeter[Length(AMeter)] = 'T') then
+  begin
+    ATriplet := True;
+    AMeterBase := Copy(AMeter, 1, Length(AMeter) - 1);
+  end;
+  P := Pos('/', AMeterBase);
   if P > 0 then
   begin
-    Num := StrToIntDef(Trim(Copy(AMeter, 1, P - 1)), 0);
-    Den := StrToIntDef(Trim(Copy(AMeter, P + 1, MaxInt)), 0);
+    Num := StrToIntDef(Trim(Copy(AMeterBase, 1, P - 1)), 0);
+    Den := StrToIntDef(Trim(Copy(AMeterBase, P + 1, MaxInt)), 0);
     if Den > 0 then
-      Result := Num * FResolution div Den
+    begin
+      Result := Num * FResolution div Den;
+      if ATriplet then
+        Result := Result * 3 div 2;
+    end
     else
       Result := FResolution;
   end
