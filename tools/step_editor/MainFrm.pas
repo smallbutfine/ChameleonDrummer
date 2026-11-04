@@ -112,7 +112,9 @@ type
     procedure ComboBoxDropDown(Sender: TObject);
     procedure SystemThemeChanged(Sender: TObject);
     procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
-      const Rect: TRect);{$ENDIF}
+      const Rect: TRect);
+    procedure sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
+      ARect: TRect; AState: TGridDrawState);{$ENDIF}
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -176,6 +178,10 @@ begin
   sgTab.Options := sgTab.Options - [goRowSelect] + [goRangeSelect, goAlwaysShowEditor];
   sgTab.OnSelectCell := @sgTabSelectCell;
   sgTab.OnClick := @sgTabClick;
+  sgTab.OnDrawCell := @sgTabDrawCell;
+  sbStatus.SimplePanel := False;
+  sbStatus.OnDrawPanel := @StatusBarDrawPanel;
+  sbStatus.Panels[0].Style := psOwnerDraw;
 
   cbResolution.Items.Clear;
   cbResolution.Items.Add('4');
@@ -1163,6 +1169,23 @@ begin
     FillRect(R);
     Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
     DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
+  end;
+end;
+
+procedure TMainForm.sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
+  ARect: TRect; AState: TGridDrawState);
+begin
+  with (Sender as TStringGrid).Canvas do begin
+    if FDark then begin
+      Brush.Color := DARK_PANEL;
+      Font.Color := DARK_TEXT;
+    end else begin
+      Brush.Color := clWindow;
+      Font.Color := clWindowText;
+    end;
+    FillRect(ARect);
+    DrawText(Handle, PChar((Sender as TStringGrid).Cells[ACol, ARow]), -1, ARect,
+      DT_LEFT or DT_VCENTER or DT_SINGLELINE);
   end;
 end;
 
