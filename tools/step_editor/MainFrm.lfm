@@ -187,7 +187,7 @@ object MainForm: TMainForm
     TabOrder = 0
     OnClick = sgTabClick
     OnSelectCell = sgTabSelectCell
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect]
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goSmoothScroll, goThumbTracking]
   end
   object lblZoom: TLabel
     Left = 296
