@@ -19,6 +19,11 @@
       <a href="download.html">DESCARGAR</a>
       <a href="../index.html">EN</a>
       <a href="../de/index.html">DE</a>
+      <a href="../es/index.html">ES</a>
+      <a href="../fr/index.html">FR</a>
+      <a href="../pt/index.html">PT</a>
+      <a href="../ru/index.html">RU</a>
+      <a href="../zh/index.html">ZH</a>
     </nav>
   </div>
 </header>
@@ -69,7 +74,7 @@
     <p>ChameleonDrummer construye tracks de batería como un director musical trabajando con una banda de sesión. Selecciona patrones para cada compás basándose en la intensidad, evita repeticiones, inserta fills en los límites de sección y aplica modificaciones de estilo específicas del baterista — todo desde archivos de texto plano que puedes editar.</p>
     
     <h3>Formato de Patrón (Lo Que Puedes Editar)</h3>
-    <p>Grooves y fills viven en <code>config/grooves/<genre>.tab</code> y <code>config/fills/<drummer>.tab</code>. Cada bloque tiene una cabecera declarando estilo, compás e intensidad, seguido de líneas de instrumento usando caracteres simples:</p>
+    <p>Grooves y fills viven en <code>config/grooves/&lt;genre&gt;.tab</code> y <code>config/fills/&lt;drummer&gt;.tab</code>. Cada bloque tiene una cabecera declarando estilo, compás e intensidad, seguido de líneas de instrumento usando caracteres simples:</p>
     <ul>
       <li><code>.</code> = silencio (sin hit)</li>
       <li><code>x</code> = hit</li>
@@ -88,6 +93,14 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
     <p>Para cada compás, el motor selecciona un groove usando aleatoriedad ponderada basada en coincidencia de intensidad. Cuatro fases macro (establecer, mantener, construir, giro) controlan cómo evoluciona la canción. Los fills se insertan en puntos estructurales. La humanización añade variación de tiempo y velocidad. Las restricciones físicas previenen patrones imposibles.</p>
     
     <a href="docs.html" class="btn">LEER MANUAL COMPLETO</a>
+  </div>
+</section>
+
+<section class="download-section">
+  <div class="container">
+    <h2>Descargar v1.0.895</h2>
+    <p>Descarga la última versión desde GitHub:</p>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">Descargar v1.0.895</a>
   </div>
 </section>
 
