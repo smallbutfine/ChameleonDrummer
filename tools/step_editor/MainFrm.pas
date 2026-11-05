@@ -52,9 +52,6 @@ type
     sgTab: TStringGrid;
     lblZoom: TLabel;
     cbZoom: TComboBox;
-    btnPrevPage: TButton;
-    btnNextPage: TButton;
-    lblPageInfo: TLabel;
     lblHeaderPreview: TLabel;
 
     btnSavePatternAs: TButton;
@@ -71,8 +68,6 @@ type
       var CanSelect: Boolean);
     procedure sgTabClick(Sender: TObject);
     procedure cbZoomChange(Sender: TObject);
-    procedure btnPrevPageClick(Sender: TObject);
-    procedure btnNextPageClick(Sender: TObject);
     procedure cbMappingChange(Sender: TObject);
     procedure chkFillChange(Sender: TObject);
     procedure rbModeChange(Sender: TObject);
@@ -107,7 +102,6 @@ type
     function StepCharToChar(SC: TStepChar): Char;
     procedure UpdateStatus(const AMsg: string);
     function RunMidiToTab(const AExe: string; const AArgs: array of string): string;
-    procedure UpdatePageInfo;
     procedure UpdateControls;
     function BuildTabText: string;
     procedure LoadKindList;
@@ -674,7 +668,6 @@ begin
   FCurPage := 0;
   FTotalPages := Max(1, (Length(FTabBars) + FPageSize - 1) div FPageSize);
   RenderPage(FCurPage);
-  UpdatePageInfo;
   UpdateControls;
 end;
 
@@ -802,34 +795,6 @@ begin
   FTotalPages := Max(1, (Length(FTabBars) + FPageSize - 1) div FPageSize);
   if FCurPage >= FTotalPages then FCurPage := FTotalPages - 1;
   RenderPage(FCurPage);
-  UpdatePageInfo;
-end;
-
-procedure TMainForm.btnPrevPageClick(Sender: TObject);
-begin
-  if FCurPage > 0 then
-  begin
-    Dec(FCurPage);
-    RenderPage(FCurPage);
-    UpdateControls;
-    UpdatePageInfo;
-  end;
-end;
-
-procedure TMainForm.btnNextPageClick(Sender: TObject);
-begin
-  if FCurPage < FTotalPages - 1 then
-  begin
-    Inc(FCurPage);
-    RenderPage(FCurPage);
-    UpdateControls;
-    UpdatePageInfo;
-  end;
-end;
-
-procedure TMainForm.UpdatePageInfo;
-begin
-  lblPageInfo.Caption := Format('Page %d of %d (%d bars)', [FCurPage + 1, FTotalPages, Length(FTabBars)]);
 end;
 
 procedure TMainForm.UpdateHeaderPreview;
@@ -863,7 +828,6 @@ end;
 
 procedure TMainForm.UpdateControls;
 begin
-  btnPrevPage.Enabled := FCurPage > 0;
   btnSavePatternAs.Enabled := Length(FTabBars) > 0;
 end;
 

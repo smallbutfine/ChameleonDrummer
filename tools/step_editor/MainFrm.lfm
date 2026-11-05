@@ -205,31 +205,6 @@ object MainForm: TMainForm
     Text = '16 steps'
     OnChange = cbZoomChange
   end
-  object btnPrevPage: TButton
-    Left = 464
-    Top = 364
-    Width = 75
-    Height = 25
-    Caption = 'Prev'
-    TabOrder = 1
-    OnClick = btnPrevPageClick
-  end
-  object btnNextPage: TButton
-    Left = 544
-    Top = 364
-    Width = 75
-    Height = 25
-    Caption = 'Next'
-    TabOrder = 2
-    OnClick = btnNextPageClick
-  end
-  object lblPageInfo: TLabel
-    Left = 624
-    Top = 368
-    Width = 58
-    Height = 15
-    Caption = 'Page 1 of 1'
-  end
   object lblHeaderPreview: TLabel
     Left = 296
     Top = 392
