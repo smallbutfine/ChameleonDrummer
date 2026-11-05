@@ -38,6 +38,7 @@
 <p>3. <a href="#quick-start">Quick Start</a></p>
 <p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>5.5. <a href="#step-editor">Step Editor</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#ardour-integration">Ardour Integration</a></p>
 <p>8. <a href="#the-cli-program">The CLI Program</a></p>
@@ -291,6 +292,55 @@ S ... ... ... xxx</code></pre>
 <li>Configuration persistence via <code>gui.ini</code></li>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<p>Die GUI enthält auch eine <strong>Step Editor</strong>-Schaltfläche, die die eigenständige Step-Editor-Anwendung (<code>tools/step_editor/step_editor.exe</code>) öffnet. Mit dem Step Editor können Sie Trommelmuster visuell auf einem Step-Grid bearbeiten, MIDI-Dateien im Tab-Format konvertieren und Muster als Grooves oder Fills speichern. Siehe <a href="#step-editor">Step Editor</a> für Details.</p>
+
+<hr>
+
+<h2 id="step-editor">Step Editor</h2>
+
+<p>Der Step Editor (<code>tools/step_editor/step_editor.exe</code>) ist eine eigenständige Lazarus-GUI-Anwendung zum visuellen Erstellen und Bearbeiten von Trommelmustern. Er arbeitet zusammen mit der Haupt-GUI von ChameleonDrummer — Sie können ihn über die <strong>Step Editor</strong>-Schaltfläche in der Haupt-GUI öffnen oder direkt ausführen.</p>
+
+<h3 id="step-editor-overview">Übersicht</h3>
+
+<p>Der Step Editor zeigt ein Trommelmuster als Grid an: Zeilen sind Trommelinstrumente, Spalten sind Zeitschritte. Klicken Sie in Zellen, um Hits ein- oder auszuschalten. Dicke vertikale Linien markieren Taktgrenzen.</p>
+
+<h3 id="step-editor-workflow">Arbeitsablauf</h3>
+
+<ol>
+<li><strong>MIDI-Datei laden</strong>: Klicken Sie auf <strong>Durchsuchen</strong> neben dem MIDI-Datei-Feld und wählen Sie eine <code>.mid</code>-Datei. Die Datei wird automatisch mit dem Befehlszeilen-Tool <code>midi_to_tab.exe</code> im Tab-Format konvertiert und in das Grid geladen.</li>
+<li><strong>Oder Tab-Datei laden</strong>: Der Dateibrowser akzeptiert auch <code>.tab</code>-Dateien direkt.</li>
+<li><strong>Muster bearbeiten</strong>: Klicken Sie in Zellen, um Hits umzuschalten. Wählen Sie eine Spalte aus, um einen ganzen Schritt auf einmal zu bearbeiten.</li>
+<li><strong>Taktart ändern</strong>: Verwenden Sie das <strong>Meter</strong>-Dropdown, um die Taktart festzulegen (unterstützt Standard- und Triolen-Taktarten wie <code>4/4T</code>, <code>6/8T</code>).</li>
+<li><strong>Zoom ändern</strong>: Verwenden Sie das <strong>Zoom</strong>-Dropdown, um zwischen 4tel-, 8tel-, 16tel- und 32tel-Noten-Grid-Auflösung zu wechseln.</li>
+<li><strong>Seiten navigieren</strong>: Verwenden Sie <strong>Zurück</strong> und <strong>Weiter</strong>, um durch die Seiten des Musters zu navigieren.</li>
+<li><strong>Als Groove oder Fill speichern</strong>: Wählen Sie die Radio-Schaltfläche <strong>Groove</strong> oder <strong>Fill</strong>, wählen Sie einen Stil aus dem Dropdown und klicken Sie auf <strong>Save Pattern As</strong>, um das Muster in <code>config/grooves/</code> oder <code>config/fills/</code> zu schreiben.</li>
+</ol>
+
+<h3 id="step-editor-command-line">Befehlszeilen-Konverter</h3>
+
+<p>Der Step Editor verwendet <code>tools/midi_to_tab.exe</code> unter der Haube, um MIDI-Dateien im Tab-Format zu konvertieren. Sie können es auch direkt ausführen:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<h3 id="step-editor-paths">Pfade und Konfiguration</h3>
+
+<p>Der Step Editor löst Pfade relativ zu seinem eigenen Speicherort auf:</p>
+
+<li><strong>Ausführbare Datei</strong>: <code>tools/step_editor/step_editor.exe</code></li>
+<li><strong>Konverter</strong>: <code>midi_to_tab.exe</code> im selben Verzeichnis</li>
+<li><strong>Stile</strong>: <code>..\..\config\styles.txt</code> (zwei Ebenen über <code>tools/step_editor/</code>)</li>
+<li><strong>Grooves-Ausgabe</strong>: <code>..\..\config\grooves\</code></li>
+<li><strong>Fills-Ausgabe</strong>: <code>..\..\config\fills\</code></li>
+
+<p>Wenn der Step Editor von der Haupt-GUI von ChameleonDrummer gestartet wird, erbt er dasselbe Arbeitsverzeichnis und dieselbe Konfiguration.</p>
+
+<h3 id="step-editor-dark-mode">Dark Mode</h3>
+
+<p>Der Step Editor unterstützt den Dark Mode, passend zum Dark Theme der Haupt-GUI. Er folgt standardmäßig dem System-Theme und kann in der Benutzeroberfläche umgeschaltet werden.</p>
 
 <hr>
 

@@ -38,6 +38,7 @@
 <p>3. <a href="#quick-start">Quick Start</a></p>
 <p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>5.5. <a href="#step-editor">Step Editor</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#ardour-integration">Ardour Integration</a></p>
 <p>8. <a href="#the-cli-program">The CLI Program</a></p>
@@ -291,6 +292,55 @@ S ... ... ... xxx</code></pre>
 <li>Configuration persistence via <code>gui.ini</code></li>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<p>The GUI also includes a <strong>Step Editor</strong> button that opens the standalone step editor application (<code>tools/step_editor/step_editor.exe</code>). The step editor lets you visually edit drum patterns on a step grid, convert MIDI files to tab format, and save patterns as grooves or fills. See <a href="#step-editor">Step Editor</a> for details.</p>
+
+<hr>
+
+<h2 id="step-editor">Step Editor</h2>
+
+<p>The Step Editor (<code>tools/step_editor/step_editor.exe</code>) is a standalone Lazarus GUI application for visually creating and editing drum patterns. It works alongside the main ChameleonDrummer GUI — you can open it from the main GUI's <strong>Step Editor</strong> button, or run it directly.</p>
+
+<h3 id="step-editor-overview">Overview</h3>
+
+<p>The step editor displays a drum pattern as a grid: rows are drum instruments, columns are time steps. Click cells to toggle hits. Thick vertical lines mark bar boundaries.</p>
+
+<h3 id="step-editor-workflow">Workflow</h3>
+
+<ol>
+<li><strong>Load a MIDI file</strong>: Click <strong>Browse</strong> next to the MIDI file field and select a <code>.mid</code> file. The file is automatically converted to tab format using the <code>midi_to_tab.exe</code> command-line tool and loaded into the grid.</li>
+<li><strong>Or load a tab file</strong>: The file browser also accepts <code>.tab</code> files directly.</li>
+<li><strong>Edit the pattern</strong>: Click cells to toggle hits. Select a column to edit an entire step at once.</li>
+<li><strong>Change meter</strong>: Use the <strong>Meter</strong> dropdown to set the time signature (supports standard and triplet meters like <code>4/4T</code>, <code>6/8T</code>).</li>
+<li><strong>Change zoom</strong>: Use the <strong>Zoom</strong> dropdown to switch between 4th, 8th, 16th, and 32nd note grid resolution.</li>
+<li><strong>Navigate pages</strong>: Use <strong>Prev</strong> and <strong>Next</strong> to move through pages of the pattern.</li>
+<li><strong>Save as groove or fill</strong>: Select <strong>Groove</strong> or <strong>Fill</strong> radio button, choose a style from the dropdown, and click <strong>Save Pattern As</strong> to write the pattern to <code>config/grooves/</code> or <code>config/fills/</code>.</li>
+</ol>
+
+<h3 id="step-editor-command-line">Command-Line Converter</h3>
+
+<p>The step editor uses <code>tools/midi_to_tab.exe</code> under the hood to convert MIDI files to tab format. You can also run it directly:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<h3 id="step-editor-paths">Paths and Configuration</h3>
+
+<p>The step editor resolves paths relative to its own location:</p>
+
+<li><strong>Executable</strong>: <code>tools/step_editor/step_editor.exe</code></li>
+<li><strong>Converter</strong>: <code>midi_to_tab.exe</code> in the same directory</li>
+<li><strong>Styles</strong>: <code>..\..\config\styles.txt</code> (two levels up from <code>tools/step_editor/</code>)</li>
+<li><strong>Grooves output</strong>: <code>..\..\config\grooves\</code></li>
+<li><strong>Fills output</strong>: <code>..\..\config\fills\</code></li>
+
+<p>When launched from the main ChameleonDrummer GUI, the step editor inherits the same working directory and configuration.</p>
+
+<h3 id="step-editor-dark-mode">Dark Mode</h3>
+
+<p>The step editor supports dark mode, matching the main GUI's dark theme. It follows the system theme by default and can be toggled in the interface.</p>
 
 <hr>
 

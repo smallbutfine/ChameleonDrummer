@@ -38,6 +38,7 @@
 <p>3. <a href="#quick-start">Quick Start</a></p>
 <p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>5.5. <a href="#step-editor">Step Editor</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#ardour-integration">Ardour Integration</a></p>
 <p>8. <a href="#the-cli-program">The CLI Program</a></p>
@@ -291,6 +292,55 @@ S ... ... ... xxx</code></pre>
 <li>Configuration persistence via <code>gui.ini</code></li>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<p>A GUI também inclui um botão <strong>Step Editor</strong> que abre o aplicativo de editor de etapas independente (<code>tools/step_editor/step_editor.exe</code>). O editor de etapas permite editar visualmente padrões de bateria em uma grade de etapas, converter arquivos MIDI para o formato tab e salvar padrões como grooves ou fills. Consulte <a href="#step-editor">Step Editor</a> para mais detalhes.</p>
+
+<hr>
+
+<h2 id="step-editor">Step Editor</h2>
+
+<p>O Step Editor (<code>tools/step_editor/step_editor.exe</code>) é um aplicativo GUI Lazarus autônomo para criar e editar padrões de bateria visualmente. Ele funciona junto com a GUI principal do ChameleonDrummer — você pode abri-lo pelo botão <strong>Step Editor</strong> da GUI principal, ou executá-lo diretamente.</p>
+
+<h3 id="step-editor-overview">Visão geral</h3>
+
+<p>O editor de etapas exibe um padrão de bateria como uma grade: as linhas são instrumentos de bateria, as colunas são passos de tempo. Clique nas células para ativar/desativar batidas. Linhas verticais grossas marcam os limites de compasso.</p>
+
+<h3 id="step-editor-workflow">Fluxo de trabalho</h3>
+
+<ol>
+<li><strong>Carregar um arquivo MIDI</strong>: Clique em <strong>Procurar</strong> ao lado do campo de arquivo MIDI e selecione um arquivo <code>.mid</code>. O arquivo é automaticamente convertido para o formato tab usando a ferramenta de linha de comando <code>midi_to_tab.exe</code> e carregado na grade.</li>
+<li><strong>Ou carregar um arquivo tab</strong>: O navegador de arquivos também aceita arquivos <code>.tab</code> diretamente.</li>
+<li><strong>Editar o padrão</strong>: Clique nas células para ativar/desativar batidas. Selecione uma coluna para editar um passo completo de cada vez.</li>
+<li><strong>Alterar o compasso</strong>: Use o menu suspenso <strong>Meter</strong> para definir a assinatura de compasso (suporta compassos padrão e de tríade como <code>4/4T</code>, <code>6/8T</code>).</li>
+<li><strong>Alterar o zoom</strong>: Use o menu suspenso <strong>Zoom</strong> para alternar entre resolução de grade de colcheia, semicolcheia, semifusa e fusos.</li>
+<li><strong>Navegar pelas páginas</strong>: Use <strong>Prev</strong> e <strong>Next</strong> para navegar pelas páginas do padrão.</li>
+<li><strong>Salvar como groove ou fill</strong>: Selecione o botão de rádio <strong>Groove</strong> ou <strong>Fill</strong>, escolha um estilo no menu suspenso e clique em <strong>Save Pattern As</strong> para gravar o padrão em <code>config/grooves/</code> ou <code>config/fills/</code>.</li>
+</ol>
+
+<h3 id="step-editor-command-line">Conversor de linha de comando</h3>
+
+<p>O editor de etapas usa <code>tools/midi_to_tab.exe</code> por baixo dos panos para converter arquivos MIDI para o formato tab. Você também pode executá-lo diretamente:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<h3 id="step-editor-paths">Caminhos e configuração</h3>
+
+<p>O editor de etapas resolve caminhos relativos ao seu próprio local:</p>
+
+<li><strong>Executável</strong>: <code>tools/step_editor/step_editor.exe</code></li>
+<li><strong>Conversor</strong>: <code>midi_to_tab.exe</code> no mesmo diretório</li>
+<li><strong>Estilos</strong>: <code>..\..\config\styles.txt</code> (dois níveis acima de <code>tools/step_editor/</code>)</li>
+<li><strong>Saída de grooves</strong>: <code>..\..\config\grooves\</code></li>
+<li><strong>Saída de fills</strong>: <code>..\..\config\fills\</code></li>
+
+<p>Quando iniciado pela GUI principal do ChameleonDrummer, o editor de etapas herda o mesmo diretório de trabalho e configuração.</p>
+
+<h3 id="step-editor-dark-mode">Modo escuro</h3>
+
+<p>O editor de etapas suporta o modo escuro, correspondendo ao tema escuro da GUI principal. Ele segue o tema do sistema por padrão e pode ser alternado na interface.</p>
 
 <hr>
 

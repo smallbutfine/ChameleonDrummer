@@ -15,5 +15,12 @@ S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre><ul><li><strong>标题</strong>: <code>[style kind intensity=low-high]</code></li><li><strong>乐器</strong>: K=鼓, S=军鼓, H=踩镲, HO=开踩镲, HP=踩镲踏板, R=架子鼓, RB=低音鼓, C=碰镲, C2=第二碰镲, CH=中国镲, SP=溅镲, T1-T4=鼓</li><li><strong>步骤</strong>: <code>.</code>=休止, <code>x</code>=击打, <code>X</code>=强调, <code>o</code>=柔和, <code>g</code>=幽灵</li><li><strong>小节</strong>: 用 <code>|</code> 分隔; 忽略空格; 较短的行重复</li></ul><h4>填充块 (<code>config/fills/&lt;drummer&gt;.tab</code>)</h4><pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre></div>
 <div class="engine-overview"><h3>引擎工作原理（简要）</h3><ol><li><strong>模式模型</strong> — 每个节拍有位置、乐器、速度、持续时间、幽灵/强调标志</li><li><strong>歌曲结构</strong> — 包含模式、填充、片段、鼓点偏移的部分</li><li><strong>逐小节选择</strong> — 基于强度匹配的加权随机模式选择</li><li><strong>宏阶段</strong> — 建立 → 保持 → 构建 → 转折</li><li><strong>填充</strong> — 插入在段落边界，强度匹配</li><li><strong>人性化</strong> — 时间抖动，速度变化，摇摆感</li><li><strong>物理限制</strong> — 最多 3 次击打/步骤，肢体协调规则</li><li><strong>鼓手插件</strong> — 17 位鼓手应用特定修改</li><li><strong>Keymap 系统</strong> — JSON 将音符名称映射到 MIDI 音符 (GM, AD2, EZD3, XG, custom)</li><li><strong>MIDI 导出</strong> — SMF 格式 0，带节奏/拍号事件</li></ol></div></div></section>
+<div class="step-editor-section">
+      <h3>Step Editor</h3>
+      <p><strong>步进编辑器</strong> (<code>tools/step_editor/step_editor.exe</code>) 是一个独立的可视化模式编辑器。加载 MIDI 或 tab 文件，在步进网格上编辑击打，更改拍号和缩放，浏览页面，并将模式保存为 groove 或 fill 到 <code>config/grooves/</code> 或 <code>config/fills/</code>。它使用 <code>midi_to_tab.exe</code> 进行 MIDI → tab 转换，并支持深色模式。</p>
+    </div>
+  </div>
+</section>
+
 <section class="download-section"><div class="container"><h2>下载 v1.0.895</h2><p>从 GitHub 下载最新版本:</p><a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">下载 v1.0.895</a></div></section><footer><div class="container"><p>ChameleonDrummer — FreePascal / Lazarus 动态 MIDI 鼓生成。</p><p>来源: <code>ChameleonDrummer/</code> · 手册: <code>docs/USER_MANUAL.md</code> · Pascal 文档: <code>docs/PASCAL_PROGRAMS.md</code> · 模式格式: <code>README.md</code></p></div></footer>
 </body></html>

@@ -38,6 +38,7 @@
 <p>3. <a href="#quick-start">Quick Start</a></p>
 <p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>5.5. <a href="#step-editor">Step Editor</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#ardour-integration">Ardour Integration</a></p>
 <p>8. <a href="#the-cli-program">The CLI Program</a></p>
@@ -291,6 +292,55 @@ S ... ... ... xxx</code></pre>
 <li>Configuration persistence via <code>gui.ini</code></li>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<p>GUI 还包含一个 <strong>Step Editor</strong> 按钮，可打开独立的步进编辑器应用程序 (<code>tools/step_editor/step_editor.exe</code>)。步进编辑器可让你在步进网格上直观编辑鼓点模式，将 MIDI 文件转换为 tab 格式，并将模式保存为 groove 或 fill。详情请参阅 <a href="#step-editor">Step Editor</a>。</p>
+
+<hr>
+
+<h2 id="step-editor">Step Editor</h2>
+
+<p>步进编辑器 (<code>tools/step_editor/step_editor.exe</code>) 是一个独立的 Lazarus GUI 应用程序，用于直观地创建和编辑鼓点模式。它与 ChameleonDrummer 主 GUI 配合使用——你可以从主 GUI 的 <strong>Step Editor</strong> 按钮打开它，也可以直接运行。</p>
+
+<h3 id="step-editor-overview">概述</h3>
+
+<p>步进编辑器将鼓点模式显示为网格：行是鼓器，列是时间步。点击单元格可切换击打状态。粗垂直线标记小节边界。</p>
+
+<h3 id="step-editor-workflow">工作流程</h3>
+
+<ol>
+<li><strong>加载 MIDI 文件</strong>: 点击 MIDI 文件字段旁的 <strong>浏览</strong>，选择一个 <code>.mid</code> 文件。文件会自动使用命令行工具 <code>midi_to_tab.exe</code> 转换为 tab 格式并加载到网格中。</li>
+<li><strong>或加载 tab 文件</strong>: 文件浏览器也直接接受 <code>.tab</code> 文件。</li>
+<li><strong>编辑模式</strong>: 点击单元格切换击打。选择一列可一次编辑整个步。</li>
+<li><strong>更改拍号</strong>: 使用 <strong>Meter</strong> 下拉菜单设置拍号（支持标准拍号和三连拍，如 <code>4/4T</code>、<code>6/8T</code>）。</li>
+<li><strong>更改缩放</strong>: 使用 <strong>Zoom</strong> 下拉菜单在 4 分音符、8 分音符、16 分音符和 32 分音符网格分辨率之间切换。</li>
+<li><strong>翻页</strong>: 使用 <strong>Prev</strong> 和 <strong>Next</strong> 在模式页面间导航。</li>
+<li><strong>保存为 groove 或 fill</strong>: 选择 <strong>Groove</strong> 或 <strong>Fill</strong> 单选按钮，从下拉菜单选择样式，点击 <strong>Save Pattern As</strong> 将模式写入 <code>config/grooves/</code> 或 <code>config/fills/</code>。</li>
+</ol>
+
+<h3 id="step-editor-command-line">命令行转换器</h3>
+
+<p>步进编辑器使用 <code>tools/midi_to_tab.exe</code> 将 MIDI 文件转换为 tab 格式。你也可以直接运行它:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<h3 id="step-editor-paths">路径和配置</h3>
+
+<p>步进编辑器相对于其自身位置解析路径:</p>
+
+<li><strong>可执行文件</strong>: <code>tools/step_editor/step_editor.exe</code></li>
+<li><strong>转换器</strong>: <code>midi_to_tab.exe</code> 在同一目录中</li>
+<li><strong>样式</strong>: <code>..\..\config\styles.txt</code> (位于 <code>tools/step_editor/</code> 上两级)</li>
+<li><strong>groove 输出</strong>: <code>..\..\config\grooves\</code></li>
+<li><strong>fill 输出</strong>: <code>..\..\config\fills\</code></li>
+
+<p>当从 ChameleonDrummer 主 GUI 启动时，步进编辑器会继承相同的工作目录和配置。</p>
+
+<h3 id="step-editor-dark-mode">深色模式</h3>
+
+<p>步进编辑器支持深色模式，与主 GUI 的深色主题匹配。默认遵循系统主题，可在界面中切换。</p>
 
 <hr>
 

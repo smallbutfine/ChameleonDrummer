@@ -36,6 +36,7 @@
 <p>3. <a href="#quick-start">Quick Start</a></p>
 <p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>5.5. <a href="#step-editor">Step Editor</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#ardour-integration">Ardour Integration</a></p>
 <p>8. <a href="#the-cli-program">The CLI Program</a></p>
@@ -289,6 +290,55 @@ S ... ... ... xxx</code></pre>
 <li>Configuration persistence via <code>gui.ini</code></li>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<p>La GUI también incluye un botón <strong>Step Editor</strong> que abre la aplicación de editor de pasos independiente (<code>tools/step_editor/step_editor.exe</code>). El editor de pasos permite editar visualmente patrones de batería en una cuadrícula de pasos, convertir archivos MIDI al formato tab y guardar patrones como grooves o fills. Consulte <a href="#step-editor">Step Editor</a> para más detalles.</p>
+
+<hr>
+
+<h2 id="step-editor">Step Editor</h2>
+
+<p>El Step Editor (<code>tools/step_editor/step_editor.exe</code>) es una aplicación GUI de Lazarus independiente para crear y editar patrones de batería visualmente. Funciona junto con la GUI principal de ChameleonDrummer — puedes abrirlo desde el botón <strong>Step Editor</strong> de la GUI principal, o ejecutarlo directamente.</p>
+
+<h3 id="step-editor-overview">Descripción general</h3>
+
+<p>El editor de pasos muestra un patrón de batería como una cuadrícula: las filas son instrumentos de batería, las columnas son pasos de tiempo. Haz clic en las celdas para activar/desactivar golpes. Líneas verticales gruesas marcan los límites de compás.</p>
+
+<h3 id="step-editor-workflow">Flujo de trabajo</h3>
+
+<ol>
+<li><strong>Cargar un archivo MIDI</strong>: Haz clic en <strong>Examinar</strong> junto al campo de archivo MIDI y selecciona un archivo <code>.mid</code>. El archivo se convierte automáticamente al formato tab usando la herramienta de línea de comandos <code>midi_to_tab.exe</code> y se carga en la cuadrícula.</li>
+<li><strong>O cargar un archivo tab</strong>: El navegador de archivos también acepta archivos <code>.tab</code> directamente.</li>
+<li><strong>Editar el patrón</strong>: Haz clic en las celdas para activar/desactivar golpes. Selecciona una columna para editar un paso completo a la vez.</li>
+<li><strong>Cambiar el compás</strong>: Usa el desplegable <strong>Meter</strong> para establecer la firma de compás (admite compases estándar y de tríada como <code>4/4T</code>, <code>6/8T</code>).</li>
+<li><strong>Cambiar el zoom</strong>: Usa el desplegable <strong>Zoom</strong> para cambiar entre resolución de cuadrícula de corcheas, corcheas, semicorcheas y fusas.</li>
+<li><strong>Navegar páginas</strong>: Usa <strong>Prev</strong> y <strong>Next</strong> para moverse por las páginas del patrón.</li>
+<li><strong>Guardar como groove o fill</strong>: Selecciona el botón de radio <strong>Groove</strong> o <strong>Fill</strong>, elige un estilo del desplegable y haz clic en <strong>Save Pattern As</strong> para escribir el patrón en <code>config/grooves/</code> o <code>config/fills/</code>.</li>
+</ol>
+
+<h3 id="step-editor-command-line">Convertidor de línea de comandos</h3>
+
+<p>El editor de pasos utiliza <code>tools/midi_to_tab.exe</code> internamente para convertir archivos MIDI al formato tab. También puedes ejecutarlo directamente:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<h3 id="step-editor-paths">Rutas y configuración</h3>
+
+<p>El editor de pasos resuelve las rutas relativas a su propia ubicación:</p>
+
+<li><strong>Ejecutable</strong>: <code>tools/step_editor/step_editor.exe</code></li>
+<li><strong>Convertidor</strong>: <code>midi_to_tab.exe</code> en el mismo directorio</li>
+<li><strong>Estilos</strong>: <code>..\..\config\styles.txt</code> (dos niveles arriba de <code>tools/step_editor/</code>)</li>
+<li><strong>Salida de grooves</strong>: <code>..\..\config\grooves\</code></li>
+<li><strong>Salida de fills</strong>: <code>..\..\config\fills\</code></li>
+
+<p>Cuando se inicia desde la GUI principal de ChameleonDrummer, el editor de pasos hereda el mismo directorio de trabajo y configuración.</p>
+
+<h3 id="step-editor-dark-mode">Modo oscuro</h3>
+
+<p>El editor de pasos admite el modo oscuro, acorde con el tema oscuro de la GUI principal. Sigue el tema del sistema por defecto y se puede alternar en la interfaz.</p>
 
 <hr>
 

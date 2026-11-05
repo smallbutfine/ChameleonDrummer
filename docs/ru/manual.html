@@ -38,6 +38,7 @@
 <p>3. <a href="#quick-start">Quick Start</a></p>
 <p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
 <p>5. <a href="#the-gui-program">The GUI Program</a></p>
+<p>5.5. <a href="#step-editor">Step Editor</a></p>
 <p>6. <a href="#reaper-integration">REAPER Integration</a></p>
 <p>7. <a href="#ardour-integration">Ardour Integration</a></p>
 <p>8. <a href="#the-cli-program">The CLI Program</a></p>
@@ -291,6 +292,55 @@ S ... ... ... xxx</code></pre>
 <li>Configuration persistence via <code>gui.ini</code></li>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+
+<p>GUI также включает кнопку <strong>Step Editor</strong>, которая открывает автономное приложение редактора шагов (<code>tools/step_editor/step_editor.exe</code>). Редактор шагов позволяет визуально редактировать барабанные паттерны на шаговой сетке, конвертировать MIDI-файлы в формат табулатуры и сохранять паттерны как grooves или fills. См. <a href="#step-editor">Step Editor</a> для подробностей.</p>
+
+<hr>
+
+<h2 id="step-editor">Step Editor</h2>
+
+<p>Step Editor (<code>tools/step_editor/step_editor.exe</code>) — это автономное приложение GUI Lazarus для визуального создания и редактирования барабанных паттернов. Он работает вместе с основной GUI ChameleonDrummer — вы можете открыть его через кнопку <strong>Step Editor</strong> в основной GUI, или запустить напрямую.</p>
+
+<h3 id="step-editor-overview">Обзор</h3>
+
+<p>Редактор шагов отображает барабанный паттерн в виде сетки: строки — это инструменты барабана, столбцы — временные шаги. Нажимайте на ячейки, чтобы включать/выключать удары. Толстые вертикальные линии отмечают границы тактов.</p>
+
+<h3 id="step-editor-workflow">Рабочий процесс</h3>
+
+<ol>
+<li><strong>Загрузить MIDI-файл</strong>: Нажмите <strong>Обзор</strong> рядом с полем MIDI-файла и выберите файл <code>.mid</code>. Файл автоматически конвертируется в формат табулатуры с помощью командной утилиты <code>midi_to_tab.exe</code> и загружается в сетку.</li>
+<li><strong>Или загрузить таб-файл</strong>: Браузер файлов также принимает файлы <code>.tab</code> напрямую.</li>
+<li><strong>Редактировать паттерн</strong>: Нажимайте на ячейки, чтобы переключать удары. Выберите столбец, чтобы отредактировать целый шаг сразу.</li>
+<li><strong>Изменить размер</strong>: Используйте выпадающий список <strong>Meter</strong>, чтобы установить размер такта (поддерживаются стандартные и триольные размеры, например <code>4/4T</code>, <code>6/8T</code>).</li>
+<li><strong>Изменить масштаб</strong>: Используйте выпадающий список <strong>Zoom</strong>, чтобы переключаться между разрешением сетки 4, 8, 16 и 32 нот.</li>
+<li><strong>Навигация по страницам</strong>: Используйте <strong>Prev</strong> и <strong>Next</strong>, чтобы перемещаться по страницам паттерна.</li>
+<li><strong>Сохранить как groove или fill</strong>: Выберите радиокнопку <strong>Groove</strong> или <strong>Fill</strong>, выберите стиль из выпадающего списка и нажмите <strong>Save Pattern As</strong>, чтобы записать паттерн в <code>config/grooves/</code> или <code>config/fills/</code>.</li>
+</ol>
+
+<h3 id="step-editor-command-line">Командная строка конвертера</h3>
+
+<p>Редактор шагов использует <code>tools/midi_to_tab.exe</code> для конвертации MIDI-файлов в формат табулатуры. Вы также можете запустить его напрямую:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+
+<h3 id="step-editor-paths">Пути и конфигурация</h3>
+
+<p>Редактор шагов разрешает пути относительно своего собственного расположения:</p>
+
+<li><strong>Исполняемый файл</strong>: <code>tools/step_editor/step_editor.exe</code></li>
+<li><strong>Конвертер</strong>: <code>midi_to_tab.exe</code> в том же каталоге</li>
+<li><strong>Стили</strong>: <code>..\..\config\styles.txt</code> (два уровня выше от <code>tools/step_editor/</code>)</li>
+<li><strong>Вывод grooves</strong>: <code>..\..\config\grooves\</code></li>
+<li><strong>Вывод fills</strong>: <code>..\..\config\fills\</code></li>
+
+<p>Когда редактор шагов запускается из основной GUI ChameleonDrummer, он наследует ту же рабочую директорию и конфигурацию.</p>
+
+<h3 id="step-editor-dark-mode">Темная тема</h3>
+
+<p>Редактор шагов поддерживает темную тему, соответствующую темной теме основной GUI. По умолчанию он следует теме системы и может быть переключен в интерфейсе.</p>
 
 <hr>
 
