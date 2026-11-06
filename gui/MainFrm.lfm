@@ -6,6 +6,7 @@ object MainForm: TMainForm
   Position = poScreenCenter
   ShowHint = True
   OnCreate = FormCreate
+  Menu = MainMenu
   object MainMenu: TMainMenu
     object mnuFile: TMenuItem
       Caption = '&File'
@@ -88,9 +89,9 @@ object MainForm: TMainForm
   end
   object gbSong: TGroupBox
     Left = 12
-    Top = 1
+    Top = 18
     Width = 416
-    Height = 520
+    Height = 512
     Caption = 'Song'
     object rbPattern: TRadioButton
       Left = 12
@@ -206,7 +207,7 @@ object MainForm: TMainForm
   end
   object gbOutput: TGroupBox
     Left = 436
-    Top = 1
+    Top = 18
     Width = 396
     Height = 150
     Caption = 'Output'
@@ -272,7 +273,7 @@ object MainForm: TMainForm
   end
   object gbPerformance: TGroupBox
     Left = 436
-    Top = 165
+    Top = 173
     Width = 396
     Height = 176
     Caption = 'Performance'
@@ -412,7 +413,7 @@ object MainForm: TMainForm
   end
   object chkRadioLength: TCheckBox
     Left = 436
-    Top = 395
+    Top = 385
     Width = 396
     Height = 18
     Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
@@ -422,15 +423,15 @@ object MainForm: TMainForm
   end
   object gbLog: TGroupBox
     Left = 12
-    Top = 522
+    Top = 532
     Width = 820
-    Height = 85
+    Height = 80
     Caption = 'Log'
     object memLog: TMemo
       Left = 8
       Top = 1
       Width = 804
-      Height = 79
+      Height = 75
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
