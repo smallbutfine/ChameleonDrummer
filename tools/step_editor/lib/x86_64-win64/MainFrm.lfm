@@ -36,7 +36,7 @@ object MainForm: TMainForm
     Top = 13
     Width = 140
     Height = 25
-    Caption = 'New Empty Pattern'
+    Caption = 'Add Pattern'
     TabOrder = 2
     OnClick = btnNewPatternClick
   end
@@ -89,6 +89,7 @@ object MainForm: TMainForm
     Width = 248
     Height = 23
     TabOrder = 2
+    OnChange = cbStyleChange
   end
   object lblKind: TLabel
     Left = 16
@@ -103,6 +104,7 @@ object MainForm: TMainForm
     Width = 248
     Height = 23
     TabOrder = 3
+    OnChange = cbKindChange
   end
   object lblIntensity: TLabel
     Left = 16
@@ -118,6 +120,7 @@ object MainForm: TMainForm
     Height = 23
     TabOrder = 4
     Text = '0.2-0.6'
+    OnChange = cbIntensityChange
   end
   object lblEnergy: TLabel
     Left = 16
@@ -133,6 +136,7 @@ object MainForm: TMainForm
     Height = 23
     TabOrder = 5
     Text = '0.5'
+    OnChange = cbEnergyChange
   end
   object lblResolution: TLabel
     Left = 16
@@ -162,6 +166,7 @@ object MainForm: TMainForm
     Width = 248
     Height = 23
     TabOrder = 7
+    OnChange = cbMeterChange
   end
   object lblEditor: TLabel
     Left = 296
@@ -172,9 +177,9 @@ object MainForm: TMainForm
   end
   object sgTab: TStringGrid
     Left = 296
-    Top = 40
+    Top = 67
     Width = 632
-    Height = 440
+    Height = 277
     ColCount = 2
     RowCount = 2
     FixedCols = 1
@@ -182,48 +187,30 @@ object MainForm: TMainForm
     TabOrder = 0
     OnClick = sgTabClick
     OnSelectCell = sgTabSelectCell
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect]
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goSmoothScroll, goThumbTracking]
   end
   object lblZoom: TLabel
     Left = 296
-    Top = 488
+    Top = 367
     Width = 32
     Height = 15
     Caption = 'Zoom:'
   end
   object cbZoom: TComboBox
     Left = 332
-    Top = 485
+    Top = 364
     Width = 121
     Height = 23
     TabOrder = 0
     Text = '16 steps'
     OnChange = cbZoomChange
   end
-  object btnPrevPage: TButton
-    Left = 464
-    Top = 486
-    Width = 75
-    Height = 25
-    Caption = 'Prev'
-    TabOrder = 1
-    OnClick = btnPrevPageClick
-  end
-  object btnNextPage: TButton
-    Left = 544
-    Top = 486
-    Width = 75
-    Height = 25
-    Caption = 'Next'
-    TabOrder = 2
-    OnClick = btnNextPageClick
-  end
-  object lblPageInfo: TLabel
-    Left = 624
-    Top = 490
-    Width = 58
+  object lblHeaderPreview: TLabel
+    Left = 296
+    Top = 392
+    Width = 632
     Height = 15
-    Caption = 'Page 1 of 1'
+    Caption = 'Header preview'
   end
   object btnSavePatternAs: TButton
     Left = 16
@@ -235,9 +222,9 @@ object MainForm: TMainForm
     OnClick = btnSavePatternAsClick
   end
   object memStatus: TMemo
-    Left = 16
-    Top = 520
-    Width = 280
+    Left = 296
+    Top = 412
+    Width = 632
     Height = 80
     TabOrder = 4
   end
@@ -250,6 +237,5 @@ object MainForm: TMainForm
       item
         Width = 50
       end>
-    SimpleText = 'Ready'
   end
 end

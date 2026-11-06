@@ -201,14 +201,14 @@ object MainForm: TMainForm
       Caption = 'Strict meter'
       Checked = True
       ShowHint = True
-      Caption = 'Only use patterns with exactly this time signature'
+      Caption = 'Strictly use exactly this time signature.'
     end
   end
   object gbOutput: TGroupBox
     Left = 436
     Top = 1
     Width = 396
-    Height = 210
+    Height = 150
     Caption = 'Output'
     object lblExport: TLabel
       Left = 12
@@ -266,7 +266,7 @@ object MainForm: TMainForm
       Top = 111
       Width = 370
       Height = 72
-      Caption = 'Writes <name>.mid. With REAPER mode also <name>.rpp. With Ardour mode also <name>.ardour'
+      Caption = 'Writes <name>.mid, <name>.rpp, <name>.ardour'.
       WordWrap = True
     end
   end
