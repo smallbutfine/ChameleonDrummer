@@ -44,7 +44,7 @@ constructor TWindowAutoScaler.Create(AForm: TCustomForm);
 var
   i: Integer;
   Info: TControlScaleInfo;
-  Grid: TCustomGrid;
+  Grid: TStringGrid;
 begin
   FForm := AForm;
   FBaseWidth := FForm.ClientWidth;
@@ -52,7 +52,7 @@ begin
   FEnabled := True;
 
   FOldOnResize := FForm.OnResize;
-  FForm.OnResize := OnFormResize;
+  FForm.OnResize := TNotifyEvent(@Self.OnFormResize);
 
   CollectControls(FForm);
 end;
@@ -68,7 +68,7 @@ procedure TWindowAutoScaler.CollectControls(AControl: TControl);
 var
   i: Integer;
   Info: TControlScaleInfo;
-  Grid: TCustomGrid;
+  Grid: TStringGrid;
 begin
   Info.Control := AControl;
   Info.Left := AControl.Left;
@@ -80,9 +80,9 @@ begin
   Info.Anchors := AControl.Anchors;
   Info.ScaleEnabled := AControl.Tag = 0;
 
-  if AControl is TCustomGrid then
+  if AControl is TStringGrid then
   begin
-    Grid := TCustomGrid(AControl);
+    Grid := TStringGrid(AControl);
     Info.DefaultRowHeight := Grid.DefaultRowHeight;
     Info.DefaultColWidth := Grid.DefaultColWidth;
     SetLength(Info.ColWidths, Grid.ColCount);
@@ -110,12 +110,11 @@ end;
 
 procedure TWindowAutoScaler.ApplyScale(AControl: TControl; const AInfo: TControlScaleInfo; AScale: Double);
 var
-  Grid: TCustomGrid;
+  Grid: TStringGrid;
   i: Integer;
 begin
   if not AInfo.ScaleEnabled then Exit;
 
-  // Respect alignment: don't resize aligned controls, only move them
   if AInfo.Align <> alNone then
   begin
     if not (akLeft in AInfo.Anchors) then
@@ -133,9 +132,9 @@ begin
   if AInfo.FontSize > 0 then
     AControl.Font.Size := Round(AInfo.FontSize * AScale);
 
-  if AControl is TCustomGrid then
+  if AControl is TStringGrid then
   begin
-    Grid := TCustomGrid(AControl);
+    Grid := TStringGrid(AControl);
     Grid.DefaultRowHeight := Round(AInfo.DefaultRowHeight * AScale);
     Grid.DefaultColWidth := Round(AInfo.DefaultColWidth * AScale);
     for i := 0 to Grid.ColCount - 1 do

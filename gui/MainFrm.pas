@@ -17,7 +17,7 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
   Dialogs, LCLType, Graphics, {$IFDEF MSWINDOWS}DarkTheme, ShellApi, Windows,{$ENDIF} process, StrUtils, menus, CliLookup,
-  time_signature;
+  time_signature, AutoScale;
 
 type
   TIntDynArray = array of Integer;
@@ -105,6 +105,7 @@ type
     {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
+    procedure FormDestroy(Sender: TObject);
 
   private
     FSectionNames: TStrDynArray;
@@ -112,6 +113,7 @@ type
     FCliTool: String;
      {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
     FDark: Boolean;{$ENDIF}
+    FAutoScaler: TWindowAutoScaler;
     procedure Log(const AText: String);
     {$IFDEF MSWINDOWS}procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
     procedure SystemThemeChanged(Sender: TObject);
@@ -246,6 +248,14 @@ begin
 
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged; SetTheme(LoadThemeChoice, False);{$ENDIF}
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
+
+  FAutoScaler := TWindowAutoScaler.Create(Self);
+  OnDestroy := @FormDestroy;
+  end;
+
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  FAutoScaler.Free;
 end;
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
