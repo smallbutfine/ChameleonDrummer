@@ -10,7 +10,7 @@ setlocal enabledelayedexpansion
 if "%GITHUB_ACTIONS%"=="true" ( set "IS_CI=1" ) else ( set "IS_CI=0" )
 
 :: Jahr automatisch ermitteln
-for /f "tokens=2 delims==" %%Y in ('wmic OS get LocalDateTime /format:list 2^>nul') do if not defined BUILD_YEAR set "BUILD_YEAR=%%Y"
+for /f %%a in ('powershell -Command "Get-Date -Format yyyy"') do if not defined BUILD_YEAR set "BUILD_YEAR=%%a"
 if not defined BUILD_YEAR set "BUILD_YEAR=%DATE:~-4%"
 
 :: Inno Setup Pfad
