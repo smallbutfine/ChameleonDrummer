@@ -224,7 +224,7 @@ object MainForm: TMainForm
       Height = 24
       Style = csDropDownList
       ShowHint = True
-      Hint = 'Select export format (MIDI, MIDI+REAPER, MIDI+Ardour)'
+      Hint = 'Select export format (MIDI, MIDI+REAPER, MIDI+REAPER+Ardour, MIDI+Ardour)'
     end
     object lblFile: TLabel
       Left = 12
@@ -266,7 +266,7 @@ object MainForm: TMainForm
       Top = 111
       Width = 370
       Height = 72
-      Caption = 'Writes <name>.mid, and with the export mode also <name>.rpp and <name>.ardour\n<name>.format'
+      Caption = 'Writes <name>.mid. With REAPER mode also <name>.rpp. With Ardour mode also <name>.ardour'
       WordWrap = True
     end
   end

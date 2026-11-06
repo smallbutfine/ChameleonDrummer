@@ -165,6 +165,7 @@ const
   ExportMIDI = 0;
   ExportREAPER = 1;
   ExportArdour = 2;
+  ExportMIDIArdour = 3;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
@@ -211,6 +212,7 @@ begin
   cbExport.Items.Add('MIDI only');
   cbExport.Items.Add('MIDI + REAPER project');
   cbExport.Items.Add('MIDI + REAPER project + Ardour session');
+  cbExport.Items.Add('MIDI + Ardour session');
   cbExport.ItemIndex := ExportREAPER;
   edOutput.Text := 'song';
   chkOpenFolder.Checked := False;
@@ -760,33 +762,34 @@ begin
         if tbSwing.Position > 0 then begin
           Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
         end;
-        if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
+        if cbExport.ItemIndex = ExportREAPER then Args.Add('--reaper');
         if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
+        if cbExport.ItemIndex = ExportMIDIArdour then Args.Add('--ardour');
       end
-      else begin
-        { Custom structure mode }
-        SyncSectionArraysFromControls;
-        Log(Format('Song mode: %d sections, genre=%s style=%s',
-          [Length(FSectionNames), SelectedGenre, SelectedStyle]));
-        Args.Add('generate');
-        CommonOptions(Args);
-        if cbDrummer.ItemIndex >= 0 then begin
-          Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
-        end;
-        Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
-        Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
-        { The section list on screen is the song structure. }
-        for SecIdx := 0 to High(FSectionNames) do begin
-          Args.Add('--section');
-          Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
-        end;
-        if tbSwing.Position > 0 then begin
-          Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
-        end;
-        { The REAPER project goes with the Ardour session too. }
-        if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
-        if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
-      end;
+    else begin
+                { Custom structure mode }
+                SyncSectionArraysFromControls;
+                Log(Format('Song mode: %d sections, genre=%s style=%s',
+                  [Length(FSectionNames), SelectedGenre, SelectedStyle]));
+                Args.Add('generate');
+                CommonOptions(Args);
+                if cbDrummer.ItemIndex >= 0 then begin
+                  Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
+                end;
+                Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
+                Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
+                { The section list on screen is the song structure. }
+                for SecIdx := 0 to High(FSectionNames) do begin
+                  Args.Add('--section');
+                  Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
+                end;
+                if tbSwing.Position > 0 then begin
+                  Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
+                end;
+                if cbExport.ItemIndex = ExportREAPER then Args.Add('--reaper');
+                if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
+                if cbExport.ItemIndex = ExportMIDIArdour then Args.Add('--ardour');
+              end;
     end;
 
     if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Working...';
