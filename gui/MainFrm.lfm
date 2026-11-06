@@ -2,7 +2,7 @@ object MainForm: TMainForm
   ClientHeight = 640
   ClientWidth = 844
   Caption = 'ChameleonDrummer'
-  BorderStyle = bsDialog
+  BorderStyle = bsSizeable
   Position = poScreenCenter
   ShowHint = True
   OnCreate = FormCreate
