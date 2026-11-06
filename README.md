@@ -10,7 +10,7 @@ exports it as MIDI (plus REAPER / Ardour sessions).
 - **17 drummers** — Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
   Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues
 - **Multi-keymap** — GM, AD2, EZDrummer 3, Yamaha XG, or user-defined JSON keymaps
-- **Odd meters** — 2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … up to 32/16
+- **Odd meters** — 2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … 
 - **External data** — grooves, fills, defaults and song structures are plain
   text/JSON files you can edit without recompiling
 - **DAW export** — MIDI with REAPER `.rpp` markers or Ardour `.ardour` sessions
