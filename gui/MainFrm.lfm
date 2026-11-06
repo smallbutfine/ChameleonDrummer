@@ -272,7 +272,7 @@ object MainForm: TMainForm
   end
   object gbPerformance: TGroupBox
     Left = 436
-    Top = 225
+    Top = 165
     Width = 396
     Height = 176
     Caption = 'Performance'
@@ -412,7 +412,7 @@ object MainForm: TMainForm
   end
   object chkRadioLength: TCheckBox
     Left = 436
-    Top = 455
+    Top = 395
     Width = 396
     Height = 18
     Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
