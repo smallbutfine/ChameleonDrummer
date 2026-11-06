@@ -55,3 +55,6 @@ backups/
 # Test output files
 test_*.mid
 tools/step_editor/step_editor.rc
+tools/midi_to_tab.obj
+tools/midi_to_tab.rc
+tools/step_editor/lib/x86_64-win64/
