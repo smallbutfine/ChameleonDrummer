@@ -266,7 +266,7 @@ object MainForm: TMainForm
       Top = 111
       Width = 370
       Height = 72
-      Caption = 'Writes <name>.mid, <name>.rpp, <name>.ardour'.
+      Caption = 'Writes <name>.mid, <name>.rpp, <name>.ardour'
       WordWrap = True
     end
   end
