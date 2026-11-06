@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Dialogs,
-  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}DarkTheme,{$ENDIF} Windows, Graphics;
+  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}DarkTheme,{$ENDIF} Windows, Graphics,
+  AutoScale;
 
 type
   TStepChar = (scDot, scX, scAccent, scSoft, scGhost);
@@ -90,6 +91,7 @@ type
     FInstOrder: array of string;
     FInstColMap: array of Integer;
     {$IFDEF MSWINDOWS}FDark: Boolean;{$ENDIF}
+    FAutoScaler: TWindowAutoScaler;
 
     procedure LoadMidiAndConvert;
     procedure LoadTabFile(const AFileName: string);
@@ -247,6 +249,7 @@ begin
   OnSystemThemeChange := @SystemThemeChanged;
   ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
   {$ENDIF}
+  {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
   sbStatus.Panels[0].Text := 'Ready';
   UpdateHeaderPreview;
 
@@ -257,10 +260,12 @@ begin
   else
     LoadDrummerList;
 
+  FAutoScaler := TWindowAutoScaler.Create(Self);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  FAutoScaler.Free;
   FTabBars := nil;
   FInstOrder := nil;
   FInstColMap := nil;
