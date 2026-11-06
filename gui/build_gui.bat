@@ -12,7 +12,7 @@ cd ..
 if "%GITHUB_ACTIONS%"=="true" ( set "IS_CI=1" ) else ( set "IS_CI=0" )
 
 :: Jahr automatisch ermitteln
-for /f %%a in ('powershell -Command "Get-Date -Format yyyy"') do if not defined BUILD_YEAR set "BUILD_YEAR=%%a"
+for /f "tokens=2 delims==" %%Y in ('wmic OS get LocalDateTime /format:list 2^>nul') do if not defined BUILD_YEAR set "BUILD_YEAR=%%Y"
 if not defined BUILD_YEAR set "BUILD_YEAR=%DATE:~-4%"
 echo ==================================================
 echo   1. Projektname aus Datei 'NAME' einlesen...
