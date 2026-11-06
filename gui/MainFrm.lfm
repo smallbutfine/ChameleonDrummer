@@ -89,7 +89,7 @@ object MainForm: TMainForm
   end
   object gbSong: TGroupBox
     Left = 12
-    Top = 18
+    Top = 8
     Width = 416
     Height = 512
     Caption = 'Song'
@@ -207,7 +207,7 @@ object MainForm: TMainForm
   end
   object gbOutput: TGroupBox
     Left = 436
-    Top = 18
+    Top = 8
     Width = 396
     Height = 150
     Caption = 'Output'
@@ -273,7 +273,7 @@ object MainForm: TMainForm
   end
   object gbPerformance: TGroupBox
     Left = 436
-    Top = 173
+    Top = 163
     Width = 396
     Height = 176
     Caption = 'Performance'
