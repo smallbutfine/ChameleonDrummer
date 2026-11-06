@@ -6,6 +6,7 @@ object MainForm: TMainForm
   Position = poScreenCenter
   ShowHint = True
   OnCreate = FormCreate
+  Menu = MainMenu
   object MainMenu: TMainMenu
     object mnuFile: TMenuItem
       Caption = '&File'
@@ -86,7 +87,6 @@ object MainForm: TMainForm
       end
     end
   end
-  Menu = MainMenu
   object gbSong: TGroupBox
     Left = 12
     Top = 18
