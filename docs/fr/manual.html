@@ -20,53 +20,24 @@
       <a href="../index.html">EN</a>
       <a href="../de/index.html">DE</a>
       <a href="../es/index.html">ES</a>
-      <a href=\"fr/index.html\">FR</a>
+      <a href="../fr/index.html">FR</a>
+      <a href="../pt/index.html">PT</a>
+      <a href="../ru/index.html">RU</a>
+      <a href="../zh/index.html">ZH</a>
     </nav>
   </div>
 </header>
 <section class="hero">
   <div class="container">
     <h2>GÉNÉRER DES PISTES DE BATTERIE RÉALISTES</h2>
-    <p>5 genres · 38 styles · 17 batteurs · Compases impairs · Grooves/fills externes · Export REAPER & Ardour</p>
+    <p>5 genres · 38 styles · 17 batteurs · Mesures impaires · Grooves/fills externes · Export REAPER & Ardour</p>
     <div class="cta">
       <a href="docs.html" class="btn">LIRE LE MANUEL</a>
       <a href="concepts.html" class="btn btn-secondary">COMMENT ÇA MARCHE</a>
     </div>
   </div>
 </section>
-<section class="features">
-  <div class="container">
-    <h2>CARACTÉRISTIQUES</h2>
-    <div class="grid">
-      <article>
-        <h3>MULTI-GENRE</h3>
-        <p>Metal, Rock, Jazz, Funk, Electronic — chacun avec 26 styles authentiques.</p>
-      </article>
-      <article>
-        <h3>IMITATION DE BATTEURS</h3>
-        <p>Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart, Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues.</p>
-      </article>
-      <article>
-        <h3>MESURES IMPAIRES</h3>
-        <p>2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … jusqu'à 32/16. Changements de mesure par section supportés.</p>
-      </article>
-      <article>
-        <h3>DONNÉES EXTERNES</h3>
-        <p>Grooves, fills, valeurs par défaut et structures sont des fichiers texte/JSON — modifiez sans recompiler.</p>
-      </article>
-      <article>
-        <h3>INTÉGRATION DAW</h3>
-        <p>Export MIDI avec projets REAPER .rpp ou sessions Ardour .ardour.</p>
-      </article>
-      <article>
-        <h3>HUMANISATION</h3>
-        <p>Jitter de timing/vélocité, notes fantômes, swing, contraintes de jouabilité physique.</p>
-      </article>
-    </div>
-  </div>
-</section>
 <section class="concepts-preview"><div class="container"><h2>LES PRINCIPES DERRIÈRE LA GÉNÉRATION MIDI</h2><p>De <code>ComposerV2.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, et <code>MidiIO.pas</code> — le code source révèle un pipeline structuré.</p><ol><li><strong>Modèle de Motif</strong> — Pulses avec position, instrument, vélocité, flags ghost/accent.</li><li><strong>Structure de Chanson</strong> — Sections avec motifs, fills, segments et offsets de groove.</li><li><strong>Évolution Bar par Bar</strong> — Sélection aléatoire pondérée avec bandes d'intensité, phases macro, fills contextuels.</li><li><strong>Contraintes Physiques</strong> — Le correcteur de motifs élimine les hits impossibles.</li><li><strong>Humanisation</strong> — Variation de timing et vélocité pour le réalisme.</li><li><strong>Export MIDI</strong> — Événements VLQ-encodés avec métadonnées BPM/PPQ.</li></ol><a href="docs.html" class="btn">LIRE LE MANUEL COMPLET</a></div></section>
-
 <section class="download-section">
   <div class="container">
     <h2>Télécharger v1.0.895</h2>
@@ -74,17 +45,11 @@
     <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">Télécharger v1.0.895</a>
   </div>
 </section>
-
 <h2 id="step-editor">Step Editor</h2>
-
 <p>Le Step Editor (<code>tools/step_editor/step_editor.exe</code>) est une application GUI Lazarus autonome pour créer et éditer visuellement des motifs de batterie. Il fonctionne avec la GUI principale de ChameleonDrummer — vous pouvez l'ouvrir depuis le bouton <strong>Step Editor</strong> de la GUI principale, ou l'exécuter directement.</p>
-
 <h3 id="step-editor-overview">Aperçu</h3>
-
 <p>L'éditeur de pas affiche un motif de batterie sous forme de grille : les lignes sont les instruments de batterie, les colonnes sont les pas de temps. Cliquez sur les cellules pour activer/désactiver les coups. Des lignes verticales épaisses marquent les limites de mesure.</p>
-
 <h3 id="step-editor-workflow">Flux de travail</h3>
-
 <ol>
 <li><strong>Charger un fichier MIDI</strong>: Cliquez sur <strong>Parcourir</strong> à côté du champ de fichier MIDI et sélectionnez un fichier <code>.mid</code>. Le fichier est automatiquement converti au format tab à l'aide de l'outil en ligne de commande <code>midi_to_tab.exe</code> et chargé dans la grille.</li>
 <li><strong>Ou charger un fichier tab</strong>: Le navigateur de fichiers accepte également les fichiers <code>.tab</code> directement.</li>
@@ -94,32 +59,22 @@
 <li><strong>Naviguer entre les pages</strong>: Utilisez <strong>Précédent</strong> et <strong>Suivant</strong> pour naviguer dans les pages du motif.</li>
 <li><strong>Enregistrer comme groove ou fill</strong>: Sélectionnez le bouton radio <strong>Groove</strong> ou <strong>Fill</strong>, choisissez un style dans le menu déroulant, et cliquez sur <strong>Save Pattern As</strong> pour écrire le motif dans <code>config/grooves/</code> ou <code>config/fills/</code>.</li>
 </ol>
-
 <h3 id="step-editor-command-line">Convertisseur en ligne de commande</h3>
-
 <p>L'éditeur de pas utilise <code>tools/midi_to_tab.exe</code> en arrière-plan pour convertir les fichiers MIDI au format tab. Vous pouvez également l'exécuter directement:</p>
-
 <pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
 midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
 midi_to_tab.exe input.mid --meter 7/8 --resolution 16
 midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
-
 <h3 id="step-editor-paths">Chemins et configuration</h3>
-
 <p>L'éditeur de pas résout les chemins relatifs à son propre emplacement:</p>
-
 <li><strong>Exécutable</strong>: <code>tools/step_editor/step_editor.exe</code></li>
 <li><strong>Convertisseur</strong>: <code>midi_to_tab.exe</code> dans le même répertoire</li>
 <li><strong>Styles</strong>: <code>..\..\config\styles.txt</code> (deux niveaux au-dessus de <code>tools/step_editor/</code>)</li>
 <li><strong>Sortie grooves</strong>: <code>..\..\config\grooves\</code></li>
 <li><strong>Sortie fills</strong>: <code>..\..\config\fills\</code></li>
-
 <p>Lorsqu'il est lancé depuis la GUI principale de ChameleonDrummer, l'éditeur de pas hérite du même répertoire de travail et de la même configuration.</p>
-
 <h3 id="step-editor-dark-mode">Mode sombre</h3>
-
 <p>L'éditeur de pas prend en charge le mode sombre, assorti au thème sombre de la GUI principale. Il suit le thème du système par défaut et peut être basculé dans l'interface.</p>
-
 <footer><div class="container"><p>ChameleonDrummer — FreePascal / Lazarus Génération MIDI Batterie.</p><p>Source: <code>ChameleonDrummer/</code> · Manuel: <code>docs/USER_MANUAL.md</code> · Format groove: <code>README.md</code></p></div></footer>
 </body>
 </html>
