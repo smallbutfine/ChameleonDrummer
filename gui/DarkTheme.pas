@@ -64,6 +64,9 @@ procedure ApplyTheme(AForm: TCustomForm; ADark: Boolean);
   ApplyTheme (the section list). }
 procedure ThemeControlTree(ARoot: TControl; ADark: Boolean);
 
+{ Removes the window subclass installed by HookForm. Call in FormDestroy. }
+procedure UnhookForm(AWnd: HWND);
+
 var
   { Called when Windows switches between light and dark apps while the program
     runs (only the form that was given to ApplyTheme reports it). }
@@ -557,6 +560,17 @@ begin
   if GetProp(AWnd, PROP_OLD_PROC) <> 0 then
     Exit;
   SetProp(AWnd, PROP_OLD_PROC, THandle(SetWindowLongPtr(AWnd, GWLP_WNDPROC, PtrInt(@ThemeWndProc))));
+end;
+
+procedure UnhookForm(AWnd: HWND);
+var
+  OldProc: WNDPROC;
+begin
+  if GetProp(AWnd, PROP_OLD_PROC) = 0 then
+    Exit;
+  OldProc := WNDPROC(GetProp(AWnd, PROP_OLD_PROC));
+  SetWindowLongPtr(AWnd, GWLP_WNDPROC, PtrInt(OldProc));
+  RemoveProp(AWnd, PROP_OLD_PROC);
 end;
 
 { ---- the form ----------------------------------------------------------- }

@@ -114,6 +114,7 @@ type
      {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
     FDark: Boolean;{$ENDIF}
     FAutoScaler: TWindowAutoScaler;
+    FInThemeApply: Boolean;
     procedure Log(const AText: String);
     {$IFDEF MSWINDOWS}procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
     procedure SystemThemeChanged(Sender: TObject);
@@ -256,6 +257,9 @@ begin
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FAutoScaler.Free;
+  {$IFDEF MSWINDOWS}
+  UnhookForm(Handle);
+  {$ENDIF}
 end;
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
@@ -267,24 +271,35 @@ end;
 
 procedure TMainForm.SetTheme(AChoice: TThemeChoice; ASave: Boolean);
 begin
-  FThemeChoice := AChoice;
-  FDark := ResolveDark(AChoice);
-  ThemeMenuChecks;
-  ApplyTheme(Self, FDark);
-  { Update status bar panel colors for dark mode }
-  if Assigned(StatusBar) then begin
-    if FDark then begin
-      StatusBar.Panels[0].Style := psOwnerDraw;
-      StatusBar.Panels[1].Style := psOwnerDraw;
-      StatusBar.Panels[2].Style := psOwnerDraw;
-    end else begin
-      StatusBar.Panels[0].Style := psText;
-      StatusBar.Panels[1].Style := psText;
-      StatusBar.Panels[2].Style := psText;
+  if FInThemeApply then Exit;
+  FInThemeApply := True;
+  try
+    FThemeChoice := AChoice;
+    FDark := ResolveDark(AChoice);
+    ThemeMenuChecks;
+    ApplyTheme(Self, FDark);
+    { Update status bar panel colors for dark mode - avoid paint race }
+    if Assigned(StatusBar) then begin
+      StatusBar.OnDrawPanel := nil;
+      try
+        if FDark then begin
+          StatusBar.Panels[0].Style := psOwnerDraw;
+          StatusBar.Panels[1].Style := psOwnerDraw;
+          StatusBar.Panels[2].Style := psOwnerDraw;
+        end else begin
+          StatusBar.Panels[0].Style := psText;
+          StatusBar.Panels[1].Style := psText;
+          StatusBar.Panels[2].Style := psText;
+        end;
+      finally
+        StatusBar.OnDrawPanel := @StatusBarDrawPanel;
+      end;
     end;
+    if ASave then
+      SaveThemeChoice(AChoice);
+  finally
+    FInThemeApply := False;
   end;
-  if ASave then
-    SaveThemeChoice(AChoice);
 end;
 
 procedure TMainForm.SystemThemeChanged(Sender: TObject);
@@ -524,8 +539,10 @@ begin
 
   SetLength(FSectionBars, Length(FSectionNames));
 
-  Y := 8;
-  for I := 0 to High(FSectionNames) do begin
+  sbSections.DisableAlign;
+  try
+    Y := 8;
+    for I := 0 to High(FSectionNames) do begin
     lblName := TLabel.Create(sbSections);
     with lblName do begin
       Parent := sbSections;
@@ -631,7 +648,10 @@ begin
   end;
 
   { Update scroll range }
-  sbSections.VertScrollBar.Range := Y + 40;
+    sbSections.VertScrollBar.Range := Y + 40;
+  finally
+    sbSections.EnableAlign;
+  end;
 
   { the controls made here are new: give them the current colours }
   {$IFDEF MSWINDOWS}ThemeControlTree(sbSections, FDark);{$ENDIF}
@@ -688,7 +708,6 @@ begin
     { Suspend redraw during control recreation to prevent flash }
     gbSong.DoubleBuffered := True;
     ResetToDefaultStructure;
-    Application.ProcessMessages;
   end;
 end;
 
@@ -953,28 +972,11 @@ begin
 end;
 
 procedure TMainForm.ComboBoxDropDown(Sender: TObject);
-var
-  CB: TComboBox;
-  ListHandle: HWND;
 begin
-  if not FDark then Exit;
-  CB := Sender as TComboBox;
-  { The dropdown list is a child window of the combo box }
-  ListHandle := FindWindowEx(CB.Handle, 0, 'LCLLISTBOX', nil);
-  if ListHandle = 0 then
-    ListHandle := FindWindowEx(CB.Handle, 0, 'TListBox', nil);
-  if ListHandle = 0 then
-    ListHandle := GetWindow(CB.Handle, GW_CHILD);
-  if ListHandle <> 0 then begin
-    { Theme the dropdown list with dark colors }
-    SetWindowLong(ListHandle, GWL_STYLE, GetWindowLong(ListHandle, GWL_STYLE) or WS_BORDER);
-    SetWindowPos(ListHandle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
-    { Apply dark theme colors to the dropdown list }
-    SendMessage(ListHandle, WM_ERASEBKGND, 0, 0);
-    InvalidateRect(ListHandle, nil, True);
-    { Force the listbox to use dark colors }
-    SendMessage(ListHandle, LB_SETITEMHEIGHT, 0, 20);
-  end;
+  { Dropdown theming is handled by Windows dark mode API via SetAppDarkMode.
+    The previous handle-hack (FindWindowEx + SendMessage) was unsafe:
+    internal LCL listbox handles can be destroyed between OnDropDown and here,
+    causing CTD on SendMessage/InvalidateRect to dead handles. }
 end;
 
 procedure TMainForm.mnuAboutClick(Sender: TObject);
