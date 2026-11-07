@@ -92,6 +92,7 @@ type
     FInstColMap: array of Integer;
     {$IFDEF MSWINDOWS}FDark: Boolean;{$ENDIF}
     FAutoScaler: TWindowAutoScaler;
+    FInThemeApply: Boolean;
 
     procedure LoadMidiAndConvert;
     procedure LoadTabFile(const AFileName: string);
@@ -266,6 +267,9 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FAutoScaler.Free;
+  {$IFDEF MSWINDOWS}
+  UnhookForm(Handle);
+  {$ENDIF}
   FTabBars := nil;
   FInstOrder := nil;
   FInstColMap := nil;
@@ -1173,51 +1177,61 @@ end;
 {$IFDEF MSWINDOWS}
 procedure TMainForm.ApplyDarkTheme(ADark: Boolean);
 begin
-  FDark := ADark;
-  ApplyTheme(Self, FDark);
-  ThemeControlTree(Self, FDark);
-  // Update combo boxes for owner-draw
-  cbMapping.Style := csOwnerDrawFixed;
-  cbStyle.Style := csOwnerDrawFixed;
-  cbKind.Style := csOwnerDrawFixed;
-  cbResolution.Style := csOwnerDrawFixed;
-  cbMeter.Style := csOwnerDrawFixed;
-  cbIntensity.Style := csOwnerDrawFixed;
-  cbEnergy.Style := csOwnerDrawFixed;
-  cbZoom.Style := csOwnerDrawFixed;
-  cbMapping.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbStyle.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbKind.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbResolution.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbMeter.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbIntensity.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbEnergy.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbZoom.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-  cbMapping.OnDropDown := @ComboBoxDropDown;
-  cbStyle.OnDropDown := @ComboBoxDropDown;
-  cbKind.OnDropDown := @ComboBoxDropDown;
-  cbResolution.OnDropDown := @ComboBoxDropDown;
-  cbMeter.OnDropDown := @ComboBoxDropDown;
-  cbIntensity.OnDropDown := @ComboBoxDropDown;
-  cbEnergy.OnDropDown := @ComboBoxDropDown;
-  cbZoom.OnDropDown := @ComboBoxDropDown;
-  // Update status bar panel colors for dark mode
-  if FDark then begin
-    sbStatus.Panels[0].Style := psOwnerDraw;
-  end else begin
-    sbStatus.Panels[0].Style := psText;
+  if FInThemeApply then Exit;
+  FInThemeApply := True;
+  try
+    FDark := ADark;
+    ApplyTheme(Self, FDark);
+    ThemeControlTree(Self, FDark);
+    // Update combo boxes for owner-draw
+    cbMapping.Style := csOwnerDrawFixed;
+    cbStyle.Style := csOwnerDrawFixed;
+    cbKind.Style := csOwnerDrawFixed;
+    cbResolution.Style := csOwnerDrawFixed;
+    cbMeter.Style := csOwnerDrawFixed;
+    cbIntensity.Style := csOwnerDrawFixed;
+    cbEnergy.Style := csOwnerDrawFixed;
+    cbZoom.Style := csOwnerDrawFixed;
+    cbMapping.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbStyle.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbKind.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbResolution.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbMeter.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbIntensity.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbEnergy.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbZoom.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbMapping.OnDropDown := @ComboBoxDropDown;
+    cbStyle.OnDropDown := @ComboBoxDropDown;
+    cbKind.OnDropDown := @ComboBoxDropDown;
+    cbResolution.OnDropDown := @ComboBoxDropDown;
+    cbMeter.OnDropDown := @ComboBoxDropDown;
+    cbIntensity.OnDropDown := @ComboBoxDropDown;
+    cbEnergy.OnDropDown := @ComboBoxDropDown;
+    cbZoom.OnDropDown := @ComboBoxDropDown;
+    // Update status bar panel colors for dark mode - avoid paint race
+    sbStatus.OnDrawPanel := nil;
+    try
+      if FDark then begin
+        sbStatus.Panels[0].Style := psOwnerDraw;
+      end else begin
+        sbStatus.Panels[0].Style := psText;
+      end;
+    finally
+      sbStatus.OnDrawPanel := @StatusBarDrawPanel;
+    end;
+    // Grid fixed cells (instrument labels + step numbers)
+    if FDark then
+      sgTab.FixedColor := DARK_PANEL
+    else
+      sgTab.FixedColor := clBtnFace;
+    // Grid cell text color
+    if FDark then
+      sgTab.Font.Color := DARK_TEXT
+    else
+      sgTab.Font.Color := clWindowText;
+  finally
+    FInThemeApply := False;
   end;
-  sbStatus.OnDrawPanel := @StatusBarDrawPanel;
-  // Grid fixed cells (instrument labels + step numbers)
-  if FDark then
-    sgTab.FixedColor := DARK_PANEL
-  else
-    sgTab.FixedColor := clBtnFace;
-  // Grid cell text color
-  if FDark then
-    sgTab.Font.Color := DARK_TEXT
-  else
-    sgTab.Font.Color := clWindowText;
 end;
 
 procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
@@ -1349,25 +1363,11 @@ begin
 end;
 
 procedure TMainForm.ComboBoxDropDown(Sender: TObject);
-var
-  CB: TComboBox;
-  ListHandle: HWND;
 begin
-  if not FDark then Exit;
-  CB := Sender as TComboBox;
-  ListHandle := FindWindowEx(CB.Handle, 0, 'LCLLISTBOX', nil);
-  if ListHandle = 0 then
-    ListHandle := FindWindowEx(CB.Handle, 0, 'TListBox', nil);
-  if ListHandle = 0 then
-    ListHandle := GetWindow(CB.Handle, GW_CHILD);
-  if ListHandle <> 0 then
-  begin
-    SetWindowLong(ListHandle, GWL_STYLE, GetWindowLong(ListHandle, GWL_STYLE) or WS_BORDER);
-    SetWindowPos(ListHandle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
-    SendMessage(ListHandle, WM_ERASEBKGND, 0, 0);
-    InvalidateRect(ListHandle, nil, True);
-    SendMessage(ListHandle, LB_SETITEMHEIGHT, 0, 20);
-  end;
+  { Dropdown theming is handled by Windows dark mode API via SetAppDarkMode.
+    The previous handle-hack (FindWindowEx + SendMessage) was unsafe:
+    internal LCL listbox handles can be destroyed between OnDropDown and here,
+    causing CTD on SendMessage/InvalidateRect to dead handles. }
 end;
 {$ENDIF}
 {$IFDEF MSWINDOWS}
