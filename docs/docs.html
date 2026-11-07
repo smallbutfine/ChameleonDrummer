@@ -50,7 +50,7 @@
         <a href="concepts.html" class="btn">Read Concepts</a>
       </article>
     </div>
-
+    
     <div class="quick-reference">
       <h3>Quick Reference</h3>
       <p>For immediate usage, refer to:</p>
@@ -62,7 +62,7 @@
         <li><strong>Odd Meters</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
       </ul>
     </div>
-
+    
     <div class="pattern-format">
       <h3>Pattern Format Quick Reference</h3>
       <p>Grooves and fills are plain text files you can edit in any text editor. No recompilation needed.</p>
@@ -78,8 +78,8 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
         <li><strong>Steps</strong>: <code>.</code>=rest, <code>x</code>=hit, <code>X</code>=accent, <code>o</code>=soft, <code>g</code>=ghost</li>
         <li><strong>Bars</strong>: Separated by <code>|</code>; spaces ignored; shorter lines repeat</li>
       </ul>
-
-      <h4>Fill Block (<code>config/fills/<drummer>.tab</code>)</h4>
+      
+      <h4>Fill Block (<code>config/fills/<drummer&gt;.tab</code>)</h4>
       <pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
       <ul>
@@ -87,7 +87,7 @@ S ... ... ... xxx</code></pre>
         <li><strong>Same instrument/step format as grooves</strong></li>
       </ul>
     </div>
-
+    
     <div class="engine-overview">
       <h3>How the Engine Works (In Brief)</h3>
       <ol>
@@ -103,7 +103,7 @@ S ... ... ... xxx</code></pre>
         <li><strong>MIDI Export</strong> — SMF Format 0 with tempo/meter events, works with all DAWs/VSTs</li>
       </ol>
     </div>
-
+    
     <div class="step-editor-section">
       <h3>Step Editor</h3>
       <p>The <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) is a standalone visual pattern editor. Load MIDI or tab files, edit hits on a step grid, change meter and zoom, navigate pages, and save patterns as grooves or fills to <code>config/grooves/</code> or <code>config/fills/</code>. It uses <code>midi_to_tab.exe</code> for MIDI → tab conversion and supports dark mode.</p>

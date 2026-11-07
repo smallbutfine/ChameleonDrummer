@@ -65,13 +65,15 @@
     
     <div class="pattern-format">
       <h3>Краткий Справочник Формата Паттерна</h3>
+      <p>Грувы и филы — это простые текстовые файлы, которые можно редактировать в любом текстовом редакторе. Перекомпиляция не требуется.</p>
+      
       <h4>Блок Грува (<code>config/grooves/&lt;genre&gt;.tab</code>)</h4>
       <pre><code>[rock verse intensity=0.20-0.60]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
       <ul>
-        <li><strong>Заголовок</strong>: <code>[style kind intensity=low-high]</code></li>
+        <li><strong>Заголовок</strong>: <code>[style kind intensity=low-high]</code> — напр., <code>[metal verse 7/8 intensity=0.40-0.90]</code></li>
         <li><strong>Инструменты</strong>: K=барабан, S=барабанная кровать, H=hi-hat, HO=открытый hi-hat, HP=педаль hi-hat, R=том-рэк, RB=том-бас, C=crash, C2=второй crash, CH=china, SP=splash, T1-T4=томы</li>
         <li><strong>Шаги</strong>: <code>.</code>=пауза, <code>x</code>=удар, <code>X</code>=акцент, <code>o</code>=тихо, <code>g</code>=призрачно</li>
         <li><strong>Такты</strong>: Разделены <code>|</code>; пробелы игнорируются; более короткие строки повторяются</li>
@@ -81,7 +83,7 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
       <pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
       <ul>
-        <li><strong>Заголовок</strong>: <code>[name energy=0.3]</code> — энергия соответствует интенсивности (0–1)</li>
+        <li><strong>Заголовок</strong>: <code>[name energy=0.3]</code> — энергия соответствует интенсивности такта (0–1)</li>
         <li><strong>Тот же формат инструмент/шаг что и grooves</strong></li>
       </ul>
     </div>

@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-
 <header>
   <div class="container">
     <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
@@ -17,6 +16,7 @@
       <a href="docs.html">HANDBUCH</a>
       <a href="download.html">HERUNTERLADEN</a>
       <a href="../index.html">EN</a>
+      <a href="../de/index.html">DE</a>
       <a href="../es/index.html">ES</a>
       <a href="../fr/index.html">FR</a>
       <a href="../pt/index.html">PT</a>
@@ -50,7 +50,7 @@
         <a href="concepts.html" class="btn">Konzepte lesen</a>
       </article>
     </div>
-
+    
     <div class="quick-reference">
       <h3>Schnellreferenz</h3>
       <p>Für sofortige Verwendung, siehe:</p>
@@ -62,7 +62,7 @@
         <li><strong>Ungerade Meter</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
       </ul>
     </div>
-
+    
     <div class="pattern-format">
       <h3>Pattern-Format Schnellreferenz</h3>
       <p>Grooves und Fills sind reine Textdateien, die Sie in jedem Texteditor bearbeiten können. Keine Neukompilierung erforderlich.</p>
@@ -78,8 +78,8 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
         <li><strong>Schritte</strong>: <code>.</code>=Pause, <code>x</code>=Hit, <code>X</code>=Akzent, <code>o</code>=weich, <code>g</code>=Geisterschlag</li>
         <li><strong>Takte</strong>: Getrennt durch <code>|</code>; Leerzeichen ignoriert; kürzere Zeilen wiederholen</li>
       </ul>
-
-      <h4>Fill-Block (<code>config/fills/<drummer>.tab</code>)</h4>
+      
+      <h4>Fill-Block (<code>config/fills/<drummer&gt;.tab</code>)</h4>
       <pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
       <ul>
@@ -87,7 +87,7 @@ S ... ... ... xxx</code></pre>
         <li><strong>Gleiches Instrument/Schritt-Format wie Grooves</strong></li>
       </ul>
     </div>
-
+    
     <div class="engine-overview">
       <h3>Wie die Engine funktioniert (Kurz gefasst)</h3>
       <ol>
@@ -103,7 +103,7 @@ S ... ... ... xxx</code></pre>
         <li><strong>MIDI-Export</strong> — SMF Format 0 mit Tempo/Meter-Events, funktioniert mit allen DAWs/VSTs</li>
       </ol>
     </div>
-
+    
     <div class="step-editor-section">
       <h3>Step Editor</h3>
       <p>Der <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) ist ein eigenständiger visueller Muster-Editor. Laden Sie MIDI- oder Tab-Dateien, bearbeiten Sie Hits auf einem Step-Grid, ändern Sie Taktart und Zoom, navigieren Sie durch Seiten und speichern Sie Muster als Grooves oder Fills in <code>config/grooves/</code> oder <code>config/fills/</code>. Er verwendet <code>midi_to_tab.exe</code> für die MIDI → Tab-Konvertierung und unterstützt Dark Mode.</p>

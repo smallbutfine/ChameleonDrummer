@@ -12,16 +12,17 @@
   <div class="container">
     <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
     <nav>
-      <a href="index.html">START</a>
-      <a href="concepts.html">KONZEPTE</a>
-      <a href="docs.html">HANDBUCH</a>
-      <a href="download.html">HERUNTERLADEN</a>
-      <a href="de/index.html">DE</a>
-      <a href="es/index.html">ES</a>
-      <a href="fr/index.html">FR</a>
-      <a href="pt/index.html">PT</a>
-      <a href="ru/index.html">RU</a>
-      <a href="zh/index.html">ZH</a>
+      <a href="index.html">Home</a>
+      <a href="concepts.html">Concepts</a>
+      <a href="docs.html">Manual</a>
+      <a href="download.html">Download</a>
+      <a href="../index.html">EN</a>
+      <a href="../de/index.html">DE</a>
+      <a href="../es/index.html">ES</a>
+      <a href="../fr/index.html">FR</a>
+      <a href="../pt/index.html">PT</a>
+      <a href="../ru/index.html">RU</a>
+      <a href="../zh/index.html">ZH</a>
     </nav>
   </div>
 </header>
@@ -52,7 +53,7 @@
 
 <h2 id="introduction">Introduction</h2>
 
-<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 8 styles per genre (38 total), and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
+<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 32 styles total, and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
 
 <p>Two executables are produced:</p>
 
@@ -142,10 +143,10 @@ ChameleonDrummer.exe list drummers</code></pre>
 
 <p>Each section has its own:</p>
 
-<li><strong>Tempo</strong> — speed in beats per minute (BPM). 0 means inherit the song tempo.</li>
-<li><strong>Meter</strong> — the time signature (4/4, 7/8, 5/4, etc.). The first number is how many beats per bar, the second note value gets one beat.</li>
-<li><strong>Complexity</strong> — how varied the patterns are. Only used when <code>HasComplexity</code> is set; zero-filled records inherit the song's complexity.</li>
-<li><strong>Default patterns</strong> — which grooves/fills the engine should choose from for this section.</li>
+<li><strong>Tempo</code> — speed in beats per minute (BPM). 0 means inherit the song tempo.</li>
+<li><strong>Meter</code> — the time signature (4/4, 7/8, 5/4, etc.). The first number is how many beats per bar, the second note value gets one beat.</li>
+<li><strong>Complexity</code> — how varied the patterns are. Only used when <code>HasComplexity</code> is set; zero-filled records inherit the song's complexity.</li>
+<li><strong>Default patterns</code> — which grooves/fills the engine should choose from for this section.</li>
 
 <p>Sections are stored in plain JSON files. You can add your own sections, change the order, or give each section its own tempo and meter.</p>
 
@@ -153,14 +154,14 @@ ChameleonDrummer.exe list drummers</code></pre>
 
 <p><code>TBarSelector.SelectPatternForPhrase</code> picks a groove for each bar using a weighted random draw:</p>
 
-<li><strong>Intensity matching</strong>: Each groove's weight is based on how well its intensity band fits the bar's intensity. Grooves whose band contains the bar's intensity get a bonus.</li>
-<li><strong>Recency weighting</strong>: The previous pattern's weight is reduced to 0.25× so it can return but rarely repeats consecutively. This prevents the same pattern from playing bar after bar.</li>
-<li><strong>Macro phases</strong>: The song evolves in four phases:</li>
+<li><strong>Intensity matching</code>: Each groove's weight is based on how well its intensity band fits the bar's intensity. Grooves whose band contains the bar's intensity get a bonus.</li>
+<li><strong>Recency weighting</code>: The previous pattern's weight is reduced to 0.25× so it can return but rarely repeats consecutively. This prevents the same pattern from playing bar after bar.</li>
+<li><strong>Macro phases</code>: The song evolves in four phases:</li>
 <li><code>mpEstablish</code> (early bars): tries lighter grooves to set the feel</li>
 <li><code>mpMaintain</code> (middle bars): keeps whatever's working</li>
 <li><code>mpBuild</code> (toward climax): favors heavier, more intense grooves</li>
 <li><code>mpTurnaround</code> (ending): leads back to the beginning or chorus</li>
-<li><strong>Thread-safe randomness</strong>: Selection uses <code>TThreadedRandom</code> for consistent results across threads.</li>
+<li><strong>Thread-safe randomness</code>: Selection uses <code>TThreadedRandom</code> for consistent results across threads.</li>
 
 <h3 id="4-intensity-curves-codecomposerv2pascode">4. Intensity Curves (<code>ComposerV2.pas</code>)</h3>
 
@@ -178,53 +179,53 @@ ChameleonDrummer.exe list drummers</code></pre>
 
 <h3 id="6-groove-engine-codecomposerv2pascode">6. Groove Engine (<code>ComposerV2.pas</code>)</h3>
 
-<p>Grooves are loaded from <code>config/grooves/<genre>.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
+<p>Grooves are loaded from <code>config/grooves/&lt;genre&gt;.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
 
-<p><strong>Groove block format:</strong></p>
+<p><strong>Groove block format:</code></p>
 
-<pre><code class="lang-">[style kind intensity=low-high]
+<pre><code>[style kind intensity=low-high]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
-<li><strong>Header</strong>: <code>[style kind intensity=low-high]</code></li>
+<li><strong>Header</code>: <code>[style kind intensity=low-high]</code></li>
 <li><code>style</code> — e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>, <code>funk</code>, <code>electronic</code></li>
 <li><code>kind</code> — <code>verse</code>, <code>chorus</code> or <code>bridge</code></li>
 <li><code>intensity=low-high</code> — the bar intensities (0–1) this groove suits, e.g., <code>intensity=0.20-0.60</code></li>
-<li><strong>Add meter after kind</strong>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> for odd-meter grooves</li>
-<li><strong>Instrument lines</strong>: One line per instrument. Format: <code>INSTRUMENT STEP STEP STEP | STEP STEP STEP</code></li>
+<li><strong>Add meter after kind</code>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> for odd-meter grooves</li>
+<li><strong>Instrument lines</code>: One line per instrument. Format: <code>INSTRUMENT STEP STEP STEP | STEP STEP STEP</code></li>
 <li><code>K</code> = kick, <code>S</code> = snare, <code>RS</code> = ride cymbal short, <code>SS</code> = splash, <code>H</code> = hi-hat, <code>HO</code> = hi-hat open, <code>HP</code> = hi-hat pedal, <code>R</code> = rack tom, <code>RB</code> = bass tom, <code>C</code> = crash cymbal, <code>C2</code> = second crash, <code>CH</code> = china, <code>SP</code> = splash, <code>T1</code> = tom 1, <code>T2</code> = tom 2, <code>T3</code> = tom 3, <code>T4</code> = tom 4</li>
 <li>Step characters: <code>.</code> = rest (no hit), <code>x</code> = hit, <code>X</code> = accented hit, <code>o</code> = soft note, <code>g</code> = ghost note</li>
 <li>Spaces inside a bar are ignored (they improve readability only)</li>
-<li>Bars are separated by <code>|</code>. The engine uses the longest line's bar count; shorter lines repeat their pattern</li>
-<li><strong>Example</strong> (from <code>rock.tab</code>):</li>
+<li>Bars are separated by <code>|</code>. The engine uses the longest line's bar count; shorter lines repeat their bars.</li>
+<li><strong>Example</code> (from <code>rock.tab</code>):</li>
 
-<pre><code class="lang-">[rock verse intensity=0.20-0.60]
+<pre><code>[rock verse intensity=0.20-0.60]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
 <h3 id="7-fill-system-codecomposerv2pascode">7. Fill System (<code>ComposerV2.pas</code>)</h3>
 
-<p>Fills are loaded from <code>config/fills/<drummer>.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
+<p>Fills are loaded from <code>config/fills/&lt;drummer&gt;.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
 
-<p><strong>Fill block format:</strong></p>
+<p><strong>Fill block format:</code></p>
 
-<pre><code class="lang-">[bonham_fill_short energy=0.3]
+<pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
 
-<li><strong>Header</strong>: <code>[name energy=0.3]</code></li>
+<li><strong>Header</code>: <code>[name energy=0.3]</code></li>
 <li><code>name</code> — e.g., <code>bonham_fill_short</code>, <code>peart_fill_odd_7_8</code></li>
 <li><code>energy=0.3</code> — the bar intensity (0–1) the fill suits best</li>
-<li><strong>Same instrument/step format as grooves</strong>: Same step characters (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), same bar/bars separator rules.</li>
+<li><strong>Same instrument/step format as grooves</code>: Same step characters (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), same bar/bars separator rules.</li>
 
 <h3 id="8-humanization-codeadvancedhumanizationpascode">8. Humanization (<code>AdvancedHumanization.pas</code>)</h3>
 
 <p>Timing and velocity jitter are applied per note, scaled by the humanization setting. Ghost notes and accents are preserved.</p>
 
-<li><strong>Timing jitter</strong>: Each note is shifted forward or backward by a few milliseconds. Small enough to feel natural, large enough to avoid the "machine gun" effect.</li>
-<li><strong>Velocity variation</strong>: Some hits are slightly louder or softer than expected.</li>
-<li><strong>Swing</strong>: A feel where straight eighth notes are played with a slight 2:1 or 3:1 ratio, like a classic rock or funk groove. Controlled by the <code>--swing</code> CLI flag or GUI slider (0 = straight, 0.67 = classic 2:1 swing, 1 = 3:1).</li>
+<li><strong>Timing jitter</code>: Each note is shifted forward or backward by a few milliseconds. Small enough to feel natural, large enough to avoid the "machine gun" effect.</li>
+<li><strong>Velocity variation</code>: Some hits are slightly louder or softer than expected.</li>
+<li><strong>Swing</code>: A feel where straight eighth notes are played with a slight 2:1 or 3:1 ratio, like a classic rock or funk groove. Controlled by the <code>--swing</code> CLI flag or GUI slider (0 = straight, 0.67 = classic 2:1, 1 = 3:1).</li>
 
 <p>You control all of this with the <strong>Humanization</strong> slider in the GUI (0–1). At 0, it's perfectly on the grid. At 1, it has maximum feel.</p>
 
@@ -232,8 +233,8 @@ S ... ... ... xxx</code></pre>
 
 <p>The pattern fixer removes impossible hits:</p>
 
-<li><strong>At most 3 hits on one step</strong>: A drummer can't hit the kick, snare, and two toms all at once in one motion.</li>
-<li><strong>Limb coordination patterns</strong>:</li>
+<li><strong>At most 3 hits on one step</code>: A drummer can't hit the kick, snare, and two toms all at once in one motion.</li>
+<li><strong>Limb coordination patterns</code>:</li>
 <li>Right hand: typically plays crash or ride cymbal</li>
 <li>Left hand: hi-hat or ride cymbal</li>
 <li>Right foot: kick pedal</li>
@@ -244,11 +245,11 @@ S ... ... ... xxx</code></pre>
 
 <p>Genre plugins and drummer plugins are discovered dynamically at runtime from <code>.pas</code> files. Each drummer applies 2–4 modifications:</p>
 
-<li><strong>BehindBeat</strong>: The drummer plays slightly behind the beat for a laid-back feel.</li>
-<li><strong>GhostNotes</strong>: Adds subtle rim shots and quiet notes.</li>
-<li><strong>LinearCoordination</strong>: Typical limb patterns for that drummer (e.g., Bonham's distinctive kick-snare patterns).</li>
-<li><strong>ShuffleFeel</strong>: Swing feel specific to that style.</li>
-<li><strong>FillPatterns</strong>: Typical fill vocabulary for that drummer.</li>
+<li><strong>BehindBeat</code>: The drummer plays slightly behind the beat for a laid-back feel.</li>
+<li><strong>GhostNotes</code>: Adds subtle rim shots and quiet notes.</li>
+<li><strong>LinearCoordination</code>: Typical limb patterns for that drummer (e.g., Bonham's distinctive kick-snare patterns).</li>
+<li><strong>ShuffleFeel</code>: Swing feel specific to that style.</li>
+<li><strong>FillPatterns</code>: Typical fill vocabulary for that drummer.</li>
 
 <p>Modifications are composable and applied in order. Genre plugins (Metal, Rock, Jazz, Funk, Electronic) define the typical intensity bands, which grooves make sense for that style, and default song structure.</p>
 
@@ -257,7 +258,7 @@ S ... ... ... xxx</code></pre>
 <p>MIDI notes are resolved through JSON keymap files in <code>mappings/</code>. <strong>No hardcoded notes exist in Pascal code.</strong></p>
 
 <li>Keymap files map note names (kick, snare, hi-hat, tom1, crash, etc.) to MIDI notes.</li>
-<li>The same generation engine can use any keymap — GM (General MIDI), AD2 (Addictive Drums 2), EZD3 (EZDrummer 3), XG, or user-created.</li>
+<li>The same generation engine can use any keymap — GM, AD2, EZDrummer 3, Yamaha XG, or user-created.</li>
 <li>You can edit keymap JSON files to customize which note triggers which drum.</li>
 <li>This is why the system works with so many different drum libraries and why the GUI doesn't hardcode drum names.</li>
 
@@ -265,10 +266,10 @@ S ... ... ... xxx</code></pre>
 
 <p>Raw SMF Format 0 writer with VLQ encoding, tempo/meter meta events, compatible with all DAWs and drum VSTs.</p>
 
-<li><strong>Tracks</strong>: One MIDI track containing all drum notes.</li>
-<li><strong>Tempo events</strong>: BPM changes as the song progresses.</li>
-<li><strong>Meter events</strong>: Time signature changes.</li>
-<li><strong>Note data</strong>: Pitch (which drum), velocity, start time, duration.</li>
+<li><strong>Tracks</code>: One MIDI track containing all drum notes.</li>
+<li><strong>Tempo events</code>: BPM changes as the song progresses.</li>
+<li><strong>Meter events</code>: Time signature changes.</li>
+<li><strong>Note data</code>: Pitch (which drum), velocity, start time, duration.</li>
 
 <p>This MIDI file works with any DAW (Reaper, Ardour, Ableton, Logic, etc.) and any drum VST plugin (EZDrummer, Superior Drummer, Addictive Drums, etc.).</p>
 
@@ -282,7 +283,7 @@ S ... ... ... xxx</code></pre>
 <p>2. Pick genre, style, drummer, keymap, tempo, complexity and humanization from the interface.</p>
 <p>3. Click <strong>Generate</strong> — a MIDI file is written.</p>
 <p>4. Optionally export a REAPER project (<code>.rpp</code>) or Ardour session (<code>.ardour</code>) next to it.</p>
-<p>5. Dark mode is available via <code>View > System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
+<p>5. Dark mode is available via <code>View &gt; System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
 
 <p>The GUI provides interactive access to all CLI generation options plus visual feedback:</p>
 
@@ -293,54 +294,7 @@ S ... ... ... xxx</code></pre>
 
 <p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
 
-<p>Die GUI enthält auch eine <strong>Step Editor</strong>-Schaltfläche, die die eigenständige Step-Editor-Anwendung (<code>tools/step_editor/step_editor.exe</code>) öffnet. Mit dem Step Editor können Sie Trommelmuster visuell auf einem Step-Grid bearbeiten, MIDI-Dateien im Tab-Format konvertieren und Muster als Grooves oder Fills speichern. Siehe <a href="#step-editor">Step Editor</a> für Details.</p>
-
-<hr>
-
-<h2 id="step-editor">Step Editor</h2>
-
-<p>Der Step Editor (<code>tools/step_editor/step_editor.exe</code>) ist eine eigenständige Lazarus-GUI-Anwendung zum visuellen Erstellen und Bearbeiten von Trommelmustern. Er arbeitet zusammen mit der Haupt-GUI von ChameleonDrummer — Sie können ihn über die <strong>Step Editor</strong>-Schaltfläche in der Haupt-GUI öffnen oder direkt ausführen.</p>
-
-<h3 id="step-editor-overview">Übersicht</h3>
-
-<p>Der Step Editor zeigt ein Trommelmuster als Grid an: Zeilen sind Trommelinstrumente, Spalten sind Zeitschritte. Klicken Sie in Zellen, um Hits ein- oder auszuschalten. Dicke vertikale Linien markieren Taktgrenzen.</p>
-
-<h3 id="step-editor-workflow">Arbeitsablauf</h3>
-
-<ol>
-<li><strong>MIDI-Datei laden</strong>: Klicken Sie auf <strong>Durchsuchen</strong> neben dem MIDI-Datei-Feld und wählen Sie eine <code>.mid</code>-Datei. Die Datei wird automatisch mit dem Befehlszeilen-Tool <code>midi_to_tab.exe</code> im Tab-Format konvertiert und in das Grid geladen.</li>
-<li><strong>Oder Tab-Datei laden</strong>: Der Dateibrowser akzeptiert auch <code>.tab</code>-Dateien direkt.</li>
-<li><strong>Muster bearbeiten</strong>: Klicken Sie in Zellen, um Hits umzuschalten. Wählen Sie eine Spalte aus, um einen ganzen Schritt auf einmal zu bearbeiten.</li>
-<li><strong>Taktart ändern</strong>: Verwenden Sie das <strong>Meter</strong>-Dropdown, um die Taktart festzulegen (unterstützt Standard- und Triolen-Taktarten wie <code>4/4T</code>, <code>6/8T</code>).</li>
-<li><strong>Zoom ändern</strong>: Verwenden Sie das <strong>Zoom</strong>-Dropdown, um zwischen 4tel-, 8tel-, 16tel- und 32tel-Noten-Grid-Auflösung zu wechseln.</li>
-<li><strong>Seiten navigieren</strong>: Verwenden Sie <strong>Zurück</strong> und <strong>Weiter</strong>, um durch die Seiten des Musters zu navigieren.</li>
-<li><strong>Als Groove oder Fill speichern</strong>: Wählen Sie die Radio-Schaltfläche <strong>Groove</strong> oder <strong>Fill</strong>, wählen Sie einen Stil aus dem Dropdown und klicken Sie auf <strong>Save Pattern As</strong>, um das Muster in <code>config/grooves/</code> oder <code>config/fills/</code> zu schreiben.</li>
-</ol>
-
-<h3 id="step-editor-command-line">Befehlszeilen-Konverter</h3>
-
-<p>Der Step Editor verwendet <code>tools/midi_to_tab.exe</code> unter der Haube, um MIDI-Dateien im Tab-Format zu konvertieren. Sie können es auch direkt ausführen:</p>
-
-<pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
-midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
-midi_to_tab.exe input.mid --meter 7/8 --resolution 16
-midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
-
-<h3 id="step-editor-paths">Pfade und Konfiguration</h3>
-
-<p>Der Step Editor löst Pfade relativ zu seinem eigenen Speicherort auf:</p>
-
-<li><strong>Ausführbare Datei</strong>: <code>tools/step_editor/step_editor.exe</code></li>
-<li><strong>Konverter</strong>: <code>midi_to_tab.exe</code> im selben Verzeichnis</li>
-<li><strong>Stile</strong>: <code>..\..\config\styles.txt</code> (zwei Ebenen über <code>tools/step_editor/</code>)</li>
-<li><strong>Grooves-Ausgabe</strong>: <code>..\..\config\grooves\</code></li>
-<li><strong>Fills-Ausgabe</strong>: <code>..\..\config\fills\</code></li>
-
-<p>Wenn der Step Editor von der Haupt-GUI von ChameleonDrummer gestartet wird, erbt er dasselbe Arbeitsverzeichnis und dieselbe Konfiguration.</p>
-
-<h3 id="step-editor-dark-mode">Dark Mode</h3>
-
-<p>Der Step Editor unterstützt den Dark Mode, passend zum Dark Theme der Haupt-GUI. Er folgt standardmäßig dem System-Theme und kann in der Benutzeroberfläche umgeschaltet werden.</p>
+<p>The GUI also includes a <strong>Step Editor</strong> button that opens the standalone step editor application (<code>tools/step_editor/step_editor.exe</code>). The step editor lets you visually edit drum patterns on a step grid, convert MIDI files to tab format, and save patterns as grooves or fills. See <a href="#step-editor">Step Editor</a> for details.</p>
 
 <hr>
 
@@ -394,8 +348,6 @@ ChameleonDrummer list drummers --json
 ChameleonDrummer list mappings --json
 ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
 ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
-
-<p>See <code>REAPER_INTEGRATION_PLAN.md</code> for the full integration architecture and implementation details.</p>
 
 <hr>
 
@@ -454,9 +406,9 @@ ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 
 
 <p>Once installed, the ChameleonDrummer panel can be accessed in Ardour via:</p>
 
-<li><strong>Window > Scripting > ChameleonDrummer</strong> (if registered as a menu action)</li>
-<li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</strong></li>
-<li>Assign a keyboard shortcut in <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</strong></li>
+<li><strong>Window > Scripting > ChameleonDrummer</code> (if registered as a menu action)</li>
+<li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</code></li>
+<li>Assign a keyboard shortcut in <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</code></li>
 
 <p>The panel uses Ardour's Lua API (<code>Session</code>, <code>Temporal</code>, <code>ARDOUR</code> namespaces) for session manipulation, tempo map creation, and MIDI region import.</p>
 
@@ -527,13 +479,13 @@ Options:
 
 <h3 id="song-maps-and-sidecars">Song Maps and Sidecars</h3>
 
-<p><strong>Sections (<code>--section</code>)</strong>: Describes the song structure directly on the command line, one <code>--section</code> per section, in playing order:</p>
+<p><strong>Sections (<code>--section</code>)</code>: Describes the song structure directly on the command line, one <code>--section</code> per section, in playing order:</p>
 
 <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --section intro:4 --section verse:8 --section chorus:8 --section bridge:4 --output song.mid</code></pre>
 
-<p><strong>Sidecar (<code>--sidecar</code>)</strong>: A JSON file describing sections with bars, tempo, complexity, and optional genre/style/tempo overrides. The command-line genre/style/tempo win over the file.</p>
+<p><strong>Sidecar (<code>--sidecar</code>)</code>: A JSON file describing sections with bars, tempo, complexity, and optional genre/style/tempo overrides. The command-line genre/style/tempo win over the file.</p>
 
-<p><strong>Song Map (<code>--song-map</code>)</strong>: A JSON file describing per-bar tempo and meter changes for complex progressive songs.</p>
+<p><strong>Song Map (<code>--song-map</code>)</code>: A JSON file describing per-bar tempo and meter changes for complex progressive songs.</p>
 
 <h3 id="odd-meters">Odd Meters</h3>
 
@@ -543,10 +495,10 @@ Options:
 
 <p>Edit files in <code>config/</code>:</p>
 
-<li><code>config/grooves/<genre>.tab</code> — add new grooves, change intensity bands</li>
-<li><code>config/fills/<drummer>.tab</code> — add new fills, change energy levels</li>
-<li><code>config/defaults/<genre>.ini</code> — change default tempo/style/drummer</li>
-<li><code>config/sections/<genre>.json</code> — change default song structure</li>
+<li><code>config/grooves/&lt;genre&gt;.tab</code> — add new grooves, change intensity bands</li>
+<li><code>config/fills/&lt;drummer&gt;.tab</code> — add new fills, change energy levels</li>
+<li><code>config/defaults/&lt;genre&gt;.ini</code> — change default tempo/style/drummer</li>
+<li><code>config/sections/&lt;genre&gt;.json</code> — change default song structure</li>
 
 <p>No recompilation needed — the engine reads these at runtime.</p>
 
@@ -576,14 +528,14 @@ python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --
 <p>|--------|-------------|</p>
 <table>
 <tr><th>`--fill`</th><th>Output a fill block instead of a groove block</th></tr>
-<tr><td>`--name <name>`</td><td>Fill name (default: `fill`)</td></tr>
-<tr><td>`--energy <0-1>`</td><td>Fill energy (default: 0.5)</td></tr>
-<tr><td>`--meter <n/d>`</td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
-<tr><td>`--resolution <n>`</td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
-<tr><td>`--mapping <file>`</td><td>Keymap JSON file (default: built-in GM map)</td></tr>
-<tr><td>`--style <name>`</td><td>Groove style name (default: `midi`)</td></tr>
-<tr><td>`--kind <name>`</td><td>Groove kind: verse/chorus/bridge (default: `verse`)</td></tr>
-<tr><td>`--intensity <low-high>`</td><td>Groove intensity band (default: `0.2-0.6`)</td></tr>
+<tr><td>`--name &lt;name&gt;`</td><td>Fill name (default: `fill`)</td></tr>
+<tr><td>`--energy &lt;0-1&gt;`</td><td>Fill energy (default: 0.5)</td></tr>
+<tr><td>`--meter &lt;n/d&gt;`</td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
+<tr><td>`--resolution &lt;n&gt;`</td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
+<tr><td>`--mapping &lt;file&gt;`</td><td>Keymap JSON file (default: built-in GM map)</td></tr>
+<tr><td>`--style &lt;name&gt;`</td><td>Groove style name (default: `midi`)</td></tr>
+<tr><td>`--kind &lt;name&gt;`</td><td>Groove kind: verse/chorus/bridge (default: `verse`)</td></tr>
+<tr><td>`--intensity &lt;low-high&gt;`</td><td>Groove intensity band (default: `0.2-0.6`)</td></tr>
 </table>
 
 <p>Output is written with CRLF line endings, ready to drop into <code>config/grooves/</code> or <code>config/fills/</code>.</p>
@@ -600,12 +552,12 @@ python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --
 <p>|---------|-------------|</p>
 <table>
 <tr><th>`FPC fehlgeschlagen`</th><th>Run from the project root with `-Fusrc` include path</th></tr>
-<tr><td>`method identifier expected`</td><td>Syntax error in a `.pas` file — check the named line</td></tr>
-<tr><td>`Identifier not found "GetSectionFlavors"`</td><td>Missing unit or method — rebuild all units</td></tr>
-<tr><td>`Syntax error, "." expected but ";" found`</td><td>Missing comma/semicolon in Pascal source</td></tr>
-<tr><td>`Comment level 2 found`</td><td>Warning only — nested `(* *)` comments</td></tr>
-<tr><td>`function result variable ... does not seem to be initialized`</td><td>Warning only — result variable not assigned on all paths</td></tr>
-<tr><td>`[Warning] ... metal.tab (12): ...`</td><td>Tab file syntax error — that file is ignored, built-in plays instead</td></tr>
+<tr><td>`method identifier expected`</td><th>Syntax error in a `.pas` file — check the named line</th></tr>
+<tr><td>`Identifier not found "GetSectionFlavors"`</td><th>Missing unit or method — rebuild all units</th></tr>
+<tr><td>`Syntax error, "." expected but ";" found`</td><th>Missing comma/semicolon in Pascal source</th></tr>
+<tr><td>`Comment level 2 found`</td><th>Warning only — nested `(* *)` comments</th></tr>
+<tr><td>`function result variable ... does not seem to be initialized`</td><th>Warning only — result variable not assigned on all paths</th></tr>
+<tr><td>`[Warning] ... metal.tab (12): ...`</td><th>Tab file syntax error — that file is ignored, built-in plays instead</th></tr>
 </table>
 
 <hr>
@@ -614,10 +566,10 @@ python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --
 
 <h3 id="design-patterns">Design Patterns</h3>
 
-<li><strong>Plugin architecture</strong> — Genre and drummer plugins loaded at runtime from <code>.pas</code> files</li>
-<li><strong>No hardcoded MIDI notes</strong> — All notes come from JSON keymap files</li>
-<li><strong>File-driven configuration</strong> — Grooves, fills, defaults, sections are plain text/JSON</li>
-<li><strong>Same engine for GUI and CLI</strong> — No separate code paths</li>
+<li><strong>Plugin architecture</code> — Genre and drummer plugins loaded at runtime from <code>.pas</code> files</li>
+<li><strong>No hardcoded MIDI notes</code> — All notes come from JSON keymap files</li>
+<li><strong>File-driven configuration</code> — Grooves, fills, defaults, sections are plain text/JSON</li>
+<li><strong>Same engine for GUI and CLI</code> — No separate code paths</li>
 
 <h3 id="key-constants">Key Constants</h3>
 
@@ -633,14 +585,15 @@ python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --
 <h3 id="pattern-template-system">Pattern Template System</h3>
 
 <p>Grooves and fills are defined in <code>.tab</code> files with block headers that declare style, meter, and intensity. The engine selects patterns based on these declarations, not hardcoded rules.</p>
-  </div>
+
+</div>
 </section>
 
 <section class="download-section">
   <div class="container">
     <h2>Download v1.0.895</h2>
-    <p>Die neueste Version von GitHub herunterladen:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">v1.0.895 herunterladen</a>
+    <p>Get the latest release from GitHub:</p>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">Download v1.0.895</a>
   </div>
 </section>
 
