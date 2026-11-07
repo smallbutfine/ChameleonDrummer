@@ -1,6 +1,6 @@
-{$mode objfpc}{$H+}
-
 program step_editor;
+
+{$mode objfpc}{$H+}
 
 { step_editor — Visual step editor for ChameleonDrummer .tab files.
 
@@ -19,6 +19,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, Forms,
   MainFrm;
+{$R *.res} // Standard Lazarus-Ressource (für das Icon)
 
 
 begin
