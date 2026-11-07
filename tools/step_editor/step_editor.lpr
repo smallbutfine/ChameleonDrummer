@@ -19,7 +19,9 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, Forms,
   MainFrm;
+{$IFDEF MSWINDOWS}
 {$R *.res} // Standard Lazarus-Ressource (für das Icon)
+{$ENDIF}
 
 
 begin
