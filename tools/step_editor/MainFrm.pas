@@ -23,6 +23,20 @@ type
 
   TTabBarArray = array of TTabBar;
 
+  TTabBlock = record
+    Header: string;
+    Style, Kind: string;
+    IntensityLow, IntensityHigh: Double;
+    Meter: string;
+    Bars: TTabBarArray;
+    SourceFile: string;
+    BlockIndex: Integer;
+    LineStart, LineEnd: Integer;
+    Modified: Boolean;
+  end;
+
+  TTabBlocks = array of TTabBlock;
+
   { TMainForm }
 
   TMainForm = class(TForm)
@@ -94,6 +108,26 @@ type
     FAutoScaler: TWindowAutoScaler;
     FInThemeApply: Boolean;
 
+    // Tab block management
+    FTabBlocks: TTabBlocks;
+    FSelectedBlock: Integer;
+    FIsConfigFile: Boolean;
+    FBlockModified: Boolean;
+
+    // UI controls for block navigation
+    cbTabSelector: TComboBox;
+    btnTabPrev: TButton;
+    btnTabNext: TButton;
+    lblTabPosition: TLabel;
+    edBlockStyle: TEdit;
+    edBlockKind: TEdit;
+    edIntensityLow: TEdit;
+    edIntensityHigh: TEdit;
+    btnSaveBlock: TButton;
+    btnNewBlock: TButton;
+    btnDeleteBlock: TButton;
+
+
     procedure LoadMidiAndConvert;
     procedure LoadTabFile(const AFileName: string);
     procedure ParseTabOutput(const ATabText: string; ASkipHeader: Boolean = True);
@@ -121,6 +155,25 @@ type
     procedure sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
       ARect: TRect; AState: TGridDrawState);{$ENDIF}
 
+    // Tab block methods (cross-platform)
+    function IsConfigTabFile(const AFileName: string): Boolean;
+    procedure ParseConfigTabFile(const AFileName: string);
+    procedure ParseForeignTabFile(const AFileName: string);
+    procedure ParseHeader(const ALine: string; var ABlock: TTabBlock);
+    procedure AddInstrumentLineToBlock(const ALine: string; var ABlock: TTabBlock);
+    function BuildBlockText(const ABlock: TTabBlock): string;
+    procedure SetupBlockNavigationUI;
+    procedure UpdateBlockNavigationUI;
+    procedure UpdateHeaderFields;
+    procedure cbTabSelectorChange(Sender: TObject);
+    procedure btnTabPrevClick(Sender: TObject);
+    procedure btnTabNextClick(Sender: TObject);
+    procedure btnSaveBlockClick(Sender: TObject);
+    procedure btnNewBlockClick(Sender: TObject);
+    procedure btnDeleteBlockClick(Sender: TObject);
+    procedure SurgicalSaveBlock;
+    procedure MarkBlockModified(Sender: TObject);
+
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -138,6 +191,7 @@ begin
   FOutputDir := ExtractFilePath(ParamStr(0))+ PathDelim + '..' + PathDelim +  'config';
   FTabData := '';
   FTabBars := nil;
+  FTabBlocks := nil;
   FStepsPerBar := 16;
   FResolution := 16;
   FCurPage := 0;
@@ -262,6 +316,7 @@ begin
     LoadDrummerList;
 
   FAutoScaler := TWindowAutoScaler.Create(Self);
+  SetupBlockNavigationUI;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -271,6 +326,7 @@ begin
   UnhookForm(Handle);
   {$ENDIF}
   FTabBars := nil;
+  FTabBlocks := nil;
   FInstOrder := nil;
   FInstColMap := nil;
 end;
@@ -463,46 +519,141 @@ begin
   UpdateStatus('Converted: ' + IntToStr(Length(FTabBars)) + ' bars, ' +
     IntToStr(FStepsPerBar) + ' steps/bar, ' + IntToStr(FResolution) + ' resolution.');
   end;
-procedure TMainForm.LoadTabFile(const AFileName: string);
+
+procedure TMainForm.ParseHeader(const ALine: string; var ABlock: TTabBlock);
 var
-  SL: TStringList;
-  I: Integer;
-  Line: string;
-  TabText: string;
+  Content: string;
+  Parts: TStringList;
+  IntensityPart: string;
+  P: Integer;
 begin
-  if not FileExists(AFileName) then
-  begin
-    UpdateStatus('Tab file not found: ' + AFileName);
-    Exit;
-  end;
+  Content := Trim(ALine);
+  if (Length(Content) < 3) or (Content[1] <> '[') or (Content[Length(Content)] <> ']') then Exit;
+  Content := Copy(Content, 2, Length(Content) - 2);
 
-  SL := TStringList.Create;
+  Parts := TStringList.Create;
   try
-    SL.LoadFromFile(AFileName);
+    Parts.StrictDelimiter := True;
+    Parts.Delimiter := ' ';
+    Parts.DelimitedText := Content;
 
-    TabText := '';
-    for I := 0 to SL.Count - 1 do
-    begin
-      Line := Trim(SL[I]);
-      if (Line = '') then Continue;
-      if Line[1] = '#' then Continue;
-      if Line[1] = '[' then Continue;
-      TabText := TabText + Line + #13#10;
+    if Parts.Count >= 2 then begin
+      ABlock.Style := Parts[0];
+      ABlock.Kind := Parts[1];
     end;
 
-    if TabText = '' then
-    begin
-      UpdateStatus('No data found in tab file: ' + AFileName);
-      Exit;
+    for P := 2 to Parts.Count - 1 do begin
+      if Pos('intensity=', Parts[P]) = 1 then begin
+        IntensityPart := Copy(Parts[P], 11, MaxInt);
+        Parts.Delimiter := '-';
+        Parts.StrictDelimiter := True;
+        Parts.DelimitedText := IntensityPart;
+        if Parts.Count >= 2 then begin
+          ABlock.IntensityLow := StrToFloatDef(Parts[0], 0.0);
+          ABlock.IntensityHigh := StrToFloatDef(Parts[1], 1.0);
+        end;
+        Break;
+      end;
     end;
-
-    ParseTabOutput(TabText, False);
-    RefreshGrid;
-    UpdateStatus('Loaded tab: ' + ExtractFileName(AFileName) +
-      ', ' + IntToStr(Length(FTabBars)) + ' bars, ' +
-      IntToStr(FStepsPerBar) + ' steps/bar.');
   finally
-    SL.Free;
+    Parts.Free;
+  end;
+end;
+
+procedure TMainForm.AddInstrumentLineToBlock(const ALine: string; var ABlock: TTabBlock);
+var
+  Lines: TStringList;
+  Bars: TStringList;
+  I, J, K, BarIdx, CharIdx, MaxSteps: Integer;
+  Line: string;
+  Inst: string;
+  GridStr: string;
+  BarStr: string;
+begin
+  MaxSteps := 0;
+  Lines := TStringList.Create;
+  Bars := TStringList.Create;
+  try
+    Line := Trim(ALine);
+    if Line = '' then Exit;
+
+    Inst := Copy(Line, 1, MaxInt);
+    J := 1;
+    while (J <= Length(Inst)) and (Inst[J] = ' ') do Inc(J);
+    K := J;
+    while (K <= Length(Inst)) and (Inst[K] <> ' ') do Inc(K);
+    Inst := Copy(Inst, J, K - J);
+
+    GridStr := Trim(Copy(Line, K + 1, MaxInt));
+    if GridStr = '' then Exit;
+
+    Bars.Clear;
+    if Pos('|', GridStr) > 0 then
+    begin
+      Bars.StrictDelimiter := True;
+      Bars.Delimiter := '|';
+      Bars.DelimitedText := GridStr;
+    end
+    else
+    begin
+      Bars.Add(GridStr);
+    end;
+
+    while Length(ABlock.Bars) < Bars.Count do
+    begin
+      J := Length(ABlock.Bars);
+      SetLength(ABlock.Bars, J + 1);
+      ABlock.Bars[J].Steps := 0;
+      ABlock.Bars[J].Meter := ABlock.Meter;
+      ABlock.Bars[J].InstChars := nil;
+    end;
+
+    for BarIdx := 0 to Bars.Count - 1 do
+    begin
+      BarStr := Trim(Bars[BarIdx]);
+      CharIdx := 0;
+      for K := 1 to Length(BarStr) do
+        if BarStr[K] <> ' ' then
+          Inc(CharIdx);
+
+      J := -1;
+      for K := 0 to High(ABlock.Bars[BarIdx].InstChars) do
+        if ABlock.Bars[BarIdx].InstChars[K].Abbr = Inst then
+        begin
+          J := K;
+          Break;
+        end;
+
+      if J = -1 then
+      begin
+        J := Length(ABlock.Bars[BarIdx].InstChars);
+        SetLength(ABlock.Bars[BarIdx].InstChars, J + 1);
+        ABlock.Bars[BarIdx].InstChars[J].Abbr := Inst;
+        SetLength(ABlock.Bars[BarIdx].InstChars[J].Chars, CharIdx);
+        FillChar(ABlock.Bars[BarIdx].InstChars[J].Chars[0], CharIdx, '.');
+      end;
+
+      CharIdx := 0;
+      for K := 1 to Length(BarStr) do
+        if BarStr[K] <> ' ' then
+        begin
+          if CharIdx < Length(ABlock.Bars[BarIdx].InstChars[J].Chars) then
+            ABlock.Bars[BarIdx].InstChars[J].Chars[CharIdx] := BarStr[K];
+          Inc(CharIdx);
+        end;
+
+      ABlock.Bars[BarIdx].Steps := CharIdx;
+      if CharIdx > MaxSteps then MaxSteps := CharIdx;
+    end;
+
+    if Length(ABlock.Bars) > 0 then
+      FStepsPerBar := MaxSteps
+    else
+      FStepsPerBar := FResolution;
+
+  finally
+    Lines.Free;
+    Bars.Free;
   end;
 end;
 
@@ -556,6 +707,7 @@ var
   BarStr: string;
 begin
   FTabBars := nil;
+  FTabBlocks := nil;
   MaxSteps := 0;
   Lines := TStringList.Create;
   Bars := TStringList.Create;
@@ -675,7 +827,10 @@ end;
 procedure TMainForm.RefreshGrid;
 begin
   FCurPage := 0;
-  FTotalPages := Max(1, (Length(FTabBars) + FPageSize - 1) div FPageSize);
+  if FIsConfigFile then
+    FTotalPages := Max(1, (Length(FTabBlocks[FSelectedBlock].Bars) + FPageSize - 1) div FPageSize)
+  else
+    FTotalPages := Max(1, (Length(FTabBars) + FPageSize - 1) div FPageSize);
   RenderPage(FCurPage);
   UpdateControls;
 end;
@@ -684,16 +839,22 @@ procedure TMainForm.RenderPage(APage: Integer);
 var
   StartBar, EndBar, BarIdx, ColIdx, RowIdx, K, BSteps, J: Integer;
   Found: Boolean;
+  Bars: TTabBarArray;
 begin
-  if Length(FTabBars) = 0 then
-    Exit;
+  if FIsConfigFile then begin
+    if (FSelectedBlock < 0) or (FSelectedBlock >= Length(FTabBlocks)) then Exit;
+    Bars := FTabBlocks[FSelectedBlock].Bars;
+  end else begin
+    if Length(FTabBars) = 0 then Exit;
+    Bars := FTabBars;
+  end;
 
   StartBar := APage * FPageSize;
-  EndBar := Min(StartBar + FPageSize, Length(FTabBars));
+  EndBar := Min(StartBar + FPageSize, Length(Bars));
 
   ColIdx := 1;
   for BarIdx := StartBar to EndBar - 1 do
-    ColIdx := ColIdx + FTabBars[BarIdx].Steps;
+    ColIdx := ColIdx + Bars[BarIdx].Steps;
 
   sgTab.ColCount := ColIdx;
   sgTab.RowCount := Length(FInstOrder) + 1;
@@ -704,17 +865,17 @@ begin
   ColIdx := 1;
   for BarIdx := StartBar to EndBar - 1 do
   begin
-    BSteps := FTabBars[BarIdx].Steps;
+    BSteps := Bars[BarIdx].Steps;
     for K := 0 to BSteps - 1 do
     begin
       sgTab.Cells[ColIdx, 0] := IntToStr(K + 1);
       for RowIdx := 0 to High(FInstOrder) do
       begin
         Found := False;
-        for J := 0 to High(FTabBars[BarIdx].InstChars) do
-          if FTabBars[BarIdx].InstChars[J].Abbr = FInstOrder[RowIdx] then
+        for J := 0 to High(Bars[BarIdx].InstChars) do
+          if Bars[BarIdx].InstChars[J].Abbr = FInstOrder[RowIdx] then
           begin
-            sgTab.Cells[ColIdx, RowIdx + 1] := FTabBars[BarIdx].InstChars[J].Chars[K];
+            sgTab.Cells[ColIdx, RowIdx + 1] := Bars[BarIdx].InstChars[J].Chars[K];
             Found := True;
             Break;
           end;
@@ -740,6 +901,8 @@ procedure TMainForm.ToggleCell(ACol, ARow: Integer);
 var
   C: Char;
   SC: TStepChar;
+  BarIdx, StepInBar, CumSteps, RowIdx, J: Integer;
+  Bars: TTabBarArray;
 begin
   if (ACol < 1) or (ARow < 1) or (ACol >= sgTab.ColCount) or (ARow >= sgTab.RowCount) then
     Exit;
@@ -756,6 +919,34 @@ begin
   end;
 
   sgTab.Cells[ACol, ARow] := StepCharToChar(SC);
+
+  // Update underlying data model
+  if FIsConfigFile then begin
+    if (FSelectedBlock < 0) or (FSelectedBlock >= Length(FTabBlocks)) then Exit;
+    Bars := FTabBlocks[FSelectedBlock].Bars;
+  end else begin
+    Bars := FTabBars;
+  end;
+
+  // Find which bar and step this column corresponds to
+  CumSteps := 0;
+  for BarIdx := FCurPage * FPageSize to Min(FCurPage * FPageSize + FPageSize, Length(Bars)) - 1 do begin
+    if (ACol > CumSteps) and (ACol <= CumSteps + Bars[BarIdx].Steps) then begin
+      StepInBar := ACol - CumSteps - 1;
+      RowIdx := ARow - 1;
+      if (RowIdx >= 0) and (RowIdx <= High(FInstOrder)) then begin
+        for J := 0 to High(Bars[BarIdx].InstChars) do
+          if Bars[BarIdx].InstChars[J].Abbr = FInstOrder[RowIdx] then begin
+            if (StepInBar >= 0) and (StepInBar < Length(Bars[BarIdx].InstChars[J].Chars)) then
+              Bars[BarIdx].InstChars[J].Chars[StepInBar] := StepCharToChar(SC);
+            Break;
+          end;
+      end;
+      MarkBlockModified(Self);
+      Break;
+    end;
+    CumSteps := CumSteps + Bars[BarIdx].Steps;
+  end;
 end;
 
 function TMainForm.CharToStepChar(C: Char): TStepChar;
@@ -838,6 +1029,11 @@ end;
 procedure TMainForm.UpdateControls;
 begin
   btnSavePatternAs.Enabled := Length(FTabBars) > 0;
+  if FIsConfigFile and Assigned(btnTabPrev) then begin
+    btnTabPrev.Enabled := FSelectedBlock > 0;
+    btnTabNext.Enabled := FSelectedBlock < Length(FTabBlocks) - 1;
+    btnDeleteBlock.Enabled := Length(FTabBlocks) > 1;
+  end;
 end;
 
 procedure TMainForm.UpdateStatus(const AMsg: string);
@@ -1377,5 +1573,519 @@ begin
   ApplyDarkTheme(ResolveDark(LoadThemeChoice));
 end;
 {$ENDIF}
+
+// ============================================================================
+// TAB BLOCK MANAGEMENT IMPLEMENTATION
+// ============================================================================
+
+function TMainForm.IsConfigTabFile(const AFileName: string): Boolean;
+var
+  LowerName: string;
+begin
+  LowerName := LowerCase(AFileName);
+  Result := (Pos('config' + PathDelim + 'grooves', LowerName) > 0) or
+            (Pos('config' + PathDelim + 'fills', LowerName) > 0);
+end;
+
+procedure TMainForm.ParseConfigTabFile(const AFileName: string);
+var
+  SL: TStringList;
+  I, BlockIdx: Integer;
+  Line: string;
+begin
+  FTabBlocks := nil;
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(AFileName);
+    BlockIdx := -1;
+    
+    for I := 0 to SL.Count - 1 do
+    begin
+      Line := SL[I];
+      if (Line <> '') and (Line[1] = '[') then begin
+        if BlockIdx >= 0 then begin
+          FTabBlocks[BlockIdx].LineEnd := I - 1;
+        end;
+        Inc(BlockIdx);
+        SetLength(FTabBlocks, BlockIdx + 1);
+        FTabBlocks[BlockIdx].Header := Line;
+        FTabBlocks[BlockIdx].SourceFile := AFileName;
+        FTabBlocks[BlockIdx].BlockIndex := BlockIdx;
+        FTabBlocks[BlockIdx].LineStart := I;
+        FTabBlocks[BlockIdx].LineEnd := SL.Count - 1;
+        FTabBlocks[BlockIdx].Bars := nil;
+        FTabBlocks[BlockIdx].Modified := False;
+        ParseHeader(Line, FTabBlocks[BlockIdx]);
+      end
+      else if (Line <> '') and (Line[1] <> '#') and (BlockIdx >= 0) then begin
+        AddInstrumentLineToBlock(Line, FTabBlocks[BlockIdx]);
+      end;
+    end;
+    if BlockIdx >= 0 then
+      FTabBlocks[BlockIdx].LineEnd := SL.Count - 1;
+    
+    cbTabSelector.Items.Clear;
+    for I := 0 to High(FTabBlocks) do
+      cbTabSelector.Items.Add(Format('%s %s (%.2f-%.2f)', 
+        [FTabBlocks[I].Style, FTabBlocks[I].Kind, 
+         FTabBlocks[I].IntensityLow, FTabBlocks[I].IntensityHigh]));
+    
+    if cbTabSelector.Items.Count > 0 then begin
+      cbTabSelector.ItemIndex := 0;
+      FSelectedBlock := 0;
+      UpdateHeaderFields;
+      RenderPage(0);
+    end;
+  finally
+    SL.Free;
+  end;
+end;
+
+procedure TMainForm.ParseForeignTabFile(const AFileName: string);
+var
+  SL: TStringList;
+  I: Integer;
+  Line: string;
+  TabText: string;
+begin
+  if not FileExists(AFileName) then
+  begin
+    UpdateStatus('Tab file not found: ' + AFileName);
+    Exit;
+  end;
+
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(AFileName);
+
+    TabText := '';
+    for I := 0 to SL.Count - 1 do
+    begin
+      Line := Trim(SL[I]);
+      if (Line = '') then Continue;
+      if Line[1] = '#' then Continue;
+      if Line[1] = '[' then Continue;
+      TabText := TabText + Line + #13#10;
+    end;
+
+    if TabText = '' then
+    begin
+      UpdateStatus('No data found in tab file: ' + AFileName);
+      Exit;
+    end;
+
+    ParseTabOutput(TabText, False);
+    RefreshGrid;
+    UpdateStatus('Loaded tab: ' + ExtractFileName(AFileName) +
+      ', ' + IntToStr(Length(FTabBars)) + ' bars, ' +
+      IntToStr(FStepsPerBar) + ' steps/bar.');
+  finally
+    SL.Free;
+  end;
+end;
+
+procedure TMainForm.LoadTabFile(const AFileName: string);
+begin
+  FIsConfigFile := IsConfigTabFile(AFileName);
+  FTabBlocks := nil;
+  FTabBars := nil;
+  FSelectedBlock := -1;
+  FBlockModified := False;
+  
+  UpdateBlockNavigationUI;
+  
+  if FIsConfigFile then
+    ParseConfigTabFile(AFileName)
+  else
+    ParseForeignTabFile(AFileName);
+end;
+
+function TMainForm.BuildBlockText(const ABlock: TTabBlock): string;
+var
+  SL: TStringList;
+  I, J, K, K2: Integer;
+  Line: string;
+  Found: Boolean;
+begin
+  SL := TStringList.Create;
+  try
+    SL.Add(Format('[%s %s intensity=%.2f-%.2f]', 
+      [ABlock.Style, ABlock.Kind, ABlock.IntensityLow, ABlock.IntensityHigh]));
+
+    for I := 0 to High(FInstOrder) do
+    begin
+      Line := FInstOrder[I];
+      for K := 1 to 4 - Length(FInstOrder[I]) do
+        Line := Line + ' ';
+      if Length(Line) < 4 then Line := Line + ' ';
+      Line := Line + '  ';
+
+      for J := 0 to High(ABlock.Bars) do
+      begin
+        if J > 0 then Line := Line + ' | ';
+        Found := False;
+        for K := 0 to High(ABlock.Bars[J].InstChars) do
+          if ABlock.Bars[J].InstChars[K].Abbr = FInstOrder[I] then
+          begin
+            for K2 := 0 to High(ABlock.Bars[J].InstChars[K].Chars) do
+              Line := Line + ABlock.Bars[J].InstChars[K].Chars[K2];
+            Found := True;
+            Break;
+          end;
+        if not Found then
+          for K := 1 to ABlock.Bars[J].Steps do
+            Line := Line + '.';
+      end;
+      SL.Add(Line);
+    end;
+
+    Result := SL.Text;
+  finally
+    SL.Free;
+  end;
+end;
+
+procedure TMainForm.SetupBlockNavigationUI;
+var
+  Y: Integer;
+begin
+  Y := sbStatus.Top - 120;
+  
+  cbTabSelector := TComboBox.Create(Self);
+  with cbTabSelector do begin
+    Parent := Self;
+    Name := 'cbTabSelector';
+    Left := 12; Top := Y;
+    Width := 300; Height := 24;
+    Style := csDropDownList;
+    OnChange := @cbTabSelectorChange;
+    Visible := False;
+  end;
+  
+  btnTabPrev := TButton.Create(Self);
+  with btnTabPrev do begin
+    Parent := Self;
+    Name := 'btnTabPrev';
+    Left := 320; Top := Y;
+    Width := 30; Height := 24;
+    Caption := '◀';
+    OnClick := @btnTabPrevClick;
+    Visible := False;
+  end;
+  
+  btnTabNext := TButton.Create(Self);
+  with btnTabNext do begin
+    Parent := Self;
+    Name := 'btnTabNext';
+    Left := 355; Top := Y;
+    Width := 30; Height := 24;
+    Caption := '▶';
+    OnClick := @btnTabNextClick;
+    Visible := False;
+  end;
+  
+  lblTabPosition := TLabel.Create(Self);
+  with lblTabPosition do begin
+    Parent := Self;
+    Name := 'lblTabPosition';
+    Left := 390; Top := Y + 4;
+    Width := 80; Height := 16;
+    Caption := '';
+    Visible := False;
+  end;
+  
+  Y := Y + 30;
+  edBlockStyle := TEdit.Create(Self);
+  with edBlockStyle do begin
+    Parent := Self;
+    Name := 'edBlockStyle';
+    Left := 12; Top := Y;
+    Width := 120; Height := 24;
+    Text := '';
+    Visible := False;
+  end;
+  
+  edBlockKind := TEdit.Create(Self);
+  with edBlockKind do begin
+    Parent := Self;
+    Name := 'edBlockKind';
+    Left := 140; Top := Y;
+    Width := 100; Height := 24;
+    Text := '';
+    Visible := False;
+  end;
+  
+  edIntensityLow := TEdit.Create(Self);
+  with edIntensityLow do begin
+    Parent := Self;
+    Name := 'edIntensityLow';
+    Left := 248; Top := Y;
+    Width := 60; Height := 24;
+    Text := '0.20';
+    Visible := False;
+  end;
+  
+  edIntensityHigh := TEdit.Create(Self);
+  with edIntensityHigh do begin
+    Parent := Self;
+    Name := 'edIntensityHigh';
+    Left := 315; Top := Y;
+    Width := 60; Height := 24;
+    Text := '0.60';
+    Visible := False;
+  end;
+  
+  Y := Y + 30;
+  btnSaveBlock := TButton.Create(Self);
+  with btnSaveBlock do begin
+    Parent := Self;
+    Name := 'btnSaveBlock';
+    Left := 12; Top := Y;
+    Width := 80; Height := 28;
+    Caption := 'Save Block';
+    OnClick := @btnSaveBlockClick;
+    Visible := False;
+  end;
+  
+  btnNewBlock := TButton.Create(Self);
+  with btnNewBlock do begin
+    Parent := Self;
+    Name := 'btnNewBlock';
+    Left := 100; Top := Y;
+    Width := 80; Height := 28;
+    Caption := 'New Block';
+    OnClick := @btnNewBlockClick;
+    Visible := False;
+  end;
+  
+  btnDeleteBlock := TButton.Create(Self);
+  with btnDeleteBlock do begin
+    Parent := Self;
+    Name := 'btnDeleteBlock';
+    Left := 188; Top := Y;
+    Width := 80; Height := 28;
+    Caption := 'Delete';
+    OnClick := @btnDeleteBlockClick;
+    Visible := False;
+  end;
+  
+  edBlockStyle.OnChange := @MarkBlockModified;
+  edBlockKind.OnChange := @MarkBlockModified;
+  edIntensityLow.OnChange := @MarkBlockModified;
+  edIntensityHigh.OnChange := @MarkBlockModified;
+end;
+
+procedure TMainForm.UpdateBlockNavigationUI;
+var
+  UIEnabled: Boolean;
+begin
+  UIEnabled := FIsConfigFile and (Length(FTabBlocks) > 0);
+
+  if Assigned(cbTabSelector) then cbTabSelector.Visible := UIEnabled;
+  if Assigned(btnTabPrev) then btnTabPrev.Visible := UIEnabled;
+  if Assigned(btnTabNext) then btnTabNext.Visible := UIEnabled;
+  if Assigned(lblTabPosition) then lblTabPosition.Visible := UIEnabled;
+  if Assigned(edBlockStyle) then edBlockStyle.Visible := UIEnabled;
+  if Assigned(edBlockKind) then edBlockKind.Visible := UIEnabled;
+  if Assigned(edIntensityLow) then edIntensityLow.Visible := UIEnabled;
+  if Assigned(edIntensityHigh) then edIntensityHigh.Visible := UIEnabled;
+  if Assigned(btnSaveBlock) then btnSaveBlock.Visible := UIEnabled;
+  if Assigned(btnNewBlock) then btnNewBlock.Visible := UIEnabled;
+  if Assigned(btnDeleteBlock) then btnDeleteBlock.Visible := UIEnabled;
+  
+  if UIEnabled then begin
+    UpdateHeaderFields;
+    lblTabPosition.Caption := Format('%d of %d', [FSelectedBlock + 1, Length(FTabBlocks)]);
+    btnTabPrev.Enabled := FSelectedBlock > 0;
+    btnTabNext.Enabled := FSelectedBlock < Length(FTabBlocks) - 1;
+    btnDeleteBlock.Enabled := Length(FTabBlocks) > 1;
+  end;
+end;
+
+procedure TMainForm.UpdateHeaderFields;
+begin
+  if (FSelectedBlock >= 0) and (FSelectedBlock < Length(FTabBlocks)) then begin
+    edBlockStyle.Text := FTabBlocks[FSelectedBlock].Style;
+    edBlockKind.Text := FTabBlocks[FSelectedBlock].Kind;
+    edIntensityLow.Text := FormatFloat('0.00', FTabBlocks[FSelectedBlock].IntensityLow);
+    edIntensityHigh.Text := FormatFloat('0.00', FTabBlocks[FSelectedBlock].IntensityHigh);
+    FBlockModified := False;
+  end;
+end;
+
+procedure TMainForm.MarkBlockModified(Sender: TObject);
+begin
+  if (FSelectedBlock >= 0) and (FSelectedBlock < Length(FTabBlocks)) then begin
+    FTabBlocks[FSelectedBlock].Modified := True;
+    FBlockModified := True;
+    if Assigned(cbTabSelector) and (cbTabSelector.Items.Count > FSelectedBlock) then begin
+      if Pos('*', cbTabSelector.Items[FSelectedBlock]) = 0 then
+        cbTabSelector.Items[FSelectedBlock] := cbTabSelector.Items[FSelectedBlock] + ' *';
+    end;
+  end;
+end;
+
+procedure TMainForm.cbTabSelectorChange(Sender: TObject);
+begin
+  if cbTabSelector.ItemIndex >= 0 then begin
+    FSelectedBlock := cbTabSelector.ItemIndex;
+    UpdateHeaderFields;
+    RenderPage(0);
+    UpdateBlockNavigationUI;
+  end;
+end;
+
+procedure TMainForm.btnTabPrevClick(Sender: TObject);
+begin
+  if FSelectedBlock > 0 then begin
+    Dec(FSelectedBlock);
+    cbTabSelector.ItemIndex := FSelectedBlock;
+    UpdateHeaderFields;
+    RenderPage(0);
+    UpdateBlockNavigationUI;
+  end;
+end;
+
+procedure TMainForm.btnTabNextClick(Sender: TObject);
+begin
+  if (FSelectedBlock >= 0) and (FSelectedBlock < Length(FTabBlocks) - 1) then begin
+    Inc(FSelectedBlock);
+    cbTabSelector.ItemIndex := FSelectedBlock;
+    UpdateHeaderFields;
+    RenderPage(0);
+    UpdateBlockNavigationUI;
+  end;
+end;
+
+procedure TMainForm.btnSaveBlockClick(Sender: TObject);
+begin
+  SurgicalSaveBlock;
+end;
+
+procedure TMainForm.SurgicalSaveBlock;
+var
+  SL: TStringList;
+  Block: TTabBlock;
+  I: Integer;
+begin
+  if (FSelectedBlock < 0) or (FSelectedBlock >= Length(FTabBlocks)) then Exit;
+  
+  Block := FTabBlocks[FSelectedBlock];
+  Block.Style := edBlockStyle.Text;
+  Block.Kind := edBlockKind.Text;
+  Block.IntensityLow := StrToFloatDef(edIntensityLow.Text, 0.0);
+  Block.IntensityHigh := StrToFloatDef(edIntensityHigh.Text, 1.0);
+  FTabBlocks[FSelectedBlock] := Block;
+  
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(Block.SourceFile);
+    for I := Block.LineStart to Block.LineEnd do
+      SL.Delete(Block.LineStart);
+    SL.Insert(Block.LineStart, BuildBlockText(Block));
+    SL.SaveToFile(Block.SourceFile, TEncoding.UTF8);
+    
+    FTabBlocks[FSelectedBlock].Modified := False;
+    FBlockModified := False;
+    if Assigned(cbTabSelector) and (cbTabSelector.Items.Count > FSelectedBlock) then begin
+      cbTabSelector.Items[FSelectedBlock] := Format('%s %s (%.2f-%.2f)',
+        [Block.Style, Block.Kind, Block.IntensityLow, Block.IntensityHigh]);
+    end;
+    UpdateStatus('Saved block to: ' + ExtractFileName(Block.SourceFile));
+  finally
+    SL.Free;
+  end;
+end;
+
+procedure TMainForm.btnNewBlockClick(Sender: TObject);
+var
+  NewBlock: TTabBlock;
+  SL: TStringList;
+  I, J, K: Integer;
+begin
+  if not FIsConfigFile then Exit;
+  
+  NewBlock.Header := '[new verse intensity=0.20-0.60]';
+  NewBlock.Style := 'new';
+  NewBlock.Kind := 'verse';
+  NewBlock.IntensityLow := 0.20;
+  NewBlock.IntensityHigh := 0.60;
+  NewBlock.Meter := cbMeter.Text;
+  NewBlock.SourceFile := FTabBlocks[0].SourceFile;
+  NewBlock.BlockIndex := Length(FTabBlocks);
+  NewBlock.LineStart := 0;
+  NewBlock.LineEnd := 0;
+  NewBlock.Bars := nil;
+  NewBlock.Modified := True;
+  
+  SetLength(NewBlock.Bars, FPageSize);
+  for I := 0 to High(NewBlock.Bars) do begin
+    NewBlock.Bars[I].Steps := FStepsPerBar;
+    NewBlock.Bars[I].Meter := cbMeter.Text;
+    NewBlock.Bars[I].InstChars := nil;
+    for J := 0 to High(FInstOrder) do begin
+      K := Length(NewBlock.Bars[I].InstChars);
+      SetLength(NewBlock.Bars[I].InstChars, K + 1);
+      NewBlock.Bars[I].InstChars[K].Abbr := FInstOrder[J];
+      SetLength(NewBlock.Bars[I].InstChars[K].Chars, FStepsPerBar);
+      FillChar(NewBlock.Bars[I].InstChars[K].Chars[0], FStepsPerBar, '.');
+    end;
+  end;
+  
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(NewBlock.SourceFile);
+    SL.Add('');
+    SL.Add(BuildBlockText(NewBlock));
+    SL.SaveToFile(NewBlock.SourceFile, TEncoding.UTF8);
+  finally
+    SL.Free;
+  end;
+  
+  ParseConfigTabFile(NewBlock.SourceFile);
+  cbTabSelector.ItemIndex := Length(FTabBlocks) - 1;
+  FSelectedBlock := Length(FTabBlocks) - 1;
+  UpdateHeaderFields;
+  RenderPage(0);
+  UpdateBlockNavigationUI;
+end;
+
+procedure TMainForm.btnDeleteBlockClick(Sender: TObject);
+var
+  SL: TStringList;
+  I: Integer;
+  SourceFile: string;
+begin
+  if not FIsConfigFile then Exit;
+  if Length(FTabBlocks) <= 1 then begin
+    UpdateStatus('Cannot delete the only block');
+    Exit;
+  end;
+  
+  if MessageDlg('Delete Block', 'Delete this block from the file?', mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    Exit;
+  
+  SourceFile := FTabBlocks[FSelectedBlock].SourceFile;
+  
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(SourceFile);
+    for I := FTabBlocks[FSelectedBlock].LineStart to FTabBlocks[FSelectedBlock].LineEnd do
+      SL.Delete(FTabBlocks[FSelectedBlock].LineStart);
+    if (FTabBlocks[FSelectedBlock].LineStart > 0) and (Trim(SL[FTabBlocks[FSelectedBlock].LineStart - 1]) = '') then
+      SL.Delete(FTabBlocks[FSelectedBlock].LineStart - 1);
+    SL.SaveToFile(SourceFile, TEncoding.UTF8);
+  finally
+    SL.Free;
+  end;
+  
+  ParseConfigTabFile(SourceFile);
+  if FSelectedBlock >= Length(FTabBlocks) then
+    FSelectedBlock := Length(FTabBlocks) - 1;
+  cbTabSelector.ItemIndex := FSelectedBlock;
+  UpdateHeaderFields;
+  RenderPage(0);
+  UpdateBlockNavigationUI;
+end;
 
 end.
