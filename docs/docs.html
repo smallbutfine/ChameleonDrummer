@@ -106,7 +106,20 @@ S ... ... ... xxx</code></pre>
     
     <div class="step-editor-section">
       <h3>Step Editor</h3>
-      <p>The <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) is a standalone visual pattern editor. Load MIDI or tab files, edit hits on a step grid, change meter and zoom, navigate pages, and save patterns as grooves or fills to <code>config/grooves/</code> or <code>config/fills/</code>. It uses <code>midi_to_tab.exe</code> for MIDI → tab conversion and supports dark mode.</p>
+      <p>The <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) is a standalone visual pattern editor for creating and editing drum patterns.</p>
+      <ul>
+        <li><strong>Step Grid:</strong> 17 instruments (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1-T4) with configurable resolution (4–64 steps/bar)</li>
+        <li><strong>Articulation:</strong> Click cells to cycle: <code>.</code> (rest) → <code>x</code> (hit) → <code>X</code> (accent) → <code>o</code> (soft) → <code>g</code> (ghost)</li>
+        <li><strong>MIDI → Tab:</strong> Load <code>.mid</code>/<code>.midi</code> files, auto-convert using <code>midi_to_tab.exe</code> with mapping, style, kind, intensity, energy, meter, resolution options</li>
+        <li><strong>Tab File Editing:</strong> Load existing <code>.tab</code> files (config format with multiple blocks, or foreign single-pattern format)</li>
+        <li><strong>Block Navigation:</strong> For config files, dropdown selector with Prev/Next to navigate verse/chorus/bridge/fill blocks</li>
+        <li><strong>Surgical Save:</strong> Save individual blocks back to source file without affecting others</li>
+        <li><strong>New/Delete Blocks:</strong> Add new empty patterns or remove blocks (with confirmation)</li>
+        <li><strong>Dark Mode:</strong> Automatic system theme detection (Windows) with full control theming</li>
+        <li><strong>Auto-Scaling:</strong> Proportional vectorial scaling for high-DPI displays</li>
+        <li><strong>Export:</strong> Save as new groove/fill <code>.tab</code> files in <code>config/</code></li>
+      </ul>
+      <p><strong>Launch:</strong> GUI toolbar button, direct executable, or from REAPER/Ardour panels.</p>
     </div>
   </div>
 </section>

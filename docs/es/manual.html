@@ -559,7 +559,197 @@ python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --
 </table>
 
 <hr>
+<hr>
+<hr>
 
+<h2 id="step-editor">Step Editor</h2>
+
+<p>The <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) is a standalone graphical application for visually editing drum patterns on a step grid, converting MIDI files to the <code>.tab</code> groove/fill format, and managing pattern blocks in the config files. It can be launched from the main GUI via the <strong>Step Editor</strong> button, or run directly.</p>
+
+<h3 id="step-editor-launching">Launching the Step Editor</h3>
+
+<ul>
+<li><strong>From the GUI:</strong> Click the <strong>Step Editor</strong> button in the main window toolbar.</li>
+<li><strong>Directly:</strong> Run <code>tools/step_editor/step_editor.exe</code> from the project root or installation directory.</li>
+<li><strong>From REAPER/Ardour panels:</strong> The <strong>Step Editor</strong> tab in the DAW integration panels launches the editor with the current MIDI item loaded.</li>
+</ul>
+
+<h3 id="step-editor-main-features">Main Features</h3>
+
+<ul>
+<li><strong>Step Grid Editing:</strong> Visual grid with 17 drum instruments (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4) and configurable steps per bar (4, 8, 16, 32, 64).</li>
+<li><strong>Velocity/Articulation Characters:</strong> Each step uses a character: <code>.</code> (rest), <code>x</code> (normal), <code>X</code> (accent), <code>o</code> (soft/ghost), <code>g</code> (ghost). Click cells to cycle through states.</li>
+<li><strong>MIDI → Tab Conversion:</strong> Load a MIDI file (<code>.mid</code>, <code>.midi</code>) and convert it to tab format using the built-in <code>midi_to_tab.exe</code> with configurable mapping, style, kind, intensity, energy, resolution, and meter.</li>
+<li><strong>Tab File Loading:</strong> Load existing <code>.tab</code> files (both ChameleonDrummer config format and foreign tab formats) for editing.</li>
+<li><strong>Block Navigation (Config Files):</strong> When loading a config file from <code>config/grooves/</code> or <code>config/fills/</code>, the editor parses all pattern blocks and provides a dropdown selector with Prev/Next buttons to navigate between blocks.</li>
+<li><strong>Block Editing:</strong> Edit block header fields (Style, Kind, Intensity Low/High) directly in the UI. Changes are tracked with a <code>*</code> indicator.</li>
+<li><strong>Surgical Save:</strong> Save individual blocks back to their source file without affecting other blocks in the same file.</li>
+<li><strong>New/Delete Blocks:</strong> Add new empty pattern blocks or delete existing ones (with confirmation).</li>
+<li><strong>Zoom/Resolution:</strong> Change grid resolution (8, 16, 32, 64 steps per bar) and page size.</li>
+<li><strong>Dark Mode:</strong> Automatic system theme detection (Windows) with manual override. All controls including grid, combo boxes, and status bar are themed.</li>
+<li><strong>Auto-Scaling:</strong> Proportional vectorial scaling of all UI elements for high-DPI displays.</li>
+<li><strong>Export:</strong> Save edited patterns as new groove or fill <code>.tab</code> files in the config directories.</li>
+</ul>
+
+<h3 id="step-editor-ui-overview">UI Overview</h3>
+
+<table>
+<tr><th>Area</th><th>Description</th></tr>
+</table>
+<table>
+<tr><td><strong>Input File</strong></td><td>Browse for MIDI or tab file. Auto-converts MIDI on selection.</td></tr>
+<tr><td><strong>Mapping</strong></td><td>Select MIDI keymap (GM, AD2, EZD3, XG, or custom JSON from <code>mappings/</code>).</td></tr>
+<tr><td><strong>Style / Kind</strong></td><td>Groove style (from <code>config/styles.txt</code>) and kind (verse, chorus, bridge, intro, outro, fill).</td></tr>
+<tr><td><strong>Intensity / Energy</strong></td><td>Intensity band for grooves (e.g., 0.2-0.6) or energy level for fills (0.1–1.0).</td></tr>
+<tr><td><strong>Resolution / Meter</strong></td><td>Steps per quarter note (4, 8, 16, 32) and time signature (supports triplet feel with <code>T</code> suffix, e.g., <code>4/4T</code>).</td></tr>
+<tr><td><strong>Groove / Fill Radio</strong></td><td>Switch between groove mode (intensity) and fill mode (energy). Updates style dropdown accordingly.</td></tr>
+<tr><td><strong>Step Grid</strong></td><td>Main editing area. Left column = instrument abbreviations. Top row = step numbers. Bar boundaries shown with thicker vertical lines.</td></tr>
+<tr><td><strong>Zoom</strong></td><td>Page size selector (8, 16, 32, 64 steps per page).</td></tr>
+<tr><td><strong>Header Preview</strong></td><td>Shows the tab block header that will be written on save.</td></tr>
+<tr><td><strong>Block Navigation (config files only)</strong></td><td>Dropdown selector, Prev/Next buttons, position label, editable header fields, Save/New/Delete buttons.</td></tr>
+<tr><td><strong>Status Log</strong></td><td>Real-time log of operations, conversion output, and errors.</td></tr>
+</table>
+
+<h3 id="step-editor-midi-conversion">MIDI → Tab Conversion</h3>
+
+<p>When you select a MIDI file (<code>.mid</code>, <code>.midi</code>), the editor automatically runs <code>midi_to_tab.exe</code> with the current UI settings and displays the result in the grid.</p>
+
+<p><strong>Conversion Parameters (from UI):</strong></p>
+
+<ul>
+<li><strong>Mapping:</strong> Keymap JSON file (default: built-in GM).</li>
+<li><strong>Style:</strong> Groove style name (e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>).</li>
+<li><strong>Kind:</strong> Groove kind (<code>verse</code>, <code>chorus</code>, <code>bridge</code>, <code>intro</code>, <code>outro</code>, <code>fill</code>).</li>
+<li><strong>Intensity:</strong> Band for grooves (e.g., <code>0.2-0.6</code>).</li>
+<li><strong>Energy:</strong> Level for fills (0.1–1.0).</li>
+<li><strong>Resolution:</strong> Steps per quarter note (4, 8, 16, 32).</li>
+<li><strong>Meter:</strong> Time signature (e.g., <code>4/4</code>, <code>7/8</code>, <code>4/4T</code> for triplet feel).</li>
+<li><strong>Fill Mode:</strong> When enabled, outputs a fill block instead of a groove block.</li>
+</ul>
+
+<p>The raw conversion output is shown in the status log for debugging.</p>
+
+<h3 id="step-editor-tab-file-formats">Tab File Formats</h3>
+
+<p>The editor handles two tab file formats:</p>
+
+<h4>1. ChameleonDrummer Config Format (<code>config/grooves/*.tab</code>, <code>config/fills/*.tab</code>)</h4>
+
+<p>Multiple pattern blocks in one file, each with a header:</p>
+
+<pre><code class="lang-text">[metal verse intensity=0.20-0.60]
+K   x.x.x.x.x.x.x.x
+S   ..x...x...x...x.
+HH  x.x.x.x.x.x.x.x
+...
+| 
+K   x.x.x.x.x.x.x.x
+...
+
+[metal chorus intensity=0.40-0.80]
+K   x.x.x.x.x.x.x.x
+...
+</code></pre>
+
+<p>When loading a config file, the editor:</p>
+<ul>
+<li>Parses all blocks and populates the block selector dropdown.</li>
+<li>Shows block navigation UI (selector, Prev/Next, editable header fields).</li>
+<li>Allows surgical save of individual blocks without rewriting the entire file.</li>
+</ul>
+
+<h4>2. Foreign Tab Format (single pattern, no block headers)</h4>
+
+<p>Simple format with instrument lines only:</p>
+
+<pre><code class="lang-text">K   x.x.x.x.x.x.x.x
+S   ..x...x...x...x.
+HH  x.x.x.x.x.x.x.x
+...
+</code></pre>
+
+<p>These are loaded as a single editable pattern without block navigation.</p>
+
+<h3 id="step-editor-grid-editing">Step Grid Editing</h3>
+
+<ul>
+<li><strong>Click a cell</strong> to cycle: <code>.</code> → <code>x</code> → <code>X</code> → <code>o</code> → <code>g</code> → <code>.</code></li>
+<li><strong>Range selection:</strong> Drag to select multiple cells. Use <strong>Save Pattern As</strong> to export only the selected region.</li>
+<li><strong>Instrument abbreviations:</strong> Fixed left column (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4).</li>
+<li><strong>Step numbers:</strong> Top row shows step index within each bar.</li>
+<li><strong>Bar delimiters:</strong> Thicker vertical lines mark bar boundaries.</li>
+<li><strong>Pages:</strong> Use <strong>Prev/Next Page</strong> buttons or the Zoom dropdown to navigate large patterns.</li>
+</ul>
+
+<h3 id="step-editor-block-management">Block Management (Config Files Only)</h3>
+
+<p>When a config file is loaded:</p>
+
+<ul>
+<li><strong>Block Selector:</strong> Dropdown showing all blocks with format <code>Style Kind (IntensityLow-IntensityHigh)</code>. Modified blocks show a <code>*</code> suffix.</li>
+<li><strong>Prev/Next:</strong> Navigate between blocks.</li>
+<li><strong>Header Fields:</strong> Edit Style, Kind, Intensity Low, Intensity High directly. Changes mark the block as modified.</li>
+<li><strong>Save Block:</strong> Writes only the current block back to its source file (surgical save).</li>
+<li><strong>New Block:</strong> Appends a new empty block (with current meter/resolution) to the file.</li>
+<li><strong>Delete Block:</strong> Removes the current block from the file (requires confirmation, keeps at least one block).</li>
+</ul>
+
+<h3 id="step-editor-saving-patterns">Saving Patterns</h3>
+
+<p><strong>Save Pattern As:</strong> Exports the current grid (or selected region) as a new <code>.tab</code> file in <code>config/grooves/<style>.tab</code> or <code>config/fills/<style>.tab</code> depending on Groove/Fill mode.</p>
+
+<p><strong>Save Block:</strong> (Config files only) Surgically updates the current block in its source file.</p>
+
+<h3 id="step-editor-dark-mode">Dark Mode</h3>
+
+<p>On Windows, the editor detects the system theme (light/dark) at startup and applies it automatically. The theme preference is saved and restored on next launch. All controls are themed:</p>
+
+<ul>
+<li>Form background, panels, labels</li>
+<li>String grid (cells, fixed cells, text, grid lines)</li>
+<li>Combo boxes (owner-draw for dropdown items)</li>
+<li>Status bar (owner-draw panel)</li>
+<li>Buttons, edits, memos</li>
+</ul>
+
+<h3 id="step-editor-auto-scaling">Auto-Scaling (High DPI)</h3>
+
+<p>The editor uses <code>AutoScale.pas</code> for proportional vectorial scaling. On high-DPI displays, all controls, fonts, and spacing scale proportionally. The scaler:</p>
+
+<ul>
+<li>Computes a scale factor from the design-time DPI (96) to runtime DPI.</li>
+<li>Scales control positions, sizes, fonts, and grid cell dimensions.</li>
+<li>Maintains aspect ratios and layout integrity.</li>
+</ul>
+
+<h3 id="step-editor-command-line">Command-Line Reference (midi_to_tab.exe)</h3>
+
+<p>The Step Editor uses <code>midi_to_tab.exe</code> internally. You can also run it directly:</p>
+
+<pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
+
+Options:
+  --mapping <file>     Keymap JSON (default: built-in GM)
+  --style <name>       Groove style name
+  --kind <name>        Groove kind (verse, chorus, bridge, intro, outro, fill)
+  --intensity <low-high>  Groove intensity band (e.g., 0.2-0.6)
+  --energy <0-1>        Fill energy level
+  --resolution <n>      Steps per quarter note (4, 8, 16, 32)
+  --meter <n/d>         Time signature (e.g., 4/4, 7/8, 4/4T)
+  --fill                 Output fill block instead of groove
+  --output <file>        Write tab to file (default: stdout)
+</code></pre>
+
+<h3 id="step-editor-tips">Tips & Best Practices</h3>
+
+<ul>
+<li><strong>Start from config:</strong> Load an existing groove/fill from <code>config/</code> to use as a template.</li>
+<li><strong>Use block navigation:</strong> When editing config files, use the block selector to jump between verse/chorus/bridge variants.</li>
+<li><strong>Surgical save:</strong> Use <strong>Save Block</strong> to update a single pattern without touching others in the same file.</li>
+<li><strong>Meter matters:</strong> Set the correct meter before converting MIDI or adding bars — it determines steps per bar.</li>
+<li><strong>Triplet feel:</strong> Append <code>T</code> to meter for triplet-based grids (e.g., <code>4/4T</code> = 12 steps per bar at resolution 16).</li>
+<li><strong>Dark mode:</strong> If colors look wrong, toggle system theme or restart the editor to re-detect.</li>
+</ul>
 <h2 id="appendix-source-code-principles">Appendix: Source Code Principles</h2>
 
 <h3 id="design-patterns">Design Patterns</h3>

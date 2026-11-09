@@ -21,15 +21,23 @@ This document provides a comprehensive analysis of the two Pascal programs that 
    - [Event Handlers](#event-handlers)
    - [Section Management](#section-management)
    - [Process Invocation Pattern](#process-invocation-pattern)
-4. [Shared Architecture](#shared-architecture)
+4. [Program 3: Step Editor (tools/step_editor)](#program-3-step-editor-toolsstep_editor)
+   - [File Structure](#file-structure-3)
+   - [Entry Point](#entry-point-3)
+   - [Main Form (TMainForm)](#main-form-tmainform)
+   - [Data Structures](#data-structures)
+   - [Core Functionality](#core-functionality)
+   - [Build](#build)
+   - [Integration](#integration)
+5. [Shared Architecture](#shared-architecture)
    - [Plugin System](#plugin-system)
    - [Engine Layer](#engine-layer)
    - [Kit & Keymap System](#kit--keymap-system)
    - [Export Bridges](#export-bridges)
-5. [Build Configuration](#build-configuration)
-6. [Usage Examples](#usage-examples)
-7. [Error Handling & Exit Codes](#error-handling--exit-codes)
-8. [Summary Comparison](#summary-comparison)
+6. [Build Configuration](#build-configuration)
+7. [Usage Examples](#usage-examples)
+8. [Error Handling & Exit Codes](#error-handling--exit-codes)
+9. [Summary Comparison](#summary-comparison)
 
 ---
 
@@ -440,6 +448,174 @@ After execution, the form displays the child process output in the log memo.
 
 ---
 
+## Program 3: Step Editor (tools/step_editor)
+
+The Step Editor is a standalone Lazarus GUI application for visual drum pattern editing, MIDI-to-tab conversion, and config file block management.
+
+### File Structure
+
+```
+tools/step_editor/
+├── step_editor.lpr          # Project entry point
+├── MainFrm.pas              # Main form (TMainForm)
+├── MainFrm.lfm              # Form layout
+├── AutoScale.pas            # Proportional vectorial scaling
+├── DarkTheme.pas            # Windows dark mode support
+├── build_gui.bat            # Build script
+└── step_editor.exe          # Compiled executable
+```
+
+### Entry Point
+
+```pascal
+program step_editor;
+
+{$mode objfpc}{$H+}
+
+uses
+  {$IFDEF UNIX}{$IFDEF UseCThreads}
+  cthreads,
+  {$ENDIF}{$ENDIF}
+  Interfaces, Forms, MainFrm;
+
+{$R *.res}
+
+begin
+  RequireDerivedFormResource := True;
+  Application.Scaled := True;
+  Application.Initialize;
+  Application.CreateForm(TMainForm, MainForm);
+  Application.Run;
+end.
+```
+
+### Main Form (TMainForm)
+
+The form is created programmatically in `FormCreate` with dynamically created controls for block navigation.
+
+#### Key Components
+
+| Component | Type | Purpose |
+|-----------|------|---------|
+| `sgTab` | `TStringGrid` | Step grid (17 instruments × configurable steps) |
+| `edInput` | `TEdit` | Input file path (MIDI or tab) |
+| `btnBrowseInput` | `TButton` | File browser |
+| `cbMapping` | `TComboBox` | MIDI keymap selection |
+| `cbStyle` | `TComboBox` | Groove style (from styles.txt or fill names) |
+| `cbKind` | `TComboBox` | Groove kind (verse, chorus, bridge, intro, outro, fill) |
+| `cbIntensity` | `TComboBox` | Intensity band presets (groove mode) |
+| `cbEnergy` | `TComboBox` | Energy level 0.1–1.0 (fill mode) |
+| `cbResolution` | `TComboBox` | Steps per quarter note (4, 8, 16, 32) |
+| `cbMeter` | `TComboBox` | Time signature (supports triplet with T suffix) |
+| `radGroove`/`radFill` | `TRadioButton` | Mode switch |
+| `cbZoom` | `TComboBox` | Page size (8, 16, 32, 64 steps) |
+| `btnSavePatternAs` | `TButton` | Export pattern as new tab file |
+| `memStatus` | `TMemo` | Log output |
+| `sbStatus` | `TStatusBar` | Status bar (owner-draw for dark mode) |
+
+#### Block Navigation Controls (Dynamic)
+
+Created in `SetupBlockNavigationUI` when config file is loaded:
+
+| Component | Type | Purpose |
+|-----------|------|---------|
+| `cbTabSelector` | `TComboBox` | Block selector dropdown |
+| `btnTabPrev`/`btnTabNext` | `TButton` | Navigate blocks |
+| `lblTabPosition` | `TLabel` | Position indicator (e.g., "1 of 5") |
+| `edBlockStyle` | `TEdit` | Editable style field |
+| `edBlockKind` | `TEdit` | Editable kind field |
+| `edIntensityLow`/`edIntensityHigh` | `TEdit` | Editable intensity bounds |
+| `btnSaveBlock` | `TButton` | Surgical save current block |
+| `btnNewBlock` | `TButton` | Append new empty block |
+| `btnDeleteBlock` | `TButton` | Delete current block |
+
+### Data Structures
+
+```pascal
+TStepChar = (scDot, scX, scAccent, scSoft, scGhost);
+
+TTabBar = record
+  Steps: Integer;
+  Meter: string;
+  InstChars: array of record
+    Abbr: string;
+    Chars: array of Char;
+  end;
+end;
+
+TTabBarArray = array of TTabBar;
+
+TTabBlock = record
+  Header: string;
+  Style, Kind: string;
+  IntensityLow, IntensityHigh: Double;
+  Meter: string;
+  Bars: TTabBarArray;
+  SourceFile: string;
+  BlockIndex: Integer;
+  LineStart, LineEnd: Integer;
+  Modified: Boolean;
+end;
+
+TTabBlocks = array of TTabBlock;
+```
+
+### Core Functionality
+
+#### 1. MIDI → Tab Conversion (`LoadMidiAndConvert`)
+
+- Runs `midi_to_tab.exe` (resolved relative to executable) with current UI parameters
+- Parameters: mapping, style, kind, intensity/energy, resolution, meter, fill mode
+- Captures stdout, parses tab output, populates grid
+
+#### 2. Tab File Loading (`LoadTabFile`)
+
+- Detects config file vs foreign tab file via `IsConfigTabFile`
+- Config files: `ParseConfigTabFile` → parses all blocks, enables block navigation UI
+- Foreign files: `ParseForeignTabFile` → single pattern, no block UI
+
+#### 3. Step Grid Editing
+
+- `sgTabDrawCell`: Custom drawing with dark mode support, bar boundary lines (3px)
+- `sgTabClick`/`sgTabSelectCell`: Click to cycle articulation (`. → x → X → o → g → .`)
+- `ToggleCell`: Updates underlying data model (`FTabBars` or `FTabBlocks[FSelectedBlock].Bars`)
+
+#### 4. Block Management (Config Files Only)
+
+- `ParseConfigTabFile`: Scans file for `[header]` lines, creates `TTabBlock` array
+- `UpdateBlockNavigationUI`: Shows/hides dynamic controls, updates selector
+- `SurgicalSaveBlock`: Rewrites only the modified block's lines in source file
+- `btnNewBlockClick`: Appends new block with current meter/resolution
+- `btnDeleteBlockClick`: Removes block (keeps at least one)
+
+#### 5. Dark Mode (`ApplyDarkTheme`)
+
+- Windows-only: `OnSystemThemeChange` hook
+- Uses `DarkTheme.pas` (`ApplyTheme`, `ThemeControlTree`)
+- Owner-draw combo boxes (`ComboBoxDrawItem`, `ComboBoxDropDown`)
+- Owner-draw status bar (`StatusBarDrawPanel`)
+- Grid fixed cells and text colors
+
+#### 6. Auto-Scaling (`AutoScale.pas`)
+
+- `TWindowAutoScaler` computes scale factor from design DPI (96) to runtime DPI
+- Scales all controls: positions, sizes, fonts, grid cell dimensions
+- Called in `FormCreate` after all controls created
+
+### Build
+
+```bash
+cd tools/step_editor
+cmd /c "build_gui.bat < NUL"
+```
+
+`build_gui.bat` uses `lazbuild` with `--ws=win32` (Windows) or `--ws=gtk2`/`cocoa` (Linux/macOS).
+
+### Integration
+
+- **Main GUI:** "Step Editor" button launches `tools/step_editor/step_editor.exe`
+- **REAPER/Ardour Panels:** "Step Editor" tab launches editor with current MIDI item
+- **midi_to_tab.exe:** Called as child process for MIDI conversion (resolved relative to step_editor.exe)
 ## Shared Architecture
 
 Both programs share the same core engine layer. Here is how the pieces fit together:

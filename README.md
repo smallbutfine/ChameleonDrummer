@@ -105,6 +105,38 @@ python tools/midi_to_tab.py song.mid --meter 7/8 --resolution 16 --output groove
 python tools/midi_to_tab.py song.mid --fill --name my_fill --energy 0.6 --output fill.tab
 ```
 
+## Step Editor
+
+The **Step Editor** (`tools/step_editor/step_editor.exe`) is a standalone graphical application for visually editing drum patterns on a step grid, converting MIDI files to the `.tab` groove/fill format, and managing pattern blocks in the config files.
+
+### Features
+
+- **Step Grid Editing:** Visual grid with 17 drum instruments (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4) and configurable steps per bar (4, 8, 16, 32, 64).
+- **Velocity/Articulation Characters:** Each step uses a character: `.` (rest), `x` (normal), `X` (accent), `o` (soft/ghost), `g` (ghost). Click cells to cycle through states.
+- **MIDI → Tab Conversion:** Load a MIDI file (`.mid`, `.midi`) and convert it to tab format using the built-in `midi_to_tab.exe` with configurable mapping, style, kind, intensity, energy, resolution, and meter.
+- **Tab File Loading:** Load existing `.tab` files (both ChameleonDrummer config format and foreign tab formats) for editing.
+- **Block Navigation (Config Files):** When loading a config file from `config/grooves/` or `config/fills/`, the editor parses all pattern blocks and provides a dropdown selector with Prev/Next buttons to navigate between blocks.
+- **Block Editing:** Edit block header fields (Style, Kind, Intensity Low/High) directly in the UI. Changes are tracked with a `*` indicator.
+- **Surgical Save:** Save individual blocks back to their source file without affecting other blocks in the same file.
+- **New/Delete Blocks:** Add new empty pattern blocks or delete existing ones (with confirmation).
+- **Zoom/Resolution:** Change grid resolution (8, 16, 32, 64 steps per bar) and page size.
+- **Dark Mode:** Automatic system theme detection (Windows) with manual override. All controls including grid, combo boxes, and status bar are themed.
+- **Auto-Scaling:** Proportional vectorial scaling of all UI elements for high-DPI displays.
+- **Export:** Save edited patterns as new groove or fill `.tab` files in the config directories.
+
+### Launching
+
+- **From the GUI:** Click the **Step Editor** button in the main window toolbar.
+- **Directly:** Run `tools/step_editor/step_editor.exe` from the project root or installation directory.
+- **From REAPER/Ardour panels:** The **Step Editor** tab in the DAW integration panels launches the editor with the current MIDI item loaded.
+
+### Building the Step Editor
+
+```bash
+cd tools/step_editor
+cmd /c "build_gui.bat < NUL"
+```
+
 ## Status
 
 - ✅ Core generation engine (ComposerV2, Pattern, Song, DrumGenerator)
@@ -114,7 +146,8 @@ python tools/midi_to_tab.py song.mid --fill --name my_fill --energy 0.6 --output
 - ✅ REAPER + Ardour export
 - ✅ Humanization, swing, physical constraints
 - ✅ Weighted random pattern selection (intensity bands, thread-safe RNG)
-- ✅ MIDI → tab conversion tool
+- ✅ MIDI → tab conversion tool (Python & Pascal)
+- ✅ Step Editor (visual grid editing, MIDI→Tab, block management, dark mode, auto-scaling)
 
 ## REAPER / Ardour Integration
 
