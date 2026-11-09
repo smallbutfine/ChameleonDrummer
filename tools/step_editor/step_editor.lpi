@@ -42,6 +42,7 @@
       <Unit2>
         <Filename Value="version.rc"/>
         <IsPartOfProject Value="True"/>
+        <Condition Value="MSWINDOWS"/>
       </Unit2>
     </Units>
   </ProjectOptions>
@@ -68,6 +69,12 @@
         <Win32>
           <GraphicApplication Value="True"/>
         </Win32>
+        <Linux>
+          <GraphicApplication Value="True"/>
+        </Linux>
+        <Darwin>
+          <GraphicApplication Value="True"/>
+        </Darwin>
       </Options>
     </Linking>
   </CompilerOptions>
