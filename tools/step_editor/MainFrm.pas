@@ -1583,6 +1583,7 @@ var
   LowerName: string;
 begin
   LowerName := LowerCase(AFileName);
+  LowerName := StringReplace(LowerName, '/', PathDelim, [rfReplaceAll]);
   Result := (Pos('config' + PathDelim + 'grooves', LowerName) > 0) or
             (Pos('config' + PathDelim + 'fills', LowerName) > 0);
 end;
@@ -1691,13 +1692,13 @@ begin
   FTabBars := nil;
   FSelectedBlock := -1;
   FBlockModified := False;
-  
-  UpdateBlockNavigationUI;
-  
+
   if FIsConfigFile then
     ParseConfigTabFile(AFileName)
   else
     ParseForeignTabFile(AFileName);
+
+  UpdateBlockNavigationUI;
 end;
 
 function TMainForm.BuildBlockText(const ABlock: TTabBlock): string;
