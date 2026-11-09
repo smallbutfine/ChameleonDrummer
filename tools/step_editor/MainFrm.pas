@@ -1750,7 +1750,7 @@ procedure TMainForm.SetupBlockNavigationUI;
 var
   Y: Integer;
 begin
-  Y := sbStatus.Top - 120;
+  Y := sbStatus.Top - 150;
   
   cbTabSelector := TComboBox.Create(Self);
   with cbTabSelector do begin
