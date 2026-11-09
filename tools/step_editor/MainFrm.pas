@@ -317,6 +317,7 @@ begin
 
   FAutoScaler := TWindowAutoScaler.Create(Self);
   SetupBlockNavigationUI;
+  {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
