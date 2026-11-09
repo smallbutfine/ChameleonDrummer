@@ -11,12 +11,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Martin Haverland\0"
             VALUE "FileDescription", "ChameleonDrummer\0"
-            VALUE "FileVersion", "1.0.926\0"
+            VALUE "FileVersion", "1.0.927\0"
             VALUE "InternalName", "ChameleonDrummer\0"
-            VALUE "LegalCopyright", "Copyright \251 20261109011058.011000+060 Martin Haverland\0"
+            VALUE "LegalCopyright", "Copyright \251 20261109012128.609000+060 Martin Haverland\0"
             VALUE "OriginalFilename", "midi_to_tab.exe\0"
             VALUE "ProductName", "ChameleonDrummer\0"
-            VALUE "ProductVersion", "1.0.926\0"
+            VALUE "ProductVersion", "1.0.927\0"
         END
     END
     BLOCK "VarFileInfo"
