@@ -17,11 +17,13 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
   Dialogs, LCLType, Graphics, {$IFDEF MSWINDOWS}DarkTheme, ShellApi, Windows,{$ENDIF} process, StrUtils, menus, CliLookup,
-  time_signature;
+  time_signature, AutoScale;
 
 type
   TIntDynArray = array of Integer;
   TStrDynArray = array of String;
+
+  { TMainForm }
 
   TMainForm = class(TForm)
     gbSong: TGroupBox;
@@ -75,12 +77,15 @@ type
     lblHint: TLabel;
     btnGenerate: TButton;
     btnOpenFolder: TButton;
+    btnOpenStepEditor: TButton;
     chkRadioLength: TCheckBox;
     gbLog: TGroupBox;
     memLog: TMemo;
     pbProgress: TProgressBar;
     StatusBar: TStatusBar;
     procedure FormCreate(Sender: TObject);
+    procedure lblHintClick(Sender: TObject);
+    procedure lblMeterHintClick(Sender: TObject);
     procedure rgModeChange(Sender: TObject);
     procedure cbGenreChange(Sender: TObject);
     procedure tbComplexityChange(Sender: TObject);
@@ -89,6 +94,7 @@ type
     procedure btnGenerateClick(Sender: TObject);
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenFolderClick(Sender: TObject);
+    procedure btnOpenStepEditorClick(Sender: TObject);
     procedure chkRadioLengthClick(Sender: TObject);
     procedure mnuQuitClick(Sender: TObject);
     procedure mnuAddSectionClick(Sender: TObject);
@@ -99,6 +105,7 @@ type
     {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
+    procedure FormDestroy(Sender: TObject);
 
   private
     FSectionNames: TStrDynArray;
@@ -106,6 +113,8 @@ type
     FCliTool: String;
      {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
     FDark: Boolean;{$ENDIF}
+    FAutoScaler: TWindowAutoScaler;
+    FInThemeApply: Boolean;
     procedure Log(const AText: String);
     {$IFDEF MSWINDOWS}procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
     procedure SystemThemeChanged(Sender: TObject);
@@ -142,7 +151,7 @@ var
 implementation
 
 { The form file is named after the form class, not after this unit }
-{$R TMainForm.lfm}
+{$R MainFrm.lfm}
 
 { Numbers handed to the command line must use a '.' decimal separator whatever
   the system locale is: the CLI would not understand '0,67'. }
@@ -159,13 +168,16 @@ const
   ExportMIDI = 0;
   ExportREAPER = 1;
   ExportArdour = 2;
+  ExportMIDIArdour = 3;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  inherited;
+
   cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
   cbMeter.ItemIndex := 0;
   chkStrictMeter.Checked := True;
-  FDark := False;
+  {$IFDEF MSWINDOWS}FDark := False;{$ENDIF}
 
   // Aktiviert das manuelle Zeichnen (Owner-Draw)
   cbGenre.Style := csOwnerDrawFixed;
@@ -203,6 +215,7 @@ begin
   cbExport.Items.Add('MIDI only');
   cbExport.Items.Add('MIDI + REAPER project');
   cbExport.Items.Add('MIDI + REAPER project + Ardour session');
+  cbExport.Items.Add('MIDI + Ardour session');
   cbExport.ItemIndex := ExportREAPER;
   edOutput.Text := 'song';
   chkOpenFolder.Checked := False;
@@ -236,8 +249,18 @@ begin
 
   {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged; SetTheme(LoadThemeChoice, False);{$ENDIF}
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
-end;
 
+  FAutoScaler := TWindowAutoScaler.Create(Self);
+  OnDestroy := @FormDestroy;
+  end;
+
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  FAutoScaler.Free;
+  {$IFDEF MSWINDOWS}
+  UnhookForm(Handle);
+  {$ENDIF}
+end;
 
 {$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
 begin
@@ -248,24 +271,35 @@ end;
 
 procedure TMainForm.SetTheme(AChoice: TThemeChoice; ASave: Boolean);
 begin
-  FThemeChoice := AChoice;
-  FDark := ResolveDark(AChoice);
-  ThemeMenuChecks;
-  ApplyTheme(Self, FDark);
-  { Update status bar panel colors for dark mode }
-  if Assigned(StatusBar) then begin
-    if FDark then begin
-      StatusBar.Panels[0].Style := psOwnerDraw;
-      StatusBar.Panels[1].Style := psOwnerDraw;
-      StatusBar.Panels[2].Style := psOwnerDraw;
-    end else begin
-      StatusBar.Panels[0].Style := psText;
-      StatusBar.Panels[1].Style := psText;
-      StatusBar.Panels[2].Style := psText;
+  if FInThemeApply then Exit;
+  FInThemeApply := True;
+  try
+    FThemeChoice := AChoice;
+    FDark := ResolveDark(AChoice);
+    ThemeMenuChecks;
+    ApplyTheme(Self, FDark);
+    { Update status bar panel colors for dark mode - avoid paint race }
+    if Assigned(StatusBar) then begin
+      StatusBar.OnDrawPanel := nil;
+      try
+        if FDark then begin
+          StatusBar.Panels[0].Style := psOwnerDraw;
+          StatusBar.Panels[1].Style := psOwnerDraw;
+          StatusBar.Panels[2].Style := psOwnerDraw;
+        end else begin
+          StatusBar.Panels[0].Style := psText;
+          StatusBar.Panels[1].Style := psText;
+          StatusBar.Panels[2].Style := psText;
+        end;
+      finally
+        StatusBar.OnDrawPanel := @StatusBarDrawPanel;
+      end;
     end;
+    if ASave then
+      SaveThemeChoice(AChoice);
+  finally
+    FInThemeApply := False;
   end;
-  if ASave then
-    SaveThemeChoice(AChoice);
 end;
 
 procedure TMainForm.SystemThemeChanged(Sender: TObject);
@@ -486,7 +520,7 @@ begin
         sbSections.Components[I].Free
       else if (C is TSpinEdit) and AnsiStartsStr('secSpn', C.Name) then
         sbSections.Components[I].Free
-      else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure')) then
+      else if (C is TButton) and ((AnsiStartsStr('secDel', C.Name)) or (C.Name = 'btnAddSection') or (C.Name = 'btnResetStructure') or (C.Name = 'btnSaveConfig') or (C.Name = 'btnLoadConfig')) then
         sbSections.Components[I].Free;
     end;
   end;
@@ -505,8 +539,10 @@ begin
 
   SetLength(FSectionBars, Length(FSectionNames));
 
-  Y := 8;
-  for I := 0 to High(FSectionNames) do begin
+  sbSections.DisableAlign;
+  try
+    Y := 8;
+    for I := 0 to High(FSectionNames) do begin
     lblName := TLabel.Create(sbSections);
     with lblName do begin
       Parent := sbSections;
@@ -514,6 +550,8 @@ begin
       Width := 80; Height := 14;
       Caption := Format('Section %d', [I+1]);
       AutoSize := False;
+      ShowHint := True;
+      Hint := 'Section ' + IntToStr(I+1) + ' type';
     end;
     cmbSection := TComboBox.Create(sbSections);
     with cmbSection do begin
@@ -522,6 +560,8 @@ begin
       Left := 100; Top := Y - 2;
       Width := 160; Height := 24;
       Style := csDropDownList;
+      ShowHint := True;
+      Hint := 'Section ' + IntToStr(I+1) + ' type (intro/verse/chorus/bridge/outro)';
       Items.Add('intro');
       Items.Add('verse');
       Items.Add('chorus');
@@ -538,6 +578,8 @@ begin
       MinValue := 1;
       MaxValue := 64;
       Value := FSectionBars[I];
+      ShowHint := True;
+      Hint := 'Section ' + IntToStr(I+1) + ' bar count (1-64)';
     end;
     btnDelete := TButton.Create(sbSections);
     with btnDelete do begin
@@ -547,6 +589,8 @@ begin
       Width := 28; Height := 24;
       Caption := '-';
       OnClick := @BtnSectionDeleteClick;
+      ShowHint := True;
+      Hint := 'Delete section ' + IntToStr(I+1);
     end;
     Inc(Y, 30);
   end;
@@ -556,10 +600,12 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnAddSection';
-    Left := 100; Top := Y + 4;
+    Left := 12; Top := Y + 4;
     Width := 100; Height := 28;
     Caption := '+ Add Section';
     OnClick := @BtnAddSectionClick;
+    ShowHint := True;
+    Hint := 'Add a new section to the song structure';
   end;
 
   { Reset Structure button }
@@ -567,14 +613,45 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnResetStructure';
-    Left := 210; Top := Y + 4;
+    Left := 116; Top := Y + 4;
     Width := 100; Height := 28;
     Caption := 'Reset';
     OnClick := @BtnResetStructureClick;
+    ShowHint := True;
+    Hint := 'Reset to default song structure for the selected genre';
+  end;
+
+  { Save Config button }
+  btnAdd := TButton.Create(sbSections);
+  with btnAdd do begin
+    Parent := sbSections;
+    Name := 'btnSaveConfig';
+    Left := 220; Top := Y + 4;
+    Width := 80; Height := 28;
+    Caption := 'Save';
+    OnClick := @mnuExportConfigClick;
+    ShowHint := True;
+    Hint := 'Save song configuration as JSON';
+  end;
+
+  { Load Config button }
+  btnAdd := TButton.Create(sbSections);
+  with btnAdd do begin
+    Parent := sbSections;
+    Name := 'btnLoadConfig';
+    Left := 304; Top := Y + 4;
+    Width := 80; Height := 28;
+    Caption := 'Load';
+    OnClick := @mnuImportConfigClick;
+    ShowHint := True;
+    Hint := 'Load song configuration from JSON';
   end;
 
   { Update scroll range }
-  sbSections.VertScrollBar.Range := Y + 40;
+    sbSections.VertScrollBar.Range := Y + 40;
+  finally
+    sbSections.EnableAlign;
+  end;
 
   { the controls made here are new: give them the current colours }
   {$IFDEF MSWINDOWS}ThemeControlTree(sbSections, FDark);{$ENDIF}
@@ -631,7 +708,6 @@ begin
     { Suspend redraw during control recreation to prevent flash }
     gbSong.DoubleBuffered := True;
     ResetToDefaultStructure;
-    Application.ProcessMessages;
   end;
 end;
 
@@ -715,33 +791,34 @@ begin
         if tbSwing.Position > 0 then begin
           Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
         end;
-        if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
+        if cbExport.ItemIndex = ExportREAPER then Args.Add('--reaper');
         if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
+        if cbExport.ItemIndex = ExportMIDIArdour then Args.Add('--ardour');
       end
-      else begin
-        { Custom structure mode }
-        SyncSectionArraysFromControls;
-        Log(Format('Song mode: %d sections, genre=%s style=%s',
-          [Length(FSectionNames), SelectedGenre, SelectedStyle]));
-        Args.Add('generate');
-        CommonOptions(Args);
-        if cbDrummer.ItemIndex >= 0 then begin
-          Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
-        end;
-        Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
-        Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
-        { The section list on screen is the song structure. }
-        for SecIdx := 0 to High(FSectionNames) do begin
-          Args.Add('--section');
-          Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
-        end;
-        if tbSwing.Position > 0 then begin
-          Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
-        end;
-        { The REAPER project goes with the Ardour session too. }
-        if cbExport.ItemIndex >= ExportREAPER then Args.Add('--reaper');
-        if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
-      end;
+    else begin
+                { Custom structure mode }
+                SyncSectionArraysFromControls;
+                Log(Format('Song mode: %d sections, genre=%s style=%s',
+                  [Length(FSectionNames), SelectedGenre, SelectedStyle]));
+                Args.Add('generate');
+                CommonOptions(Args);
+                if cbDrummer.ItemIndex >= 0 then begin
+                  Args.Add('--drummer'); Args.Add(Trim(cbDrummer.Text));
+                end;
+                Args.Add('--complexity'); Args.Add(CliNumber(tbComplexity.Position / 100));
+                Args.Add('--humanization'); Args.Add(CliNumber(tbHumanization.Position / 100));
+                { The section list on screen is the song structure. }
+                for SecIdx := 0 to High(FSectionNames) do begin
+                  Args.Add('--section');
+                  Args.Add(Format('%s:%d', [Trim(FSectionNames[SecIdx]), FSectionBars[SecIdx]]));
+                end;
+                if tbSwing.Position > 0 then begin
+                  Args.Add('--swing'); Args.Add(CliNumber(SwingAmount));
+                end;
+                if cbExport.ItemIndex = ExportREAPER then Args.Add('--reaper');
+                if cbExport.ItemIndex = ExportArdour then Args.Add('--ardour');
+                if cbExport.ItemIndex = ExportMIDIArdour then Args.Add('--ardour');
+              end;
     end;
 
     if Assigned(StatusBar) then StatusBar.Panels[0].Text := 'Working...';
@@ -831,6 +908,26 @@ begin
   OpenFolder(ExtractFilePath(ExpandFileName(Base)));
 end;
 
+procedure TMainForm.btnOpenStepEditorClick(Sender: TObject);
+var
+  P: TProcess;
+  StepExe: String;
+begin
+  StepExe := ExtractFilePath(ParamStr(0)) + 'tools' + PathDelim + 'step_editor.exe';
+  if not FileExists(StepExe) then begin
+    Log('Step editor not found: ' + StepExe);
+    Exit;
+  end;
+  P := TProcess.Create(nil);
+  try
+    P.Executable := StepExe;
+    P.Options := P.Options + [poNoConsole];
+    P.Execute;
+  finally
+    P.Free;
+  end;
+end;
+
 procedure TMainForm.OpenFolder(const APath: String);
 var P: TProcess;
 begin
@@ -861,7 +958,7 @@ var
 begin
   R := Rect;
   with Sender.Canvas do begin
-    if FDark then begin
+    {$IFDEF MSWINDOWS}if FDark then begin
       Brush.Color := $2D2D2D;
       Font.Color := clWhite;
     end else begin
@@ -870,38 +967,21 @@ begin
     end;
     FillRect(R);
     Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
-    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
+    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);{$ENDIF}
   end;
 end;
 
 procedure TMainForm.ComboBoxDropDown(Sender: TObject);
-var
-  CB: TComboBox;
-  ListHandle: HWND;
 begin
-  if not FDark then Exit;
-  CB := Sender as TComboBox;
-  { The dropdown list is a child window of the combo box }
-  ListHandle := FindWindowEx(CB.Handle, 0, 'LCLLISTBOX', nil);
-  if ListHandle = 0 then
-    ListHandle := FindWindowEx(CB.Handle, 0, 'TListBox', nil);
-  if ListHandle = 0 then
-    ListHandle := GetWindow(CB.Handle, GW_CHILD);
-  if ListHandle <> 0 then begin
-    { Theme the dropdown list with dark colors }
-    SetWindowLong(ListHandle, GWL_STYLE, GetWindowLong(ListHandle, GWL_STYLE) or WS_BORDER);
-    SetWindowPos(ListHandle, 0, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOZORDER or SWP_FRAMECHANGED);
-    { Apply dark theme colors to the dropdown list }
-    SendMessage(ListHandle, WM_ERASEBKGND, 0, 0);
-    InvalidateRect(ListHandle, nil, True);
-    { Force the listbox to use dark colors }
-    SendMessage(ListHandle, LB_SETITEMHEIGHT, 0, 20);
-  end;
+  { Dropdown theming is handled by Windows dark mode API via SetAppDarkMode.
+    The previous handle-hack (FindWindowEx + SendMessage) was unsafe:
+    internal LCL listbox handles can be destroyed between OnDropDown and here,
+    causing CTD on SendMessage/InvalidateRect to dead handles. }
 end;
 
 procedure TMainForm.mnuAboutClick(Sender: TObject);
 begin
-  ShowMessage('ChameleonDrummer GUI v1.0.634' + LineEnding + LineEnding + '(c) Martin Haverland');
+  ShowMessage('ChameleonDrummer GUI v1.0.634' + LineEnding + LineEnding + '(c) 2026 Martin Haverland');
 end;
 
 procedure TMainForm.mnuAddSectionClick(Sender: TObject);
@@ -1066,12 +1146,22 @@ begin
     Dlg.Free;
   end;
 end;
+procedure TMainForm.lblHintClick(Sender: TObject);
+begin
+  // Label click handler
+end;
+
+procedure TMainForm.lblMeterHintClick(Sender: TObject);
+begin
+  // Label click handler
+end;
+
 procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
 var
   CB: TComboBox;
   IsSelected: Boolean;
 begin
-  CB := Control as TComboBox;
+ {$IFDEF MSWINDOWS} CB := Control as TComboBox;
   // KORREKTUR: Unit-Präfix LCLType hinzugefügt, um den Typen-Konflikt zu lösen
   IsSelected := LCLType.odSelected in State;
 
@@ -1097,11 +1187,11 @@ begin
     FillRect(ARect);
     TextRect(ARect, ARect.Left + 4, ARect.Top + 2, CB.Items[Index]);
 
-    {$IFDEF MSWINDOWS}
+
     // KORREKTUR: Auch hier das Präfix für odFocused nutzen
     if LCLType.odFocused in State then DrawFocusRect(ARect);
-    {$ENDIF}
-  end;
+
+  end;{$ENDIF}
 end;
 
 end.

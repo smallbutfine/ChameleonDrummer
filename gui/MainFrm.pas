@@ -177,7 +177,7 @@ begin
   cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
   cbMeter.ItemIndex := 0;
   chkStrictMeter.Checked := True;
-  FDark := False;
+  {$IFDEF MSWINDOWS}FDark := False;{$ENDIF}
 
   // Aktiviert das manuelle Zeichnen (Owner-Draw)
   cbGenre.Style := csOwnerDrawFixed;
@@ -958,7 +958,7 @@ var
 begin
   R := Rect;
   with Sender.Canvas do begin
-    if FDark then begin
+    {$IFDEF MSWINDOWS}if FDark then begin
       Brush.Color := $2D2D2D;
       Font.Color := clWhite;
     end else begin
@@ -967,7 +967,7 @@ begin
     end;
     FillRect(R);
     Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
-    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
+    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);{$ENDIF}
   end;
 end;
 
@@ -981,7 +981,7 @@ end;
 
 procedure TMainForm.mnuAboutClick(Sender: TObject);
 begin
-  ShowMessage('ChameleonDrummer GUI v1.0.634' + LineEnding + LineEnding + '(c) Martin Haverland');
+  ShowMessage('ChameleonDrummer GUI v1.0.634' + LineEnding + LineEnding + '(c) 2026 Martin Haverland');
 end;
 
 procedure TMainForm.mnuAddSectionClick(Sender: TObject);
@@ -1161,7 +1161,7 @@ var
   CB: TComboBox;
   IsSelected: Boolean;
 begin
-  CB := Control as TComboBox;
+ {$IFDEF MSWINDOWS} CB := Control as TComboBox;
   // KORREKTUR: Unit-Präfix LCLType hinzugefügt, um den Typen-Konflikt zu lösen
   IsSelected := LCLType.odSelected in State;
 
@@ -1187,11 +1187,11 @@ begin
     FillRect(ARect);
     TextRect(ARect, ARect.Left + 4, ARect.Top + 2, CB.Items[Index]);
 
-    {$IFDEF MSWINDOWS}
+
     // KORREKTUR: Auch hier das Präfix für odFocused nutzen
     if LCLType.odFocused in State then DrawFocusRect(ARect);
-    {$ENDIF}
-  end;
+
+  end;{$ENDIF}
 end;
 
 end.

@@ -125,7 +125,26 @@ if not exist "%~dp0step_editor.lpi" (
   exit /b 1
 )
 
+echo.
+echo ==================================================
+echo   6. Multi-Platform Compilation via lazbuild
+echo ==================================================
+
+REM --- 1. Windows Native Build ---
+echo Building for Windows (x86_64)...
 "%LAZBUILD%" --build-all --build-mode=Default "%~dp0step_editor.lpi"
+if errorlevel 1 ( echo [Fehler] Windows-Build fehlgeschlagen. & pause & exit /b 1 )
+
+REM --- 2. Linux Cross Build (GTK2) ---
+echo Building for Linux (x86_64 GTK2)...
+"%LAZBUILD%" -d --os=linux --cpu=x86_64 --ws=gtk2 --compiler="C:\lazarus\fpc\3.2.2\bin\x86_64-win64\ppcrossx64.exe" "%~dp0step_editor.lpi"
+if errorlevel 1 ( echo [Fehler] Linux-Build fehlgeschlagen. & pause & exit /b 1 )
+
+REM --- 3. macOS Cross Build (Cocoa Apple Silicon) ---
+echo Building for macOS (aarch64 Cocoa)...
+"%LAZBUILD%" -d --os=darwin --cpu=aarch64 --ws=cocoa --compiler="C:\lazarus\fpc\3.2.2\bin\x86_64-win64\ppcrossaarch64.exe" "%~dp0step_editor.lpi" --opt="-XRC:\SDKs\MacOSX11.3.sdk"
+if errorlevel 1 ( echo [Fehler] macOS-Build fehlgeschlagen. & pause & exit /b 1 )
+
 if errorlevel 1 (
   echo [Fehler] Lazarus-Build fehlgeschlagen.
   pause

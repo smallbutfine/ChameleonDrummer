@@ -49,7 +49,7 @@
   <CompilerOptions>
     <Version Value="11"/>
     <Target>
-      <Filename Value="../step_editor"/>
+      <Filename Value="step_editor"/>
     </Target>
     <SearchPaths>
       <OtherUnitFiles Value=""/>

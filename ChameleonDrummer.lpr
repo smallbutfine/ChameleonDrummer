@@ -15,7 +15,9 @@ uses
   SysUtils, Classes,
   jsonparser,
   CLIInterface, Kit, PluginRegistry;
+{$IFDEF MSWINDOWS}
 {$R *.res} // Standard Lazarus-Ressource (für das Icon)
+{$ENDIF}
 
 var
   CLI: TCLIInterface;

@@ -1,12 +1,431 @@
 object MainForm: TMainForm
-  ClientHeight = 640
-  ClientWidth = 844
+  Left = 522
+  Height = 939
+  Top = 93
+  Width = 1206
   Caption = 'ChameleonDrummer'
-  BorderStyle = bsSizeable
+  ClientHeight = 939
+  ClientWidth = 1206
+  DesignTimePPI = 144
+  Menu = MainMenu
   Position = poScreenCenter
   ShowHint = True
+  LCLVersion = '4.8.0.0'
   OnCreate = FormCreate
-  Menu = MainMenu
+  object gbSong: TGroupBox
+    Left = 16
+    Height = 772
+    Top = 12
+    Width = 624
+    Caption = 'Song'
+    ClientHeight = 746
+    ClientWidth = 620
+    TabOrder = 0
+    object rbPattern: TRadioButton
+      Left = 18
+      Height = 25
+      Top = 0
+      Width = 208
+      Caption = 'Pattern (single pattern)'
+      TabOrder = 0
+      OnClick = rgModeChange
+    end
+    object rbSong: TRadioButton
+      Left = 300
+      Height = 25
+      Top = 0
+      Width = 182
+      Caption = 'Song (full structure)'
+      Checked = True
+      TabOrder = 2
+      TabStop = True
+      OnClick = rgModeChange
+    end
+    object lblGenre: TLabel
+      Left = 18
+      Height = 21
+      Hint = 'Select genre'
+      Top = 68
+      Width = 50
+      Caption = 'Genre'
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object cbGenre: TComboBox
+      Left = 96
+      Height = 29
+      Hint = 'Select genre'
+      Top = 60
+      Width = 270
+      ItemHeight = 21
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 1
+      OnChange = cbGenreChange
+    end
+    object lblStyle: TLabel
+      Left = 18
+      Height = 21
+      Top = 116
+      Width = 40
+      Caption = 'Style'
+    end
+    object cbStyle: TComboBox
+      Left = 96
+      Height = 29
+      Hint = 'Select style'
+      Top = 108
+      Width = 270
+      ItemHeight = 21
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 3
+    end
+    object lblDrummer: TLabel
+      Left = 18
+      Height = 21
+      Top = 164
+      Width = 73
+      Caption = 'Drummer'
+    end
+    object cbDrummer: TComboBox
+      Left = 96
+      Height = 29
+      Hint = 'Select drummer'
+      Top = 158
+      Width = 270
+      ItemHeight = 21
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 4
+    end
+    object lblMapping: TLabel
+      Left = 18
+      Height = 21
+      Top = 218
+      Width = 65
+      Caption = 'Keymap'
+    end
+    object cbMapping: TComboBox
+      Left = 96
+      Height = 29
+      Hint = 'Select keymap'
+      Top = 210
+      Width = 270
+      ItemHeight = 21
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 5
+    end
+    object lblMeter: TLabel
+      Left = 18
+      Height = 21
+      Top = 266
+      Width = 46
+      Caption = 'Meter'
+    end
+    object cbMeter: TComboBox
+      Left = 96
+      Height = 29
+      Hint = 'Select meter (e.g. 7/8)'
+      Top = 260
+      Width = 120
+      ItemHeight = 21
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 6
+    end
+    object chkStrictMeter: TCheckBox
+      Left = 255
+      Height = 25
+      Top = 266
+      Width = 328
+      Caption = 'Strictly use exactly this time signature.'
+      Checked = True
+      ParentShowHint = False
+      ShowHint = True
+      State = cbChecked
+      TabOrder = 7
+    end
+  end
+  object gbOutput: TGroupBox
+    Left = 654
+    Height = 225
+    Top = 12
+    Width = 594
+    Caption = 'Output'
+    ClientHeight = 199
+    ClientWidth = 590
+    TabOrder = 1
+    object lblExport: TLabel
+      Left = 18
+      Height = 21
+      Top = 20
+      Width = 51
+      Caption = 'Export'
+    end
+    object cbExport: TComboBox
+      Left = 120
+      Height = 29
+      Hint = 'Select export format (MIDI, MIDI+REAPER, MIDI+REAPER+Ardour, MIDI+Ardour)'
+      Top = 12
+      Width = 416
+      ItemHeight = 21
+      ParentShowHint = False
+      ShowHint = True
+      Style = csDropDownList
+      TabOrder = 0
+    end
+    object lblFile: TLabel
+      Left = 18
+      Height = 21
+      Top = 70
+      Width = 29
+      Caption = 'File'
+    end
+    object edOutput: TEdit
+      Left = 120
+      Height = 29
+      Hint = 'Output file name (without extension)'
+      Top = 64
+      Width = 327
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 1
+      Text = 'song'
+    end
+    object btnBrowse: TButton
+      Left = 464
+      Height = 42
+      Hint = 'Browse for output file'
+      Top = 62
+      Width = 72
+      Caption = '...'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+      OnClick = btnBrowseClick
+    end
+    object chkOpenFolder: TCheckBox
+      Left = 18
+      Height = 25
+      Hint = 'Automatically open output folder after generation'
+      Top = 122
+      Width = 319
+      Caption = 'Open the output folder when finished'
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+    end
+    object lblHint: TLabel
+      Left = 18
+      Height = 21
+      Top = 166
+      Width = 395
+      Caption = 'Writes <name>.mid, <name>.rpp, <name>.ardour'
+      WordWrap = True
+    end
+  end
+  object gbPerformance: TGroupBox
+    Left = 654
+    Height = 264
+    Top = 244
+    Width = 594
+    Caption = 'Performance'
+    ClientHeight = 238
+    ClientWidth = 590
+    TabOrder = 2
+    object lblTempo: TLabel
+      Left = 18
+      Height = 21
+      Top = 20
+      Width = 54
+      Caption = 'Tempo'
+    end
+    object seTempo: TSpinEdit
+      Left = 120
+      Height = 29
+      Hint = 'Tempo in BPM (0 = use style default)'
+      Top = 14
+      Width = 120
+      MaxValue = 300
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 0
+    end
+    object lblTempoHint: TLabel
+      Left = 255
+      Height = 21
+      Top = 20
+      Width = 188
+      Caption = 'BPM  (0 = style default)'
+    end
+    object lblComplexity: TLabel
+      Left = 18
+      Height = 21
+      Top = 76
+      Width = 87
+      Caption = 'Complexity'
+    end
+    object tbComplexity: TTrackBar
+      Left = 120
+      Height = 36
+      Hint = 'Pattern complexity (simple to intricate)'
+      Top = 70
+      Width = 270
+      Max = 100
+      Position = 50
+      OnChange = tbComplexityChange
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 1
+    end
+    object lblComplexityValue: TLabel
+      Left = 402
+      Height = 21
+      Top = 76
+      Width = 35
+      Caption = '0.50'
+    end
+    object lblHumanization: TLabel
+      Left = 18
+      Height = 21
+      Top = 130
+      Width = 79
+      Caption = 'Humanize'
+    end
+    object tbHumanization: TTrackBar
+      Left = 120
+      Height = 36
+      Hint = 'Humanize timing and velocity (more = more human)'
+      Top = 124
+      Width = 270
+      Max = 100
+      Position = 30
+      OnChange = tbHumanizationChange
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+    end
+    object lblHumanizationValue: TLabel
+      Left = 402
+      Height = 21
+      Top = 130
+      Width = 35
+      Caption = '0.30'
+    end
+    object lblSwing: TLabel
+      Left = 18
+      Height = 21
+      Top = 184
+      Width = 49
+      Caption = 'Swing'
+    end
+    object tbSwing: TTrackBar
+      Left = 120
+      Height = 36
+      Hint = 'Swing feel (straight to maximum swing)'
+      Top = 178
+      Width = 270
+      Max = 100
+      Position = 0
+      OnChange = tbSwingChange
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+    end
+    object lblSwingValue: TLabel
+      Left = 402
+      Height = 21
+      Top = 184
+      Width = 59
+      Caption = 'straight'
+    end
+  end
+  object btnGenerate: TButton
+    Left = 654
+    Height = 60
+    Hint = 'Generate drum pattern or song (Ctrl+G)'
+    Top = 624
+    Width = 294
+    Caption = 'Generate'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 3
+    OnClick = btnGenerateClick
+  end
+  object btnOpenFolder: TButton
+    Left = 964
+    Height = 60
+    Hint = 'Open the output folder after generation'
+    Top = 624
+    Width = 226
+    Caption = 'Open output folder'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 4
+    OnClick = btnOpenFolderClick
+  end
+  object btnOpenStepEditor: TButton
+    Left = 654
+    Height = 60
+    Hint = 'Open the step editor for visual tab editing'
+    Top = 710
+    Width = 294
+    Caption = 'Open Step Editor'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 5
+    OnClick = btnOpenStepEditorClick
+  end
+  object chkRadioLength: TCheckBox
+    Left = 654
+    Height = 25
+    Hint = 'Generate a radio-length song (3:00-3:45) using the genre''s default structure'
+    Top = 568
+    Width = 558
+    Caption = 'Radio-length song (3:00-3:45 min.'#13#10' uses genre default structure)'
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 6
+    OnClick = chkRadioLengthClick
+  end
+  object gbLog: TGroupBox
+    Left = 16
+    Height = 112
+    Top = 784
+    Width = 1230
+    Caption = 'Log'
+    ClientHeight = 86
+    ClientWidth = 1226
+    TabOrder = 7
+    object memLog: TMemo
+      Left = 12
+      Height = 80
+      Hint = 'Generation log output'
+      Top = 0
+      Width = 1162
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      ParentShowHint = False
+      ReadOnly = True
+      ScrollBars = ssVertical
+      ShowHint = True
+      TabOrder = 0
+    end
+  end
+  object pbProgress: TProgressBar
+    Left = 226
+    Height = 24
+    Top = 904
+    Width = 964
+    TabOrder = 8
+    Visible = False
+  end
   object MainMenu: TMainMenu
     object mnuFile: TMenuItem
       Caption = '&File'
@@ -86,365 +505,5 @@ object MainForm: TMainForm
         OnClick = mnuAboutClick
       end
     end
-  end
-  object gbSong: TGroupBox
-    Left = 12
-    Top = 8
-    Width = 416
-    Height = 512
-    Caption = 'Song'
-    object rbPattern: TRadioButton
-      Left = 12
-      Top = 9
-      Width = 180
-      Height = 20
-      Caption = 'Pattern (single pattern)'
-      Checked = False
-      OnClick = rgModeChange
-    end
-    object rbSong: TRadioButton
-      Left = 200
-      Top = 9
-      Width = 180
-      Height = 20
-      Caption = 'Song (full structure)'
-      Checked = True
-      OnClick = rgModeChange
-    end
-    object lblGenre: TLabel
-      Left = 12
-      Top = 45
-      Width = 60
-      Height = 14
-      Caption = 'Genre'
-      Hint = 'Select genre'
-      ShowHint = True
-    end
-    object cbGenre: TComboBox
-      Left = 80
-      Top = 41
-      Width = 180
-      Height = 24
-      Style = csDropDownList
-      ShowHint = True
-      Hint = 'Select genre'
-      OnChange = cbGenreChange
-    end
-    object lblStyle: TLabel
-      Left = 12
-      Top = 77
-      Width = 60
-      Height = 14
-      Caption = 'Style'
-    end
-    object cbStyle: TComboBox
-      Left = 80
-      Top = 73
-      Width = 180
-      Height = 24
-      Style = csDropDownList
-      ShowHint = True
-      Hint = 'Select style'
-    end
-    object lblDrummer: TLabel
-      Left = 12
-      Top = 109
-      Width = 60
-      Height = 14
-      Caption = 'Drummer'
-    end
-    object cbDrummer: TComboBox
-      Left = 80
-      Top = 105
-      Width = 180
-      Height = 24
-      Style = csDropDownList
-      ShowHint = True
-      Hint = 'Select drummer'
-    end
-    object lblMapping: TLabel
-      Left = 12
-      Top = 145
-      Width = 60
-      Height = 14
-      Caption = 'Keymap'
-    end
-    object cbMapping: TComboBox
-      Left = 80
-      Top = 141
-      Width = 180
-      Height = 24
-      Style = csDropDownList
-      ShowHint = True
-      Hint = 'Select keymap'
-    end
-    object lblMeter: TLabel
-      Left = 12
-      Top = 177
-      Width = 60
-      Height = 14
-      Caption = 'Meter'
-    end
-    object cbMeter: TComboBox
-      Left = 80
-      Top = 173
-      Width = 80
-      Height = 24
-      Style = csDropDownList
-      ShowHint = True
-      Hint = 'Select meter (e.g. 7/8)'
-    end
-    object chkStrictMeter: TCheckBox
-      Left = 170
-      Top = 177
-      Width = 120
-      Height = 18
-      Caption = 'Strict meter'
-      Checked = True
-      ShowHint = True
-      Caption = 'Strictly use exactly this time signature.'
-    end
-  end
-  object gbOutput: TGroupBox
-    Left = 436
-    Top = 8
-    Width = 396
-    Height = 150
-    Caption = 'Output'
-    object lblExport: TLabel
-      Left = 12
-      Top = 13
-      Width = 60
-      Height = 14
-      Caption = 'Export'
-    end
-    object cbExport: TComboBox
-      Left = 80
-      Top = 9
-      Width = 300
-      Height = 24
-      Style = csDropDownList
-      ShowHint = True
-      Hint = 'Select export format (MIDI, MIDI+REAPER, MIDI+REAPER+Ardour, MIDI+Ardour)'
-    end
-    object lblFile: TLabel
-      Left = 12
-      Top = 47
-      Width = 60
-      Height = 14
-      Caption = 'File'
-    end
-    object edOutput: TEdit
-      Left = 80
-      Top = 43
-      Width = 248
-      Height = 26
-      Text = 'song'
-      ShowHint = True
-      Hint = 'Output file name (without extension)'
-    end
-    object btnBrowse: TButton
-      Left = 336
-      Top = 41
-      Width = 48
-      Height = 28
-      Caption = '...'
-      OnClick = btnBrowseClick
-      ShowHint = True
-      Hint = 'Browse for output file'
-    end
-    object chkOpenFolder: TCheckBox
-      Left = 12
-      Top = 81
-      Width = 370
-      Height = 18
-      Caption = 'Open the output folder when finished'
-      ShowHint = True
-      Hint = 'Automatically open output folder after generation'
-    end
-    object lblHint: TLabel
-      Left = 12
-      Top = 111
-      Width = 370
-      Height = 72
-      Caption = 'Writes <name>.mid, <name>.rpp, <name>.ardour'
-      WordWrap = True
-    end
-  end
-  object gbPerformance: TGroupBox
-    Left = 436
-    Top = 163
-    Width = 396
-    Height = 176
-    Caption = 'Performance'
-    object lblTempo: TLabel
-      Left = 12
-      Top = 13
-      Width = 60
-      Height = 14
-      Caption = 'Tempo'
-    end
-    object seTempo: TSpinEdit
-      Left = 80
-      Top = 9
-      Width = 80
-      Height = 24
-      MaxValue = 300
-      MinValue = 0
-      Value = 0
-      ShowHint = True
-      Hint = 'Tempo in BPM (0 = use style default)'
-    end
-    object lblTempoHint: TLabel
-      Left = 170
-      Top = 13
-      Width = 210
-      Height = 14
-      Caption = 'BPM  (0 = style default)'
-    end
-    object lblComplexity: TLabel
-      Left = 12
-      Top = 51
-      Width = 64
-      Height = 14
-      Caption = 'Complexity'
-    end
-    object tbComplexity: TTrackBar
-      Left = 80
-      Top = 47
-      Width = 180
-      Height = 24
-      Max = 100
-      Min = 0
-      Position = 50
-      OnChange = tbComplexityChange
-      ShowHint = True
-      Hint = 'Pattern complexity (simple to intricate)'
-    end
-    object lblComplexityValue: TLabel
-      Left = 268
-      Top = 51
-      Width = 50
-      Height = 14
-      Caption = '0.50'
-    end
-    object lblHumanization: TLabel
-      Left = 12
-      Top = 87
-      Width = 64
-      Height = 14
-      Caption = 'Humanize'
-    end
-    object tbHumanization: TTrackBar
-      Left = 80
-      Top = 83
-      Width = 180
-      Height = 24
-      Max = 100
-      Min = 0
-      Position = 30
-      OnChange = tbHumanizationChange
-      ShowHint = True
-      Hint = 'Humanize timing and velocity (more = more human)'
-    end
-    object lblHumanizationValue: TLabel
-      Left = 268
-      Top = 87
-      Width = 50
-      Height = 14
-      Caption = '0.30'
-    end
-    object lblSwing: TLabel
-      Left = 12
-      Top = 123
-      Width = 64
-      Height = 14
-      Caption = 'Swing'
-    end
-    object tbSwing: TTrackBar
-      Left = 80
-      Top = 119
-      Width = 180
-      Height = 24
-      Max = 100
-      Min = 0
-      Position = 0
-      OnChange = tbSwingChange
-      ShowHint = True
-      Hint = 'Swing feel (straight to maximum swing)'
-    end
-    object lblSwingValue: TLabel
-      Left = 268
-      Top = 123
-      Width = 120
-      Height = 14
-      Caption = 'straight'
-    end
-  end
-  object btnGenerate: TButton
-    Left = 436
-    Top = 409
-    Width = 196
-    Height = 40
-    Caption = 'Generate'
-    OnClick = btnGenerateClick
-    ShowHint = True
-    Hint = 'Generate drum pattern or song (Ctrl+G)'
-  end
-  object btnOpenFolder: TButton
-    Left = 644
-    Top = 409
-    Width = 188
-    Height = 40
-    Caption = 'Open output folder'
-    OnClick = btnOpenFolderClick
-    ShowHint = True
-    Hint = 'Open the output folder after generation'
-  end
-  object btnOpenStepEditor: TButton
-    Left = 436
-    Top = 473
-    Width = 196
-    Height = 40
-    Caption = 'Open Step Editor'
-    OnClick = btnOpenStepEditorClick
-    ShowHint = True
-    Hint = 'Open the step editor for visual tab editing'
-  end
-  object chkRadioLength: TCheckBox
-    Left = 436
-    Top = 385
-    Width = 396
-    Height = 18
-    Caption = 'Make a radio-length song (3:00-3:45, uses genre default structure)'
-    OnClick = chkRadioLengthClick
-    ShowHint = True
-    Hint = 'Generate a radio-length song (3:00-3:45) using the genre''s default structure'
-  end
-  object gbLog: TGroupBox
-    Left = 12
-    Top = 532
-    Width = 820
-    Height = 80
-    Caption = 'Log'
-    object memLog: TMemo
-      Left = 8
-      Top = 1
-      Width = 804
-      Height = 75
-      Anchors = [akLeft, akTop, akRight, akBottom]
-      ReadOnly = True
-      ScrollBars = ssVertical
-      WordWrap = True
-      ShowHint = True
-      Hint = 'Generation log output'
-    end
-  end
-  object pbProgress: TProgressBar
-    Left = 700
-    Top = 610
-    Width = 120
-    Height = 16
-    Visible = False
   end
 end

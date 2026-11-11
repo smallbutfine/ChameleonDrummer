@@ -15,9 +15,11 @@ program ChameleonDrummerGUI;
 
 uses
   Interfaces, Forms, MainFrm;
-{$R *.res} // Standard Lazarus-Ressource (für das Icon)
-
+{$IFDEF WINDOWS}
+{$R *.res}
+{$ENDIF}
 begin
+  Application.Title:='';
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;

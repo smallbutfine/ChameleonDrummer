@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Dialogs,
-  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}DarkTheme,{$ENDIF} Windows, Graphics,
+  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}DarkTheme, Windows,{$ENDIF} Graphics,
   AutoScale;
 
 type
@@ -147,12 +147,12 @@ type
     procedure UpdateHeaderPreview;
     {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
-      ARect: TRect; State: TOwnerDrawState);
+      ARect: TRect; State: TOwnerDrawState);{$ENDIF}
     procedure ComboBoxDropDown(Sender: TObject);
-    procedure SystemThemeChanged(Sender: TObject);
-    procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
-      const Rect: TRect);
-    procedure sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
+    {$IFDEF MSWINDOWS}procedure SystemThemeChanged(Sender: TObject);{$ENDIF}
+    {$IFDEF MSWINDOWS}procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
+      const Rect: TRect);{$ENDIF}
+    {$IFDEF MSWINDOWS}procedure sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
       ARect: TRect; AState: TGridDrawState);{$ENDIF}
 
     // Tab block methods (cross-platform)
@@ -237,9 +237,9 @@ begin
   sgTab.Options := sgTab.Options - [goRowSelect, goVertLine] + [goRangeSelect, goAlwaysShowEditor];
   sgTab.OnSelectCell := @sgTabSelectCell;
   sgTab.OnClick := @sgTabClick;
-  sgTab.OnDrawCell := @sgTabDrawCell;
+  {$IFDEF MSWINDOWS}sgTab.OnDrawCell := @sgTabDrawCell;{$ENDIF}
   sbStatus.SimplePanel := False;
-  sbStatus.OnDrawPanel := @StatusBarDrawPanel;
+  {$IFDEF MSWINDOWS}sbStatus.OnDrawPanel := @StatusBarDrawPanel;{$ENDIF}
   sbStatus.Panels[0].Style := psOwnerDraw;
 
   cbResolution.Items.Clear;
@@ -1389,14 +1389,14 @@ begin
     cbIntensity.Style := csOwnerDrawFixed;
     cbEnergy.Style := csOwnerDrawFixed;
     cbZoom.Style := csOwnerDrawFixed;
-    cbMapping.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    {$IFDEF MSWINDOWS}cbMapping.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
     cbStyle.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
     cbKind.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
     cbResolution.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
     cbMeter.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
     cbIntensity.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
     cbEnergy.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbZoom.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
+    cbZoom.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);{$ENDIF}
     cbMapping.OnDropDown := @ComboBoxDropDown;
     cbStyle.OnDropDown := @ComboBoxDropDown;
     cbKind.OnDropDown := @ComboBoxDropDown;
@@ -1405,6 +1405,7 @@ begin
     cbIntensity.OnDropDown := @ComboBoxDropDown;
     cbEnergy.OnDropDown := @ComboBoxDropDown;
     cbZoom.OnDropDown := @ComboBoxDropDown;
+    {$IFDEF MSWINDOWS}
     // Update status bar panel colors for dark mode - avoid paint race
     sbStatus.OnDrawPanel := nil;
     try
@@ -1426,11 +1427,15 @@ begin
       sgTab.Font.Color := DARK_TEXT
     else
       sgTab.Font.Color := clWindowText;
+    {$ENDIF}
   finally
     FInThemeApply := False;
   end;
 end;
+{$ENDIF}
 
+
+{$IFDEF MSWINDOWS}
 procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
   const Rect: TRect);
 var
@@ -1514,7 +1519,9 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 
+{$IFDEF MSWINDOWS}
 procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
 var
@@ -1558,6 +1565,7 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 
 procedure TMainForm.ComboBoxDropDown(Sender: TObject);
 begin
@@ -1566,7 +1574,6 @@ begin
     internal LCL listbox handles can be destroyed between OnDropDown and here,
     causing CTD on SendMessage/InvalidateRect to dead handles. }
 end;
-{$ENDIF}
 {$IFDEF MSWINDOWS}
 procedure TMainForm.SystemThemeChanged(Sender: TObject);
 begin
