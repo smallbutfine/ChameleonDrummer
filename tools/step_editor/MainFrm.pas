@@ -948,8 +948,12 @@ begin
     end;
     CumSteps := CumSteps + Bars[BarIdx].Steps;
   end;
-end;
 
+  // Write changes back to FTabBlocks (arrays are value types in Pascal)
+  if FIsConfigFile then begin
+    FTabBlocks[FSelectedBlock].Bars := Bars;
+  end;
+end;
 function TMainForm.CharToStepChar(C: Char): TStepChar;
 begin
   if Ord(C) = 46 then Result := scDot
