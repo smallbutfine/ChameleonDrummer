@@ -140,7 +140,7 @@ cmd /c "build_gui.bat < NUL"
 ## Status
 
 - ✅ Core generation engine (ComposerV2, Pattern, Song, DrumGenerator)
-- ✅ All 5 genres × 26 styles, 17 drummers
+- ✅ All 5 genres × 4-7 styles, 17 drummers
 - ✅ Odd meters (2/4 … 32/16) with meter-aware grooves/fills
 - ✅ External data files (grooves/fills/defaults/sections)
 - ✅ REAPER + Ardour export
