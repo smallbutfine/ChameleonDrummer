@@ -58,3 +58,25 @@ tools/step_editor/step_editor.rc
 tools/midi_to_tab.obj
 tools/midi_to_tab.rc
 tools/step_editor/lib/x86_64-win64/
+chameleondrummer_gui
+docker-compose.crossbuild.yml
+docker-crossbuild.bat
+docker-macos-build.bat
+Dockerfile.crossbuild
+Dockerfile.linux
+Dockerfile.macos
+serve_sdk.py
+test.mid
+test_api.pas
+tools/step_editor/backup/
+convert_manual.py
+HANDOFF_SUMMARY.md
+fix_step_counts.py
+REAPER_INTEGRATION_PLAN.md
+regen_all.bat
+symbol_order21648.fpc
+build_and_deploy.bat
+InternalDocs/
+# Deploy folder (build artifacts, do not commit)
+Deploy/
+gui/backup/

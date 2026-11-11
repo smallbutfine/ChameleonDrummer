@@ -21,14 +21,14 @@ set "APP_NAME=ChameleonDrummer"
 set "EXE_FILE=ChameleonDrummer.exe"
 
 REM --- Read project name from NAME file ---
+set "APP_NAME_FROM_FILE="
 if exist "%ROOT%\NAME" (
-    set /p APP_NAME_FROM_FILE="< %ROOT%\NAME"
-    if not "%APP_NAME_FROM_FILE%"=="" (
-        set "APP_NAME=%APP_NAME_FROM_FILE%"
-        set "APP_NAME=%APP_NAME: =%"
-        set "EXE_FILE=%APP_NAME%.exe"
-        set "LPR_FILE=%APP_NAME%.lpr"
-    )
+    set /p APP_NAME_FROM_FILE=< "%ROOT%\NAME"
+)
+if not "%APP_NAME_FROM_FILE%"=="" (
+    set "APP_NAME=%APP_NAME_FROM_FILE: =%"
+    set "EXE_FILE=%APP_NAME%.exe"
+    set "LPR_FILE=%APP_NAME%.lpr"
 )
 
 REM --- Read version from assets/version.txt and increment build counter ---
@@ -58,11 +58,16 @@ if exist "%ROOT%\Assets\version.txt" (
 set /a PATCH=%PATCH% + 1
 
 set "DETECTED_VERSION=!MAJOR!.!MINOR!.!PATCH!"
+set "VERSION_COMMAS=!MAJOR!,!MINOR!,!PATCH!"
 
 echo !MAJOR!.!MINOR!.!PATCH! > "%ROOT%\Assets\version.txt"
 
 echo Build version: !DETECTED_VERSION!
 
+REM --- Extract company from LICENSE file ---
+set "EXTRACTED_COMPANY="
+if exist "%ROOT%\LICENSE" (
+    for /f "usebackq delims=:" %%L in (`type "%ROOT%\LICENSE" ^| findstr /i "Copyright"`) do (
         if !errorlevel! equ 0 (
             for /f "tokens=3* delims= " %%x in ("%%L") do set "EXTRACTED_COMPANY=%%y"
             goto :foundCopyright
@@ -168,12 +173,6 @@ echo.
 echo [Deploy] Creating Deploy folder...
 if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 
-REM Copy Windows installer
-copy /y "%OUT_ROOT%\win64\ChameleonDrummer_Setup_1.0.0.exe" "%ROOT%\Deploy\ChameleonDrummer_Setup_1.0.0.exe" >nul 2>&1
-if exist "%ROOT%\Deploy\ChameleonDrummer_Setup_1.0.0.exe" (
-    echo   OK: ChameleonDrummer_Setup_1.0.0.exe
-)
-
 REM Copy Linux tar.gz packages
 if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" (
     copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-x64.tar.gz" >nul
@@ -213,6 +212,9 @@ set "XP_PREFIX=%~7"
 
 set "TD=%OUT_ROOT%\%T_NAME%"
 
+REM Normalize path separator (forward slash -> backslash)
+if "%TD:~0,1%"=="/" set "TD=%TD:/=\%"
+
 echo.
 echo ==================================================
 echo  Target: %T_NAME%  (%T_OS% %T_CPU% %T_WS%)
@@ -224,6 +226,7 @@ if not exist "%TD%\tools" mkdir "%TD%\tools"
 REM --- Clean previous build artifacts ---
 echo [Clean] Removing previous build artifacts...
 del /q "%ROOT%\*.o" "%ROOT%\*.ppu" "%ROOT%\*.exe" 2>nul
+rmdir /s /q "%ROOT%\chameleondrummer_gui.app" 2>nul
 del /q "%ROOT%\gui\*.o" "%ROOT%\gui\*.ppu" "%ROOT%\gui\*.exe" 2>nul
 del /q "%ROOT%\gui\lib\*.o" "%ROOT%\gui\lib\*.ppu" 2>nul
 del /q "%ROOT%\tools\*.o" "%ROOT%\tools\*.ppu" "%ROOT%\tools\*.exe" 2>nul
@@ -334,37 +337,51 @@ echo.
 echo [GUI] Moving GUI executables...
 
 REM chameleondrummer_gui.lpi target is ../chameleondrummer_gui -> project root
-if exist "%ROOT%\chameleondrummer_gui.exe" (
-    move /y "%ROOT%\chameleondrummer_gui.exe" "%TD%\" 2>&1
+if "%T_OS%"=="darwin" (
+    if exist "%ROOT%\chameleondrummer_gui.app" (
+        move /y "%ROOT%\chameleondrummer_gui.app" "%TD%\" >&1
+        echo   moved chameleondrummer_gui.app
+    ) else (
+        echo   WARNING: chameleondrummer_gui.app not found at expected locations
+    )
+) else if exist "%ROOT%\chameleondrummer_gui.exe" (
+    move /y "%ROOT%\chameleondrummer_gui.exe" "%TD%\" >&1
     echo   moved chameleondrummer_gui.exe
-) else if exist "%ROOT%\chameleondrummer_gui" (
-    move /y "%ROOT%\chameleondrummer_gui" "%TD%\" 2>&1
-    echo   moved chameleondrummer_gui
 ) else if exist "%ROOT%\gui\chameleondrummer_gui.exe" (
-    move /y "%ROOT%\gui\chameleondrummer_gui.exe" "%TD%\" 2>&1
+    move /y "%ROOT%\gui\chameleondrummer_gui.exe" "%TD%\" >&1
     echo   moved gui\chameleondrummer_gui.exe
 ) else if exist "%ROOT%\gui\chameleondrummer_gui" (
-    move /y "%ROOT%\gui\chameleondrummer_gui" "%TD%\" 2>&1
+    move /y "%ROOT%\gui\chameleondrummer_gui" "%TD%\" >&1
     echo   moved gui\chameleondrummer_gui
+) else if exist "%ROOT%\chameleondrummer_gui" (
+    move /y "%ROOT%\chameleondrummer_gui" "%TD%\" >&1
+    echo   moved chameleondrummer_gui
 ) else (
     echo   WARNING: chameleondrummer_gui not found at expected locations
 )
 
 REM step_editor.lpi target is ../step_editor relative to tools/step_editor/
-if exist "%ROOT%\tools\step_editor\step_editor.exe" (
-    move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\" 2>&1
+if "%T_OS%"=="darwin" (
+    if exist "%ROOT%\tools\step_editor\step_editor.app" (
+        move /y "%ROOT%\tools\step_editor\step_editor.app" "%TD%\tools\" >&1
+        echo   moved tools\step_editor\step_editor.app
+    ) else (
+        echo   WARNING: step_editor.app not found at expected locations
+    )
+) else if exist "%ROOT%\tools\step_editor\step_editor.exe" (
+    move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\" >&1
     echo   moved tools\step_editor\step_editor.exe
 ) else if exist "%ROOT%\tools\step_editor\step_editor" (
-    move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\" 2>&1
+    move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\" >&1
     echo   moved tools\step_editor\step_editor
 ) else if exist "%ROOT%\tools\step_editor.exe" (
-    move /y "%ROOT%\tools\step_editor.exe" "%TD%\tools\" 2>&1
+    move /y "%ROOT%\tools\step_editor.exe" "%TD%\tools\" >&1
     echo   moved tools\step_editor.exe
 ) else if exist "%ROOT%\step_editor.exe" (
-    move /y "%ROOT%\step_editor.exe" "%TD%\tools\" 2>&1
+    move /y "%ROOT%\step_editor.exe" "%TD%\tools\" >&1
     echo   moved step_editor.exe
 ) else if exist "%ROOT%\step_editor" (
-    move /y "%ROOT%\step_editor" "%TD%\tools\" 2>&1
+    move /y "%ROOT%\step_editor" "%TD%\tools\" >&1
     echo   moved step_editor
 ) else (
     echo   WARNING: step_editor not found at expected locations
@@ -410,14 +427,12 @@ copy /y "%ROOT%\LICENSE" "%TD%\"
 copy /y "%ROOT%\README.md" "%TD%\"
 copy /y "%ROOT%\CONTRIBUTING.md" "%TD%\"
 copy /y "%ROOT%\NAME" "%TD%\"
+set "TD=%OUT_ROOT%\%T_NAME%"
 
-echo.
-echo.
-REM --- Platform-specific packaging ---
 if "%T_OS%"=="darwin" (
     echo [Pkg] Creating macOS .app bundles...
     call :make_app_bundle "%TD%" "chameleondrummer_gui" "ChameleonDrummer"
-    call :make_app_bundle "%TD%\tools" "step_editor" "StepEditor"
+    call :make_app_bundle "%TD%\\tools" "step_editor" "StepEditor"
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
     pushd "%OUT_ROOT%" || (echo ERROR: pushd failed & exit /b 1)
@@ -439,7 +454,8 @@ if "%T_OS%"=="darwin" (
             echo   WARNING: Inno Setup compiler returned error
         ) else (
             echo   OK: Installer created
-            copy /y "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" "%TD%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" >nul 2>&1
+            if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
+            copy /y "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" "%ROOT%\Deploy\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" >nul 2>&1
             del /q "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" 2>nul
         )
         popd
@@ -514,28 +530,28 @@ REM Create PkgInfo
 echo APPL???? > "%APP_BUNDLE%\\Contents\\PkgInfo"
 
 REM Create Info.plist
-echo ^<?xml version="1.0" encoding="UTF-8"?^> > "%APP_BUNDLE%\\Contents\\Info.plist"
-echo <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo <plist version="1.0"> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo <dict> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>CFBundleName</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <string>%DISPLAY_NAME%</string> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>CFBundleExecutable</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <string>%APP_NAME%</string> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>CFBundleIdentifier</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <string>com.chameleondrummer.%APP_NAME%</string> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>CFBundleInfoDictionaryVersion</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <string>6.0</string> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>CFBundlePackageType</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <string>APPL</string> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>CFBundleSignature</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <string>????</string> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>LSRequiresCarbon</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <false/> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <key>NSHighResolutionCapable</key> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   <true/> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo </dict> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo </plist> ^>^> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^?xml version="1.0" encoding="UTF-8"?^> > "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^<plist version="1.0"^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^<dict^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>CFBundleName^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<string^>%DISPLAY_NAME%</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>CFBundleExecutable^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<string^>%APP_NAME%</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>CFBundleIdentifier^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<string^>com.chameleondrummer.%APP_NAME%</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>CFBundleInfoDictionaryVersion^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<string^>6.0</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>CFBundlePackageType^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<string^>APPL</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>CFBundleSignature^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<string^>????</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>LSRequiresCarbon^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<false/^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<key^>NSHighResolutionCapable^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo   ^<true/^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^</dict^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^</plist^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
 
 echo   OK: %APP_NAME%.app
 goto :eof
