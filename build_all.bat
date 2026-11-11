@@ -31,26 +31,38 @@ if exist "%ROOT%\NAME" (
     )
 )
 
-REM --- Read version from assets/version.txt ---
-set "DETECTED_VERSION=1.0.0"
-set "MAJOR=1"
-set "MINOR=0"
-set "PATCH=0"
-if exist "%ROOT%\assets\version.txt" (
-    for /f "usebackq tokens=1,2,3 delims=." %%a in ("%ROOT%\assets\version.txt") do (
-        set "MAJOR=%%a"
-        set "MINOR=%%b"
-        set "PATCH=%%c"
-    )
-    set "DETECTED_VERSION=!MAJOR!.!MINOR!.!PATCH!"
-)
-set "VERSION_COMMAS=!MAJOR!,!MINOR!,!PATCH!"
+REM --- Read version from assets/version.txt and increment build counter ---
 
-REM --- Read copyright/publisher from LICENSE file ---
-set "EXTRACTED_COMPANY=Independent Developer"
-if exist "%ROOT%\LICENSE" (
-    for /f "usebackq delims=" %%L in ("%ROOT%\LICENSE") do (
-        echo %%L | findstr /i /c:"Copyright (c)" >nul 2>&1
+set "DETECTED_VERSION=1.1.0"
+
+set "MAJOR=1"
+
+set "MINOR=1"
+
+set "PATCH=0"
+
+if exist "%ROOT%\Assets\version.txt" (
+
+    for /f "usebackq tokens=1,2,3 delims=." %%a in ("%ROOT%\Assets\version.txt") do (
+
+        set "MAJOR=%%a"
+
+        set "MINOR=%%b"
+
+        set "PATCH=%%c"
+
+    )
+
+)
+
+set /a PATCH=%PATCH% + 1
+
+set "DETECTED_VERSION=!MAJOR!.!MINOR!.!PATCH!"
+
+echo !MAJOR!.!MINOR!.!PATCH! > "%ROOT%\Assets\version.txt"
+
+echo Build version: !DETECTED_VERSION!
+
         if !errorlevel! equ 0 (
             for /f "tokens=3* delims= " %%x in ("%%L") do set "EXTRACTED_COMPANY=%%y"
             goto :foundCopyright
