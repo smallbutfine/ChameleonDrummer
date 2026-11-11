@@ -6,7 +6,7 @@ exports it as MIDI (plus REAPER / Ardour sessions).
 
 ## What it does
 
-- **5 genres** — Metal, Rock, Jazz, Funk, Electronic — ich with multiple styles
+- **5 genres** — Metal, Rock, Jazz, Funk, Electronic — each with multiple styles
 - **17 drummers** — Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
   Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues
 - **Multi-keymap** — GM, AD2, EZDrummer 3, Yamaha XG, or user-defined JSON keymaps
