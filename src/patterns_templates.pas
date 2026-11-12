@@ -187,12 +187,12 @@ function BuildDrumTabPattern(const AName: string; const ALines: array of string;
   unit. AVariant 0..2 grows it from sparse to busy. The point is to keep the
   song playing until a groove for the meter is added to config\grooves. }
 function BuildMeterFallbackGroove(const AName: string; AMeterNum, AMeterDen: Integer;
-  AComplexity: Double): TPattern;
+  AComplexity: Double; ATripletFeel: Boolean = False): TPattern;
 
 { A short fill for a meter that has no fill in the files: a tom run down the
   last units of the bar. }
 function BuildMeterFallbackFill(const AName: string; AMeterNum, AMeterDen: Integer;
-  AFullBar: Boolean): TPattern;
+  AFullBar: Boolean; ATripletFeel: Boolean = False): TPattern;
 
 { The step counts a bar of the meter may have, e.g. '7, 14, 21, 28, 42 or 56'. }
 function TabStepCountsText(AMeterNum: Integer): string;
@@ -957,7 +957,7 @@ begin
 end;
 
 function BuildMeterFallbackGroove(const AName: string; AMeterNum, AMeterDen: Integer;
-  AComplexity: Double): TPattern;
+  AComplexity: Double; ATripletFeel: Boolean = False): TPattern;
 var
   Groups: TMeterGroups;
   Unit_, G, I, Start: Integer;
@@ -995,12 +995,14 @@ begin
   end;
   Pat.Metadata.AddOrSetValue('phrase_bars', '1');
   Pat.Metadata.AddOrSetValue('meter_fallback', 'true');
+  if ATripletFeel then
+    Pat.Metadata.AddOrSetValue('triplet_feel', 'true');
   Pat.TimeSignature.Free;
-  Pat.TimeSignature := TTimeSignature.Create(AMeterNum, AMeterDen);
+  Pat.TimeSignature := TTimeSignature.Create(AMeterNum, AMeterDen, ATripletFeel);
 end;
 
 function BuildMeterFallbackFill(const AName: string; AMeterNum, AMeterDen: Integer;
-  AFullBar: Boolean): TPattern;
+  AFullBar: Boolean; ATripletFeel: Boolean = False): TPattern;
 const
   Toms: array[0..3] of string = ('tom_1_open_hit', 'tom_2_open_hit', 'tom_3_open_hit', 'tom_4_open_hit');
 var
@@ -1025,8 +1027,10 @@ begin
   end;
   Pat.Metadata.AddOrSetValue('phrase_bars', '1');
   Pat.Metadata.AddOrSetValue('meter_fallback', 'true');
+  if ATripletFeel then
+    Pat.Metadata.AddOrSetValue('triplet_feel', 'true');
   Pat.TimeSignature.Free;
-  Pat.TimeSignature := TTimeSignature.Create(AMeterNum, AMeterDen);
+  Pat.TimeSignature := TTimeSignature.Create(AMeterNum, AMeterDen, ATripletFeel);
 end;
 
 constructor TTemplateComposer.Create(const AName: string);

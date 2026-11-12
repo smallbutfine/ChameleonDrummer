@@ -10,6 +10,7 @@ unit GrooveLibrary;
 
       [heavy verse intensity=0.4-0.8]        optional: when this groove suits
       [heavy verse 7/8]                      a groove for 7/8; without a meter it is 4/4
+      [heavy verse 7/8T]                     a groove for 7/8 with triplet feel
 
   A block is one groove. The blocks of one style and kind are its variants,
   lightest first; the composer picks among those whose intensity band fits the
@@ -58,13 +59,13 @@ procedure GrooveFileStyles(const AGenre: string; AStyles: TStrings);
 { The variants of a style and kind from the file; empty when the file does not
   have them. }
 function FileGrooveVariants(const AGenre, AStyle, AKind: string;
-  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TGrooveVariants;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4; ATripletFeel: Boolean = False): TGrooveVariants;
 
 { How many variants a style has for a kind and meter: from the file when it
   has them, else ABuiltIn for 4/4 and 1 (the plain groove) for any other
   meter. A kind the file lacks counts as 'verse'. }
 function GrooveVariantCount(const AGenre, AStyle, AKind: string;
-  ABuiltIn: Integer = 3; AMeterNum: Integer = 4; AMeterDen: Integer = 4): Integer;
+  ABuiltIn: Integer = 3; AMeterNum: Integer = 4; AMeterDen: Integer = 4; ATripletFeel: Boolean = False): Integer;
 
 { Builds variant AVariant (counted modulo the variant count) as a tagged
   groove. ABuiltIn are the lines of the compiled-in 4/4 groove, used when the
@@ -72,7 +73,7 @@ function GrooveVariantCount(const AGenre, AStyle, AKind: string;
   the plain meter groove is built and ConfigWarnings says which block to add. }
 function BuildGroove(const AGenre, AStyle, AKind: string; AVariant: Integer;
   AComplexity: Double; const ABuiltIn: TTabLines;
-  AMeterNum: Integer = 4; AMeterDen: Integer = 4): TPattern;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4; ATripletFeel: Boolean = False): TPattern;
 
 { The styles of a genre: the built-in ones, then those only the file has. }
 function WithFileStyles(const AGenre: string;
@@ -87,6 +88,9 @@ procedure ReloadGrooveLibrary;
 procedure CheckGrooveBlocks(const ABlocks: TTabBlocks; const AFileName: string);
 
 implementation
+
+uses
+  time_signature;
 
 type
   TStyleKinds = specialize TDictionary<string, TGrooveVariants>;
@@ -178,13 +182,15 @@ begin
   end;
 end;
 
-{ 'num/den', a header without a meter is 4/4. }
-function MeterKey(ANum, ADen: Integer): string;
+{ 'num/den' or 'num/denT', a header without a meter is 4/4. }
+function MeterKey(ANum, ADen: Integer; ATripletFeel: Boolean = False): string;
 begin
   if ANum = 0 then
     Result := '4/4'
   else
     Result := IntToStr(ANum) + '/' + IntToStr(ADen);
+  if ATripletFeel then
+    Result := Result + 'T';
 end;
 
 procedure AddBlocks(AGenre: TGenreGrooves; const ABlocks: TTabBlocks);
@@ -212,7 +218,7 @@ begin
     begin
       Key := B.Words[0] + '|' + B.Words[1];
       for I := 0 to High(B.Meters) do
-        Key := Key + '|' + IntToStr(B.Meters[I].Num) + '/' + IntToStr(B.Meters[I].Den);
+        Key := Key + '|' + MeterKey(B.Meters[I].Num, B.Meters[I].Den, B.Meters[I].TripletFeel);
     end;
     if not AGenre.Kinds.TryGetValue(Key, List) then
       List := nil;
@@ -328,7 +334,7 @@ begin
 end;
 
 function FileGrooveVariants(const AGenre, AStyle, AKind: string;
-  AMeterNum, AMeterDen: Integer): TGrooveVariants;
+  AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): TGrooveVariants;
 var
   G: TGenreGrooves;
   MeterKeyStr, Style: string;
@@ -342,7 +348,7 @@ var
     KeyNoMeter := AStyleName + '|' + AKind;
     KeyWithMeter := KeyNoMeter;
     if AMeterNum <> 0 then
-      KeyWithMeter := KeyWithMeter + '|' + IntToStr(AMeterNum) + '/' + IntToStr(AMeterDen);
+      KeyWithMeter := KeyWithMeter + '|' + MeterKey(AMeterNum, AMeterDen, ATripletFeel);
     Result := G.Kinds.TryGetValue(KeyWithMeter, AVariants) or
       G.Kinds.TryGetValue(KeyNoMeter, AVariants) or
       G.Kinds.TryGetValue(AStyleName + '|verse|' + KeyWithMeter, AVariants) or
@@ -368,14 +374,14 @@ begin
 end;
 
 function GrooveVariantCount(const AGenre, AStyle, AKind: string;
-  ABuiltIn: Integer; AMeterNum, AMeterDen: Integer): Integer;
+  ABuiltIn: Integer; AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): Integer;
 var
   V: TGrooveVariants;
 begin
-  V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen);
+  V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen, ATripletFeel);
   if Length(V) > 0 then
     Result := Length(V)
-  else if MeterKey(AMeterNum, AMeterDen) = '4/4' then
+  else if MeterKey(AMeterNum, AMeterDen, ATripletFeel) = '4/4' then
     Result := ABuiltIn
   else
     Result := 1;
@@ -383,7 +389,7 @@ end;
 
 function BuildGroove(const AGenre, AStyle, AKind: string; AVariant: Integer;
   AComplexity: Double; const ABuiltIn: TTabLines;
-  AMeterNum, AMeterDen: Integer): TPattern;
+  AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): TPattern;
 var
   V: TGrooveVariants;
   Item: TGrooveVariant;
@@ -392,10 +398,10 @@ var
   Index: Integer;
   ItemMeters: array of TMeterPair;
 begin
-  V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen);
+  V := FileGrooveVariants(AGenre, AStyle, AKind, AMeterNum, AMeterDen, ATripletFeel);
   if Length(V) = 0 then
   begin
-    if MeterKey(AMeterNum, AMeterDen) = '4/4' then
+    if MeterKey(AMeterNum, AMeterDen, ATripletFeel) = '4/4' then
     begin
       Result := BuildTaggedGroove(
         Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, AVariant]), AKind, AVariant,
@@ -410,7 +416,7 @@ begin
        AGenre]));
     Result := BuildMeterFallbackGroove(
       Format('%s_%s_%s_%d_%d_plain', [AGenre, AStyle, AKind, AMeterNum, AMeterDen]),
-      AMeterNum, AMeterDen, AComplexity);
+      AMeterNum, AMeterDen, AComplexity, ATripletFeel);
     Exit;
   end;
   Index := AVariant mod Length(V);
@@ -425,6 +431,7 @@ begin
     SetLength(ItemMeters, 1);
     ItemMeters[0].Num := AMeterNum;
     ItemMeters[0].Den := AMeterDen;
+    ItemMeters[0].TripletFeel := ATripletFeel;
   end;
   try
     Result := BuildDrumTabPattern(
@@ -436,7 +443,7 @@ begin
       AddConfigWarning(Format(
         'groove %s %s (%d/%d) variant %d: %s - falling back to built-in',
         [AGenre, AStyle, AMeterNum, AMeterDen, Index, E.Message]));
-      if MeterKey(AMeterNum, AMeterDen) = '4/4' then
+      if MeterKey(AMeterNum, AMeterDen, ATripletFeel) = '4/4' then
       begin
         Result := BuildTaggedGroove(
           Format('%s_%s_%s_v%d', [AGenre, AStyle, AKind, AVariant]), AKind, AVariant,
@@ -447,7 +454,7 @@ begin
       begin
         Result := BuildMeterFallbackGroove(
           Format('%s_%s_%s_%d_%d_plain', [AGenre, AStyle, AKind, AMeterNum, AMeterDen]),
-          AMeterNum, AMeterDen, AComplexity);
+          AMeterNum, AMeterDen, AComplexity, ATripletFeel);
         Exit;
       end;
     end;

@@ -13,6 +13,8 @@ unit FillLibrary;
       [weckl_fill_79 energy=0.5 7/8]         a fill for 7/8 (no meter = 4/4)
       S ..... ..... ..x.x
 
+      [weckl_fill_79 energy=0.5 7/8T]        a fill for 7/8 with triplet feel
+
   energy is the bar intensity (0-1) the fill suits best: a short fill about
   0.3, a big one about 0.9. Without it the fill suits every bar. A fill is
   usually one bar; with several bars in its lines it is that long.
@@ -31,7 +33,7 @@ uses
 { The fills of the drummer's file for a meter, or nil when it has none (or a
   broken one). The caller owns the list and the fills. }
 function FileFills(const ADrummer: string;
-  AMeterNum: Integer = 4; AMeterDen: Integer = 4): specialize TList<TFill>;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4; ATripletFeel: Boolean = False): specialize TList<TFill>;
 
 { Names of all drummers that have a fill file. }
 procedure FillFileDrummers(ANames: TStrings);
@@ -40,6 +42,9 @@ procedure FillFileDrummers(ANames: TStrings);
 procedure CheckFillBlocks(const ABlocks: TTabBlocks; const AFileName: string);
 
 implementation
+
+uses
+  time_signature;
 
 function EnergyOf(const ABlock: TTabBlock): Double;
 var
@@ -91,7 +96,7 @@ begin
 end;
 
 function FileFills(const ADrummer: string;
-  AMeterNum, AMeterDen: Integer): specialize TList<TFill>;
+  AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): specialize TList<TFill>;
 var
   Path: string;
   Blocks: TTabBlocks;
@@ -127,7 +132,7 @@ begin
       Num := B.Meters[0].Num;
       Den := B.Meters[0].Den;
     end;
-    if (Num <> AMeterNum) or (Den <> AMeterDen) then
+    if (Num <> AMeterNum) or (Den <> AMeterDen) or (B.Meters[0].TripletFeel <> ATripletFeel) then
       Continue;
     { Build meters array from single meter }
     SetLength(FillMeters, 0);
@@ -136,6 +141,7 @@ begin
       SetLength(FillMeters, 1);
       FillMeters[0].Num := Num;
       FillMeters[0].Den := Den;
+      FillMeters[0].TripletFeel := B.Meters[0].TripletFeel;
     end;
     try
       Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, FillMeters));
