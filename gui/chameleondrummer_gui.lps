@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <Units>
+      <Unit>
+        <Filename Value="chameleondrummer_gui.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ChameleonDrummerGUI"/>
+        <UsageCount Value="22"/>
+      </Unit>
+      <Unit>
+        <Filename Value="MainFrm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="MainForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="141"/>
+        <CursorPos X="9" Y="157"/>
+        <UsageCount Value="22"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="version.rc"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="22"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\fpcupdeluxe\lazarus\ide\lazarus.pp"/>
+        <UnitName Value="Lazarus"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="44"/>
+        <CursorPos Y="54"/>
+        <UsageCount Value="11"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\fpcupdeluxe\lazarus\lcl\interfaces\carbon\carbonbars.pp"/>
+        <UnitName Value="CarbonBars"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="6"/>
+        <CursorPos X="2" Y="16"/>
+        <UsageCount Value="10"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="6">
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+      </Position>
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+        <Caret Line="984" Column="84" TopLine="982"/>
+      </Position>
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+        <Caret Line="180" Column="44"/>
+      </Position>
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+        <Caret Line="960" Column="3" TopLine="1093"/>
+      </Position>
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+        <Caret Line="967" Column="18" TopLine="953"/>
+      </Position>
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+        <Caret Line="970" Column="64" TopLine="956"/>
+      </Position>
+      <Position>
+        <Filename Value="MainFrm.pas"/>
+        <Caret Line="1190" Column="5" TopLine="1179"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode="default"/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>

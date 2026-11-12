@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChameleonDrummer — User Manual</title>
+<title>ChameleonDrummer — 用户手册</title>
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+
 <header>
   <div class="container">
     <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
     <nav>
-      <a href="index.html">Home</a>
-      <a href="concepts.html">Concepts</a>
-      <a href="docs.html">Manual</a>
-      <a href="download.html">Download</a>
+      <a href="index.html">首页</a>
+      <a href="concepts.html">概念</a>
+      <a href="docs.html">手册</a>
+      <a href="download.html">下载</a>
       <a href="../index.html">EN</a>
       <a href="../de/index.html">DE</a>
       <a href="../es/index.html">ES</a>
@@ -25,623 +26,625 @@
     </nav>
   </div>
 </header>
+
 <section class="main-content">
   <div class="container">
-    <h2>USER MANUAL</h2>
-    <h1 id="chameleondrummer-full-user-manual">ChameleonDrummer — Full User Manual</h1>
+    <h2>用户手册</h2>
+    <h1 id="chameleondrummer-wan-zheng-yong-hu-shou-ce">ChameleonDrummer — 完整用户手册</h1>
 
-<h2 id="table-of-contents">Table of Contents</h2>
+    <h2 id="mu-lu">目录</h2>
+    <ol>
+      <li><a href="#yin-dao">引导</a></li>
+      <li><a href="#an-zhuang">安装</a></li>
+      <li><a href="#kuai-su-kai-shi">快速开始</a></li>
+      <li><a href="#midi-gu-ti-sheng-cheng-gai-nian">MIDI 鼓生成概念</a></li>
+      <li><a href="#gui-cheng-xu">图形用户界面程序</a></li>
+      <li><a href="#step-editor">Step Editor</a></li>
+      <li><a href="#reaper-ji-cheng">REAPER 集成</a></li>
+      <li><a href="#ardour-ji-cheng">Ardour 集成</a></li>
+      <li><a href="#cli-cheng-xu">命令行界面程序</a></li>
+      <li><a href="#gao-ji-gong-neng">高级功能</a></li>
+      <li><a href="#wai-bu-shu-ju-wen-jian">外部数据文件</a></li>
+      <li><a href="#midi-zhuan-tab">MIDI → Tab 转换</a></li>
+      <li><a href="#fu-lu-yuan-ma-yuan-ze">附录: 源代码原则</a></li>
+    </ol>
 
-<p>1. <a href="#introduction">Introduction</a></p>
-<p>2. <a href="#installation">Installation</a></p>
-<p>3. <a href="#quick-start">Quick Start</a></p>
-<p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
-<p>5. <a href="#the-gui-program">The GUI Program</a></p>
-<p>5.5. <a href="#step-editor">Step Editor</a></p>
-<p>6. <a href="#reaper-integration">REAPER Integration</a></p>
-<p>7. <a href="#ardour-integration">Ardour Integration</a></p>
-<p>8. <a href="#the-cli-program">The CLI Program</a></p>
-<p>9. <a href="#advanced-features">Advanced Features</a></p>
-<p>10. <a href="#external-data-files">External Data Files</a></p>
-<p>11. <a href="#midi-tab-conversion">MIDI → Tab Conversion</a></p>
-<p>12. <a href="#troubleshooting">Troubleshooting</a></p>
-<p>13. <a href="#appendix-source-code-principles">Appendix: Source Code Principles</a></p>
+    <hr>
 
-<hr>
+    <h2 id="yin-dao">引导</h2>
 
-<h2 id="introduction">Introduction</h2>
+    <p>ChameleonDrummer 是一个动态 MIDI 鼓生成系统，基于 Free Pascal (FPC) 和 Lazarus Component Library (LCL) 构建。它为 5 种风格（Metal、Rock、Jazz、Funk、Electronic）生成逼真的鼓型，共 32 种风格，以及 17 位鼓手个性。支持多种 MIDI keymap (GM, AD2, EZD3, XG)、从 2/4 到 32/16 的拍号（包括 3/4、5/4、7/8、9/8、11/8、13/8... 等奇数拍）、外部 groove/fill/default 文件、REAPER <code>.rpp</code> 和 Ardour <code>.ardour</code> 会话导出，以及高级人性化、强度曲线和物理可演奏性约束。</p>
 
-<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 32 styles total, and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
+    <p>生成两个可执行文件：</p>
+    <ul>
+      <li><code>ChameleonDrummer.exe</code> — 命令行界面</li>
+      <li><code>chameleondrummer_gui.exe</code> — 图形界面 (Lazarus/LCL)</li>
+    </ul>
 
-<p>Two executables are produced:</p>
+    <hr>
 
-<li><code>ChameleonDrummer.exe</code> — command-line interface</li>
-<li><code>chameleondrummer_gui.exe</code> — graphical interface (Lazarus/LCL)</li>
+    <h2 id="an-zhuang">安装</h2>
 
-<hr>
+    <h3 id="yao-qiu">要求</h3>
+    <ul>
+      <li>Windows (主要目标; Linux/macOS 可用 FPC/LCL)</li>
+      <li>Free Pascal Compiler (FPC) 3.2.2+</li>
+      <li>Lazarus IDE (可选, 用于图形用户界面开发)</li>
+      <li>Free Pascal Compiler (FPC) 3.2.2+ (用于 <code>tools/midi_to_tab.exe</code> 转换器)</li>
+    </ul>
 
-<h2 id="installation">Installation</h2>
-
-<h3 id="requirements">Requirements</h3>
-
-<li>Windows (primary target; Linux/macOS possible with FPC/LCL)</li>
-<li>Free Pascal Compiler (FPC) 3.2.2+</li>
-<li>Lazarus IDE (optional, for GUI development)</li>
-<li>Python 3.10+ (optional, for the <code>tools/midi_to_tab.py</code> converter)</li>
-
-<h3 id="building-from-source">Building from Source</h3>
-
-<pre><code class="lang-bash"># CLI executable
+    <h3 id="cong-yuan-ma-jian-yi">从源代码构建</h3>
+    <pre><code class="lang-bash"># 命令行界面可执行文件
 cd B:\dev\github\ChameleonDrummer
 "%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
 
-# GUI executable
+# 图形用户界面可执行文件
 cd gui
-cmd /c "build_gui.bat &lt; NUL"</code></pre>
+cmd /c "build_gui.bat < NUL"</code></pre>
 
-<h3 id="running-the-executable">Running the Executable</h3>
+    <h3 id="yun-xing-ke-zhi-xing-wen-jian">运行可执行文件</h3>
+    <p>两个可执行文件都是自包含的。将 <code>ChameleonDrummer.exe</code> 和 <code>chameleondrummer_gui.exe</code> 放在同一目录，或从图形用户界面的工作目录引用命令行界面。</p>
 
-<p>Both executables are self-contained. Place <code>chameleondrummer.exe</code> and <code>chameleondrummer_gui.exe</code> in the same directory, or reference the CLI from the GUI's working directory.</p>
+    <hr>
 
-<hr>
+    <h2 id="kuai-su-kai-shi">快速开始</h2>
 
-<h2 id="quick-start">Quick Start</h2>
+    <h3 id="cli-sheng-cheng-metal-ge-qu">命令行界面 — 生成 Metal 曲目</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
 
-<h3 id="cli-generate-a-metal-song">CLI — Generate a Metal Song</h3>
+    <h3 id="cli-sheng-cheng-rock-mo-shi-bonham-feng-ge">命令行界面 — 生成 Bonham 风格的 Rock 模式</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre rock --style classic --drummer bonham --output bonham_verse.mid</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
+    <h3 id="cli-sheng-cheng-qi-shu-pai">命令行界面 — 在奇数拍中生成</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre rock --style classic --time-sig 7/8 --output rock_7_8.mid</code></pre>
 
-<h3 id="cli-generate-a-rock-pattern-with-bonham-style">CLI — Generate a Rock Pattern with Bonham Style</h3>
-
-<pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre rock --style classic --drummer bonham --output bonham_verse.mid</code></pre>
-
-<h3 id="cli-generate-in-an-odd-meter">CLI — Generate in an Odd Meter</h3>
-
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre rock --style classic --time-sig 7/8 --output rock_7_8.mid</code></pre>
-
-<h3 id="cli-list-available-options">CLI — List Available Options</h3>
-
-<pre><code class="lang-bash">ChameleonDrummer.exe list genres
+    <h3 id="cli-lie-biao-ke-yong-xuan-xiang">命令行界面 — 列出可用选项</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe list genres
 ChameleonDrummer.exe list styles --genre jazz
-ChameleonDrummer.exe list drummers</code></pre>
+ChameleonDrummer.exe list drummers
+ChameleonDrummer.exe list mappings</code></pre>
 
-<h3 id="gui-interactive-generation">GUI — Interactive Generation</h3>
+    <h3 id="gui-hu-dong-sheng-cheng">图形用户界面 — 交互式生成</h3>
+    <ol>
+      <li>启动 <code>chameleondrummer_gui.exe</code>。</li>
+      <li>选择 <strong>风格</strong>: <code>metal</code>。</li>
+      <li>选择 <strong>风格</strong>: <code>death</code>。</li>
+      <li>选择 <strong>鼓手</strong>: <code>hoglan</code>。</li>
+      <li>选择 <strong>Mapping</strong>: <code>ad2</code>。</li>
+      <li>设置 <strong>速度</strong>: <code>195</code>。</li>
+      <li>调整 <strong>复杂度</strong> 和 <strong>人性化</strong> 滑块。</li>
+      <li>点击 <strong>生成</strong>。</li>
+      <li>在日志面板查看输出。</li>
+    </ol>
 
-<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
-<p>2. Select <strong>Genre</strong>: <code>metal</code>.</p>
-<p>3. Select <strong>Style</strong>: <code>death</code>.</p>
-<p>4. Select <strong>Drummer</strong>: <code>hoglan</code>.</p>
-<p>5. Select <strong>Mapping</strong>: <code>ad2</code>.</p>
-<p>6. Set <strong>Tempo</strong>: <code>195</code>.</p>
-<p>7. Adjust <strong>Complexity</strong> and <strong>Humanization</strong> sliders.</p>
-<p>8. Click <strong>Generate</strong>.</p>
-<p>9. View output in the log panel.</p>
+    <hr>
 
-<hr>
+    <h2 id="midi-gu-ti-sheng-cheng-gai-nian">MIDI 鼓生成概念</h2>
 
-<h2 id="concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</h2>
+    <p>本节解释从源代码 (<code>ComposerV2.pas</code>, <code>DrumGenerator.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, <code>MidiIO.pas</code>) 衍生的基本原理。</p>
 
-<p>This section explains the underlying principles derived from the source code (<code>ComposerV2.pas</code>, <code>DrumGenerator.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, <code>MidiIO.pas</code>).</p>
+    <h3 id="1-mo-shi-he-da-ji-mo-xing-codepatternpascode">1. 模式和击打模型 (<code>Pattern.pas</code>)</h3>
 
-<h3 id="1-pattern-and-beat-model-codepatternpascode">1. Pattern and Beat Model (<code>Pattern.pas</code>)</h3>
+    <p><code>TPattern</code> 是 <code>TBeat</code> 对象的容器。每个击打有：</p>
+    <ul>
+      <li><strong>位置</strong> (<code>Double</code>): 以拍为单位的时间 (如 0.0, 0.5, 1.0)。位置 1.0 = 第二拍, 位置 2.0 = 第三拍, 等。</li>
+      <li><strong>乐器</strong> (<code>TDrumInstrument</code>): 鼓乐器 (踩鼓、军鼓、踩镲等)。乐器身份来自 JSON keymap 文件 — Pascal 代码中没有硬编码音符。</li>
+      <li><strong>力度</strong> (<code>Integer</code>): MIDI 力度从 0 (静音) 到 127 (最大)。这使某些击打听起来更响或更轻。</li>
+      <li><strong>时长</strong> (<code>Double</code>): 以拍为单位的音符长度。大多数鼓击打很短 (~0.1 拍), 但有些可为效果更长。</li>
+      <li><strong>GhostNote</strong> (<code>Boolean</code>): 微妙的低力度音符, 用于 groove 感觉。想象鼓手在主击打之间轻敲鼓边。</li>
+      <li><strong>Accent</strong> (<code>Boolean</code>): 重音击打。这是鼓手在特定拍子上加重音的方式 (如摇滚中军鼓在 2 和 4 拍)。</li>
+      <li><strong>InstrumentPromoted</strong> (<code>Boolean</code>): 来源标志。仅当该击打的乐器被流派插件就地更改, 将现有踩镲击打提升为高能量镲片用于高能量段落时为 True。</li>
+    </ul>
 
-<p>A <code>TPattern</code> is a container of <code>TBeat</code> objects. Each beat has:</p>
+    <h3 id="2-ge-qu-he-ju-jie-mo-xing-codesongpascode">2. 歌曲和段落模型 (<code>Song.pas</code>)</h3>
 
-<li><code>Position</code> (<code>Double</code>): Time in beats (e.g., 0.0, 0.5, 1.0). Position 1.0 = the second beat, position 2.0 = the third beat, etc.</li>
-<li><code>Instrument</code> (<code>TDrumInstrument</code>): The drum instrument (kick, snare, hi-hat, etc.). Instrument identity comes from a JSON keymap file — no notes are hardcoded in Pascal code.</li>
-<li><code>Velocity</code> (<code>Integer</code>): MIDI velocity from 0 (silent) to 127 (maximum). This is what makes some hits sound louder or softer.</li>
-<li><code>Duration</code> (<code>Double</code>): Note length in beats. Most drum hits are very short (~0.1 beats), but some can be longer for effect.</li>
-<li><code>GhostNote</code> (<code>Boolean</code>): Subtle, low-velocity note for groove feel. Think of this as the drummer lightly tapping the rim of a drum between the main hits.</li>
-<li><code>Accent</code> (<code>Boolean</code>): Emphasized hit. This is how the drummer puts emphasis on certain beats (like the snare on beats 2 and 4 in rock).</li>
-<li><code>InstrumentPromoted</code> (<code>Boolean</code>): Provenance flag. True only when this beat's instrument was changed in place by a genre plugin promoting an existing hi-hat beat to a higher-energy cymbal for a high-energy section.</li>
+    <p><code>TSong</code> 包含段落 (<code>TSection</code>), 每个有自己的模式、fill、速度和拍号。段落按标准歌曲顺序排列: intro、verse、pre_chorus、chorus、bridge、breakdown、solo、outro。</p>
 
-<h3 id="2-song-and-section-model-codesongpascode">2. Song and Section Model (<code>Song.pas</code>)</h3>
+    <p>每个段落有自己的：</p>
+    <ul>
+      <li><strong>速度</strong> — 每分钟拍数 (BPM)。0 表示继承歌曲速度。</li>
+      <li><strong>拍号</strong> — 时间签名 (4/4, 7/8, 5/4 等)。第一个数字是每小节拍数, 第二个音符值得一拍。</li>
+      <li><strong>复杂度</strong> — 模式变化程度。仅当 <code>HasComplexity</code> 设置时使用; 零填充记录继承歌曲复杂度。</li>
+      <li><strong>默认模式</strong> — 引擎应为该段落选择哪些 groove/fill。</li>
+    </ul>
 
-<p>A <code>TSong</code> contains sections (<code>TSection</code>), each with its own patterns, fills, tempo, and meter. Sections are arranged in a standard song order: intro, verse, pre_chorus, chorus, bridge, breakdown, solo, outro.</p>
+    <p>段落存储在简单的 JSON 文件中。您可以添加自己的段落、更改顺序, 或给每个段落自己的速度和拍号。</p>
 
-<p>Each section has its own:</p>
+    <h3 id="3-mei-xiao-jie-mo-shi-yan-hua-codecomposerv2pascode">3. 小节逐个模式演变 (<code>ComposerV2.pas</code>)</h3>
 
-<li><strong>Tempo</code> — speed in beats per minute (BPM). 0 means inherit the song tempo.</li>
-<li><strong>Meter</code> — the time signature (4/4, 7/8, 5/4, etc.). The first number is how many beats per bar, the second note value gets one beat.</li>
-<li><strong>Complexity</code> — how varied the patterns are. Only used when <code>HasComplexity</code> is set; zero-filled records inherit the song's complexity.</li>
-<li><strong>Default patterns</code> — which grooves/fills the engine should choose from for this section.</li>
+    <p><code>TBarSelector.SelectPatternForPhrase</code> 使用加权随机抽取为每小节选取 groove：</p>
+    <ul>
+      <li><strong>强度匹配</strong>: 每个 groove 的权重基于其强度带与小节强度的契合度。强度带包含小节强度的 groove 获得奖励。</li>
+      <li><strong>近期加权</strong>: 前一个模式的权重降至 0.25×, 使其可返回但极少连续重复。这防止同一模式小节接小节播放。</li>
+      <li><strong>宏阶段</strong>: 歌曲在四个阶段演变:
+        <ul>
+          <li><code>mpEstablish</code> (早期小节): 尝试较轻 groove 确立感觉</li>
+          <li><code>mpMaintain</code> (中间小节): 保持有效的东西</li>
+          <li><code>mpBuild</code> (向高潮): 偏好更重、更强烈的 groove</li>
+          <li><code>mpTurnaround</code> (结尾): 引导回开头或 chorus</li>
+        </ul>
+      </li>
+      <li><strong>线程安全随机性</strong>: 选择使用 <code>TThreadedRandom</code> 以跨线程获得一致结果。</li>
+    </ul>
 
-<p>Sections are stored in plain JSON files. You can add your own sections, change the order, or give each section its own tempo and meter.</p>
+    <h3 id="4-qiang-du-qu-xian-codecomposerv2pascode">4. 强度曲线 (<code>ComposerV2.pas</code>)</h3>
 
-<h3 id="3-bar-by-bar-pattern-evolution-codecomposerv2pascode">3. Bar-by-Bar Pattern Evolution (<code>ComposerV2.pas</code>)</h3>
+    <p>强度贯穿歌曲变化: intro/verse 较轻, chorus 较重, bridge/breakdown 变化。强度曲线驱动模式选择和 fill 放置。典型曲线：</p>
+    <ul>
+      <li><code>icAscending</code> — 向高潮变响</li>
+      <li><code>icDescending</code> — 开始响, 淡出</li>
+      <li><code>icPlateau</code> — 大致恒定强度</li>
+      <li><code>icDipRise</code> — 先降后升 (常见 verse-chorus-verse)</li>
+      <li><code>icSteps</code> — 段落边界处明显的强度变化</li>
+    </ul>
 
-<p><code>TBarSelector.SelectPatternForPhrase</code> picks a groove for each bar using a weighted random draw:</p>
+    <h3 id="5-hong-zuo-qu-codecomposerv2pascode">5. 宏作曲家 (<code>ComposerV2.pas</code>)</h3>
 
-<li><strong>Intensity matching</code>: Each groove's weight is based on how well its intensity band fits the bar's intensity. Grooves whose band contains the bar's intensity get a bonus.</li>
-<li><strong>Recency weighting</code>: The previous pattern's weight is reduced to 0.25× so it can return but rarely repeats consecutively. This prevents the same pattern from playing bar after bar.</li>
-<li><strong>Macro phases</code>: The song evolves in four phases:</li>
-<li><code>mpEstablish</code> (early bars): tries lighter grooves to set the feel</li>
-<li><code>mpMaintain</code> (middle bars): keeps whatever's working</li>
-<li><code>mpBuild</code> (toward climax): favors heavier, more intense grooves</li>
-<li><code>mpTurnaround</code> (ending): leads back to the beginning or chorus</li>
-<li><strong>Thread-safe randomness</code>: Selection uses <code>TThreadedRandom</code> for consistent results across threads.</li>
+    <p>宏阶段对每段落的模式选择施加偏置。四个阶段 (<code>mpEstablish</code>, <code>mpMaintain</code>, <code>mpBuild</code>, <code>mpTurnaround</code>) 控制 groove 如何贯穿歌曲演变, 如音乐总监说 "开始简单, 建立能量, 然后带回家"。</p>
 
-<h3 id="4-intensity-curves-codecomposerv2pascode">4. Intensity Curves (<code>ComposerV2.pas</code>)</h3>
+    <h3 id="6-groove-yin-qing-codecomposerv2pascode">6. Groove 引擎 (<code>ComposerV2.pas</code>)</h3>
 
-<p>Intensity varies across the song: intro/verse are lighter, chorus is heavier, bridge/breakdown vary. The intensity curve drives both pattern selection and fill placement. Typical curves:</p>
+    <p>Groove 从 <code>config/grooves/<genre>.tab</code> 文件加载。每个块声明风格/类型/强度带。引擎每小节选取最佳匹配的 groove。</p>
 
-<li><code>icAscending</code> — getting louder toward the climax</li>
-<li><code>icDescending</code> — starting loud, fading out</li>
-<li><code>icPlateau</code> — roughly constant intensity</li>
-<li><code>icDipRise</code> — dips then rises (common for verse-chorus-verse)</li>
-<li><code>icSteps</code> — distinct intensity changes at section boundaries</li>
-
-<h3 id="5-macro-composer-codecomposerv2pascode">5. Macro Composer (<code>ComposerV2.pas</code>)</h3>
-
-<p>The macro phase biases pattern selection per section. The four phases (<code>mpEstablish</code>, <code>mpMaintain</code>, <code>mpBuild</code>, <code>mpTurnaround</code>) control how the groove evolves throughout the song, like a musical director saying "start simple, build energy, then bring it home."</p>
-
-<h3 id="6-groove-engine-codecomposerv2pascode">6. Groove Engine (<code>ComposerV2.pas</code>)</h3>
-
-<p>Grooves are loaded from <code>config/grooves/&lt;genre&gt;.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
-
-<p><strong>Groove block format:</code></p>
-
-<pre><code>[style kind intensity=low-high]
+    <p><strong>Groove 块格式:</strong></p>
+    <pre><code>[style kind intensity=low-high]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
-<li><strong>Header</code>: <code>[style kind intensity=low-high]</code></li>
-<li><code>style</code> — e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>, <code>funk</code>, <code>electronic</code></li>
-<li><code>kind</code> — <code>verse</code>, <code>chorus</code> or <code>bridge</code></li>
-<li><code>intensity=low-high</code> — the bar intensities (0–1) this groove suits, e.g., <code>intensity=0.20-0.60</code></li>
-<li><strong>Add meter after kind</code>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> for odd-meter grooves</li>
-<li><strong>Instrument lines</code>: One line per instrument. Format: <code>INSTRUMENT STEP STEP STEP | STEP STEP STEP</code></li>
-<li><code>K</code> = kick, <code>S</code> = snare, <code>RS</code> = ride cymbal short, <code>SS</code> = splash, <code>H</code> = hi-hat, <code>HO</code> = hi-hat open, <code>HP</code> = hi-hat pedal, <code>R</code> = rack tom, <code>RB</code> = bass tom, <code>C</code> = crash cymbal, <code>C2</code> = second crash, <code>CH</code> = china, <code>SP</code> = splash, <code>T1</code> = tom 1, <code>T2</code> = tom 2, <code>T3</code> = tom 3, <code>T4</code> = tom 4</li>
-<li>Step characters: <code>.</code> = rest (no hit), <code>x</code> = hit, <code>X</code> = accented hit, <code>o</code> = soft note, <code>g</code> = ghost note</li>
-<li>Spaces inside a bar are ignored (they improve readability only)</li>
-<li>Bars are separated by <code>|</code>. The engine uses the longest line's bar count; shorter lines repeat their bars.</li>
-<li><strong>Example</code> (from <code>rock.tab</code>):</li>
-
-<pre><code>[rock verse intensity=0.20-0.60]
+    <ul>
+      <li><strong>Header</strong>: <code>[style kind intensity=low-high]</code></li>
+      <li><code>style</code> — 如 <code>metal</code>, <code>rock</code>, <code>jazz</code>, <code>funk</code>, <code>electronic</code></li>
+      <li><code>kind</code> — <code>verse</code>, <code>chorus</code> 或 <code>bridge</code></li>
+      <li><code>intensity=low-high</code> — 此 groove 适合的小节强度 (0–1), 如 <code>intensity=0.20-0.60</code></li>
+      <li><strong>类型后添加拍号</strong>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> 用于奇数拍 groove</li>
+      <li><strong>乐器行</strong>: 每乐器一行。格式: <code>乐器 步骤 步骤 步骤 | 步骤 步骤 步骤</code></li>
+      <li><code>K</code> = 踩鼓, <code>S</code> = 军鼓, <code>RS</code> = 短镲, <code>SS</code> = 溅镲, <code>H</code> = 踩镲, <code>HO</code> = 开踩镲, <code>HP</code> = 踩镲踏板, <code>R</code> = 架子鼓, <code>RB</code> = 踩鼓, <code>C</code> = 碎镲, <code>C2</code> = 第二碎镲, <code>CH</code> = 中国镲, <code>SP</code> = 溅镲, <code>T1</code> = 汤姆 1, <code>T2</code> = 汤姆 2, <code>T3</code> = 汤姆 3, <code>T4</code> = 汤姆 4</li>
+      <li>步骤字符: <code>.</code> = 休止 (无击打), <code>x</code> = 击打, <code>X</code> = 重音击打, <code>o</code> = 柔和音符, <code>g</code> = ghost note</li>
+      <li>小节内空格被忽略 (仅提高可读性)</li>
+      <li>小节用 <code>|</code> 分隔。引擎使用最长行的小节数; 较短行重复其小节。</li>
+      <li><strong>示例</strong> (来自 <code>rock.tab</code>):</li>
+    </ul>
+    <pre><code>[rock verse intensity=0.20-0.60]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
-<h3 id="7-fill-system-codecomposerv2pascode">7. Fill System (<code>ComposerV2.pas</code>)</h3>
+    <h3 id="7-fill-xi-tong-codecomposerv2pascode">7. Fill 系统 (<code>ComposerV2.pas</code>)</h3>
 
-<p>Fills are loaded from <code>config/fills/&lt;drummer&gt;.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
+    <p>Fill 从 <code>config/fills/<drummer>.tab</code> 加载。每个块声明名称/能量带。引擎在段落边界选取能量匹配小节强度的 fill。</p>
 
-<p><strong>Fill block format:</code></p>
-
-<pre><code>[bonham_fill_short energy=0.3]
+    <p><strong>Fill 块格式:</strong></p>
+    <pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
 
-<li><strong>Header</code>: <code>[name energy=0.3]</code></li>
-<li><code>name</code> — e.g., <code>bonham_fill_short</code>, <code>peart_fill_odd_7_8</code></li>
-<li><code>energy=0.3</code> — the bar intensity (0–1) the fill suits best</li>
-<li><strong>Same instrument/step format as grooves</code>: Same step characters (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), same bar/bars separator rules.</li>
+    <ul>
+      <li><strong>Header</strong>: <code>[name energy=0.3]</code></li>
+      <li><code>name</code> — 如 <code>bonham_fill_short</code>, <code>peart_fill_odd_7_8</code></li>
+      <li><code>energy=0.3</code> — fill 最适合的小节强度 (0–1)</li>
+      <li><strong>与 groove 相同的乐器/步骤格式</strong>: 相同步骤字符 (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), 相同小节/分隔规则。</li>
+    </ul>
 
-<h3 id="8-humanization-codeadvancedhumanizationpascode">8. Humanization (<code>AdvancedHumanization.pas</code>)</h3>
+    <h3 id="8-ren-xing-hua-codeadvancedhumanizationpascode">8. 人性化 (<code>AdvancedHumanization.pas</code>)</h3>
 
-<p>Timing and velocity jitter are applied per note, scaled by the humanization setting. Ghost notes and accents are preserved.</p>
+    <p>每音符应用时机和力度抖动, 由人性化设置缩放。Ghost note 和重音保留。</p>
+    <ul>
+      <li><strong>时机抖动</strong>: 每个音符前后移动几毫秒。足够小以感觉自然, 足够大以避免 "机枪" 效果。</li>
+      <li><strong>力度变化</strong>: 某些击打比预期稍响或稍轻。</li>
+      <li><strong>Swing</strong>: 直八分音符以轻微 2:1 或 3:1 比例演奏的感觉, 如经典摇滚或 funk groove。由 <code>--swing</code> 命令行界面 标志或 图形用户界面 滑块控制 (0 = 直, 0.67 = 经典 2:1, 1 = 3:1)。</li>
+    </ul>
 
-<li><strong>Timing jitter</code>: Each note is shifted forward or backward by a few milliseconds. Small enough to feel natural, large enough to avoid the "machine gun" effect.</li>
-<li><strong>Velocity variation</code>: Some hits are slightly louder or softer than expected.</li>
-<li><strong>Swing</code>: A feel where straight eighth notes are played with a slight 2:1 or 3:1 ratio, like a classic rock or funk groove. Controlled by the <code>--swing</code> CLI flag or GUI slider (0 = straight, 0.67 = classic 2:1, 1 = 3:1).</li>
+    <p>您通过图形用户界面中的 <strong>人性化</strong> 滑块 (0–1) 控制所有这些。0 时完美对齐网格。1 时最大感觉。</p>
 
-<p>You control all of this with the <strong>Humanization</strong> slider in the GUI (0–1). At 0, it's perfectly on the grid. At 1, it has maximum feel.</p>
+    <h3 id="9-wu-li-yue-shu-codephysicalconstraintspascode-codepatternfixerpascode">9. 物理约束 (<code>PhysicalConstraints.pas</code> / <code>PatternFixer.pas</code>)</h3>
 
-<h3 id="9-physical-constraints-codephysicalconstraintspascode-codepatternfixerpascode">9. Physical Constraints (<code>PhysicalConstraints.pas</code> / <code>PatternFixer.pas</code>)</h3>
+    <p>模式修复器移除不可能的击打：</p>
+    <ul>
+      <li><strong>单步最多 3 次击打</strong>: 鼓手无法在一个动作中同时击打踩鼓、军鼓和两个汤姆鼓。</li>
+      <li><strong>肢体协调模式</strong>:
+        <ul>
+          <li>右手: 通常演奏碎镲或 ride 镲</li>
+          <li>左手: 踩镲或 ride 镲</li>
+          <li>右脚: 踩鼓踏板</li>
+          <li>左脚: 踩镲踏板</li>
+        </ul>
+      </li>
+      <li>这防止引擎生成真实鼓手无法物理演奏的模式。</li>
+    </ul>
 
-<p>The pattern fixer removes impossible hits:</p>
+    <h3 id="10-cha-jian-jia-gou-codepluginregistrypascode-codedrumgeneratorpascode">10. 插件架构 (<code>PluginRegistry.pas</code>, <code>DrumGenerator.pas</code>)</h3>
 
-<li><strong>At most 3 hits on one step</code>: A drummer can't hit the kick, snare, and two toms all at once in one motion.</li>
-<li><strong>Limb coordination patterns</code>:</li>
-<li>Right hand: typically plays crash or ride cymbal</li>
-<li>Left hand: hi-hat or ride cymbal</li>
-<li>Right foot: kick pedal</li>
-<li>Left foot: hi-hat pedal</li>
-<li>This prevents the engine from generating patterns a real drummer couldn't physically play.</li>
+    <p>流派插件和鼓手插件编译进可执行文件。每个鼓手应用 2–4 种修改：</p>
+    <ul>
+      <li><strong>BehindBeat</strong>: 鼓手稍微在拍子后演奏, 营造轻松感觉。</li>
+      <li><strong>GhostNotes</strong>: 添加微妙的边缘击打和安静音符。</li>
+      <li><strong>LinearCoordination</strong>: 该鼓手典型的肢体模式 (如 Bonham 标志性的踩鼓-军鼓模式)。</li>
+      <li><strong>ShuffleFeel</strong>: 特定于该风格的 swing 感觉。</li>
+      <li><strong>FillPatterns</strong>: 该鼓手典型的 fill 词汇。</li>
+    </ul>
 
-<h3 id="10-plugin-architecture-codepluginregistrypascode-codedrumgeneratorpascode">10. Plugin Architecture (<code>PluginRegistry.pas</code>, <code>DrumGenerator.pas</code>)</h3>
+    <p>修改可组合且按顺序应用。流派插件 (Metal, Rock, Jazz, Funk, Electronic) 定义典型强度带、哪些 groove 对该风格有意义、以及默认歌曲结构。</p>
 
-<p>Genre plugins and drummer plugins are discovered dynamically at runtime from <code>.pas</code> files. Each drummer applies 2–4 modifications:</p>
+    <h3 id="11-keymap-xi-tong-codekitpascode">11. Keymap 系统 (<code>Kit.pas</code>)</h3>
 
-<li><strong>BehindBeat</code>: The drummer plays slightly behind the beat for a laid-back feel.</li>
-<li><strong>GhostNotes</code>: Adds subtle rim shots and quiet notes.</li>
-<li><strong>LinearCoordination</code>: Typical limb patterns for that drummer (e.g., Bonham's distinctive kick-snare patterns).</li>
-<li><strong>ShuffleFeel</code>: Swing feel specific to that style.</li>
-<li><strong>FillPatterns</code>: Typical fill vocabulary for that drummer.</li>
+    <p>MIDI 音符通过 <code>mappings/</code> 中的 JSON keymap 文件解析。<strong>Pascal 代码中不存在硬编码音符。</strong></p>
+    <ul>
+      <li>Keymap 文件将音符名称 (kick, snare, hi-hat, tom1, crash 等) 映射到 MIDI 音符。</li>
+      <li>相同生成引擎可使用任何 keymap — GM, AD2, EZDrummer 3, Yamaha XG, 或用户创建。</li>
+      <li>您可编辑 keymap JSON 文件自定义哪个音符触发哪个鼓。</li>
+      <p>这就是系统能与如此多不同鼓库协作、且图形用户界面不硬编码鼓名称的原因。</p>
+    </ul>
 
-<p>Modifications are composable and applied in order. Genre plugins (Metal, Rock, Jazz, Funk, Electronic) define the typical intensity bands, which grooves make sense for that style, and default song structure.</p>
+    <h3 id="12-midi-dao-chu-codemidiiopascode-codemidiparserpascode">12. MIDI 导出 (<code>MidiIO.pas</code>, <code>MidiParser.pas</code>)</h3>
 
-<h3 id="11-keymap-system-codekitpascode">11. Keymap System (<code>Kit.pas</code>)</h3>
+    <p>原始 SMF 格式 0 写入器, 带 VLQ 编码、速度/拍号元事件, 兼容所有 DAW 和鼓 VST。</p>
+    <ul>
+      <li><strong>轨道</strong>: 包含所有鼓音符的单一 MIDI 轨道。</li>
+      <li><strong>速度事件</strong>: 歌曲推进时的 BPM 变化。</li>
+      <li><strong>拍号事件</strong>: 时间签名变化。</li>
+      <li><strong>音符数据</strong>: 音高 (哪个鼓)、力度、开始时间、时长。</li>
+    </ul>
 
-<p>MIDI notes are resolved through JSON keymap files in <code>mappings/</code>. <strong>No hardcoded notes exist in Pascal code.</strong></p>
+    <p>此 MIDI 文件适用于任何 DAW (Reaper, Ardour, Ableton, Logic 等) 和任何鼓 VST 插件 (EZDrummer, Superior Drummer, Addictive Drums 等)。</p>
 
-<li>Keymap files map note names (kick, snare, hi-hat, tom1, crash, etc.) to MIDI notes.</li>
-<li>The same generation engine can use any keymap — GM, AD2, EZDrummer 3, Yamaha XG, or user-created.</li>
-<li>You can edit keymap JSON files to customize which note triggers which drum.</li>
-<li>This is why the system works with so many different drum libraries and why the GUI doesn't hardcode drum names.</li>
+    <hr>
 
-<h3 id="12-midi-export-codemidiiopascode-codemidiparserpascode">12. MIDI Export (<code>MidiIO.pas</code>, <code>MidiParser.pas</code>)</h3>
+    <h2 id="gui-cheng-xu">图形用户界面程序</h2>
 
-<p>Raw SMF Format 0 writer with VLQ encoding, tempo/meter meta events, compatible with all DAWs and drum VSTs.</p>
+    <p>图形用户界面 (<code>chameleondrummer_gui.exe</code>) 直接链接引擎 — 产出与命令行工具完全相同的结果, 无需调用它。</p>
 
-<li><strong>Tracks</code>: One MIDI track containing all drum notes.</li>
-<li><strong>Tempo events</code>: BPM changes as the song progresses.</li>
-<li><strong>Meter events</code>: Time signature changes.</li>
-<li><strong>Note data</code>: Pitch (which drum), velocity, start time, duration.</li>
+    <ol>
+      <li>启动 <code>chameleondrummer_gui.exe</code>。</li>
+      <li>从界面选择流派、风格、鼓手、keymap、速度、复杂度和人性化。</li>
+      <li>点击 <strong>生成</strong> — 写入 MIDI 文件。</li>
+      <li>可选导出 REAPER 项目 (<code>.rpp</code>) 或 Ardour 会话 (<code>.ardour</code>)。</li>
+      <li>Dark mode 可通过 <code>视图 > 系统/浅色/深色</code> 获得, 并持久化在 <code>gui.ini</code> 中。</li>
+    </ol>
 
-<p>This MIDI file works with any DAW (Reaper, Ardour, Ableton, Logic, etc.) and any drum VST plugin (EZDrummer, Superior Drummer, Addictive Drums, etc.).</p>
+    <p>图形用户界面提供对所有命令行界面生成选项的交互式访问及视觉反馈：</p>
+    <ul>
+      <li>所选流派/风格/鼓手组合的实时预览</li>
+      <li>基于流派默认值在运行时动态添加的段落控件</li>
+      <li>Dark mode 支持 (仅 Windows 编译)</li>
+      <li>通过 <code>gui.ini</code> 持久化配置</li>
+    </ul>
 
-<hr>
+    <p>详见 <code>gui/README.md</code> 了解 Lazarus 表单布局、组件设置和 dark mode 实现。</p>
 
-<h2 id="the-gui-program">The GUI Program</h2>
+    <p>图形用户界面还包含 <strong>Step Editor</strong> 按钮, 打开独立的 step editor 应用程序 (<code>tools/step_editor/step_editor.exe</code>)。Step editor 让您在步进网格上可视化编辑鼓模式、将 MIDI 文件转换为 tab 格式、将模式保存为 groove 或 fill。详见 <a href="#step-editor">Step Editor</a>。</p>
 
-<p>The GUI (<code>chameleondrummer_gui.exe</code>) links the engine directly — it produces exactly what the command-line tool produces, without shelling out to it.</p>
+    <hr>
 
-<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
-<p>2. Pick genre, style, drummer, keymap, tempo, complexity and humanization from the interface.</p>
-<p>3. Click <strong>Generate</strong> — a MIDI file is written.</p>
-<p>4. Optionally export a REAPER project (<code>.rpp</code>) or Ardour session (<code>.ardour</code>) next to it.</p>
-<p>5. Dark mode is available via <code>View &gt; System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
+    <h2 id="reaper-ji-cheng">REAPER 集成</h2>
 
-<p>The GUI provides interactive access to all CLI generation options plus visual feedback:</p>
+    <p>ChameleonDrummer 通过 Lua 面板 (<code>reaper_chameleon/chameleon_panel.lua</code>) 与 REAPER 集成, 该面板驱动命令行界面进行鼓生成并将结果直接导入您的 REAPER 项目。</p>
 
-<li>Real-time preview of selected genre/style/drummer combinations</li>
-<li>Dynamic section controls added at runtime based on genre defaults</li>
-<li>Dark mode support (compiled only for Windows)</li>
-<li>Configuration persistence via <code>gui.ini</code></li>
+    <h3 id="reaper-an-zhuang">安装</h3>
+    <ol>
+      <li>将 <code>reaper_chameleon/</code> 目录复制到 REAPER 脚本文件夹。</li>
+      <li>打开 REAPER 并通过 Actions > Show action list > New > ReaScript 加载 <code>chameleon_panel.lua</code>。</li>
+      <li>面板作为可停靠窗口出现, 带四个标签页。</li>
+    </ol>
 
-<p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+    <h3 id="reaper-biao-qian">标签页</h3>
 
-<p>The GUI also includes a <strong>Step Editor</strong> button that opens the standalone step editor application (<code>tools/step_editor/step_editor.exe</code>). The step editor lets you visually edit drum patterns on a step grid, convert MIDI files to tab format, and save patterns as grooves or fills. See <a href="#step-editor">Step Editor</a> for details.</p>
+    <h4>Song Sections</h4>
+    <ul>
+      <li>选择流派、风格、鼓手、mapping、速度、小节数</li>
+      <li>通过命令行界面生成 MIDI 并导入当前 REAPER 项目</li>
+      <li>导出 REAPER 项目 (<code>.rpp</code>) 与 MIDI 并存</li>
+    </ul>
 
-<hr>
+    <h4>Additive Rhythm</h4>
+    <ul>
+      <li>输入加法分组符号 (如 <code>3-3-3-3-2-2</code>)</li>
+      <li>设置网格分辨率 (4, 8, 16, 32)、速度、鼓手、强度</li>
+      <li>生成带逐小节拍号的加法节奏模式</li>
+      <li>可选 timeline JSON 导出用于 REAPER 速度标记</li>
+    </ul>
 
-<h2 id="reaper-integration">REAPER Integration</h2>
+    <h4>Step Editor</h4>
+    <ul>
+      <li>从当前项目加载 MIDI 项</li>
+      <li>在网格上编辑, 应用鼓手 (时机/力度变化)</li>
+      <li>将鼓手风格应用于现有模式</li>
+    </ul>
 
-<p>ChameleonDrummer integrates with REAPER via a Lua panel (<code>reaper_chameleon/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your REAPER project.</p>
+    <h4>Settings</h4>
+    <ul>
+      <li>配置 命令行界面 可执行文件路径</li>
+      <li>设置默认流派/风格/鼓手/mapping</li>
+      <li>从 命令行界面 list 命令刷新选项</li>
+    </ul>
 
-<h3 id="installation">Installation</h3>
+    <h4>Log</h4>
+    <ul>
+      <li>命令行界面 命令的实时日志输出</li>
+      <li>生成过程中的状态消息</li>
+    </ul>
 
-<p>1. Copy the <code>reaper_chameleon/</code> directory into your REAPER scripts folder.</p>
-<p>2. Open REAPER and load <code>chameleon_panel.lua</code> via Actions > Show action list > New > ReaScript.</p>
-<p>3. The panel appears as a dockable window with four tabs.</p>
-
-<h3 id="tabs">Tabs</h3>
-
-<p><strong>Song Sections</strong></p>
-
-<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
-<li>Generate MIDI via CLI and import into the current REAPER project</li>
-<li>Export REAPER project (<code>.rpp</code>) alongside the MIDI</li>
-
-<p><strong>Additive Rhythm</strong></p>
-
-<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
-<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
-<li>Generate additive rhythm patterns with per-bar time signatures</li>
-<li>Optional timeline JSON export for REAPER tempo markers</li>
-
-<p><strong>Step Editor</strong></p>
-
-<li>Load a MIDI item from the current project</li>
-<li>Edit on a grid with drummer application (timing/velocity variance)</li>
-<li>Apply drummer style to existing patterns</li>
-
-<p><strong>Settings</strong></p>
-
-<li>Configure CLI executable path</li>
-<li>Set default genre/style/drummer/mapping</li>
-<li>Refresh options from CLI list commands</li>
-
-<p><strong>Log</strong></p>
-
-<li>Real-time log output from CLI commands</li>
-<li>Status messages during generation</li>
-
-<h3 id="cli-commands-used-by-reaper-panel">CLI Commands Used by REAPER Panel</h3>
-
-<pre><code class="lang-">ChameleonDrummer list genres --json
+    <h3 id="reaper-cli-ming-ling">REAPER 面板使用的 命令行界面 命令</h3>
+    <pre><code class="lang-bash">ChameleonDrummer list genres --json
 ChameleonDrummer list styles --genre metal --json
 ChameleonDrummer list drummers --json
 ChameleonDrummer list mappings --json
 ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
 ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
 
-<hr>
+    <hr>
 
-<h2 id="ardour-integration">Ardour Integration</h2>
+    <h2 id="ardour-ji-cheng">Ardour 集成</h2>
 
-<p>ChameleonDrummer integrates with Ardour via a Lua panel (<code>ardour/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your Ardour session.</p>
+    <p>ChameleonDrummer 通过 Lua 面板 (<code>ardour/chameleon_panel.lua</code>) 与 Ardour 集成, 驱动 命令行界面 进行鼓生成并将结果直接导入您的 Ardour 会话。</p>
 
-<h3 id="installation">Installation</h3>
+    <h3 id="ardour-an-zhuang">安装</h3>
+    <ol>
+      <li>将 <code>ardour/</code> 目录复制到 Ardour 脚本文件夹 (通常 Linux <code>~/.config/ardour/scripts/</code>, macOS <code>~/Library/Application Support/Ardour/scripts/</code>, Windows <code>%APPDATA%\Ardour\scripts\</code>)。</li>
+      <li>打开 Ardour 并通过 Window > Scripting > Script Manager > New Script 加载 <code>chameleon_panel.lua</code>。</li>
+      <li>面板作为可停靠窗口出现, 带四个标签页。</li>
+    </ol>
 
-<p>1. Copy the <code>ardour/</code> directory into your Ardour scripts folder (typically <code>~/.config/ardour/scripts/</code> on Linux, <code>~/Library/Application Support/Ardour/scripts/</code> on macOS, or <code>%APPDATA%\Ardour\scripts\</code> on Windows).</p>
-<p>2. Open Ardour and load <code>chameleon_panel.lua</code> via Window > Scripting > Script Manager > New Script.</p>
-<p>3. The panel appears as a dockable window with four tabs.</p>
+    <h3 id="ardour-biao-qian">标签页</h3>
 
-<h3 id="tabs">Tabs</h3>
+    <h4>Song Sections</h4>
+    <ul>
+      <li>选择流派、风格、鼓手、mapping、速度、小节数</li>
+      <li>通过 命令行界面 生成 MIDI 并导入当前 Ardour 会话</li>
+      <li>导出 Ardour 会话 (<code>.ardour</code>) 与 MIDI 并存</li>
+    </ul>
 
-<p><strong>Song Sections</strong></p>
+    <h4>Additive Rhythm</h4>
+    <ul>
+      <li>输入加法分组符号 (如 <code>3-3-3-3-2-2</code>)</li>
+      <li>设置网格分辨率 (4, 8, 16, 32)、速度、鼓手、强度</li>
+      <li>生成带逐小节拍号的加法节奏模式</li>
+      <li>可选 timeline JSON 导出用于 Ardour 速度标记</li>
+    </ul>
 
-<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
-<li>Generate MIDI via CLI and import into the current Ardour session</li>
-<li>Export Ardour session (<code>.ardour</code>) alongside the MIDI</li>
+    <h4>Step Editor</h4>
+    <ul>
+      <li>从当前会话加载 MIDI 项</li>
+      <li>在网格上编辑, 应用鼓手 (时机/力度变化)</li>
+      <li>将鼓手风格应用于现有模式</li>
+    </ul>
 
-<p><strong>Additive Rhythm</strong></p>
+    <h4>Settings</h4>
+    <ul>
+      <li>配置 命令行界面 可执行文件路径</li>
+      <li>设置默认流派/风格/鼓手/mapping</li>
+      <li>从 命令行界面 list 命令刷新选项</li>
+    </ul>
 
-<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
-<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
-<li>Generate additive rhythm patterns with per-bar time signatures</li>
-<li>Optional timeline JSON export for Ardour tempo markers</li>
+    <h4>Log</h4>
+    <ul>
+      <li>命令行界面 命令的实时日志输出</li>
+      <li>生成过程中的状态消息</li>
+    </ul>
 
-<p><strong>Step Editor</strong></p>
-
-<li>Load a MIDI item from the current session</li>
-<li>Edit on a grid with drummer application (timing/velocity variance)</li>
-<li>Apply drummer style to existing patterns</li>
-
-<p><strong>Settings</strong></p>
-
-<li>Configure CLI executable path</li>
-<li>Set default genre/style/drummer/mapping</li>
-<li>Refresh options from CLI list commands</li>
-
-<p><strong>Log</strong></p>
-
-<li>Real-time log output from CLI commands</li>
-<li>Status messages during generation</li>
-
-<h3 id="cli-commands-used-by-ardour-panel">CLI Commands Used by Ardour Panel</h3>
-
-<pre><code class="lang-">ChameleonDrummer list genres --json
+    <h3 id="ardour-cli-ming-ling">Ardour 面板使用的 命令行界面 命令</h3>
+    <pre><code class="lang-bash">ChameleonDrummer list genres --json
 ChameleonDrummer list styles --genre metal --json
 ChameleonDrummer list drummers --json
 ChameleonDrummer list mappings --json
 ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
 ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
 
-<h3 id="accessing-the-panel-in-ardour">Accessing the Panel in Ardour</h3>
+    <h3 id="ardour-fang-wen">在 Ardour 中访问面板</h3>
+    <ul>
+      <li><strong>Window > Scripting > ChameleonDrummer</strong> (若注册为菜单动作)</li>
+      <li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</strong></li>
+      <li>在 <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</strong> 分配键盘快捷键</li>
+    </ul>
 
-<p>Once installed, the ChameleonDrummer panel can be accessed in Ardour via:</p>
+    <p>面板使用 Ardour 的 Lua API (<code>Session</code>, <code>Temporal</code>, <code>ARDOUR</code> 命名空间) 进行会话操作、速度图创建和 MIDI 区域导入。</p>
 
-<li><strong>Window > Scripting > ChameleonDrummer</code> (if registered as a menu action)</li>
-<li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</code></li>
-<li>Assign a keyboard shortcut in <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</code></li>
+    <p>详见 <code>ardour/import_chameleon_song.lua</code> 了解 命令行界面 <code>--ardour</code> 导出使用的无头会话构建器。</p>
 
-<p>The panel uses Ardour's Lua API (<code>Session</code>, <code>Temporal</code>, <code>ARDOUR</code> namespaces) for session manipulation, tempo map creation, and MIDI region import.</p>
+    <hr>
 
-<p>See <code>ardour/import_chameleon_song.lua</code> for the headless session builder used by the CLI <code>--ardour</code> export.</p>
+    <h2 id="cli-cheng-xu">命令行界面程序</h2>
 
-<hr>
+    <h3 id="ming-ling-can-kao">命令参考</h3>
 
-<h2 id="the-cli-program">The CLI Program</h2>
-
-<h3 id="command-reference">Command Reference</h3>
-
-<pre><code class="lang-">Usage: chameleondrummer &lt;command&gt; [options]
+    <pre><code class="lang-bash">Usage: chameleondrummer <command> [options]
 
 Commands:
-  generate   Generate a complete song (multi-bar pattern)
-  pattern    Generate a single 1-4 bar pattern
-  list       List available genres, styles, or drummers
-  info       Show system information
-  reaper     Create a REAPER project (sub-command: export)
-  ardour     Create an Ardour session (sub-command: export)
+  generate         Generate a complete song (multi-bar pattern)
+  pattern          Generate a single 1-4 bar pattern
+  list             List available genres, styles, drummers, or mappings
+  info             Show system information
+  reaper           Create a REAPER project (sub-command: export)
+  ardour           Create an Ardour session (sub-command: export)
+  additive-rhythm  Generate additive rhythm patterns
 
 Options:
-  --genre &lt;name&gt;       Genre (metal, rock, jazz, funk, electronic)
-  --style &lt;name&gt;       Style within genre (heavy, classic, swing, ...)
-  --tempo &lt;bpm&gt;        Tempo in BPM (default: genre/style value)
-  --complexity &lt;0-1&gt;   Pattern complexity (default: 0.5)
-  --humanization &lt;0-1&gt; Humanization intensity (default: 0.3)
-  --swing &lt;0-1&gt;        Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
-  --time-sig &lt;n/d&gt;     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
-  --segment &lt;n:bars:bpm:n/d&gt;  A section with its own tempo and meter, e.g. bridge:4:96:7/8
-                       (bpm - keeps the song tempo); mix freely with --section
-  --section &lt;n:bars[@bpm]&gt;  Song structure; repeat once per section, in order
-                       e.g. --section intro:4 --section verse:8 --section chorus:8@140
-                       (without --section the genre default structure is used)
-  --drummer &lt;name&gt;     Drummer style (e.g., bonham, peart, carey)
-  --output &lt;file&gt;      Output MIDI file path
-  --reaper, --ardour   With generate: also write &lt;output&gt;.rpp / the &lt;output&gt;.ardour session
-  --mapping &lt;name&gt;     Keymap to use: gm (default), ad2, ezd3, xg
-  --structure &lt;file&gt;   Song structure from a JSON file (sections with bars, tempo,
-                       complexity; optional genre, style, tempo). Command-line
-                       genre/style/tempo win over the file. Not with --section.
-  --sidecar &lt;file&gt;     Same as --structure (the REAPER sidecar format works)
-  --song-map &lt;file&gt;    Read song map JSON for per-bar tempo/meter
-  --write-timeline     Write timeline JSON after generation
-  --list &lt;type&gt;        List: genres, styles, drummers</code></pre>
+  --genre <name>              Genre (metal, rock, jazz, funk, electronic)
+  --style <name>              Style within genre (heavy, classic, swing, ...)
+  --tempo <bpm>               Tempo in BPM (default: genre/style value)
+  --complexity <0-1>          Pattern complexity (default: 0.5)
+  --humanization <0-1>        Humanization intensity (default: 0.3)
+  --swing <0-1>               Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
+  --time-sig <n/d>            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --strict-meter              Only use patterns matching --time-sig
+  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+                              (bpm - keeps the song tempo); mix freely with --section
+  --section <n:bars[@bpm]>    Song structure; repeat once per section, in order
+                              e.g. --section intro:4 --section verse:8 --section chorus:8@140
+                              (without --section the genre default structure is used)
+  --drummer <name>            Drummer style (e.g., bonham, peart, carey)
+  --output <file>             Output MIDI file path
+  --reaper, --ardour          With generate: also write <output>.rpp / the <output>.ardour session
+  --mapping <name>            Keymap to use: gm (default), ad2, ezd3, xg
+  --structure <file>          Song structure from a JSON file (sections with bars, tempo,
+                              complexity; optional genre, style, tempo). Command-line
+                              genre/style/tempo win over the file. Not with --section.
+  --sidecar <file>            Same as --structure (the REAPER sidecar format works)
+  --song-map <file>           Read song map JSON for per-bar tempo/meter
+  --write-timeline            Write timeline JSON after generation
+  --list <type>               List: genres, styles, drummers, mappings
+  --json                      Output JSON for list commands
+  --grouping <str>            Additive grouping notation (e.g., 3-3-3-3-2-2)
+  --grid <n>                  Grid resolution for additive-rhythm (4, 8, 16, 32)
+  --drummer-intensity <0-1>   Drummer intensity for additive-rhythm
+  --help, -h                  Show this help</code></pre>
 
-<h3 id="examples">Examples</h3>
+    <h3 id="li-zi">示例</h3>
 
-<p><strong>Generate a complete song:</strong></p>
+    <p><strong>生成完整歌曲:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
+    <p><strong>生成单个模式:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre jazz --style swing --output swing_verse.mid</code></pre>
 
-<p><strong>Generate a single pattern:</strong></p>
+    <p><strong>创建 REAPER 项目:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe reaper export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.rpp</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre jazz --style swing --output swing_verse.mid</code></pre>
+    <p><strong>创建 Ardour 会话:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe ardour export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.ardour</code></pre>
 
-<p><strong>Create REAPER project:</strong></p>
+    <p><strong>加法节奏模式:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output additive.mid</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe reaper export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.rpp</code></pre>
+    <hr>
 
-<p><strong>Create Ardour session:</strong></p>
+    <h2 id="gao-ji-gong-neng">高级功能</h2>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe ardour export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.ardour</code></pre>
+    <h3 id="song-maps-he-sidecars">Song Maps 和 Sidecars</h3>
 
-<hr>
+    <p><strong>Sections (<code>--section</code>)</strong>: 直接在命令行描述歌曲结构, 每段落一个 <code>--section</code>, 按播放顺序：</p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --section intro:4 --section verse:8 --section chorus:8 --section bridge:4 --output song.mid</code></pre>
 
-<h2 id="advanced-features">Advanced Features</h2>
+    <p><strong>Sidecar (<code>--sidecar</code>)</strong>: 描述带小节、速度、复杂度的段落的 JSON 文件, 可选流派/风格/速度覆盖。命令行流派/风格/速度优于文件。</p>
 
-<h3 id="song-maps-and-sidecars">Song Maps and Sidecars</h3>
+    <p><strong>Song Map (<code>--song-map</code>)</strong>: 描述逐小节速度/拍号变化的 JSON 文件, 用于复杂前卫歌曲。</p>
 
-<p><strong>Sections (<code>--section</code>)</code>: Describes the song structure directly on the command line, one <code>--section</code> per section, in playing order:</p>
+    <h3 id="qi-shu-pai">奇数拍</h3>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --section intro:4 --section verse:8 --section chorus:8 --section bridge:4 --output song.mid</code></pre>
+    <p>引擎支持 2/4 到 32/16 的拍号。使用 <code>--time-sig n/d</code> 或 <code>--segment</code> 指定。Groove 和 fill 从在块头声明拍号的 <code>.tab</code> 文件加载 (如 <code>[metal verse 7/8 intensity=0.40-0.90]</code>)。</p>
 
-<p><strong>Sidecar (<code>--sidecar</code>)</code>: A JSON file describing sections with bars, tempo, complexity, and optional genre/style/tempo overrides. The command-line genre/style/tempo win over the file.</p>
+    <h3 id="zi-ji-de-grooves-fills-he-mo-ren">您自己的 Groove、Fill 和默认值</h3>
 
-<p><strong>Song Map (<code>--song-map</code>)</code>: A JSON file describing per-bar tempo and meter changes for complex progressive songs.</p>
+    <p>编辑 <code>config/</code> 中的文件：</p>
+    <ul>
+      <li><code>config/grooves/<genre>.tab</code> — 添加新 groove, 更改强度带</li>
+      <li><code>config/fills/<drummer>.tab</code> — 添加新 fill, 更改能量级别</li>
+      <li><code>config/defaults/<genre>.ini</code> — 更改默认速度/风格/鼓手</li>
+      <li><code>config/sections/<genre>.json</code> — 更改默认歌曲结构</li>
+    </ul>
 
-<h3 id="odd-meters">Odd Meters</h3>
+    <p>无需重新编译 — 引擎在运行时读取这些。</p>
 
-<p>The engine supports meters from 2/4 to 32/16. Use <code>--time-sig n/d</code> or <code>--segment</code> to specify. Grooves and fills are loaded from <code>.tab</code> files that declare their meter in the block header (e.g., <code>[metal verse 7/8 intensity=0.40-0.90]</code>).</p>
+    <h3 id="cha-zhao-shun-xu">查找顺序</h3>
+    <ol>
+      <li>环境变量 <code>CHAMELEON_CONFIG</code> 中的文件夹 (若设置)</li>
+      <li><code>%APPDATA%\ChameleonDrummer\config</code> (Linux: <code>~/.config/ChameleonDrummer/config</code>)</li>
+      <li><code>config</code> 程序旁边</li>
+      <li><code>..\config</code> (开发构建)</li>
+    </ol>
 
-<h3 id="your-own-grooves-fills-and-defaults">Your Own Grooves, Fills and Defaults</h3>
+    <hr>
 
-<p>Edit files in <code>config/</code>:</p>
+    <h2 id="midi-zhuan-tab">MIDI → Tab 转换</h2>
 
-<li><code>config/grooves/&lt;genre&gt;.tab</code> — add new grooves, change intensity bands</li>
-<li><code>config/fills/&lt;drummer&gt;.tab</code> — add new fills, change energy levels</li>
-<li><code>config/defaults/&lt;genre&gt;.ini</code> — change default tempo/style/drummer</li>
-<li><code>config/sections/&lt;genre&gt;.json</code> — change default song structure</li>
+    <p><code>tools/midi_to_tab.exe</code> 将 MIDI 文件转换为 <code>.tab</code> groove/fill 格式。从 Pascal 编译, 无外部依赖。</p>
 
-<p>No recompilation needed — the engine reads these at runtime.</p>
+    <pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
 
-<h3 id="lookup-order">Lookup Order</h3>
+    <h3 id="xuan-xiang">选项</h3>
+    <table>
+      <tr><th>选项</th><th>说明</th></tr>
+      <tr><td><code>--fill</code></td><td>输出 fill 块而非 groove 块</td></tr>
+      <tr><td><code>--name <name></code></td><td>Fill 名称 (默认: <code>fill</code>)</td></tr>
+      <tr><td><code>--energy <0-1></code></td><td>Fill 能量 (默认: 0.5)</td></tr>
+      <tr><td><code>--meter <n/d></code></td><td>拍号覆盖 (默认: MIDI 元或 4/4)</td></tr>
+      <tr><td><code>--resolution <n></code></td><td>每四分音符步数: 4, 8, 16, 32 (默认: 16)</td></tr>
+      <tr><td><code>--mapping <file></code></td><td>Keymap JSON 文件 (默认: 内置 GM map)</td></tr>
+      <tr><td><code>--style <name></code></td><td>Groove 风格名称 (默认: <code>midi</code>)</td></tr>
+      <tr><td><code>--kind <name></code></td><td>Groove 类型: verse/chorus/bridge (默认: <code>verse</code>)</td></tr>
+      <tr><td><code>--intensity <low-high></code></td><td>Groove 强度带 (默认: <code>0.2-0.6</code>)</td></tr>
+    </table>
 
-<p>1. The folder in the environment variable <code>CHAMELEON_CONFIG</code>, if set</p>
-<p>2. <code>%APPDATA%\ChameleonDrummer\config</code> (Linux: <code>~/.config/ChameleonDrummer/config</code>)</p>
-<p>3. <code>config</code> next to the program</p>
-<p>4. <code>..\config</code> (development builds)</p>
+    <p>输出以 CRLF 行尾写入, 可直接放入 <code>config/grooves/</code> 或 <code>config/fills/</code>。</p>
 
-<hr>
+    <hr>
 
-<h2 id="midi-tab-conversion">MIDI → Tab Conversion</h2>
+    <h2 id="step-editor">Step Editor</h2>
 
-<p><code>tools/midi_to_tab.py</code> converts a MIDI file to the <code>.tab</code> groove/fill format. Pure Python, no external dependencies.</p>
+    <p><strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) 是独立图形应用程序, 用于在步进网格上可视化编辑鼓模式、将 MIDI 文件转换为 <code>.tab</code> groove/fill 格式、管理配置文件中的模式块。可从主 图形用户界面 通过 <strong>Step Editor</strong> 按钮启动, 或直接运行。</p>
 
-<pre><code class="lang-bash">python tools/midi_to_tab.py input.mid [output.tab]
-python tools/midi_to_tab.py input.mid --fill --name bonham_fill --energy 0.6
-python tools/midi_to_tab.py input.mid --meter 7/8 --resolution 16
-python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+    <h3 id="step-editor-qi-dong">启动 Step Editor</h3>
+    <ul>
+      <li><strong>从 图形用户界面:</strong> 点击主窗口工具栏的 <strong>Step Editor</strong> 按钮。</li>
+      <li><strong>直接:</strong> 从项目根目录或安装目录运行 <code>tools/step_editor/step_editor.exe</code>。</li>
+      <li><strong>从 REAPER/Ardour 面板:</strong> DAW 集成面板中的 <strong>Step Editor</strong> 标签页启动编辑器并加载当前 MIDI 项。</li>
+    </ul>
 
-<p>Options:</p>
+    <h3 id="step-editor-zhu-yao-gong-neng">主要功能</h3>
+    <ul>
+      <li><strong>步进网格编辑:</strong> 17 种鼓乐器 (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4) 的可视化网格, 可配置每小节步数 (4, 8, 16, 32, 64)。</li>
+      <li><strong>力度/发音字符:</strong> 每步使用字符: <code>.</code> (休止), <code>x</code> (正常), <code>X</code> (重音), <code>o</code> (柔和/ghost), <code>g</code> (ghost)。点击单元格循环状态。</li>
+      <li><strong>MIDI → Tab 转换:</strong> 加载 MIDI 文件 (<code>.mid</code>, <code>.midi</code>) 并使用内置 <code>midi_to_tab.exe</code> 转换为 tab 格式, 可配置 mapping、风格、类型、强度、能量、分辨率、拍号。</li>
+      <li><strong>Tab 文件加载:</strong> 加载现有 <code>.tab</code> 文件 (ChameleonDrummer 配置格式和外部 tab 格式) 进行编辑。</li>
+      <li><strong>块导航 (配置文件):</strong> 从 <code>config/grooves/</code> 或 <code>config/fills/</code> 加载配置文件时, 编辑器解析所有模式块, 提供带 Prev/Next 按钮的下拉选择器在块间导航。</li>
+      <li><strong>块编辑:</strong> 直接在 UI 中编辑块头字段 (风格、类型、强度 Low/High)。更改用 <code>*</code> 指示器标记。</li>
+      <li><strong>手术式保存:</strong> 将单个块保存回源文件, 不影响同一文件中的其他块。</li>
+      <li><strong>新建/删除块:</strong> 添加新空模式块或删除现有块 (需确认)。</li>
+      <li><strong>缩放/分辨率:</strong> 更改网格分辨率 (8, 16, 32, 64 步/小节) 和页面大小。</li>
+      <li><strong>Dark Mode:</strong> 自动系统主题检测 (Windows) 含手动覆盖。所有控件包括网格、组合框、状态栏均为主题化。</li>
+      <li><strong>Auto-Scaling:</strong> 所有 UI 元素的比例矢量缩放, 适配高 DPI 显示器。</li>
+      <li><strong>导出:</strong> 将编辑的模式保存为配置目录中的新 groove 或 fill <code>.tab</code> 文件。</li>
+    </ul>
 
-<table>
-<tr><th>Option</th><th>Description</th></tr>
-</table>
-<p>|--------|-------------|</p>
-<table>
-<tr><th>`--fill`</th><th>Output a fill block instead of a groove block</th></tr>
-<tr><td>`--name &lt;name&gt;`</td><td>Fill name (default: `fill`)</td></tr>
-<tr><td>`--energy &lt;0-1&gt;`</td><td>Fill energy (default: 0.5)</td></tr>
-<tr><td>`--meter &lt;n/d&gt;`</td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
-<tr><td>`--resolution &lt;n&gt;`</td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
-<tr><td>`--mapping &lt;file&gt;`</td><td>Keymap JSON file (default: built-in GM map)</td></tr>
-<tr><td>`--style &lt;name&gt;`</td><td>Groove style name (default: `midi`)</td></tr>
-<tr><td>`--kind &lt;name&gt;`</td><td>Groove kind: verse/chorus/bridge (default: `verse`)</td></tr>
-<tr><td>`--intensity &lt;low-high&gt;`</td><td>Groove intensity band (default: `0.2-0.6`)</td></tr>
-</table>
+    <h3 id="step-editor-ui-gai-lan">UI 概览</h3>
+    <table>
+      <tr><th>区域</th><th>说明</th></tr>
+      <tr><td><strong>Input File</strong></td><td>浏览 MIDI 或 tab 文件。选择时自动转换 MIDI。</td></tr>
+      <tr><td><strong>Mapping</strong></td><td>选择 MIDI keymap (GM, AD2, EZD3, XG, 或来自 <code>mappings/</code> 的自定义 JSON)。</td></tr>
+      <tr><td><strong>Style / Kind</strong></td><td>Groove 风格 (来自 <code>config/styles.txt</code>) 和类型 (verse, chorus, bridge, intro, outro, fill)。</td></tr>
+      <tr><td><strong>Intensity / Energy</strong></td><td>Groove 强度带 (如 0.2-0.6) 或 fill 能量级 (0.1–1.0)。</td></tr>
+      <tr><td><strong>Resolution / Meter</strong></td><td>每四分音符步数 (4, 8, 16, 32) 和拍号 (支持三连音 feel 后缀 <code>T</code>, 如 <code>4/4T</code>)。</td></tr>
+      <tr><td><strong>Groove / Fill Radio</strong></td><td>在 groove 模式 (强度) 和 fill 模式 (能量) 间切换。相应更新风格下拉框。</td></tr>
+      <tr><td><strong>Step Grid</strong></td><td>主编辑区。左列 = 乐器缩写。顶行 = 步骤编号。小节边界用粗垂直线显示。</td></tr>
+      <tr><td><strong>Zoom</strong></td><td>页面大小选择器 (8, 16, 32, 64 步/页)。</td></tr>
+      <tr><td><strong>Header Preview</strong></td><td>显示保存时将写入的 tab 块头。</td></tr>
+      <tr><td><strong>Block Navigation (仅配置文件)</strong></td><td>下拉选择器, Prev/Next 按钮, 位置标签, 可编辑头字段, Save/New/Delete 按钮。</td></tr>
+      <tr><td><strong>Status Log</strong></td><td>操作、转换输出、错误的实时日志。</td></tr>
+    </table>
 
-<p>Output is written with CRLF line endings, ready to drop into <code>config/grooves/</code> or <code>config/fills/</code>.</p>
+    <h3 id="step-editor-midi-zhuan-tab">MIDI → Tab 转换</h3>
 
-<hr>
+    <p>选择 MIDI 文件 (<code>.mid</code>, <code>.midi</code>) 时, 编辑器自动用当前 UI 设置运行 <code>midi_to_tab.exe</code> 并在网格显示结果。</p>
 
-<h2 id="troubleshooting">Troubleshooting</h2>
+    <p><strong>转换参数 (来自 UI):</strong></p>
+    <ul>
+      <li><strong>Mapping:</strong> Keymap JSON 文件 (默认: 内置 GM)。</li>
+      <li><strong>Style:</strong> Groove 风格名称 (如 <code>metal</code>, <code>rock</code>, <code>jazz</code>)。</li>
+      <li><strong>Kind:</strong> Groove 类型 (<code>verse</code>, <code>chorus</code>, <code>bridge</code>, <code>intro</code>, <code>outro</code>, <code>fill</code>)。</li>
+      <li><strong>Intensity:</strong> Groove 强度带 (如 <code>0.2-0.6</code>)。</li>
+      <li><strong>Energy:</strong> Fill 能量级 (0.1–1.0)。</li>
+      <li><strong>Resolution:</strong> 每四分音符步数 (4, 8, 16, 32)。</li>
+      <li><strong>Meter:</strong> 拍号 (如 <code>4/4</code>, <code>7/8</code>, <code>4/4T</code> 三连音 feel)。</li>
+      <li><strong>Fill Mode:</strong> 启用时输出 fill 块而非 groove 块。</li>
+    </ul>
 
-<h3 id="common-issues">Common Issues</h3>
+    <p>原始转换输出显示在状态日志中供调试。</p>
 
-<table>
-<tr><th>Problem</th><th>Cause / Fix</th></tr>
-</table>
-<p>|---------|-------------|</p>
-<table>
-<tr><th>`FPC fehlgeschlagen`</th><th>Run from the project root with `-Fusrc` include path</th></tr>
-<tr><td>`method identifier expected`</td><th>Syntax error in a `.pas` file — check the named line</th></tr>
-<tr><td>`Identifier not found "GetSectionFlavors"`</td><th>Missing unit or method — rebuild all units</th></tr>
-<tr><td>`Syntax error, "." expected but ";" found`</td><th>Missing comma/semicolon in Pascal source</th></tr>
-<tr><td>`Comment level 2 found`</td><th>Warning only — nested `(* *)` comments</th></tr>
-<tr><td>`function result variable ... does not seem to be initialized`</td><th>Warning only — result variable not assigned on all paths</th></tr>
-<tr><td>`[Warning] ... metal.tab (12): ...`</td><th>Tab file syntax error — that file is ignored, built-in plays instead</th></tr>
-</table>
+    <h3 id="step-editor-tab-wen-jian-ge-shi">Tab 文件格式</h3>
 
-<hr>
-<hr>
+    <p>编辑器处理两种 tab 文件格式：</p>
 
-<h2 id="step-editor">Step Editor</h2>
+    <h4>1. ChameleonDrummer 配置格式 (<code>config/grooves/*.tab</code>, <code>config/fills/*.tab</code>)</h4>
 
-<p>The <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) is a standalone graphical application for visually editing drum patterns on a step grid, converting MIDI files to the <code>.tab</code> groove/fill format, and managing pattern blocks in the config files. It can be launched from the main GUI via the <strong>Step Editor</strong> button, or run directly.</p>
-
-<h3 id="step-editor-launching">Launching the Step Editor</h3>
-
-<ul>
-<li><strong>From the GUI:</strong> Click the <strong>Step Editor</strong> button in the main window toolbar.</li>
-<li><strong>Directly:</strong> Run <code>tools/step_editor/step_editor.exe</code> from the project root or installation directory.</li>
-<li><strong>From REAPER/Ardour panels:</strong> The <strong>Step Editor</strong> tab in the DAW integration panels launches the editor with the current MIDI item loaded.</li>
-</ul>
-
-<h3 id="step-editor-main-features">Main Features</h3>
-
-<ul>
-<li><strong>Step Grid Editing:</strong> Visual grid with 17 drum instruments (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4) and configurable steps per bar (4, 8, 16, 32, 64).</li>
-<li><strong>Velocity/Articulation Characters:</strong> Each step uses a character: <code>.</code> (rest), <code>x</code> (normal), <code>X</code> (accent), <code>o</code> (soft/ghost), <code>g</code> (ghost). Click cells to cycle through states.</li>
-<li><strong>MIDI → Tab Conversion:</strong> Load a MIDI file (<code>.mid</code>, <code>.midi</code>) and convert it to tab format using the built-in <code>midi_to_tab.exe</code> with configurable mapping, style, kind, intensity, energy, resolution, and meter.</li>
-<li><strong>Tab File Loading:</strong> Load existing <code>.tab</code> files (both ChameleonDrummer config format and foreign tab formats) for editing.</li>
-<li><strong>Block Navigation (Config Files):</strong> When loading a config file from <code>config/grooves/</code> or <code>config/fills/</code>, the editor parses all pattern blocks and provides a dropdown selector with Prev/Next buttons to navigate between blocks.</li>
-<li><strong>Block Editing:</strong> Edit block header fields (Style, Kind, Intensity Low/High) directly in the UI. Changes are tracked with a <code>*</code> indicator.</li>
-<li><strong>Surgical Save:</strong> Save individual blocks back to their source file without affecting other blocks in the same file.</li>
-<li><strong>New/Delete Blocks:</strong> Add new empty pattern blocks or delete existing ones (with confirmation).</li>
-<li><strong>Zoom/Resolution:</strong> Change grid resolution (8, 16, 32, 64 steps per bar) and page size.</li>
-<li><strong>Dark Mode:</strong> Automatic system theme detection (Windows) with manual override. All controls including grid, combo boxes, and status bar are themed.</li>
-<li><strong>Auto-Scaling:</strong> Proportional vectorial scaling of all UI elements for high-DPI displays.</li>
-<li><strong>Export:</strong> Save edited patterns as new groove or fill <code>.tab</code> files in the config directories.</li>
-</ul>
-
-<h3 id="step-editor-ui-overview">UI Overview</h3>
-
-<table>
-<tr><th>Area</th><th>Description</th></tr>
-</table>
-<table>
-<tr><td><strong>Input File</strong></td><td>Browse for MIDI or tab file. Auto-converts MIDI on selection.</td></tr>
-<tr><td><strong>Mapping</strong></td><td>Select MIDI keymap (GM, AD2, EZD3, XG, or custom JSON from <code>mappings/</code>).</td></tr>
-<tr><td><strong>Style / Kind</strong></td><td>Groove style (from <code>config/styles.txt</code>) and kind (verse, chorus, bridge, intro, outro, fill).</td></tr>
-<tr><td><strong>Intensity / Energy</strong></td><td>Intensity band for grooves (e.g., 0.2-0.6) or energy level for fills (0.1–1.0).</td></tr>
-<tr><td><strong>Resolution / Meter</strong></td><td>Steps per quarter note (4, 8, 16, 32) and time signature (supports triplet feel with <code>T</code> suffix, e.g., <code>4/4T</code>).</td></tr>
-<tr><td><strong>Groove / Fill Radio</strong></td><td>Switch between groove mode (intensity) and fill mode (energy). Updates style dropdown accordingly.</td></tr>
-<tr><td><strong>Step Grid</strong></td><td>Main editing area. Left column = instrument abbreviations. Top row = step numbers. Bar boundaries shown with thicker vertical lines.</td></tr>
-<tr><td><strong>Zoom</strong></td><td>Page size selector (8, 16, 32, 64 steps per page).</td></tr>
-<tr><td><strong>Header Preview</strong></td><td>Shows the tab block header that will be written on save.</td></tr>
-<tr><td><strong>Block Navigation (config files only)</strong></td><td>Dropdown selector, Prev/Next buttons, position label, editable header fields, Save/New/Delete buttons.</td></tr>
-<tr><td><strong>Status Log</strong></td><td>Real-time log of operations, conversion output, and errors.</td></tr>
-</table>
-
-<h3 id="step-editor-midi-conversion">MIDI → Tab Conversion</h3>
-
-<p>When you select a MIDI file (<code>.mid</code>, <code>.midi</code>), the editor automatically runs <code>midi_to_tab.exe</code> with the current UI settings and displays the result in the grid.</p>
-
-<p><strong>Conversion Parameters (from UI):</strong></p>
-
-<ul>
-<li><strong>Mapping:</strong> Keymap JSON file (default: built-in GM).</li>
-<li><strong>Style:</strong> Groove style name (e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>).</li>
-<li><strong>Kind:</strong> Groove kind (<code>verse</code>, <code>chorus</code>, <code>bridge</code>, <code>intro</code>, <code>outro</code>, <code>fill</code>).</li>
-<li><strong>Intensity:</strong> Band for grooves (e.g., <code>0.2-0.6</code>).</li>
-<li><strong>Energy:</strong> Level for fills (0.1–1.0).</li>
-<li><strong>Resolution:</strong> Steps per quarter note (4, 8, 16, 32).</li>
-<li><strong>Meter:</strong> Time signature (e.g., <code>4/4</code>, <code>7/8</code>, <code>4/4T</code> for triplet feel).</li>
-<li><strong>Fill Mode:</strong> When enabled, outputs a fill block instead of a groove block.</li>
-</ul>
-
-<p>The raw conversion output is shown in the status log for debugging.</p>
-
-<h3 id="step-editor-tab-file-formats">Tab File Formats</h3>
-
-<p>The editor handles two tab file formats:</p>
-
-<h4>1. ChameleonDrummer Config Format (<code>config/grooves/*.tab</code>, <code>config/fills/*.tab</code>)</h4>
-
-<p>Multiple pattern blocks in one file, each with a header:</p>
-
-<pre><code class="lang-text">[metal verse intensity=0.20-0.60]
+    <p>一个文件中多个模式块, 每个带头部：</p>
+    <pre><code class="lang-text">[metal verse intensity=0.20-0.60]
 K   x.x.x.x.x.x.x.x
 S   ..x...x...x...x.
 HH  x.x.x.x.x.x.x.x
 ...
-| 
+|
 K   x.x.x.x.x.x.x.x
 ...
 
@@ -650,144 +653,141 @@ K   x.x.x.x.x.x.x.x
 ...
 </code></pre>
 
-<p>When loading a config file, the editor:</p>
-<ul>
-<li>Parses all blocks and populates the block selector dropdown.</li>
-<li>Shows block navigation UI (selector, Prev/Next, editable header fields).</li>
-<li>Allows surgical save of individual blocks without rewriting the entire file.</li>
-</ul>
+    <p>加载配置文件时, 编辑器：</p>
+    <ul>
+      <li>解析所有块并填充块选择器下拉框。</li>
+      <li>显示块导航 UI (选择器, Prev/Next, 可编辑头字段)。</li>
+      <li>允许单个块的手术式保存, 无需重写整个文件。</li>
+    </ul>
 
-<h4>2. Foreign Tab Format (single pattern, no block headers)</h4>
+    <h4>2. 外部 Tab 格式 (单模式, 无块头)</h4>
 
-<p>Simple format with instrument lines only:</p>
-
-<pre><code class="lang-text">K   x.x.x.x.x.x.x.x
+    <p>仅含乐器行的简单格式：</p>
+    <pre><code class="lang-text">K   x.x.x.x.x.x.x.x
 S   ..x...x...x...x.
 HH  x.x.x.x.x.x.x.x
 ...
 </code></pre>
 
-<p>These are loaded as a single editable pattern without block navigation.</p>
+    <p>这些作为单个可编辑模式加载, 无块导航。</p>
 
-<h3 id="step-editor-grid-editing">Step Grid Editing</h3>
+    <h3 id="step-editor-bu-xing-bian-ji">步进网格编辑</h3>
+    <ul>
+      <li><strong>点击单元格</strong> 循环: <code>.</code> → <code>x</code> → <code>X</code> → <code>o</code> → <code>g</code> → <code>.</code></li>
+      <li><strong>范围选择:</strong> 拖拽选择多个单元格。用 <strong>Save Pattern As</strong> 仅导出选定区域。</li>
+      <li><strong>乐器缩写:</strong> 固定左列 (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4)。</li>
+      <li><strong>步骤编号:</strong> 顶行显示每小节内步骤索引。</li>
+      <li><strong>小节分隔符:</strong> 粗垂直线标记小节边界。</li>
+      <li><strong>页面:</strong> 用 <strong>Prev/Next Page</strong> 按钮或 Zoom 下拉框导航大模式。</li>
+    </ul>
 
-<ul>
-<li><strong>Click a cell</strong> to cycle: <code>.</code> → <code>x</code> → <code>X</code> → <code>o</code> → <code>g</code> → <code>.</code></li>
-<li><strong>Range selection:</strong> Drag to select multiple cells. Use <strong>Save Pattern As</strong> to export only the selected region.</li>
-<li><strong>Instrument abbreviations:</strong> Fixed left column (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4).</li>
-<li><strong>Step numbers:</strong> Top row shows step index within each bar.</li>
-<li><strong>Bar delimiters:</strong> Thicker vertical lines mark bar boundaries.</li>
-<li><strong>Pages:</strong> Use <strong>Prev/Next Page</strong> buttons or the Zoom dropdown to navigate large patterns.</li>
-</ul>
+    <h3 id="step-editor-kuai-guan-li">块管理 (仅配置文件)</h3>
 
-<h3 id="step-editor-block-management">Block Management (Config Files Only)</h3>
+    <p>加载配置文件时：</p>
+    <ul>
+      <li><strong>块选择器:</strong> 显示所有块的下拉框, 格式 <code>Style Kind (IntensityLow-IntensityHigh)</code>。修改的块显示 <code>*</code> 后缀。</li>
+      <li><strong>Prev/Next:</strong> 块间导航。</li>
+      <li><strong>头字段:</strong> 直接编辑 Style, Kind, Intensity Low, Intensity High。更改标记块为已修改。</li>
+      <li><strong>Save Block:</strong> 仅将当前块写回源文件 (手术式保存)。</li>
+      <li><strong>New Block:</strong> 向文件追加新空块 (含当前 meter/分辨率)。</li>
+      <li><strong>Delete Block:</strong> 从文件移除当前块 (需确认, 保留至少一个块)。</li>
+    </ul>
 
-<p>When a config file is loaded:</p>
+    <h3 id="step-editor-bao-cun-mo-shi">保存模式</h3>
 
-<ul>
-<li><strong>Block Selector:</strong> Dropdown showing all blocks with format <code>Style Kind (IntensityLow-IntensityHigh)</code>. Modified blocks show a <code>*</code> suffix.</li>
-<li><strong>Prev/Next:</strong> Navigate between blocks.</li>
-<li><strong>Header Fields:</strong> Edit Style, Kind, Intensity Low, Intensity High directly. Changes mark the block as modified.</li>
-<li><strong>Save Block:</strong> Writes only the current block back to its source file (surgical save).</li>
-<li><strong>New Block:</strong> Appends a new empty block (with current meter/resolution) to the file.</li>
-<li><strong>Delete Block:</strong> Removes the current block from the file (requires confirmation, keeps at least one block).</li>
-</ul>
+    <p><strong>Save Pattern As:</strong> 将当前网格 (或选定区域) 导出为 <code>config/grooves/<style>.tab</code> 或 <code>config/fills/<style>.tab</code> 中的新 <code>.tab</code> 文件, 取决于 Groove/Fill 模式。</p>
 
-<h3 id="step-editor-saving-patterns">Saving Patterns</h3>
+    <p><strong>Save Block:</strong> (仅配置文件) 在源文件中手术式更新当前块。</p>
 
-<p><strong>Save Pattern As:</strong> Exports the current grid (or selected region) as a new <code>.tab</code> file in <code>config/grooves/<style>.tab</code> or <code>config/fills/<style>.tab</code> depending on Groove/Fill mode.</p>
+    <h3 id="step-editor-dark-mode">Dark Mode</h3>
 
-<p><strong>Save Block:</strong> (Config files only) Surgically updates the current block in its source file.</p>
+    <p>Windows 上, 编辑器启动时检测系统主题 (浅/深) 并自动应用。主题偏好保存并在下次启动恢复。所有控件主题化：</p>
+    <ul>
+      <li>窗体背景、面板、标签</li>
+      <li>字符串网格 (单元格、固定单元格、文本、网格线)</li>
+      <li>组合框 (owner-draw 下拉项)</li>
+      <li>状态栏 (owner-draw 面板)</li>
+      <li>按钮、编辑框、备忘录</li>
+    </ul>
 
-<h3 id="step-editor-dark-mode">Dark Mode</h3>
+    <h3 id="step-editor-zi-dong-kuo-fang">Auto-Scaling (高 DPI)</h3>
 
-<p>On Windows, the editor detects the system theme (light/dark) at startup and applies it automatically. The theme preference is saved and restored on next launch. All controls are themed:</p>
+    <p>编辑器使用 <code>AutoScale.pas</code> 进行比例矢量缩放。高 DPI 显示器上, 所有控件、字体、间距按比例缩放。缩放器：</p>
+    <ul>
+      <li>从设计时 DPI (96) 计算到运行时 DPI 的缩放因子。</li>
+      <li>缩放控件位置、大小、字体、网格单元尺寸。</li>
+      <li>保持宽高比和布局完整性。</li>
+    </ul>
 
-<ul>
-<li>Form background, panels, labels</li>
-<li>String grid (cells, fixed cells, text, grid lines)</li>
-<li>Combo boxes (owner-draw for dropdown items)</li>
-<li>Status bar (owner-draw panel)</li>
-<li>Buttons, edits, memos</li>
-</ul>
+    <h3 id="step-editor-ming-ling-xing">命令行参考 (midi_to_tab.exe)</h3>
 
-<h3 id="step-editor-auto-scaling">Auto-Scaling (High DPI)</h3>
-
-<p>The editor uses <code>AutoScale.pas</code> for proportional vectorial scaling. On high-DPI displays, all controls, fonts, and spacing scale proportionally. The scaler:</p>
-
-<ul>
-<li>Computes a scale factor from the design-time DPI (96) to runtime DPI.</li>
-<li>Scales control positions, sizes, fonts, and grid cell dimensions.</li>
-<li>Maintains aspect ratios and layout integrity.</li>
-</ul>
-
-<h3 id="step-editor-command-line">Command-Line Reference (midi_to_tab.exe)</h3>
-
-<p>The Step Editor uses <code>midi_to_tab.exe</code> internally. You can also run it directly:</p>
-
-<pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
+    <p>Step Editor 内部使用 <code>midi_to_tab.exe</code>。也可直接运行：</p>
+    <pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
 
 Options:
-  --mapping <file>     Keymap JSON (default: built-in GM)
-  --style <name>       Groove style name
-  --kind <name>        Groove kind (verse, chorus, bridge, intro, outro, fill)
-  --intensity <low-high>  Groove intensity band (e.g., 0.2-0.6)
-  --energy <0-1>        Fill energy level
-  --resolution <n>      Steps per quarter note (4, 8, 16, 32)
-  --meter <n/d>         Time signature (e.g., 4/4, 7/8, 4/4T)
-  --fill                 Output fill block instead of groove
-  --output <file>        Write tab to file (default: stdout)
-</code></pre>
+  --mapping <file>       Keymap JSON (default: built-in GM)
+  --style <name>         Groove style name
+  --kind <name>          Groove kind (verse, chorus, bridge, intro, outro, fill)
+  --intensity <low-high> Groove intensity band (e.g., 0.2-0.6)
+  --energy <0-1>         Fill energy level
+  --resolution <n>       Steps per quarter note (4, 8, 16, 32)
+  --meter <n/d>          Time signature (e.g., 4/4, 7/8, 4/4T)
+  --fill                  Output fill block instead of groove
+  --output <file>         Write tab to file (default: stdout)</code></pre>
 
-<h3 id="step-editor-tips">Tips & Best Practices</h3>
+    <h3 id="step-editor-jian-yi">提示与最佳实践</h3>
+    <ul>
+      <li><strong>从配置开始:</strong> 从 <code>config/</code> 加载现有 groove/fill 作为模板。</li>
+      <li><strong>使用块导航:</strong> 编辑配置文件时, 用块选择器在 verse/chorus/bridge 变体间跳转。</li>
+      <li><strong>手术式保存:</strong> 用 <strong>Save Block</strong> 更新单个模式而不触动同一文件中的其他模式。</li>
+      <li><strong>拍号很重要:</strong> 转换 MIDI 或添加小节前设置正确拍号 — 它决定每小节步数。</li>
+      <li><strong>三连音 feel:</strong> 拍号加 <code>T</code> 为三连音网格 (如 <code>4/4T</code> = 分辨率 16 时每小节 12 步)。</li>
+      <li><strong>Dark mode:</strong> 颜色不对时, 切换系统主题或重启编辑器重新检测。</li>
+    </ul>
 
-<ul>
-<li><strong>Start from config:</strong> Load an existing groove/fill from <code>config/</code> to use as a template.</li>
-<li><strong>Use block navigation:</strong> When editing config files, use the block selector to jump between verse/chorus/bridge variants.</li>
-<li><strong>Surgical save:</strong> Use <strong>Save Block</strong> to update a single pattern without touching others in the same file.</li>
-<li><strong>Meter matters:</strong> Set the correct meter before converting MIDI or adding bars — it determines steps per bar.</li>
-<li><strong>Triplet feel:</strong> Append <code>T</code> to meter for triplet-based grids (e.g., <code>4/4T</code> = 12 steps per bar at resolution 16).</li>
-<li><strong>Dark mode:</strong> If colors look wrong, toggle system theme or restart the editor to re-detect.</li>
-</ul>
-<h2 id="appendix-source-code-principles">Appendix: Source Code Principles</h2>
+    <hr>
 
-<h3 id="design-patterns">Design Patterns</h3>
+    <h2 id="fu-lu-yuan-ma-yuan-ze">附录: 源代码原则</h2>
 
-<li><strong>Plugin architecture</code> — Genre and drummer plugins loaded at runtime from <code>.pas</code> files</li>
-<li><strong>No hardcoded MIDI notes</code> — All notes come from JSON keymap files</li>
-<li><strong>File-driven configuration</code> — Grooves, fills, defaults, sections are plain text/JSON</li>
-<li><strong>Same engine for GUI and CLI</code> — No separate code paths</li>
+    <h3 id="she-ji-mo-shi">设计模式</h3>
+    <ul>
+      <li><strong>插件架构</strong> — 流派和鼓手插件编译进可执行文件</li>
+      <li><strong>无硬编码 MIDI 音符</strong> — 所有音符来自 JSON keymap 文件</li>
+      <li><strong>文件驱动配置</strong> — Groove、fill、默认值、段落为纯文本/JSON</li>
+      <li><strong>图形用户界面 和 命令行界面 共用引擎</strong> — 无分离代码路径</li>
+    </ul>
 
-<h3 id="key-constants">Key Constants</h3>
+    <h3 id="guan-jian-chang-shu">关键常量</h3>
+    <ul>
+      <li><code>TDrumInstrument</code> — 动态鼓身份 (名称、描述、元数据)</li>
+      <li><code>TPattern</code> / <code>TBeat</code> — 模式和击打数据模型</li>
+      <li><code>TComposerV2</code> — 逐小节作曲引擎</li>
+      <li><code>TBarSelector</code> — 每小节 groove 选择</li>
+      <li><code>TFillPicker</code> — fill 放置和选择</li>
+      <li><code>TMacroComposer</code> — 宏阶段管理</li>
+      <li><code>TAdvancedHumanizer</code> — 时机/力度抖动</li>
+      <li><code>TPhysicalConstraints</code> / <code>TPatternFixer</code> — 可演奏性限制</li>
+    </ul>
 
-<li><code>TDrumInstrument</code> — dynamic drum identity (name, description, metadata)</li>
-<li><code>TPattern</code> / <code>TBeat</code> — pattern and beat data models</li>
-<li><code>TComposerV2</code> — bar-by-bar composition engine</li>
-<li><code>TBarSelector</code> — groove selection per bar</li>
-<li><code>TFillPicker</code> — fill placement and selection</li>
-<li><code>TMacroComposer</code> — macro phase management</li>
-<li><code>TAdvancedHumanizer</code> — timing/velocity jitter</li>
-<li><code>TPhysicalConstraints</code> / <code>TPatternFixer</code> — playability limits</li>
+    <h3 id="mo-shi-mo-ban-xi-tong">模式模板系统</h3>
 
-<h3 id="pattern-template-system">Pattern Template System</h3>
+    <p>Groove 和 fill 在 <code>.tab</code> 文件中定义, 块头声明风格、拍号、强度。引擎基于这些声明选择模式, 而非硬编码规则。</p>
 
-<p>Grooves and fills are defined in <code>.tab</code> files with block headers that declare style, meter, and intensity. The engine selects patterns based on these declarations, not hardcoded rules.</p>
-
-</div>
+  </div>
 </section>
 
 <section class="download-section">
   <div class="container">
-    <h2>Download v1.0.895</h2>
-    <p>Get the latest release from GitHub:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">Download v1.0.895</a>
+    <h2>下载 v1.1.35</h2>
+    <p>从 GitHub 下载最新版本:</p>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">下载 v1.1.35</a>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
-    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+    <p>ChameleonDrummer — FreePascal / Lazarus 动态 MIDI 鼓生成。</p>
+    <p>来源: <code>ChameleonDrummer/</code> · 手册: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
   </div>
 </footer>
 

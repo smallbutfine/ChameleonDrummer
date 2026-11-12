@@ -6,11 +6,11 @@ exports it as MIDI (plus REAPER / Ardour sessions).
 
 ## What it does
 
-- **5 genres** — Metal, Rock, Jazz, Funk, Electronic — each with multiple styles
+- **5 genres** — Metal, Rock, Jazz, Funk, Electronic — with **32 styles total**
 - **17 drummers** — Bonham, Porcaro, Weckl, Chambers, Roeder, Dee, Hoglan, Peart,
   Rich, Copeland, Carey, Smith, Moon, Watts, Haake, Halpern, DoomBlues
 - **Multi-keymap** — GM, AD2, EZDrummer 3, Yamaha XG, or user-defined JSON keymaps
-- **Odd meters** — 2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … 
+- **Meters** — 2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 … up to 32/16
 - **External data** — grooves, fills, defaults and song structures are plain
   text/JSON files you can edit without recompiling
 - **DAW export** — MIDI with REAPER `.rpp` markers or Ardour `.ardour` sessions
@@ -98,11 +98,11 @@ Lookup order: `CHAMELEON_CONFIG` env var → `%APPDATA%\ChameleonDrummer\config`
 
 ## MIDI → Tab Conversion
 
-`tools/midi_to_tab.py` converts a MIDI file to the `.tab` groove/fill format:
+`tools/midi_to_tab.exe` converts a MIDI file to the `.tab` groove/fill format:
 
 ```bash
-python tools/midi_to_tab.py song.mid --meter 7/8 --resolution 16 --output groove.tab
-python tools/midi_to_tab.py song.mid --fill --name my_fill --energy 0.6 --output fill.tab
+midi_to_tab.exe song.mid --meter 7/8 --resolution 16 --output groove.tab
+midi_to_tab.exe song.mid --fill --name my_fill --energy 0.6 --output fill.tab
 ```
 
 ## Step Editor
@@ -140,13 +140,13 @@ cmd /c "build_gui.bat < NUL"
 ## Status
 
 - ✅ Core generation engine (ComposerV2, Pattern, Song, DrumGenerator)
-- ✅ All 5 genres × 4-7 styles, 17 drummers
-- ✅ Odd meters (2/4 … 32/16) with meter-aware grooves/fills
+- ✅ All 5 genres × 32 styles total, 17 drummers
+- ✅ Meters 2/4 … 32/16 with meter-aware grooves/fills
 - ✅ External data files (grooves/fills/defaults/sections)
 - ✅ REAPER + Ardour export
 - ✅ Humanization, swing, physical constraints
 - ✅ Weighted random pattern selection (intensity bands, thread-safe RNG)
-- ✅ MIDI → tab conversion tool (Python & Pascal)
+- ✅ MIDI → tab conversion tool (Pascal)
 - ✅ Step Editor (visual grid editing, MIDI→Tab, block management, dark mode, auto-scaling)
 
 ## REAPER / Ardour Integration

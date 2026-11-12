@@ -80,3 +80,7 @@ InternalDocs/
 # Deploy folder (build artifacts, do not commit)
 Deploy/
 gui/backup/
+tools/step_editor/step_editor.app/Contents/
+tools/step_editor/lib/
+tools/step_editor/step_editor
+dist/

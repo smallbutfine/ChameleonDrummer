@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChameleonDrummer — User Manual</title>
+<title>ChameleonDrummer — Руководство Пользователя</title>
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+
 <header>
   <div class="container">
     <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
     <nav>
-      <a href="index.html">Home</a>
-      <a href="concepts.html">Concepts</a>
-      <a href="docs.html">Manual</a>
-      <a href="download.html">Download</a>
+      <a href="index.html">ГЛАВНАЯ</a>
+      <a href="concepts.html">КОНЦЕПЦИИ</a>
+      <a href="docs.html">РУКОВОДСТВО</a>
+      <a href="download.html">СКАЧАТЬ</a>
       <a href="../index.html">EN</a>
       <a href="../de/index.html">DE</a>
       <a href="../es/index.html">ES</a>
@@ -25,624 +26,625 @@
     </nav>
   </div>
 </header>
+
 <section class="main-content">
   <div class="container">
-    <h2>USER MANUAL</h2>
-    <h1 id="chameleondrummer-full-user-manual">ChameleonDrummer — Full User Manual</h1>
+    <h2>РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ</h2>
+    <h1 id="chameleondrummer-polnoe-rukovodstvo-polzovatelya">ChameleonDrummer — Полное Руководство Пользователя</h1>
 
-<h2 id="table-of-contents">Table of Contents</h2>
+    <h2 id="soderzhanie">Содержание</h2>
+    <ol>
+      <li><a href="#vvedenie">Введение</a></li>
+      <li><a href="#ustanovka">Установка</a></li>
+      <li><a href="#bystryy-start">Быстрый Старт</a></li>
+      <li><a href="#kontseptsii-generatsii-midi-barabanov">Концепции Генерации MIDI Барабанов</a></li>
+      <li><a href="#gui-programma">Программа Графического Интерфейса</a></li>
+      <li><a href="#step-editor">Step Editor</a></li>
+      <li><a href="#integraciya-reaper">Интеграция REAPER</a></li>
+      <li><a href="#integraciya-ardour">Интеграция Ardour</a></li>
+      <li><a href="#cli-programma">Программа Командной Строки</a></li>
+      <li><a href="#prodvinnutye-funktsii">Продвинутые Функции</a></li>
+      <li><a href="#vneshnie-fayly-dannykh">Внешние Файлы Данных</a></li>
+      <li><a href="#konvertatsiya-midi-v-tab">Конвертация MIDI → Tab</a></li>
+      <li><a href="#prilozhenie-printsipy-iskhodnogo-koda">Приложение: Принципы Исходного Кода</a></li>
+    </ol>
 
-<p>1. <a href="#introduction">Introduction</a></p>
-<p>2. <a href="#installation">Installation</a></p>
-<p>3. <a href="#quick-start">Quick Start</a></p>
-<p>4. <a href="#concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</a></p>
-<p>5. <a href="#the-gui-program">The GUI Program</a></p>
-<p>5.5. <a href="#step-editor">Step Editor</a></p>
-<p>6. <a href="#reaper-integration">REAPER Integration</a></p>
-<p>7. <a href="#ardour-integration">Ardour Integration</a></p>
-<p>8. <a href="#the-cli-program">The CLI Program</a></p>
-<p>9. <a href="#advanced-features">Advanced Features</a></p>
-<p>10. <a href="#external-data-files">External Data Files</a></p>
-<p>11. <a href="#midi-tab-conversion">MIDI → Tab Conversion</a></p>
-<p>12. <a href="#troubleshooting">Troubleshooting</a></p>
-<p>13. <a href="#appendix-source-code-principles">Appendix: Source Code Principles</a></p>
+    <hr>
 
-<hr>
+    <h2 id="vvedenie">Введение</h2>
 
-<h2 id="introduction">Introduction</h2>
+    <p>ChameleonDrummer — система динамической генерации MIDI для барабанов, построенная на Free Pascal (FPC) с Lazarus Component Library (LCL). Она генерирует реалистичные барабанные паттерны для 5 жанров (Metal, Rock, Jazz, Funk, Electronic) с 32 стилями всего, и 17 личностями барабанщиков. Поддерживает множество MIDI keymap (GM, AD2, EZD3, XG), такты от 2/4 до 32/16 (включая нечётные такты как 3/4, 5/4, 7/8, 9/8, 11/8, 13/8...), внешние файлы grooves/fills/defaults, экспорт сессий REAPER <code>.rpp</code> и Ardour <code>.ardour</code>, и продвинутую гуманизацию, кривые интенсивности, и ограничения физической играемости.</p>
 
-<p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 32 styles total, and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), odd meters from 2/4 up to 32/16, external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
+    <p>Производится два исполняемых файла:</p>
+    <ul>
+      <li><code>ChameleonDrummer.exe</code> — командная строка</li>
+      <li><code>chameleondrummer_gui.exe</code> — графический интерфейс (Lazarus/LCL)</li>
+    </ul>
 
-<p>Two executables are produced:</p>
+    <hr>
 
-<li><code>ChameleonDrummer.exe</code> — command-line interface</li>
-<li><code>chameleondrummer_gui.exe</code> — graphical interface (Lazarus/LCL)</li>
+    <h2 id="ustanovka">Установка</h2>
 
-<hr>
+    <h3 id="trebovaniya">Требования</h3>
+    <ul>
+      <li>Windows (основная цель; Linux/macOS возможно с FPC/LCL)</li>
+      <li>Free Pascal Compiler (FPC) 3.2.2+</li>
+      <li>Lazarus IDE (опционально, для разработки графического интерфейса)</li>
+      <li>Free Pascal Compiler (FPC) 3.2.2+ (для конвертера <code>tools/midi_to_tab.exe</code>)</li>
+    </ul>
 
-<h2 id="installation">Installation</h2>
-
-<h3 id="requirements">Requirements</h3>
-
-<li>Windows (primary target; Linux/macOS possible with FPC/LCL)</li>
-<li>Free Pascal Compiler (FPC) 3.2.2+</li>
-<li>Lazarus IDE (optional, for GUI development)</li>
-<li>Python 3.10+ (optional, for the <code>tools/midi_to_tab.py</code> converter)</li>
-
-<h3 id="building-from-source">Building from Source</h3>
-
-<pre><code class="lang-bash"># CLI executable
+    <h3 id="sborka-iz-istochnikov">Сборка из Исходников</h3>
+    <pre><code class="lang-bash"># Исполняемый командной строки
 cd B:\dev\github\ChameleonDrummer
 "%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
 
-# GUI executable
+# Исполняемый графического интерфейса
 cd gui
-cmd /c "build_gui.bat &lt; NUL"</code></pre>
+cmd /c "build_gui.bat < NUL"</code></pre>
 
-<h3 id="running-the-executable">Running the Executable</h3>
+    <h3 id="zapusk-ispolnyayemogo">Запуск Исполняемого</h3>
+    <p>Оба исполняемых файла автономны. Поместите <code>ChameleonDrummer.exe</code> и <code>chameleondrummer_gui.exe</code> в одну директорию, или ссылайтесь на командную строку из рабочей директории графического интерфейса.</p>
 
-<p>Both executables are self-contained. Place <code>chameleondrummer.exe</code> and <code>chameleondrummer_gui.exe</code> in the same directory, or reference the CLI from the GUI's working directory.</p>
+    <hr>
 
-<hr>
+    <h2 id="bystryy-start">Быстрый Старт</h2>
 
-<h2 id="quick-start">Quick Start</h2>
+    <h3 id="cli-generirovat-metal-pesnyu">Командная Строка — Сгенерировать Metal Песню</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
 
-<h3 id="cli-generate-a-metal-song">CLI — Generate a Metal Song</h3>
+    <h3 id="cli-generirovat-rock-pattern-bonham-style">Командная Строка — Сгенерировать Rock Паттерн в Стиле Bonham</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre rock --style classic --drummer bonham --output bonham_verse.mid</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
+    <h3 id="cli-generirovat-v-nechetnyy-takt">Командная Строка — Сгенерировать в Нечётном Тактe</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre rock --style classic --time-sig 7/8 --output rock_7_8.mid</code></pre>
 
-<h3 id="cli-generate-a-rock-pattern-with-bonham-style">CLI — Generate a Rock Pattern with Bonham Style</h3>
-
-<pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre rock --style classic --drummer bonham --output bonham_verse.mid</code></pre>
-
-<h3 id="cli-generate-in-an-odd-meter">CLI — Generate in an Odd Meter</h3>
-
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre rock --style classic --time-sig 7/8 --output rock_7_8.mid</code></pre>
-
-<h3 id="cli-list-available-options">CLI — List Available Options</h3>
-
-<pre><code class="lang-bash">ChameleonDrummer.exe list genres
+    <h3 id="cli-spisok-dostupnykh-optsiy">Командная Строка — Список Доступных Опций</h3>
+    <pre><code class="lang-bash">ChameleonDrummer.exe list genres
 ChameleonDrummer.exe list styles --genre jazz
-ChameleonDrummer.exe list drummers</code></pre>
+ChameleonDrummer.exe list drummers
+ChameleonDrummer.exe list mappings</code></pre>
 
-<h3 id="gui-interactive-generation">GUI — Interactive Generation</h3>
+    <h3 id="gui-interaktivnaya-generatsiya">Графический Интерфейс — Интерактивная Генерация</h3>
+    <ol>
+      <li>Запустите <code>chameleondrummer_gui.exe</code>.</li>
+      <li>Выберите <strong>Жанр</strong>: <code>metal</code>.</li>
+      <li>Выберите <strong>Стиль</strong>: <code>death</code>.</li>
+      <li>Выберите <strong>Барабанщик</strong>: <code>hoglan</code>.</li>
+      <li>Выберите <strong>Mapping</strong>: <code>ad2</code>.</li>
+      <li>Установите <strong>Темп</strong>: <code>195</code>.</li>
+      <li>Настройте ползунки <strong>Сложность</strong> и <strong>Гуманизация</strong>.</li>
+      <li>Нажмите <strong>Сгенерировать</strong>.</li>
+      <li>Посмотрите вывод в панели лога.</li>
+    </ol>
 
-<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
-<p>2. Select <strong>Genre</strong>: <code>metal</code>.</p>
-<p>3. Select <strong>Style</strong>: <code>death</code>.</p>
-<p>4. Select <strong>Drummer</strong>: <code>hoglan</code>.</p>
-<p>5. Select <strong>Mapping</strong>: <code>ad2</code>.</p>
-<p>6. Set <strong>Tempo</strong>: <code>195</code>.</p>
-<p>7. Adjust <strong>Complexity</strong> and <strong>Humanization</strong> sliders.</p>
-<p>8. Click <strong>Generate</strong>.</p>
-<p>9. View output in the log panel.</p>
+    <hr>
 
-<hr>
+    <h2 id="kontseptsii-generatsii-midi-barabanov">Концепции Генерации MIDI Барабанов</h2>
 
-<h2 id="concepts-of-midi-drum-generation">Concepts of MIDI Drum Generation</h2>
+    <p>Этот раздел объясняет базовые принципы, полученные из исходного кода (<code>ComposerV2.pas</code>, <code>DrumGenerator.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, <code>MidiIO.pas</code>).</p>
 
-<p>This section explains the underlying principles derived from the source code (<code>ComposerV2.pas</code>, <code>DrumGenerator.pas</code>, <code>Pattern.pas</code>, <code>Song.pas</code>, <code>MidiIO.pas</code>).</p>
+    <h3 id="1-model-pattern-udar-codepatternpascode">1. Модель Паттерна и Удара (<code>Pattern.pas</code>)</h3>
 
-<h3 id="1-pattern-and-beat-model-codepatternpascode">1. Pattern and Beat Model (<code>Pattern.pas</code>)</h3>
+    <p><code>TPattern</code> — контейнер объектов <code>TBeat</code>. Каждый удар имеет:</p>
+    <ul>
+      <li><strong>Позиция</strong> (<code>Double</code>): Время в ударах (напр. 0.0, 0.5, 1.0). Позиция 1.0 = второй удар, позиция 2.0 = третий удар, и т.д.</li>
+      <li><strong>Инструмент</strong> (<code>TDrumInstrument</code>): Барабанный инструмент (бас-барабан, рабочий барабан, хай-хэт, и т.д.). Идентичность инструмента берётся из JSON keymap файла — никакие ноты не захардкожены в Pascal коде.</li>
+      <li><strong>Velocity</strong> (<code>Integer</code>): MIDI velocity от 0 (тишина) до 127 (максимум). Это делает некоторые удары громче или тише.</li>
+      <li><strong>Длительность</strong> (<code>Double</code>): Длина ноты в удрах. Большинство барабанных ударов очень короткие (~0.1 удров), но некоторые могут быть длиннее для эффекта.</li>
+      <li><strong>GhostNote</strong> (<code>Boolean</code>): Тонкая, низкая-velocity нота для groove ощущения. Представьте барабанщика, легко постукивающего по ободу барабана между основными ударами.</li>
+      <li><strong>Accent</strong> (<code>Boolean</code>): Акцентированный удар. Так барабанщик ставит акценты на определённых удрах (как рабочий барабан на 2 и 4 в роке).</li>
+      <li><strong>InstrumentPromoted</strong> (<code>Boolean</code>): Флаг происхождения. True только когда инструмент этого удара был изменён на месте genre плагином, промоутившим существующий хай-хэт удар в более энергетическую тарелку для высокоэнергетической секции.</li>
+    </ul>
 
-<p>A <code>TPattern</code> is a container of <code>TBeat</code> objects. Each beat has:</p>
+    <h3 id="2-model-pesni-sektsii-codesongpascode">2. Модели Песни и Секции (<code>Song.pas</code>)</h3>
 
-<li><code>Position</code> (<code>Double</code>): Time in beats (e.g., 0.0, 0.5, 1.0). Position 1.0 = the second beat, position 2.0 = the third beat, etc.</li>
-<li><code>Instrument</code> (<code>TDrumInstrument</code>): The drum instrument (kick, snare, hi-hat, etc.). Instrument identity comes from a JSON keymap file — no notes are hardcoded in Pascal code.</li>
-<li><code>Velocity</code> (<code>Integer</code>): MIDI velocity from 0 (silent) to 127 (maximum). This is what makes some hits sound louder or softer.</li>
-<li><code>Duration</code> (<code>Double</code>): Note length in beats. Most drum hits are very short (~0.1 beats), but some can be longer for effect.</li>
-<li><code>GhostNote</code> (<code>Boolean</code>): Subtle, low-velocity note for groove feel. Think of this as the drummer lightly tapping the rim of a drum between the main hits.</li>
-<li><code>Accent</code> (<code>Boolean</code>): Emphasized hit. This is how the drummer puts emphasis on certain beats (like the snare on beats 2 and 4 in rock).</li>
-<li><code>InstrumentPromoted</code> (<code>Boolean</code>): Provenance flag. True only when this beat's instrument was changed in place by a genre plugin promoting an existing hi-hat beat to a higher-energy cymbal for a high-energy section.</li>
+    <p><code>TSong</code> содержит секции (<code>TSection</code>), каждая со своими паттернами, fills, темпом, и тактом. Секции в стандартном порядке: intro, verse, pre_chorus, chorus, bridge, breakdown, solo, outro.</p>
 
-<h3 id="2-song-and-section-model-codesongpascode">2. Song and Section Model (<code>Song.pas</code>)</h3>
+    <p>Каждая секция имеет свои:</p>
+    <ul>
+      <li><strong>Темп</strong> — скорость в ударах в минуту (BPM). 0 = наследовать темп песни.</li>
+      <li><strong>Такт</strong> — временная сигнатура (4/4, 7/8, 5/4, и т.д.). Первое число = ударов в такте, второе = нотное значение получающее один удар.</li>
+      <li><strong>Сложность</strong> — насколько вариативны паттерны. Используется только если <code>HasComplexity</code> установлен; нулевые записи наследуют сложность песни.</li>
+      <li><strong>Паттерны по умолчанию</strong> — какие grooves/fills движок должен выбирать для этой секции.</li>
+    </ul>
 
-<p>A <code>TSong</code> contains sections (<code>TSection</code>), each with its own patterns, fills, tempo, and meter. Sections are arranged in a standard song order: intro, verse, pre_chorus, chorus, bridge, breakdown, solo, outro.</p>
+    <p>Секции хранятся в простых JSON файлах. Можно добавить свои секции, изменить порядок, или дать каждой секции свой темп и такт.</p>
 
-<p>Each section has its own:</p>
+    <h3 id="3-evolyutsiya-pattern-takt-za-taktom-codecomposerv2pascode">3. Эволюция Паттерна Такт за Тактом (<code>ComposerV2.pas</code>)</h3>
 
-<li><strong>Tempo</code> — speed in beats per minute (BPM). 0 means inherit the song tempo.</li>
-<li><strong>Meter</code> — the time signature (4/4, 7/8, 5/4, etc.). The first number is how many beats per bar, the second note value gets one beat.</li>
-<li><strong>Complexity</code> — how varied the patterns are. Only used when <code>HasComplexity</code> is set; zero-filled records inherit the song's complexity.</li>
-<li><strong>Default patterns</code> — which grooves/fills the engine should choose from for this section.</li>
+    <p><code>TBarSelector.SelectPatternForPhrase</code> выбирает groove для каждого такта взвешенным случайным выбором:</p>
+    <ul>
+      <li><strong>Сопоставление интенсивности</strong>: Вес каждого groove основан на том, насколько хорошо его полоса интенсивности подходит к интенсивности такта. Grooves, чья полоса содержит интенсивность такта, получают бонус.</li>
+      <li><strong>Взвешивание недавности</strong>: Вес предыдущего паттерна снижается до 0.25×, чтобы он мог вернуться, но редко повторяется подряд. Это предотвращает игра одного и того же паттерна такт за тактом.</li>
+      <li><strong>Макро-фазы</strong>: Песня развивается в четырёх фазах:
+        <ul>
+          <li><code>mpEstablish</code> (ранние такты): пробует легкие grooves для установки feeling</li>
+          <li><code>mpMaintain</code> (средние такты): держит то, что работает</li>
+          <li><code>mpBuild</code> (к кульминации): предпочитает более тяжёлые, интенсивные grooves</li>
+          <li><code>mpTurnaround</code> (финал): ведёт обратно к началу или chorus</li>
+        </ul>
+      </li>
+      <li><strong>Потокобезопасная случайность</strong>: Выбор использует <code>TThreadedRandom</code> для согласованных результатов между потоками.</li>
+    </ul>
 
-<p>Sections are stored in plain JSON files. You can add your own sections, change the order, or give each section its own tempo and meter.</p>
+    <h3 id="4-krivye-intensivnosti-codecomposerv2pascode">4. Кривые Интенсивности (<code>ComposerV2.pas</code>)</h3>
 
-<h3 id="3-bar-by-bar-pattern-evolution-codecomposerv2pascode">3. Bar-by-Bar Pattern Evolution (<code>ComposerV2.pas</code>)</h3>
+    <p>Интенсивность варьируется по песне: intro/verse легче, chorus тяжелее, bridge/breakdown варьируются. Кривая интенсивности управляет выбором паттерна и размещением fills. Типичные кривые:</p>
+    <ul>
+      <li><code>icAscending</code> — становится громче к кульминации</li>
+      <li><code>icDescending</code> — начинается громко, затихает</li>
+      <li><code>icPlateau</code> — примерно постоянная интенсивность</li>
+      <li><code>icDipRise</code> — падает потом поднимается (часто verse-chorus-verse)</li>
+      <li><code>icSteps</code> — чёткие изменения интенсивности на границах секций</li>
+    </ul>
 
-<p><code>TBarSelector.SelectPatternForPhrase</code> picks a groove for each bar using a weighted random draw:</p>
+    <h3 id="5-makro-kompozitor-codecomposerv2pascode">5. Макро-Композитор (<code>ComposerV2.pas</code>)</h3>
 
-<li><strong>Intensity matching</code>: Each groove's weight is based on how well its intensity band fits the bar's intensity. Grooves whose band contains the bar's intensity get a bonus.</li>
-<li><strong>Recency weighting</code>: The previous pattern's weight is reduced to 0.25× so it can return but rarely repeats consecutively. This prevents the same pattern from playing bar after bar.</li>
-<li><strong>Macro phases</code>: The song evolves in four phases:</li>
-<li><code>mpEstablish</code> (early bars): tries lighter grooves to set the feel</li>
-<li><code>mpMaintain</code> (middle bars): keeps whatever's working</li>
-<li><code>mpBuild</code> (toward climax): favors heavier, more intense grooves</li>
-<li><code>mpTurnaround</code> (ending): leads back to the beginning or chorus</li>
-<li><strong>Thread-safe randomness</code>: Selection uses <code>TThreadedRandom</code> for consistent results across threads.</li>
+    <p>Макро-фаза смещает выбор паттерна по секции. Четыре фазы (<code>mpEstablish</code>, <code>mpMaintain</code>, <code>mpBuild</code>, <code>mpTurnaround</code>) контролируют, как groove развивается по песне, как музыкальный директор говорящий "начни просто, построй энергию, затем верни домой."</p>
 
-<h3 id="4-intensity-curves-codecomposerv2pascode">4. Intensity Curves (<code>ComposerV2.pas</code>)</h3>
+    <h3 id="6-groove-dvigatel-codecomposerv2pascode">6. Groove Двигатель (<code>ComposerV2.pas</code>)</h3>
 
-<p>Intensity varies across the song: intro/verse are lighter, chorus is heavier, bridge/breakdown vary. The intensity curve drives both pattern selection and fill placement. Typical curves:</p>
+    <p>Grooves загружаются из файлов <code>config/grooves/<genre>.tab</code>. Каждый блок объявляет стиль/вид/полосу интенсивности. Двигатель выбирает лучший подходящий groove на такт.</p>
 
-<li><code>icAscending</code> — getting louder toward the climax</li>
-<li><code>icDescending</code> — starting loud, fading out</li>
-<li><code>icPlateau</code> — roughly constant intensity</li>
-<li><code>icDipRise</code> — dips then rises (common for verse-chorus-verse)</li>
-<li><code>icSteps</code> — distinct intensity changes at section boundaries</li>
-
-<h3 id="5-macro-composer-codecomposerv2pascode">5. Macro Composer (<code>ComposerV2.pas</code>)</h3>
-
-<p>The macro phase biases pattern selection per section. The four phases (<code>mpEstablish</code>, <code>mpMaintain</code>, <code>mpBuild</code>, <code>mpTurnaround</code>) control how the groove evolves throughout the song, like a musical director saying "start simple, build energy, then bring it home."</p>
-
-<h3 id="6-groove-engine-codecomposerv2pascode">6. Groove Engine (<code>ComposerV2.pas</code>)</h3>
-
-<p>Grooves are loaded from <code>config/grooves/&lt;genre&gt;.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
-
-<p><strong>Groove block format:</code></p>
-
-<pre><code>[style kind intensity=low-high]
+    <p><strong>Формат блока groove:</strong></p>
+    <pre><code>[style kind intensity=low-high]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
-<li><strong>Header</code>: <code>[style kind intensity=low-high]</code></li>
-<li><code>style</code> — e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>, <code>funk</code>, <code>electronic</code></li>
-<li><code>kind</code> — <code>verse</code>, <code>chorus</code> or <code>bridge</code></li>
-<li><code>intensity=low-high</code> — the bar intensities (0–1) this groove suits, e.g., <code>intensity=0.20-0.60</code></li>
-<li><strong>Add meter after kind</code>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> for odd-meter grooves</li>
-<li><strong>Instrument lines</code>: One line per instrument. Format: <code>INSTRUMENT STEP STEP STEP | STEP STEP STEP</code></li>
-<li><code>K</code> = kick, <code>S</code> = snare, <code>RS</code> = ride cymbal short, <code>SS</code> = splash, <code>H</code> = hi-hat, <code>HO</code> = hi-hat open, <code>HP</code> = hi-hat pedal, <code>R</code> = rack tom, <code>RB</code> = bass tom, <code>C</code> = crash cymbal, <code>C2</code> = second crash, <code>CH</code> = china, <code>SP</code> = splash, <code>T1</code> = tom 1, <code>T2</code> = tom 2, <code>T3</code> = tom 3, <code>T4</code> = tom 4</li>
-<li>Step characters: <code>.</code> = rest (no hit), <code>x</code> = hit, <code>X</code> = accented hit, <code>o</code> = soft note, <code>g</code> = ghost note</li>
-<li>Spaces inside a bar are ignored (they improve readability only)</li>
-<li>Bars are separated by <code>|</code>. The engine uses the longest line's bar count; shorter lines repeat their bars.</li>
-<li><strong>Example</code> (from <code>rock.tab</code>):</li>
-
-<pre><code>[rock verse intensity=0.20-0.60]
+    <ul>
+      <li><strong>Header</strong>: <code>[style kind intensity=low-high]</code></li>
+      <li><code>style</code> — напр. <code>metal</code>, <code>rock</code>, <code>jazz</code>, <code>funk</code>, <code>electronic</code></li>
+      <li><code>kind</code> — <code>verse</code>, <code>chorus</code> или <code>bridge</code></li>
+      <li><code>intensity=low-high</code> — интенсивности такта (0–1), подходящие этому groove, напр. <code>intensity=0.20-0.60</code></li>
+      <li><strong>Добавить такт после вида</strong>: <code>[classic verse 7/8 intensity=0.2-0.7]</code> для нечётных-метровых grooves</li>
+      <li><strong>Строки инструментов</strong>: Одна строка на инструмент. Формат: <code>ИНСТРУМЕНТ ШАГ ШАГ ШАГ | ШАГ ШАГ ШАГ</code></li>
+      <li><code>K</code> = бас-барабан, <code>S</code> = рабочий барабан, <code>RS</code> = ride короткий, <code>SS</code> = splash, <code>H</code> = хай-хэт, <code>HO</code> = хай-хэт открытый, <code>HP</code> = педаль хай-хэт, <code>R</code> = rack том, <code>RB</code> = бас том, <code>C</code> = crash, <code>C2</code> = второй crash, <code>CH</code> = china, <code>SP</code> = splash, <code>T1</code> = том 1, <code>T2</code> = том 2, <code>T3</code> = том 3, <code>T4</code> = том 4</li>
+      <li>Символы шага: <code>.</code> = пауза (нет удара), <code>x</code> = удар, <code>X</code> = акцентированный удар, <code>o</code> = мягкая нота, <code>g</code> = ghost note</li>
+      <li>Пробелы внутри такта игнорируются (только улучшают читаемость)</li>
+      <li>Такты разделены <code>|</code>. Движок использует количество тактов самой длинной строки; более короткие строки повторяют свои такты.</li>
+      <li><strong>Пример</strong> (из <code>rock.tab</code>):</li>
+    </ul>
+    <pre><code>[rock verse intensity=0.20-0.60]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
 H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
-<h3 id="7-fill-system-codecomposerv2pascode">7. Fill System (<code>ComposerV2.pas</code>)</h3>
+    <h3 id="7-sistema-fills-codecomposerv2pascode">7. Система Fills (<code>ComposerV2.pas</code>)</h3>
 
-<p>Fills are loaded from <code>config/fills/&lt;drummer&gt;.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
+    <p>Fills загружаются из <code>config/fills/<drummer>.tab</code>. Каждый блок объявляет имя/полосу энергии. Двигатель выбирает fill, чья энергия соответствует интенсивности такта на границах секций.</p>
 
-<p><strong>Fill block format:</code></p>
-
-<pre><code>[bonham_fill_short energy=0.3]
+    <p><strong>Формат блока fill:</strong></p>
+    <pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
 
-<li><strong>Header</code>: <code>[name energy=0.3]</code></li>
-<li><code>name</code> — e.g., <code>bonham_fill_short</code>, <code>peart_fill_odd_7_8</code></li>
-<li><code>energy=0.3</code> — the bar intensity (0–1) the fill suits best</li>
-<li><strong>Same instrument/step format as grooves</code>: Same step characters (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), same bar/bars separator rules.</li>
+    <ul>
+      <li><strong>Header</strong>: <code>[name energy=0.3]</code></li>
+      <li><code>name</code> — напр. <code>bonham_fill_short</code>, <code>peart_fill_odd_7_8</code></li>
+      <li><code>energy=0.3</code> — интенсивность такта (0–1), которой fill лучше всего подходит</li>
+      <li><strong>Тот же формат инструмент/шаг что grooves</strong>: Те же символы шага (<code>.</code>, <code>x</code>, <code>X</code>, <code>o</code>, <code>g</code>), те же правила разделителя такт/такты.</li>
+    </ul>
 
-<h3 id="8-humanization-codeadvancedhumanizationpascode">8. Humanization (<code>AdvancedHumanization.pas</code>)</h3>
+    <h3 id="8-gumanizatsiya-codeadvancedhumanizationpascode">8. Гуманизация (<code>AdvancedHumanization.pas</code>)</h3>
 
-<p>Timing and velocity jitter are applied per note, scaled by the humanization setting. Ghost notes and accents are preserved.</p>
+    <p>Тайминг и velocity jitter применяются на ноту, масштабируемые настройкой гуманизации. Ghost notes и accents сохраняются.</p>
+    <ul>
+      <li><strong>Тайминг jitter</strong>: Каждая нота сдвигается вперёд или назад на несколько мс. Достаточно мало для естественного ощущения, достаточно много чтобы избежать "пулемётного" эффекта.</li>
+      <li><strong>Вариация velocity</strong>: Некоторые удары немного громче или тише ожидаемого.</li>
+      <li><strong>Swing</strong>: Ощущение, где прямые восьмые играются с лёгким соотношением 2:1 или 3:1, как классический рок или фанк groove. Управляется флагом командной строки <code>--swing</code> или слайдером графического интерфейса (0 = прямой, 0.67 = классический 2:1, 1 = 3:1).</li>
+    </ul>
 
-<li><strong>Timing jitter</code>: Each note is shifted forward or backward by a few milliseconds. Small enough to feel natural, large enough to avoid the "machine gun" effect.</li>
-<li><strong>Velocity variation</code>: Some hits are slightly louder or softer than expected.</li>
-<li><strong>Swing</code>: A feel where straight eighth notes are played with a slight 2:1 or 3:1 ratio, like a classic rock or funk groove. Controlled by the <code>--swing</code> CLI flag or GUI slider (0 = straight, 0.67 = classic 2:1, 1 = 3:1).</li>
+    <p>Вы контролируете всё это слайдером <strong>Гуманизация</strong> в графическом интерфейсе (0–1). На 0 — идеально на сетке. На 1 — максимальное feeling.</p>
 
-<p>You control all of this with the <strong>Humanization</strong> slider in the GUI (0–1). At 0, it's perfectly on the grid. At 1, it has maximum feel.</p>
+    <h3 id="9-fizicheskie-ogranicheniya-codephysicalconstraintspascode-codepatternfixerpascode">9. Физические Ограничения (<code>PhysicalConstraints.pas</code> / <code>PatternFixer.pas</code>)</h3>
 
-<h3 id="9-physical-constraints-codephysicalconstraintspascode-codepatternfixerpascode">9. Physical Constraints (<code>PhysicalConstraints.pas</code> / <code>PatternFixer.pas</code>)</h3>
+    <p>Фиксер паттернов удаляет невозможные удары:</p>
+    <ul>
+      <li><strong>Макс 3 удара на одном шаге</strong>: Барабанщик не может ударить бас-барабан, рабочий барабан, и два тома одновременно в одном движении.</li>
+      <li><strong>Паттерны координации конечностей</strong>:
+        <ul>
+          <li>Правая рука: обычно играет crash или ride</li>
+          <li>Левая рука: хай-хэт или ride</li>
+          <li>Правая нога: педаль бас-барабана</li>
+          <li>Левая нога: педаль хай-хэта</li>
+        </ul>
+      </li>
+      <li>Это предотвращает генерацию движком паттернов, которые настоящий барабанщик не мог бы сыграть физически.</li>
+    </ul>
 
-<p>The pattern fixer removes impossible hits:</p>
+    <h3 id="10-arhitektura-plaginov-codepluginregistrypascode-codedrumgeneratorpascode">10. Архитектура Плагинов (<code>PluginRegistry.pas</code>, <code>DrumGenerator.pas</code>)</h3>
 
-<li><strong>At most 3 hits on one step</code>: A drummer can't hit the kick, snare, and two toms all at once in one motion.</li>
-<li><strong>Limb coordination patterns</code>:</li>
-<li>Right hand: typically plays crash or ride cymbal</li>
-<li>Left hand: hi-hat or ride cymbal</li>
-<li>Right foot: kick pedal</li>
-<li>Left foot: hi-hat pedal</li>
-<li>This prevents the engine from generating patterns a real drummer couldn't physically play.</li>
+    <p>Жанровые плагины и плагины барабанщиков скомпилированы в исполняемый файл. Каждый барабанщик применяет 2–4 модификации:</p>
+    <ul>
+      <li><strong>BehindBeat</strong>: Барабанщик играет немного за тактом для relaxed feeling.</li>
+      <li><strong>GhostNotes</strong>: Добавляет тонкие rim-shots и тихие ноты.</li>
+      <li><strong>LinearCoordination</strong>: Типичные паттерны конечностей для этого барабанщика (напр. характерные бас-барабан-рабочий-барабан паттерны Bonham).</li>
+      <li><strong>ShuffleFeel</strong>: Swing feeling специфичный для этого стиля.</li>
+      <li><strong>FillPatterns</strong>: Типичный fill словарь для этого барабанщика.</li>
+    </ul>
 
-<h3 id="10-plugin-architecture-codepluginregistrypascode-codedrumgeneratorpascode">10. Plugin Architecture (<code>PluginRegistry.pas</code>, <code>DrumGenerator.pas</code>)</h3>
+    <p>Модификации композируются и применяются по порядку. Жанровые плагины (Metal, Rock, Jazz, Funk, Electronic) определяют типичные полосы интенсивности, какие grooves имеют смысл для стиля, и стандартную структуру песни.</p>
 
-<p>Genre plugins and drummer plugins are discovered dynamically at runtime from <code>.pas</code> files. Each drummer applies 2–4 modifications:</p>
+    <h3 id="11-keymap-sistema-codekitpascode">11. Keymap Система (<code>Kit.pas</code>)</h3>
 
-<li><strong>BehindBeat</code>: The drummer plays slightly behind the beat for a laid-back feel.</li>
-<li><strong>GhostNotes</code>: Adds subtle rim shots and quiet notes.</li>
-<li><strong>LinearCoordination</code>: Typical limb patterns for that drummer (e.g., Bonham's distinctive kick-snare patterns).</li>
-<li><strong>ShuffleFeel</code>: Swing feel specific to that style.</li>
-<li><strong>FillPatterns</code>: Typical fill vocabulary for that drummer.</li>
+    <p>MIDI ноты разрешаются через JSON keymap файлы в <code>mappings/</code>. <strong>Никакие захардкоженные ноты не существуют в Pascal коде.</strong></p>
+    <ul>
+      <li>Keymap файлы мапят имена нот (kick, snare, hi-hat, tom1, crash, и т.д.) на MIDI ноты.</li>
+      <li>Тот же генерационный движок может использовать любой keymap — GM, AD2, EZDrummer 3, Yamaha XG, или пользовательский.</li>
+      <li>Можете редактировать JSON keymap файлы для кастомизации какая нота триггерит какой барабан.</li>
+      <p>Именно поэтому система работает с множеством разных библиотек барабанов и почему графический интерфейс не захардкодил имена барабанов.</p>
+    </ul>
 
-<p>Modifications are composable and applied in order. Genre plugins (Metal, Rock, Jazz, Funk, Electronic) define the typical intensity bands, which grooves make sense for that style, and default song structure.</p>
+    <h3 id="12-midi-eksport-codemidiiopascode-codemidiparserpascode">12. MIDI Экспорт (<code>MidiIO.pas</code>, <code>MidiParser.pas</code>)</h3>
 
-<h3 id="11-keymap-system-codekitpascode">11. Keymap System (<code>Kit.pas</code>)</h3>
+    <p>Сырой SMF Format 0 писатель с VLQ кодировкой, tempo/такт meta событиями, совместимый со всеми DAWs и барабанными VSTs.</p>
+    <ul>
+      <li><strong>Tracks</strong>: Один MIDI трек содержащий все барабанные ноты.</li>
+      <li><strong>Tempo события</strong>: BPM изменения по мере прогресса песни.</li>
+      <li><strong>Такт события</strong>: Изменения временной сигнатуры.</li>
+      <li><strong>Данные ноты</strong>: Высота (какой барабан), velocity, время начала, длительность.</li>
+    </ul>
 
-<p>MIDI notes are resolved through JSON keymap files in <code>mappings/</code>. <strong>No hardcoded notes exist in Pascal code.</strong></p>
+    <p>Этот MIDI файл работает с любой DAW (Reaper, Ardour, Ableton, Logic, и т.д.) и любым барабанным VST плагином (EZDrummer, Superior Drummer, Addictive Drums, и т.д.).</p>
 
-<li>Keymap files map note names (kick, snare, hi-hat, tom1, crash, etc.) to MIDI notes.</li>
-<li>The same generation engine can use any keymap — GM, AD2, EZDrummer 3, Yamaha XG, or user-created.</li>
-<li>You can edit keymap JSON files to customize which note triggers which drum.</li>
-<li>This is why the system works with so many different drum libraries and why the GUI doesn't hardcode drum names.</li>
+    <hr>
 
-<h3 id="12-midi-export-codemidiiopascode-codemidiparserpascode">12. MIDI Export (<code>MidiIO.pas</code>, <code>MidiParser.pas</code>)</h3>
+    <h2 id="gui-programma">Программа Графического Интерфейса</h2>
 
-<p>Raw SMF Format 0 writer with VLQ encoding, tempo/meter meta events, compatible with all DAWs and drum VSTs.</p>
+    <p>Графический интерфейс (<code>chameleondrummer_gui.exe</code>) линкует движок напрямую — производит точно то же, что инструмент командной строки, без вызова его.</p>
 
-<li><strong>Tracks</code>: One MIDI track containing all drum notes.</li>
-<li><strong>Tempo events</code>: BPM changes as the song progresses.</li>
-<li><strong>Meter events</code>: Time signature changes.</li>
-<li><strong>Note data</code>: Pitch (which drum), velocity, start time, duration.</li>
+    <ol>
+      <li>Запустите <code>chameleondrummer_gui.exe</code>.</li>
+      <li>Выберите жанр, стиль, барабанщик, keymap, темп, сложность, гуманизацию из интерфейса.</li>
+      <li>Нажмите <strong>Сгенерировать</strong> — MIDI файл записывается.</li>
+      <li>Опционально экспортируйте REAPER проект (<code>.rpp</code>) или Ardour сессию (<code>.ardour</code>) рядом.</li>
+      <li>Dark mode доступен через <code>Вид > Система/Светлый/Тёмный</code> и сохраняется в <code>gui.ini</code>.</li>
+    </ol>
 
-<p>This MIDI file works with any DAW (Reaper, Ardour, Ableton, Logic, etc.) and any drum VST plugin (EZDrummer, Superior Drummer, Addictive Drums, etc.).</p>
+    <p>Графический интерфейс даёт интерактивный доступ ко всем опциям генерации командной строки плюс визуальную обратную связь:</p>
+    <ul>
+      <li>Превью в реальном времени выбранных комбинаций жанр/стиль/барабанщик</li>
+      <li>Динамические контролы секций добавляемые в runtime на основе жанровых дефолтов</li>
+      <li>Dark mode поддержка (скомпилировано только для Windows)</li>
+      <li>Персистентность конфигурации через <code>gui.ini</code></li>
+    </ul>
 
-<hr>
+    <p>См. <code>gui/README.md</code> для деталей Lazarus формы, настройки компонентов, и реализации dark mode.</p>
 
-<h2 id="the-gui-program">The GUI Program</h2>
+    <p>Графический интерфейс также включает кнопку <strong>Step Editor</strong> открывающую standalone step editor приложение (<code>tools/step_editor/step_editor.exe</code>). Step editor позволяет визуально редактировать барабанные паттерны на step grid, конвертировать MIDI файлы в tab формат, и сохранять паттерны как grooves или fills. См. <a href="#step-editor">Step Editor</a> для деталей.</p>
 
-<p>The GUI (<code>chameleondrummer_gui.exe</code>) links the engine directly — it produces exactly what the command-line tool produces, without shelling out to it.</p>
+    <hr>
 
-<p>1. Launch <code>chameleondrummer_gui.exe</code>.</p>
-<p>2. Pick genre, style, drummer, keymap, tempo, complexity and humanization from the interface.</p>
-<p>3. Click <strong>Generate</strong> — a MIDI file is written.</p>
-<p>4. Optionally export a REAPER project (<code>.rpp</code>) or Ardour session (<code>.ardour</code>) next to it.</p>
-<p>5. Dark mode is available via <code>View &gt; System/Light/Dark</code> and persists in <code>gui.ini</code>.</p>
+    <h2 id="integraciya-reaper">Интеграция REAPER</h2>
 
-<p>The GUI provides interactive access to all CLI generation options plus visual feedback:</p>
+    <p>ChameleonDrummer интегрируется с REAPER через Lua панель (<code>reaper_chameleon/chameleon_panel.lua</code>), которая драйвит командную строку для генерации барабанов и импортирует результаты прямо в ваш REAPER проект.</p>
 
-<li>Real-time preview of selected genre/style/drummer combinations</li>
-<li>Dynamic section controls added at runtime based on genre defaults</li>
-<li>Dark mode support (compiled only for Windows)</li>
-<li>Configuration persistence via <code>gui.ini</code></li>
+    <h3 id="reaper-ustanovka">Установка</h3>
+    <ol>
+      <li>Скопируйте директорию <code>reaper_chameleon/</code> в папку скриптов REAPER.</li>
+      <li>Откройте REAPER и загрузите <code>chameleon_panel.lua</code> через Actions > Show action list > New > ReaScript.</li>
+      <li>Панель появляется как док-окно с четырьмя вкладками.</li>
+    </ol>
 
-<p>See <code>gui/README.md</code> for details on the Lazarus form layout, component setup, and dark mode implementation.</p>
+    <h3 id="reaper-vkladki">Вкладки</h3>
 
-<p>The GUI also includes a <strong>Step Editor</strong> button that opens the standalone step editor application (<code>tools/step_editor/step_editor.exe</code>). The step editor lets you visually edit drum patterns on a step grid, convert MIDI files to tab format, and save patterns as grooves or fills. See <a href="#step-editor">Step Editor</a> for details.</p>
+    <h4>Song Sections</h4>
+    <ul>
+      <li>Выберите жанр, стиль, барабанщик, mapping, темп, число тактов</li>
+      <li>Сгенерируйте MIDI через командную строку и импортируйте в текущий REAPER проект</li>
+      <li>Экспортируйте REAPER проект (<code>.rpp</code>) рядом с MIDI</li>
+    </ul>
 
-<hr>
+    <h4>Additive Rhythm</h4>
+    <ul>
+      <li>Введите аддитивную группировку (напр. <code>3-3-3-3-2-2</code>)</li>
+      <li>Установите grid разрешение (4, 8, 16, 32), темп, барабанщик, интенсивность</li>
+      <li>Сгенерируйте аддитивные ритм паттерны с по-тактовыми временными сигнатурами</li>
+      <li>Опциональный timeline JSON экспорт для REAPER tempo маркеров</li>
+    </ul>
 
-<h2 id="reaper-integration">REAPER Integration</h2>
+    <h4>Step Editor</h4>
+    <ul>
+      <li>Загрузите MIDI item из текущего проекта</li>
+      <li>Редактируйте на grid с применением барабанщика (timing/velocity variance)</li>
+      <li>Примените стиль барабанщика к существующим паттернам</li>
+    </ul>
 
-<p>ChameleonDrummer integrates with REAPER via a Lua panel (<code>reaper_chameleon/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your REAPER project.</p>
+    <h4>Settings</h4>
+    <ul>
+      <li>Настройте путь исполняемого командной строки</li>
+      <li>Установите дефолтный жанр/стиль/барабанщик/mapping</li>
+      <li>Обновите опции из командной строки list команд</li>
+    </ul>
 
-<h3 id="installation">Installation</h3>
+    <h4>Log</h4>
+    <ul>
+      <li>Real-time лог вывод командной строки команд</li>
+      <li>Статус сообщения во время генерации</li>
+    </ul>
 
-<p>1. Copy the <code>reaper_chameleon/</code> directory into your REAPER scripts folder.</p>
-<p>2. Open REAPER and load <code>chameleon_panel.lua</code> via Actions > Show action list > New > ReaScript.</p>
-<p>3. The panel appears as a dockable window with four tabs.</p>
-
-<h3 id="tabs">Tabs</h3>
-
-<p><strong>Song Sections</strong></p>
-
-<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
-<li>Generate MIDI via CLI and import into the current REAPER project</li>
-<li>Export REAPER project (<code>.rpp</code>) alongside the MIDI</li>
-
-<p><strong>Additive Rhythm</strong></p>
-
-<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
-<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
-<li>Generate additive rhythm patterns with per-bar time signatures</li>
-<li>Optional timeline JSON export for REAPER tempo markers</li>
-
-<p><strong>Step Editor</strong></p>
-
-<li>Load a MIDI item from the current project</li>
-<li>Edit on a grid with drummer application (timing/velocity variance)</li>
-<li>Apply drummer style to existing patterns</li>
-
-<p><strong>Settings</strong></p>
-
-<li>Configure CLI executable path</li>
-<li>Set default genre/style/drummer/mapping</li>
-<li>Refresh options from CLI list commands</li>
-
-<p><strong>Log</strong></p>
-
-<li>Real-time log output from CLI commands</li>
-<li>Status messages during generation</li>
-
-<h3 id="cli-commands-used-by-reaper-panel">CLI Commands Used by REAPER Panel</h3>
-
-<pre><code class="lang-">ChameleonDrummer list genres --json
+    <h3 id="reaper-cli-komandy">Командная Строка Команды Используемые REAPER Панелью</h3>
+    <pre><code class="lang-bash">ChameleonDrummer list genres --json
 ChameleonDrummer list styles --genre metal --json
 ChameleonDrummer list drummers --json
 ChameleonDrummer list mappings --json
 ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
 ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
 
-<hr>
+    <hr>
 
-<h2 id="ardour-integration">Ardour Integration</h2>
+    <h2 id="integraciya-ardour">Интеграция Ardour</h2>
 
-<p>ChameleonDrummer integrates with Ardour via a Lua panel (<code>ardour/chameleon_panel.lua</code>) that drives the CLI for drum generation and imports results directly into your Ardour session.</p>
+    <p>ChameleonDrummer интегрируется с Ardour через Lua панель (<code>ardour/chameleon_panel.lua</code>), драйвящую командной строки для генерации барабанов и импортирующую результаты прямо в вашу Ardour сессию.</p>
 
-<h3 id="installation">Installation</h3>
+    <h3 id="ardour-ustanovka">Установка</h3>
+    <ol>
+      <li>Скопируйте директорию <code>ardour/</code> в папку скриптов Ardour (обычно <code>~/.config/ardour/scripts/</code> Linux, <code>~/Library/Application Support/Ardour/scripts/</code> macOS, или <code>%APPDATA%\Ardour\scripts\</code> Windows).</li>
+      <li>Откройте Ardour и загрузите <code>chameleon_panel.lua</code> через Window > Scripting > Script Manager > New Script.</li>
+      <li>Панель появляется как док-окно с четырьмя вкладками.</li>
+    </ol>
 
-<p>1. Copy the <code>ardour/</code> directory into your Ardour scripts folder (typically <code>~/.config/ardour/scripts/</code> on Linux, <code>~/Library/Application Support/Ardour/scripts/</code> on macOS, or <code>%APPDATA%\Ardour\scripts\</code> on Windows).</p>
-<p>2. Open Ardour and load <code>chameleon_panel.lua</code> via Window > Scripting > Script Manager > New Script.</p>
-<p>3. The panel appears as a dockable window with four tabs.</p>
+    <h3 id="ardour-vkladki">Вкладки</h3>
 
-<h3 id="tabs">Tabs</h3>
+    <h4>Song Sections</h4>
+    <ul>
+      <li>Выберите жанр, стиль, барабанщик, mapping, темп, число тактов</li>
+      <li>Сгенерируйте MIDI через командную строку и импортируйте в текущую Ardour сессию</li>
+      <li>Экспортируйте Ardour сессию (<code>.ardour</code>) рядом с MIDI</li>
+    </ul>
 
-<p><strong>Song Sections</strong></p>
+    <h4>Additive Rhythm</h4>
+    <ul>
+      <li>Введите аддитивную группировку (напр. <code>3-3-3-3-2-2</code>)</li>
+      <li>Установите grid разрешение (4, 8, 16, 32), темп, барабанщик, интенсивность</li>
+      <li>Сгенерируйте аддитивные ритм паттерны с по-тактовыми временными сигнатурами</li>
+      <li>Опциональный timeline JSON экспорт для Ardour tempo маркеров</li>
+    </ul>
 
-<li>Select genre, style, drummer, mapping, tempo, and number of bars</li>
-<li>Generate MIDI via CLI and import into the current Ardour session</li>
-<li>Export Ardour session (<code>.ardour</code>) alongside the MIDI</li>
+    <h4>Step Editor</h4>
+    <ul>
+      <li>Загрузите MIDI item из текущей сессии</li>
+      <li>Редактируйте на grid с применением барабанщика (timing/velocity variance)</li>
+      <li>Примените стиль барабанщика к существующим паттернам</li>
+    </ul>
 
-<p><strong>Additive Rhythm</strong></p>
+    <h4>Settings</h4>
+    <ul>
+      <li>Настройте путь исполняемого командной строки</li>
+      <li>Установите дефолтный жанр/стиль/барабанщик/mapping</li>
+      <li>Обновите опции из командной строки list команд</li>
+    </ul>
 
-<li>Enter additive grouping notation (e.g., <code>3-3-3-3-2-2</code>)</li>
-<li>Set grid resolution (4, 8, 16, 32), tempo, drummer, intensity</li>
-<li>Generate additive rhythm patterns with per-bar time signatures</li>
-<li>Optional timeline JSON export for Ardour tempo markers</li>
+    <h4>Log</h4>
+    <ul>
+      <li>Real-time лог вывод командной строки команд</li>
+      <li>Статус сообщения во время генерации</li>
+    </ul>
 
-<p><strong>Step Editor</strong></p>
-
-<li>Load a MIDI item from the current session</li>
-<li>Edit on a grid with drummer application (timing/velocity variance)</li>
-<li>Apply drummer style to existing patterns</li>
-
-<p><strong>Settings</strong></p>
-
-<li>Configure CLI executable path</li>
-<li>Set default genre/style/drummer/mapping</li>
-<li>Refresh options from CLI list commands</li>
-
-<p><strong>Log</strong></p>
-
-<li>Real-time log output from CLI commands</li>
-<li>Status messages during generation</li>
-
-<h3 id="cli-commands-used-by-ardour-panel">CLI Commands Used by Ardour Panel</h3>
-
-<pre><code class="lang-">ChameleonDrummer list genres --json
+    <h3 id="ardour-cli-komandy">Командная Строка Команды Используемые Ardour Панелью</h3>
+    <pre><code class="lang-bash">ChameleonDrummer list genres --json
 ChameleonDrummer list styles --genre metal --json
 ChameleonDrummer list drummers --json
 ChameleonDrummer list mappings --json
 ChameleonDrummer generate --genre X --style Y --mapping Z --tempo N --drummer D --drummer-intensity I --bars B --output file.mid
 ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output file.mid [--write-timeline timeline.json]</code></pre>
 
-<h3 id="accessing-the-panel-in-ardour">Accessing the Panel in Ardour</h3>
+    <h3 id="ardour-dostup">Доступ к Панели в Ardour</h3>
+    <ul>
+      <li><strong>Window > Scripting > ChameleonDrummer</strong> (если зарегистрировано как menu action)</li>
+      <li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</strong></li>
+      <li>Назначьте горячую клавишу <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</strong></li>
+    </ul>
 
-<p>Once installed, the ChameleonDrummer panel can be accessed in Ardour via:</p>
+    <p>Панель использует Lua API Ardour (<code>Session</code>, <code>Temporal</code>, <code>ARDOUR</code> namespaces) для манипуляции сессией, создания tempo map, и импорта MIDI региона.</p>
 
-<li><strong>Window > Scripting > ChameleonDrummer</code> (if registered as a menu action)</li>
-<li><strong>Window > Scripting > Script Manager > ChameleonDrummer > Run</code></li>
-<li>Assign a keyboard shortcut in <strong>Window > Scripting > Script Manager > ChameleonDrummer > Bind Shortcut</code></li>
+    <p>См. <code>ardour/import_chameleon_song.lua</code> для headless сессионного билдера используемого командной строки <code>--ardour</code> экспортом.</p>
 
-<p>The panel uses Ardour's Lua API (<code>Session</code>, <code>Temporal</code>, <code>ARDOUR</code> namespaces) for session manipulation, tempo map creation, and MIDI region import.</p>
+    <hr>
 
-<p>See <code>ardour/import_chameleon_song.lua</code> for the headless session builder used by the CLI <code>--ardour</code> export.</p>
+    <h2 id="cli-programma">Программа Командной Строки</h2>
 
-<hr>
+    <h3 id="spravochnik-komand">Справочник Команд</h3>
 
-<h2 id="the-cli-program">The CLI Program</h2>
-
-<h3 id="command-reference">Command Reference</h3>
-
-<pre><code class="lang-">Usage: chameleondrummer &lt;command&gt; [options]
+    <pre><code class="lang-bash">Usage: chameleondrummer <command> [options]
 
 Commands:
-  generate   Generate a complete song (multi-bar pattern)
-  pattern    Generate a single 1-4 bar pattern
-  list       List available genres, styles, or drummers
-  info       Show system information
-  reaper     Create a REAPER project (sub-command: export)
-  ardour     Create an Ardour session (sub-command: export)
+  generate         Generate a complete song (multi-bar pattern)
+  pattern          Generate a single 1-4 bar pattern
+  list             List available genres, styles, drummers, or mappings
+  info             Show system information
+  reaper           Create a REAPER project (sub-command: export)
+  ardour           Create an Ardour session (sub-command: export)
+  additive-rhythm  Generate additive rhythm patterns
 
 Options:
-  --genre &lt;name&gt;       Genre (metal, rock, jazz, funk, electronic)
-  --style &lt;name&gt;       Style within genre (heavy, classic, swing, ...)
-  --tempo &lt;bpm&gt;        Tempo in BPM (default: genre/style value)
-  --complexity &lt;0-1&gt;   Pattern complexity (default: 0.5)
-  --humanization &lt;0-1&gt; Humanization intensity (default: 0.3)
-  --swing &lt;0-1&gt;        Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
-  --time-sig &lt;n/d&gt;     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
-  --segment &lt;n:bars:bpm:n/d&gt;  A section with its own tempo and meter, e.g. bridge:4:96:7/8
-                       (bpm - keeps the song tempo); mix freely with --section
-  --section &lt;n:bars[@bpm]&gt;  Song structure; repeat once per section, in order
-                       e.g. --section intro:4 --section verse:8 --section chorus:8@140
-                       (without --section the genre default structure is used)
-  --drummer &lt;name&gt;     Drummer style (e.g., bonham, peart, carey)
-  --output &lt;file&gt;      Output MIDI file path
-  --reaper, --ardour   With generate: also write &lt;output&gt;.rpp / the &lt;output&gt;.ardour session
-  --mapping &lt;name&gt;     Keymap to use: gm (default), ad2, ezd3, xg
-  --structure &lt;file&gt;   Song structure from a JSON file (sections with bars, tempo,
-                       complexity; optional genre, style, tempo). Command-line
-                       genre/style/tempo win over the file. Not with --section.
-  --sidecar &lt;file&gt;     Same as --structure (the REAPER sidecar format works)
-  --song-map &lt;file&gt;    Read song map JSON for per-bar tempo/meter
-  --write-timeline     Write timeline JSON after generation
-  --list &lt;type&gt;        List: genres, styles, drummers</code></pre>
+  --genre <name>              Genre (metal, rock, jazz, funk, electronic)
+  --style <name>              Style within genre (heavy, classic, swing, ...)
+  --tempo <bpm>               Tempo in BPM (default: genre/style value)
+  --complexity <0-1>          Pattern complexity (default: 0.5)
+  --humanization <0-1>        Humanization intensity (default: 0.3)
+  --swing <0-1>               Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
+  --time-sig <n/d>            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --strict-meter              Only use patterns matching --time-sig
+  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+                              (bpm - keeps the song tempo); mix freely with --section
+  --section <n:bars[@bpm]>    Song structure; repeat once per section, in order
+                              e.g. --section intro:4 --section verse:8 --section chorus:8@140
+                              (without --section the genre default structure is used)
+  --drummer <name>            Drummer style (e.g., bonham, peart, carey)
+  --output <file>             Output MIDI file path
+  --reaper, --ardour          With generate: also write <output>.rpp / the <output>.ardour session
+  --mapping <name>            Keymap to use: gm (default), ad2, ezd3, xg
+  --structure <file>          Song structure from a JSON file (sections with bars, tempo,
+                              complexity; optional genre, style, tempo). Command-line
+                              genre/style/tempo win over the file. Not with --section.
+  --sidecar <file>            Same as --structure (the REAPER sidecar format works)
+  --song-map <file>           Read song map JSON for per-bar tempo/meter
+  --write-timeline            Write timeline JSON after generation
+  --list <type>               List: genres, styles, drummers, mappings
+  --json                      Output JSON for list commands
+  --grouping <str>            Additive grouping notation (e.g., 3-3-3-3-2-2)
+  --grid <n>                  Grid resolution for additive-rhythm (4, 8, 16, 32)
+  --drummer-intensity <0-1>   Drummer intensity for additive-rhythm
+  --help, -h                  Show this help</code></pre>
 
-<h3 id="examples">Examples</h3>
+    <h3 id="primery">Примеры</h3>
 
-<p><strong>Generate a complete song:</strong></p>
+    <p><strong>Сгенерировать полную песню:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --tempo 195 --drummer hoglan --mapping ad2 --output death_metal.mid</code></pre>
+    <p><strong>Сгенерировать одиночный паттерн:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre jazz --style swing --output swing_verse.mid</code></pre>
 
-<p><strong>Generate a single pattern:</strong></p>
+    <p><strong>Создать REAPER проект:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe reaper export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.rpp</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe pattern --genre jazz --style swing --output swing_verse.mid</code></pre>
+    <p><strong>Создать Ardour сессию:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe ardour export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.ardour</code></pre>
 
-<p><strong>Create REAPER project:</strong></p>
+    <p><strong>Аддитивный ритм паттерн:</strong></p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --mapping gm --drummer bonham --drummer-intensity 0.8 --output additive.mid</code></pre>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe reaper export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.rpp</code></pre>
+    <hr>
 
-<p><strong>Create Ardour session:</strong></p>
+    <h2 id="prodvinnutye-funktsii">Продвинутые Функции</h2>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe ardour export --genre rock --style classic --drummer bonham --mapping gm --output rock_classic.ardour</code></pre>
+    <h3 id="song-maps-sidecars">Song Maps и Sidecars</h3>
 
-<hr>
+    <p><strong>Sections (<code>--section</code>)</strong>: Описывает структуру песни прямо в командной строке, один <code>--section</code> на секцию, в порядке воспроизведения:</p>
+    <pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --section intro:4 --section verse:8 --section chorus:8 --section bridge:4 --output song.mid</code></pre>
 
-<h2 id="advanced-features">Advanced Features</h2>
+    <p><strong>Sidecar (<code>--sidecar</code>)</strong>: JSON файл описывающий секции с тактами, темпом, сложностью, опциональными жанр/стиль/темп overrides. Командная строка жанр/стиль/темп побеждают файл.</p>
 
-<h3 id="song-maps-and-sidecars">Song Maps and Sidecars</h3>
+    <p><strong>Song Map (<code>--song-map</code>)</strong>: JSON файл описывающий по-тактовые темп/такт изменения для сложных прогрессивных песен.</p>
 
-<p><strong>Sections (<code>--section</code>)</code>: Describes the song structure directly on the command line, one <code>--section</code> per section, in playing order:</p>
+    <h3 id="nechetnye-takty">Нечётные Такты</h3>
 
-<pre><code class="lang-bash">ChameleonDrummer.exe generate --genre metal --style death --section intro:4 --section verse:8 --section chorus:8 --section bridge:4 --output song.mid</code></pre>
+    <p>Движок поддерживает такты 2/4 до 32/16. Используйте <code>--time-sig n/d</code> или <code>--segment</code> для указания. Grooves и fills загружаются из <code>.tab</code> файлов объявляющих свой такт в заголовке блока (напр. <code>[metal verse 7/8 intensity=0.40-0.90]</code>).</p>
 
-<p><strong>Sidecar (<code>--sidecar</code>)</code>: A JSON file describing sections with bars, tempo, complexity, and optional genre/style/tempo overrides. The command-line genre/style/tempo win over the file.</p>
+    <h3 id="vashi-sobstvennye-grooves-fills-defaults">Ваши Собственные Grooves, Fills и Defaults</h3>
 
-<p><strong>Song Map (<code>--song-map</code>)</code>: A JSON file describing per-bar tempo and meter changes for complex progressive songs.</p>
+    <p>Редактируйте файлы в <code>config/</code>:</p>
+    <ul>
+      <li><code>config/grooves/<genre>.tab</code> — добавить новые grooves, изменить полосы интенсивности</li>
+      <li><code>config/fills/<drummer>.tab</code> — добавить новые fills, изменить уровни энергии</li>
+      <li><code>config/defaults/<genre>.ini</code> — изменить дефолтный темп/стиль/барабанщик</li>
+      <li><code>config/sections/<genre>.json</code> — изменить дефолтную структуру песни</li>
+    </ul>
 
-<h3 id="odd-meters">Odd Meters</h3>
+    <p>Перекомпиляция не нужна — движок читает эти файлы в runtime.</p>
 
-<p>The engine supports meters from 2/4 to 32/16. Use <code>--time-sig n/d</code> or <code>--segment</code> to specify. Grooves and fills are loaded from <code>.tab</code> files that declare their meter in the block header (e.g., <code>[metal verse 7/8 intensity=0.40-0.90]</code>).</p>
+    <h3 id="poriadok-poiska">Порядок Поиска</h3>
+    <ol>
+      <li>Папка в переменной окружения <code>CHAMELEON_CONFIG</code>, если задана</li>
+      <li><code>%APPDATA%\ChameleonDrummer\config</code> (Linux: <code>~/.config/ChameleonDrummer/config</code>)</li>
+      <li><code>config</code> рядом с программой</li>
+      <li><code>..\config</code> (dev builds)</li>
+    </ol>
 
-<h3 id="your-own-grooves-fills-and-defaults">Your Own Grooves, Fills and Defaults</h3>
+    <hr>
 
-<p>Edit files in <code>config/</code>:</p>
+    <h2 id="konvertatsiya-midi-v-tab">Конвертация MIDI → Tab</h2>
 
-<li><code>config/grooves/&lt;genre&gt;.tab</code> — add new grooves, change intensity bands</li>
-<li><code>config/fills/&lt;drummer&gt;.tab</code> — add new fills, change energy levels</li>
-<li><code>config/defaults/&lt;genre&gt;.ini</code> — change default tempo/style/drummer</li>
-<li><code>config/sections/&lt;genre&gt;.json</code> — change default song structure</li>
+    <p><code>tools/midi_to_tab.exe</code> конвертирует MIDI файл в <code>.tab</code> groove/fill формат. Скомпилировано из Pascal, нет внешних зависимостей.</p>
 
-<p>No recompilation needed — the engine reads these at runtime.</p>
+    <pre><code class="lang-bash">midi_to_tab.exe input.mid [output.tab]
+midi_to_tab.exe input.mid --fill --name bonham_fill --energy 0.6
+midi_to_tab.exe input.mid --meter 7/8 --resolution 16
+midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
 
-<h3 id="lookup-order">Lookup Order</h3>
+    <h3 id="optsii-midi-to-tab">Опции</h3>
+    <table>
+      <tr><th>Опция</th><th>Описание</th></tr>
+      <tr><td><code>--fill</code></td><td>Вывод fill блока вместо groove</td></tr>
+      <tr><td><code>--name <name></code></td><td>Имя fill (дефолт: <code>fill</code>)</td></tr>
+      <tr><td><code>--energy <0-1></code></td><td>Энергия fill (дефолт: 0.5)</td></tr>
+      <tr><td><code>--meter <n/d></code></td><td>Override такта (дефолт: MIDI meta или 4/4)</td></tr>
+      <tr><td><code>--resolution <n></code></td><td>Шаги на четвертную: 4, 8, 16, 32 (дефолт: 16)</td></tr>
+      <tr><td><code>--mapping <file></code></td><td>JSON keymap файл (дефолт: встроенная GM map)</td></tr>
+      <tr><td><code>--style <name></code></td><td>Имя стиля groove (дефолт: <code>midi</code>)</td></tr>
+      <tr><td><code>--kind <name></code></td><td>Вид groove: verse/chorus/bridge (дефолт: <code>verse</code>)</td></tr>
+      <tr><td><code>--intensity <low-high></code></td><td>Полоса интенсивности groove (дефолт: <code>0.2-0.6</code>)</td></tr>
+    </table>
 
-<p>1. The folder in the environment variable <code>CHAMELEON_CONFIG</code>, if set</p>
-<p>2. <code>%APPDATA%\ChameleonDrummer\config</code> (Linux: <code>~/.config/ChameleonDrummer/config</code>)</p>
-<p>3. <code>config</code> next to the program</p>
-<p>4. <code>..\config</code> (development builds)</p>
+    <p>Вывод с CRLF окончаниями строк, готов для <code>config/grooves/</code> или <code>config/fills/</code>.</p>
 
-<hr>
+    <hr>
 
-<h2 id="midi-tab-conversion">MIDI → Tab Conversion</h2>
+    <h2 id="step-editor">Step Editor</h2>
 
-<p><code>tools/midi_to_tab.py</code> converts a MIDI file to the <code>.tab</code> groove/fill format. Pure Python, no external dependencies.</p>
+    <p><strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) — standalone графическое приложение для визуального редактирования барабанных паттернов на step grid, конвертации MIDI файлов в <code>.tab</code> groove/fill формат, и управления блоками паттернов в config файлах. Запускается из главного графического интерфейса через кнопку <strong>Step Editor</strong>, или напрямую.</p>
 
-<pre><code class="lang-bash">python tools/midi_to_tab.py input.mid [output.tab]
-python tools/midi_to_tab.py input.mid --fill --name bonham_fill --energy 0.6
-python tools/midi_to_tab.py input.mid --meter 7/8 --resolution 16
-python tools/midi_to_tab.py input.mid --mapping mappings/gm.json --style rock --kind verse</code></pre>
+    <h3 id="step-editor-zapusk">Запуск Step Editor</h3>
+    <ul>
+      <li><strong>Из графического интерфейса:</strong> Нажмите кнопку <strong>Step Editor</strong> в тулбаре главного окна.</li>
+      <li><strong>Напрямую:</strong> Запустите <code>tools/step_editor/step_editor.exe</code> из корня проекта или директории установки.</li>
+      <li><strong>Из REAPER/Ardour панелей:</strong> Вкладка <strong>Step Editor</strong> в DAW интеграционных панелях запускает редактор с текущим MIDI item загруженным.</li>
+    </ul>
 
-<p>Options:</p>
+    <h3 id="step-editor-osnovnye-funktsii">Основные Функции</h3>
+    <ul>
+      <li><strong>Step Grid Редактирование:</strong> Визуальная grid с 17 барабанными инструментами (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4) и настраиваемыми шагами на такт (4, 8, 16, 32, 64).</li>
+      <li><strong>Velocity/Артикуляция Символы:</strong> Каждый шаг использует символ: <code>.</code> (пауза), <code>x</code> (нормальный), <code>X</code> (акцент), <code>o</code> (мягкий/ghost), <code>g</code> (ghost). Клик по ячейкам циклит состояния.</li>
+      <li><strong>MIDI → Tab Конвертация:</strong> Загрузите MIDI файл (<code>.mid</code>, <code>.midi</code>) и конвертируйте в tab формат через встроенный <code>midi_to_tab.exe</code> с настраиваемым mapping, стилем, видом, интенсивностью, энергией, разрешением, тактом.</li>
+      <li><strong>Tab Файл Загрузка:</strong> Загрузите существующие <code>.tab</code> файлы (и ChameleonDrummer config формат, и иностранные tab форматы) для редактирования.</li>
+      <li><strong>Блок Навигация (Config Файлы):</strong> Загрузка config файла из <code>config/grooves/</code> или <code>config/fills/</code>, редактор парсит все паттерн блоки и даёт dropdown селектор с Prev/Next кнопками для навигации между блоками.</li>
+      <li><strong>Блок Редактирование:</strong> Редактируйте поля заголовка блока (Стиль, Вид, Интенсивность Low/High) прямо в UI. Изменения отмечаются индикатором <code>*</code>.</li>
+      <li><strong>Хирургическое Сохранение:</strong> Сохраняйте отдельные блоки обратно в исходный файл не задевая другие блоки в том же файле.</li>
+      <li><strong>Новые/Удалить Блоки:</strong> Добавьте новые пустые паттерн блоки или удалите существующие (с подтверждением).</li>
+      <li><strong>Zoom/Разрешение:</strong> Меняйте grid разрешение (8, 16, 32, 64 шагов на такт) и размер страницы.</li>
+      <li><strong>Dark Mode:</strong> Авто-детект системной темы (Windows) с ручным override. Все контролы включая grid, combo boxes, status bar themed.</li>
+      <li><strong>Auto-Scaling:</strong> Пропорциональное векторное масштабирование всех UI элементов для high-DPI дисплеев.</li>
+      <li><strong>Экспорт:</strong> Сохраняйте отредактированные паттерны как новые groove/fill <code>.tab</code> файлы в config директориях.</li>
+    </ul>
 
-<table>
-<tr><th>Option</th><th>Description</th></tr>
-</table>
-<p>|--------|-------------|</p>
-<table>
-<tr><th>`--fill`</th><th>Output a fill block instead of a groove block</th></tr>
-<tr><td>`--name &lt;name&gt;`</td><td>Fill name (default: `fill`)</td></tr>
-<tr><td>`--energy &lt;0-1&gt;`</td><td>Fill energy (default: 0.5)</td></tr>
-<tr><td>`--meter &lt;n/d&gt;`</td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
-<tr><td>`--resolution &lt;n&gt;`</td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
-<tr><td>`--mapping &lt;file&gt;`</td><td>Keymap JSON file (default: built-in GM map)</td></tr>
-<tr><td>`--style &lt;name&gt;`</td><td>Groove style name (default: `midi`)</td></tr>
-<tr><td>`--kind &lt;name&gt;`</td><td>Groove kind: verse/chorus/bridge (default: `verse`)</td></tr>
-<tr><td>`--intensity &lt;low-high&gt;`</td><td>Groove intensity band (default: `0.2-0.6`)</td></tr>
-</table>
+    <h3 id="step-editor-ui-obzor">UI Обзор</h3>
+    <table>
+      <tr><th>Область</th><th>Описание</th></tr>
+      <tr><td><strong>Input File</strong></td><td>Выбор MIDI или tab файла. Авто-конвертация MIDI при выборе.</td></tr>
+      <tr><td><strong>Mapping</strong></td><td>Выбор MIDI keymap (GM, AD2, EZD3, XG, или custom JSON из <code>mappings/</code>).</td></tr>
+      <tr><td><strong>Style / Kind</strong></td><td>Groove стиль (из <code>config/styles.txt</code>) и вид (verse, chorus, bridge, intro, outro, fill).</td></tr>
+      <tr><td><strong>Intensity / Energy</strong></td><td>Интенсивность полоса для grooves (напр. 0.2-0.6) или энергия уровень для fills (0.1–1.0).</td></tr>
+      <tr><td><strong>Resolution / Meter</strong></td><td>Шаги на четвертную (4, 8, 16, 32) и временная сигнатура (поддерживает триольный feel суффиксом <code>T</code>, напр. <code>4/4T</code>).</td></tr>
+      <tr><td><strong>Groove / Fill Radio</strong></td><td>Переключение groove режим (интенсивность) / fill режим (энергия). Обновляет стиль dropdown.</td></tr>
+      <tr><td><strong>Step Grid</strong></td><td>Главная область редактирования. Левая колонка = аббревиатуры инструментов. Верхняя строка = номера шагов. Границы тактов толстыми вертикальными линиями.</td></tr>
+      <tr><td><strong>Zoom</strong></td><td>Селектор размера страницы (8, 16, 32, 64 шагов на страницу).</td></tr>
+      <tr><td><strong>Header Preview</strong></td><td>Показывает tab блок заголовок который будет записан при сохранении.</td></tr>
+      <tr><td><strong>Block Navigation (только config)</strong></td><td>Dropdown селектор, Prev/Next кнопки, позиция label, редактируемые header поля, Save/New/Delete кнопки.</td></tr>
+      <tr><td><strong>Status Log</strong></td><td>Real-time лог операций, конвертация вывод, ошибки.</td></tr>
+    </table>
 
-<p>Output is written with CRLF line endings, ready to drop into <code>config/grooves/</code> or <code>config/fills/</code>.</p>
+    <h3 id="step-editor-midi-konvertatsiya">MIDI → Tab Конвертация</h3>
 
-<hr>
+    <p>При выборе MIDI файла (<code>.mid</code>, <code>.midi</code>), редактор автоматически запускает <code>midi_to_tab.exe</code> с текущими UI настройками и показывает результат в grid.</p>
 
-<h2 id="troubleshooting">Troubleshooting</h2>
+    <p><strong>Параметры Конвертации (из UI):</strong></p>
+    <ul>
+      <li><strong>Mapping:</strong> JSON keymap файл (дефолт: встроенная GM).</li>
+      <li><strong>Style:</strong> Groove стиль имя (напр. <code>metal</code>, <code>rock</code>, <code>jazz</code>).</li>
+      <li><strong>Kind:</strong> Groove вид (<code>verse</code>, <code>chorus</code>, <code>bridge</code>, <code>intro</code>, <code>outro</code>, <code>fill</code>).</li>
+      <li><strong>Intensity:</strong> Полоса для grooves (напр. <code>0.2-0.6</code>).</li>
+      <li><strong>Energy:</strong> Уровень для fills (0.1–1.0).</li>
+      <li><strong>Resolution:</strong> Шаги на четвертную (4, 8, 16, 32).</li>
+      <li><strong>Meter:</strong> Временная сигнатура (напр. <code>4/4</code>, <code>7/8</code>, <code>4/4T</code> для триольного feel).</li>
+      <li><strong>Fill Mode:</strong> При включении — вывод fill блока вместо groove.</li>
+    </ul>
 
-<h3 id="common-issues">Common Issues</h3>
+    <p>Сыроый конвертация вывод показан в status log для отладки.</p>
 
-<table>
-<tr><th>Problem</th><th>Cause / Fix</th></tr>
-</table>
-<p>|---------|-------------|</p>
-<table>
-<tr><th>`FPC fehlgeschlagen`</th><th>Run from the project root with `-Fusrc` include path</th></tr>
-<tr><td>`method identifier expected`</td><th>Syntax error in a `.pas` file — check the named line</th></tr>
-<tr><td>`Identifier not found "GetSectionFlavors"`</td><th>Missing unit or method — rebuild all units</th></tr>
-<tr><td>`Syntax error, "." expected but ";" found`</td><th>Missing comma/semicolon in Pascal source</th></tr>
-<tr><td>`Comment level 2 found`</td><th>Warning only — nested `(* *)` comments</th></tr>
-<tr><td>`function result variable ... does not seem to be initialized`</td><th>Warning only — result variable not assigned on all paths</th></tr>
-<tr><td>`[Warning] ... metal.tab (12): ...`</td><th>Tab file syntax error — that file is ignored, built-in plays instead</th></tr>
-</table>
+    <h3 id="step-editor-tab-formaty">Tab Файл Форматы</h3>
 
-<hr>
-<hr>
-<hr>
+    <p>Редактор работает с двумя tab форматами:</p>
 
-<h2 id="step-editor">Step Editor</h2>
+    <h4>1. ChameleonDrummer Config Формат (<code>config/grooves/*.tab</code>, <code>config/fills/*.tab</code>)</h4>
 
-<p>The <strong>Step Editor</strong> (<code>tools/step_editor/step_editor.exe</code>) is a standalone graphical application for visually editing drum patterns on a step grid, converting MIDI files to the <code>.tab</code> groove/fill format, and managing pattern blocks in the config files. It can be launched from the main GUI via the <strong>Step Editor</strong> button, or run directly.</p>
-
-<h3 id="step-editor-launching">Launching the Step Editor</h3>
-
-<ul>
-<li><strong>From the GUI:</strong> Click the <strong>Step Editor</strong> button in the main window toolbar.</li>
-<li><strong>Directly:</strong> Run <code>tools/step_editor/step_editor.exe</code> from the project root or installation directory.</li>
-<li><strong>From REAPER/Ardour panels:</strong> The <strong>Step Editor</strong> tab in the DAW integration panels launches the editor with the current MIDI item loaded.</li>
-</ul>
-
-<h3 id="step-editor-main-features">Main Features</h3>
-
-<ul>
-<li><strong>Step Grid Editing:</strong> Visual grid with 17 drum instruments (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4) and configurable steps per bar (4, 8, 16, 32, 64).</li>
-<li><strong>Velocity/Articulation Characters:</strong> Each step uses a character: <code>.</code> (rest), <code>x</code> (normal), <code>X</code> (accent), <code>o</code> (soft/ghost), <code>g</code> (ghost). Click cells to cycle through states.</li>
-<li><strong>MIDI → Tab Conversion:</strong> Load a MIDI file (<code>.mid</code>, <code>.midi</code>) and convert it to tab format using the built-in <code>midi_to_tab.exe</code> with configurable mapping, style, kind, intensity, energy, resolution, and meter.</li>
-<li><strong>Tab File Loading:</strong> Load existing <code>.tab</code> files (both ChameleonDrummer config format and foreign tab formats) for editing.</li>
-<li><strong>Block Navigation (Config Files):</strong> When loading a config file from <code>config/grooves/</code> or <code>config/fills/</code>, the editor parses all pattern blocks and provides a dropdown selector with Prev/Next buttons to navigate between blocks.</li>
-<li><strong>Block Editing:</strong> Edit block header fields (Style, Kind, Intensity Low/High) directly in the UI. Changes are tracked with a <code>*</code> indicator.</li>
-<li><strong>Surgical Save:</strong> Save individual blocks back to their source file without affecting other blocks in the same file.</li>
-<li><strong>New/Delete Blocks:</strong> Add new empty pattern blocks or delete existing ones (with confirmation).</li>
-<li><strong>Zoom/Resolution:</strong> Change grid resolution (8, 16, 32, 64 steps per bar) and page size.</li>
-<li><strong>Dark Mode:</strong> Automatic system theme detection (Windows) with manual override. All controls including grid, combo boxes, and status bar are themed.</li>
-<li><strong>Auto-Scaling:</strong> Proportional vectorial scaling of all UI elements for high-DPI displays.</li>
-<li><strong>Export:</strong> Save edited patterns as new groove or fill <code>.tab</code> files in the config directories.</li>
-</ul>
-
-<h3 id="step-editor-ui-overview">UI Overview</h3>
-
-<table>
-<tr><th>Area</th><th>Description</th></tr>
-</table>
-<table>
-<tr><td><strong>Input File</strong></td><td>Browse for MIDI or tab file. Auto-converts MIDI on selection.</td></tr>
-<tr><td><strong>Mapping</strong></td><td>Select MIDI keymap (GM, AD2, EZD3, XG, or custom JSON from <code>mappings/</code>).</td></tr>
-<tr><td><strong>Style / Kind</strong></td><td>Groove style (from <code>config/styles.txt</code>) and kind (verse, chorus, bridge, intro, outro, fill).</td></tr>
-<tr><td><strong>Intensity / Energy</strong></td><td>Intensity band for grooves (e.g., 0.2-0.6) or energy level for fills (0.1–1.0).</td></tr>
-<tr><td><strong>Resolution / Meter</strong></td><td>Steps per quarter note (4, 8, 16, 32) and time signature (supports triplet feel with <code>T</code> suffix, e.g., <code>4/4T</code>).</td></tr>
-<tr><td><strong>Groove / Fill Radio</strong></td><td>Switch between groove mode (intensity) and fill mode (energy). Updates style dropdown accordingly.</td></tr>
-<tr><td><strong>Step Grid</strong></td><td>Main editing area. Left column = instrument abbreviations. Top row = step numbers. Bar boundaries shown with thicker vertical lines.</td></tr>
-<tr><td><strong>Zoom</strong></td><td>Page size selector (8, 16, 32, 64 steps per page).</td></tr>
-<tr><td><strong>Header Preview</strong></td><td>Shows the tab block header that will be written on save.</td></tr>
-<tr><td><strong>Block Navigation (config files only)</strong></td><td>Dropdown selector, Prev/Next buttons, position label, editable header fields, Save/New/Delete buttons.</td></tr>
-<tr><td><strong>Status Log</strong></td><td>Real-time log of operations, conversion output, and errors.</td></tr>
-</table>
-
-<h3 id="step-editor-midi-conversion">MIDI → Tab Conversion</h3>
-
-<p>When you select a MIDI file (<code>.mid</code>, <code>.midi</code>), the editor automatically runs <code>midi_to_tab.exe</code> with the current UI settings and displays the result in the grid.</p>
-
-<p><strong>Conversion Parameters (from UI):</strong></p>
-
-<ul>
-<li><strong>Mapping:</strong> Keymap JSON file (default: built-in GM).</li>
-<li><strong>Style:</strong> Groove style name (e.g., <code>metal</code>, <code>rock</code>, <code>jazz</code>).</li>
-<li><strong>Kind:</strong> Groove kind (<code>verse</code>, <code>chorus</code>, <code>bridge</code>, <code>intro</code>, <code>outro</code>, <code>fill</code>).</li>
-<li><strong>Intensity:</strong> Band for grooves (e.g., <code>0.2-0.6</code>).</li>
-<li><strong>Energy:</strong> Level for fills (0.1–1.0).</li>
-<li><strong>Resolution:</strong> Steps per quarter note (4, 8, 16, 32).</li>
-<li><strong>Meter:</strong> Time signature (e.g., <code>4/4</code>, <code>7/8</code>, <code>4/4T</code> for triplet feel).</li>
-<li><strong>Fill Mode:</strong> When enabled, outputs a fill block instead of a groove block.</li>
-</ul>
-
-<p>The raw conversion output is shown in the status log for debugging.</p>
-
-<h3 id="step-editor-tab-file-formats">Tab File Formats</h3>
-
-<p>The editor handles two tab file formats:</p>
-
-<h4>1. ChameleonDrummer Config Format (<code>config/grooves/*.tab</code>, <code>config/fills/*.tab</code>)</h4>
-
-<p>Multiple pattern blocks in one file, each with a header:</p>
-
-<pre><code class="lang-text">[metal verse intensity=0.20-0.60]
+    <p>Множественные паттерн блоки в одном файле, каждый с заголовком:</p>
+    <pre><code class="lang-text">[metal verse intensity=0.20-0.60]
 K   x.x.x.x.x.x.x.x
 S   ..x...x...x...x.
 HH  x.x.x.x.x.x.x.x
 ...
-| 
+|
 K   x.x.x.x.x.x.x.x
 ...
 
@@ -651,144 +653,141 @@ K   x.x.x.x.x.x.x.x
 ...
 </code></pre>
 
-<p>When loading a config file, the editor:</p>
-<ul>
-<li>Parses all blocks and populates the block selector dropdown.</li>
-<li>Shows block navigation UI (selector, Prev/Next, editable header fields).</li>
-<li>Allows surgical save of individual blocks without rewriting the entire file.</li>
-</ul>
+    <p>Загрузка config файла, редактор:</p>
+    <ul>
+      <li>Парсит все блоки и заполняет блок селектор dropdown.</li>
+      <li>Показывает блок навигацию UI (селектор, Prev/Next, редактируемые header поля).</li>
+      <li>Позволяет хирургическое сохранение отдельных блоков без перезаписи всего файла.</li>
+    </ul>
 
-<h4>2. Foreign Tab Format (single pattern, no block headers)</h4>
+    <h4>2. Иностранный Tab Формат (один паттерн, нет блок заголовков)</h4>
 
-<p>Simple format with instrument lines only:</p>
-
-<pre><code class="lang-text">K   x.x.x.x.x.x.x.x
+    <p>Простой формат только строки инструментов:</p>
+    <pre><code class="lang-text">K   x.x.x.x.x.x.x.x
 S   ..x...x...x...x.
 HH  x.x.x.x.x.x.x.x
 ...
 </code></pre>
 
-<p>These are loaded as a single editable pattern without block navigation.</p>
+    <p>Загружаются как один редактируемый паттерн без блок навигации.</p>
 
-<h3 id="step-editor-grid-editing">Step Grid Editing</h3>
+    <h3 id="step-editor-grid-redaktirovanie">Step Grid Редактирование</h3>
+    <ul>
+      <li><strong>Клик ячейки</strong> для цикла: <code>.</code> → <code>x</code> → <code>X</code> → <code>o</code> → <code>g</code> → <code>.</code></li>
+      <li><strong>Диапазон выбор:</strong> Перетащите для выбора множества ячеек. Используйте <strong>Save Pattern As</strong> для экспорта только выбранной области.</li>
+      <li><strong>Инструмент аббревиатуры:</strong> Фиксированная левая колонка (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4).</li>
+      <li><strong>Шаг номера:</strong> Верхняя строка показывает шаг индекс внутри каждого такта.</li>
+      <li><strong>Такты разделители:</strong> Толстые вертикальные линии отмечают такт границы.</li>
+      <li><strong>Страницы:</strong> Используйте <strong>Prev/Next Page</strong> кнопки или Zoom dropdown для навигации больших паттернов.</li>
+    </ul>
 
-<ul>
-<li><strong>Click a cell</strong> to cycle: <code>.</code> → <code>x</code> → <code>X</code> → <code>o</code> → <code>g</code> → <code>.</code></li>
-<li><strong>Range selection:</strong> Drag to select multiple cells. Use <strong>Save Pattern As</strong> to export only the selected region.</li>
-<li><strong>Instrument abbreviations:</strong> Fixed left column (K, S, RS, SS, H, HO, HP, R, RB, C, C2, CH, SP, T1, T2, T3, T4).</li>
-<li><strong>Step numbers:</strong> Top row shows step index within each bar.</li>
-<li><strong>Bar delimiters:</strong> Thicker vertical lines mark bar boundaries.</li>
-<li><strong>Pages:</strong> Use <strong>Prev/Next Page</strong> buttons or the Zoom dropdown to navigate large patterns.</li>
-</ul>
+    <h3 id="step-editor-blok-upravlenie">Блок Управление (Только Config Файлы)</h3>
 
-<h3 id="step-editor-block-management">Block Management (Config Files Only)</h3>
+    <p>Когда config файл загружен:</p>
+    <ul>
+      <li><strong>Блок Селектор:</strong> Dropdown показывающий все блоки форматом <code>Style Kind (IntensityLow-IntensityHigh)</code>. Модифицированные блоки показывают суффикс <code>*</code>.</li>
+      <li><strong>Prev/Next:</strong> Навигация между блоками.</li>
+      <li><strong>Header Поля:</strong> Редактируйте Style, Kind, Intensity Low, Intensity High прямо. Изменения помечают блок как модифицированный.</li>
+      <li><strong>Save Block:</strong> Пишет только текущий блок обратно в исходный файл (хирургическое сохранение).</li>
+      <li><strong>New Block:</strong> Добавляет новый пустой блок (с текущим meter/разрешением) в файл.</li>
+      <li><strong>Delete Block:</strong> Удаляет текущий блок из файла (требует подтверждения, оставляет минимум один блок).</li>
+    </ul>
 
-<p>When a config file is loaded:</p>
+    <h3 id="step-editor-sohranenie-patternov">Сохранение Паттернов</h3>
 
-<ul>
-<li><strong>Block Selector:</strong> Dropdown showing all blocks with format <code>Style Kind (IntensityLow-IntensityHigh)</code>. Modified blocks show a <code>*</code> suffix.</li>
-<li><strong>Prev/Next:</strong> Navigate between blocks.</li>
-<li><strong>Header Fields:</strong> Edit Style, Kind, Intensity Low, Intensity High directly. Changes mark the block as modified.</li>
-<li><strong>Save Block:</strong> Writes only the current block back to its source file (surgical save).</li>
-<li><strong>New Block:</strong> Appends a new empty block (with current meter/resolution) to the file.</li>
-<li><strong>Delete Block:</strong> Removes the current block from the file (requires confirmation, keeps at least one block).</li>
-</ul>
+    <p><strong>Save Pattern As:</strong> Экспортирует текущую grid (или выбранную область) как новый <code>.tab</code> файл в <code>config/grooves/<style>.tab</code> или <code>config/fills/<style>.tab</code> в зависимости от Groove/Fill режима.</p>
 
-<h3 id="step-editor-saving-patterns">Saving Patterns</h3>
+    <p><strong>Save Block:</strong> (Только config файлы) Хирургически обновляет текущий блок в его исходном файле.</p>
 
-<p><strong>Save Pattern As:</strong> Exports the current grid (or selected region) as a new <code>.tab</code> file in <code>config/grooves/<style>.tab</code> or <code>config/fills/<style>.tab</code> depending on Groove/Fill mode.</p>
+    <h3 id="step-editor-dark-mode">Dark Mode</h3>
 
-<p><strong>Save Block:</strong> (Config files only) Surgically updates the current block in its source file.</p>
+    <p>На Windows редактор детектит системную тему (светлая/тёмная) при старте и применяет автоматически. Тема предпочтения сохраняется и восстанавливается при следующем запуске. Все контролы themed:</p>
+    <ul>
+      <li>Фон формы, панели, лейблы</li>
+      <li>String grid (ячейки, фиксированные ячейки, текст, grid линии)</li>
+      <li>Combo boxes (owner-draw для dropdown items)</li>
+      <li>Status bar (owner-draw панель)</li>
+      <li>Кнопки, edits, memos</li>
+    </ul>
 
-<h3 id="step-editor-dark-mode">Dark Mode</h3>
+    <h3 id="step-editor-auto-scaling">Auto-Scaling (High DPI)</h3>
 
-<p>On Windows, the editor detects the system theme (light/dark) at startup and applies it automatically. The theme preference is saved and restored on next launch. All controls are themed:</p>
+    <p>Редактор использует <code>AutoScale.pas</code> для пропорционального векторного масштабирования. На high-DPI дисплеях все контролы, шрифты, и отступы масштабируются пропорционально. Скалер:</p>
+    <ul>
+      <li>Вычисляет scale factor от design-time DPI (96) к runtime DPI.</li>
+      <li>Масштабирует позиции контролов, размеры, шрифты, и grid ячейки размеры.</li>
+      <li>Сохраняет aspect ratios и layout целостность.</li>
+    </ul>
 
-<ul>
-<li>Form background, panels, labels</li>
-<li>String grid (cells, fixed cells, text, grid lines)</li>
-<li>Combo boxes (owner-draw for dropdown items)</li>
-<li>Status bar (owner-draw panel)</li>
-<li>Buttons, edits, memos</li>
-</ul>
+    <h3 id="step-editor-komandnaya-stroka">Командная Строка Ссылка (midi_to_tab.exe)</h3>
 
-<h3 id="step-editor-auto-scaling">Auto-Scaling (High DPI)</h3>
-
-<p>The editor uses <code>AutoScale.pas</code> for proportional vectorial scaling. On high-DPI displays, all controls, fonts, and spacing scale proportionally. The scaler:</p>
-
-<ul>
-<li>Computes a scale factor from the design-time DPI (96) to runtime DPI.</li>
-<li>Scales control positions, sizes, fonts, and grid cell dimensions.</li>
-<li>Maintains aspect ratios and layout integrity.</li>
-</ul>
-
-<h3 id="step-editor-command-line">Command-Line Reference (midi_to_tab.exe)</h3>
-
-<p>The Step Editor uses <code>midi_to_tab.exe</code> internally. You can also run it directly:</p>
-
-<pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
+    <p>Step Editor использует <code>midi_to_tab.exe</code> внутренне. Можно запускать напрямую:</p>
+    <pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
 
 Options:
-  --mapping <file>     Keymap JSON (default: built-in GM)
-  --style <name>       Groove style name
-  --kind <name>        Groove kind (verse, chorus, bridge, intro, outro, fill)
-  --intensity <low-high>  Groove intensity band (e.g., 0.2-0.6)
-  --energy <0-1>        Fill energy level
-  --resolution <n>      Steps per quarter note (4, 8, 16, 32)
-  --meter <n/d>         Time signature (e.g., 4/4, 7/8, 4/4T)
-  --fill                 Output fill block instead of groove
-  --output <file>        Write tab to file (default: stdout)
-</code></pre>
+  --mapping <file>       Keymap JSON (default: built-in GM)
+  --style <name>         Groove style name
+  --kind <name>          Groove kind (verse, chorus, bridge, intro, outro, fill)
+  --intensity <low-high> Groove intensity band (e.g., 0.2-0.6)
+  --energy <0-1>         Fill energy level
+  --resolution <n>       Steps per quarter note (4, 8, 16, 32)
+  --meter <n/d>          Time signature (e.g., 4/4, 7/8, 4/4T)
+  --fill                  Output fill block instead of groove
+  --output <file>         Write tab to file (default: stdout)</code></pre>
 
-<h3 id="step-editor-tips">Tips & Best Practices</h3>
+    <h3 id="step-editor-sovety">Советы & Лучшие Практики</h3>
+    <ul>
+      <li><strong>Начните из config:</strong> Загрузите существующий groove/fill из <code>config/</code> как шаблон.</li>
+      <li><strong>Используйте блок навигацию:</strong> Редактируя config файлы, используйте блок селектор для прыжков между verse/chorus/bridge вариантами.</li>
+      <li><strong>Хирургическое сохранение:</strong> Используйте <strong>Save Block</strong> для обновления одного паттерна не трогая другие в том же файле.</li>
+      <li><strong>Такт важен:</strong> Установите правильный такт перед MIDI конвертацией или добавлением тактов — он определяет шаги на такт.</li>
+      <li><strong>Триольный feel:</strong> Добавьте <code>T</code> к такту для триольных grids (напр. <code>4/4T</code> = 12 шагов на такт при разрешении 16).</li>
+      <li><strong>Dark mode:</strong> Если цвета неверны, переключите системную тему или перезапустите редактор для ре-детекта.</li>
+    </ul>
 
-<ul>
-<li><strong>Start from config:</strong> Load an existing groove/fill from <code>config/</code> to use as a template.</li>
-<li><strong>Use block navigation:</strong> When editing config files, use the block selector to jump between verse/chorus/bridge variants.</li>
-<li><strong>Surgical save:</strong> Use <strong>Save Block</strong> to update a single pattern without touching others in the same file.</li>
-<li><strong>Meter matters:</strong> Set the correct meter before converting MIDI or adding bars — it determines steps per bar.</li>
-<li><strong>Triplet feel:</strong> Append <code>T</code> to meter for triplet-based grids (e.g., <code>4/4T</code> = 12 steps per bar at resolution 16).</li>
-<li><strong>Dark mode:</strong> If colors look wrong, toggle system theme or restart the editor to re-detect.</li>
-</ul>
-<h2 id="appendix-source-code-principles">Appendix: Source Code Principles</h2>
+    <hr>
 
-<h3 id="design-patterns">Design Patterns</h3>
+    <h2 id="prilozhenie-printsipy-iskhodnogo-koda">Приложение: Принципы Исходного Кода</h2>
 
-<li><strong>Plugin architecture</code> — Genre and drummer plugins loaded at runtime from <code>.pas</code> files</li>
-<li><strong>No hardcoded MIDI notes</code> — All notes come from JSON keymap files</li>
-<li><strong>File-driven configuration</code> — Grooves, fills, defaults, sections are plain text/JSON</li>
-<li><strong>Same engine for GUI and CLI</code> — No separate code paths</li>
+    <h3 id="dizayn-patterny">Паттерны Дизайна</h3>
+    <ul>
+      <li><strong>Плагин архитектура</strong> — Жанр и барабанщик плагины скомпилированы в исполняемый файл</li>
+      <li><strong>Нет захардкоженных MIDI нот</strong> — Все ноты из JSON keymap файлов</li>
+      <li><strong>Файл-драйвен конфигурация</strong> — Grooves, fills, defaults, sections — plain text/JSON</li>
+      <li><strong>Один движок для графического интерфейса и командной строки</strong> — Нет раздельных кодовых путей</li>
+    </ul>
 
-<h3 id="key-constants">Key Constants</h3>
+    <h3 id="klyuchevye-konstanty">Ключевые Константы</h3>
+    <ul>
+      <li><code>TDrumInstrument</code> — динамическая барабан идентичность (имя, описание, метаданные)</li>
+      <li><code>TPattern</code> / <code>TBeat</code> — паттерн и удар модели данных</li>
+      <li><code>TComposerV2</code> — такт-за-тактом композиционный движок</li>
+      <li><code>TBarSelector</code> — groove выбор на такт</li>
+      <li><code>TFillPicker</code> — fill размещение и выбор</li>
+      <li><code>TMacroComposer</code> — макро-фаза управление</li>
+      <li><code>TAdvancedHumanizer</code> — timing/velocity jitter</li>
+      <li><code>TPhysicalConstraints</code> / <code>TPatternFixer</code> — играемость лимиты</li>
+    </ul>
 
-<li><code>TDrumInstrument</code> — dynamic drum identity (name, description, metadata)</li>
-<li><code>TPattern</code> / <code>TBeat</code> — pattern and beat data models</li>
-<li><code>TComposerV2</code> — bar-by-bar composition engine</li>
-<li><code>TBarSelector</code> — groove selection per bar</li>
-<li><code>TFillPicker</code> — fill placement and selection</li>
-<li><code>TMacroComposer</code> — macro phase management</li>
-<li><code>TAdvancedHumanizer</code> — timing/velocity jitter</li>
-<li><code>TPhysicalConstraints</code> / <code>TPatternFixer</code> — playability limits</li>
+    <h3 id="pattern-template-sistema">Pattern Template Система</h3>
 
-<h3 id="pattern-template-system">Pattern Template System</h3>
+    <p>Grooves и fills определены в <code>.tab</code> файлах с блок заголовками объявляющими стиль, такт, и интенсивность. Движок выбирает паттерны основанные на этих декларациях, не на захардкоженных правилах.</p>
 
-<p>Grooves and fills are defined in <code>.tab</code> files with block headers that declare style, meter, and intensity. The engine selects patterns based on these declarations, not hardcoded rules.</p>
-
-</div>
+  </div>
 </section>
 
 <section class="download-section">
   <div class="container">
-    <h2>Download v1.0.895</h2>
-    <p>Get the latest release from GitHub:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">Download v1.0.895</a>
+    <h2>Скачать v1.1.35</h2>
+    <p>Скачайте последнюю версию с GitHub:</p>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">Скачать v1.1.35</a>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
-    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+    <p>ChameleonDrummer — FreePascal / Lazarus Генерация MIDI для барабанов.</p>
+    <p>Источник: <code>ChameleonDrummer/</code> · Руководство: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
   </div>
 </footer>
 

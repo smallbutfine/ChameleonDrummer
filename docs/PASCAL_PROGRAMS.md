@@ -1,6 +1,6 @@
 # Pascal Programs — Extensive Documentation
 
-This document provides a comprehensive analysis of the two Pascal programs that make up the ChameleonDrummer system: the **CLI executable** and the **GUI application**. Both are Free Pascal / LCL-based implementations that wrap the same underlying engine (`ComposerV2`, `DrumGenerator`, `PluginRegistry`, `Kit`) to generate MIDI drum tracks across 5 genres, 38 styles, 15 drummer personalities, and multiple keymaps.
+This document provides a comprehensive analysis of the two Pascal programs that make up the ChameleonDrummer system: the **CLI executable** and the **GUI application**. Both are Free Pascal / LCL-based implementations that wrap the same underlying engine (`ComposerV2`, `DrumGenerator`, `PluginRegistry`, `Kit`) to generate MIDI drum tracks across 5 genres, 32 styles total, 17 drummers, and multiple keymaps.
 
 ---
 

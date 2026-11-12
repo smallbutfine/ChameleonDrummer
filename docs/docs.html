@@ -34,14 +34,14 @@
     <div class="docs-grid">
       <article class="doc-card">
         <h3>User Manual</h3>
-        <p>The complete user manual with installation instructions, quick start guide, CLI and GUI references, advanced features, external data files, MIDI → tab conversion, and troubleshooting.</p>
+        <p>The complete user manual with installation instructions, quick start guide, command line interface and graphical user interface references, advanced features, external data files, MIDI → tab conversion, and troubleshooting.</p>
         <a href="manual.html" class="btn">Read Manual</a>
       </article>
       
       <article class="doc-card">
         <h3>Pascal Program Documentation</h3>
-        <p>Detailed analysis of the two Pascal programs (CLI and GUI) with file structure, entry points, command parsing, and implementation details.</p>
-        <a href="PASCAL_PROGRAMS.md" class="btn">Read Pascal Docs</a>
+        <p>Detailed analysis of the two Pascal programs (command line interface and graphical user interface) with file structure, entry points, command parsing, and implementation details.</p>
+        <a href="../docs/PASCAL_PROGRAMS.md" class="btn">Read Pascal Docs</a>
       </article>
       
       <article class="doc-card">
@@ -55,10 +55,10 @@
       <h3>Quick Reference</h3>
       <p>For immediate usage, refer to:</p>
       <ul>
-        <li><strong>CLI Commands</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li>
-        <li><strong>GUI Usage</strong> — Select genre, style, drummer, mapping, then click Generate</li>
+        <li><strong>Command Line Interface Commands</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li>
+        <li><strong>Graphical User Interface Usage</strong> — Select genre, style, drummer, mapping, then click Generate</li>
         <li><strong>Available Options</strong> — <code>chameleondrummer list genres</code>, <code>chameleondrummer list styles --genre jazz</code>, <code>chameleondrummer list drummers</code></li>
-        <li><strong>Pattern Format Reference</strong> — <a href="README.md">README.md</a> (full groove/fill syntax, meters, instruments)</li>
+        <li><strong>Pattern Format Reference</strong> — <a href="../../README.md">README.md</a> (full groove/fill syntax, meters, instruments)</li>
         <li><strong>Odd Meters</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
       </ul>
     </div>
@@ -67,7 +67,7 @@
       <h3>Pattern Format Quick Reference</h3>
       <p>Grooves and fills are plain text files you can edit in any text editor. No recompilation needed.</p>
       
-      <h4>Groove Block (<code>config/grooves/<genre>.tab</code>)</h4>
+      <h4>Groove Block (<code>config/grooves/&lt;genre&gt;.tab</code>)</h4>
       <pre><code>[rock verse intensity=0.20-0.60]
 K  x... .... x... .... | x... .... x... ..x.
 S  .... x... .... x... | .... x... .... x...
@@ -79,7 +79,7 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
         <li><strong>Bars</strong>: Separated by <code>|</code>; spaces ignored; shorter lines repeat</li>
       </ul>
       
-      <h4>Fill Block (<code>config/fills/<drummer&gt;.tab</code>)</h4>
+      <h4>Fill Block (<code>config/fills/&lt;drummer&gt;.tab</code>)</h4>
       <pre><code>[bonham_fill_short energy=0.3]
 S ... ... ... xxx</code></pre>
       <ul>
@@ -119,16 +119,16 @@ S ... ... ... xxx</code></pre>
         <li><strong>Auto-Scaling:</strong> Proportional vectorial scaling for high-DPI displays</li>
         <li><strong>Export:</strong> Save as new groove/fill <code>.tab</code> files in <code>config/</code></li>
       </ul>
-      <p><strong>Launch:</strong> GUI toolbar button, direct executable, or from REAPER/Ardour panels.</p>
+      <p><strong>Launch:</strong> graphical user interface toolbar button, direct executable, or from REAPER/Ardour panels.</p>
     </div>
   </div>
 </section>
 
 <section class="download-section">
   <div class="container">
-    <h2>Download v1.0.895</h2>
+    <h2>Download v1.1.35</h2>
     <p>Get the latest release from GitHub:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.0.895" class="btn">Download v1.0.895</a>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">Download v1.1.35</a>
   </div>
 </section>
 
