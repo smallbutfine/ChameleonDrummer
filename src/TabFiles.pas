@@ -13,6 +13,7 @@ unit TabFiles;
       [heavy verse intensity=0.2-0.6]
       [short energy=0.3]
       [heavy verse 7/8 intensity=0.2-0.6]     a groove for 7/8
+      [heavy verse 7/8T intensity=0.2-0.6]    a groove for 7/8 with triplet feel
   A word like 7/8 is a meter: it is taken out of the words and returned in
   MeterNum/MeterDen (0/0 when there is none, which means 4/4). What the other
   words and keys mean is up to the caller (grooves, fills). This unit only
@@ -29,9 +30,11 @@ uses
 type
   TTabWords = array of string;
 
-  { A single time signature from a header, e.g. 7/8 or _6_8_. }
+  { A single time signature from a header, e.g. 7/8 or 7/8T.
+    TripletFeel = True when the 'T' suffix is present (triplet feel). }
   TMeterPair = record
     Num, Den: Integer;
+    TripletFeel: Boolean;
   end;
 
   TTabBlock = record
@@ -58,7 +61,8 @@ function BlockKey(const ABlock: TTabBlock; const AKey: string; out AValue: strin
 
 { Returns the meter for bar index ABarIndex. Cycles through header meters.
   Returns False when the header has no meters (infer from tab). }
-function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
+function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer; out ATripletFeel: Boolean): Boolean; overload;
+function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer): Boolean; overload;
 
 { "name(line): text" - the shape of every message about a file. }
 function TabMessage(const AFileName: string; ALine: Integer; const AText: string): string;
@@ -85,21 +89,31 @@ begin
 end;
 
 { Returns the meter for bar index ABarIndex. Cycles through header meters.
-  Returns Num=0, Den=0 when the header has no meters (infer from tab). }
-function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
+  Returns False when the header has no meters (infer from tab). }
+function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer; out ATripletFeel: Boolean): Boolean;
 begin
   AMeterNum := 0;
   AMeterDen := 0;
+  ATripletFeel := False;
   if Length(ABlock.Meters) = 0 then
     Exit(False);
   AMeterNum := ABlock.Meters[ABarIndex mod Length(ABlock.Meters)].Num;
   AMeterDen := ABlock.Meters[ABarIndex mod Length(ABlock.Meters)].Den;
+  ATripletFeel := ABlock.Meters[ABarIndex mod Length(ABlock.Meters)].TripletFeel;
   Exit(True);
+end;
+
+function BlockMeter(const ABlock: TTabBlock; ABarIndex: Integer; out AMeterNum, AMeterDen: Integer): Boolean;
+var
+  DummyTriplet: Boolean;
+begin
+  Result := BlockMeter(ABlock, ABarIndex, AMeterNum, AMeterDen, DummyTriplet);
 end;
 
 function ParseTabLines(ALines: TStrings; const AFileName: string): TTabBlocks;
 var
   I, P, N, MN, MD: Integer;
+  MTriplet: Boolean;
   Line, Head, Word, NormalizedWord, Problem: string;
   Parts: TStringList;
   Open: Boolean;
@@ -161,7 +175,7 @@ begin
           begin
             { Collect meter words like 7/8 from the header. }
             { Underscore notation like _6_8_ is NOT accepted - only proper N/D. }
-            if TryParseMeter(Word, MN, MD) then
+            if TryParseMeterWithTriplet(Word, MN, MD, MTriplet) then
             begin
               Problem := MeterProblem(MN, MD);
               if Problem <> '' then
@@ -177,6 +191,7 @@ begin
                 SetLength(Cur.Meters, N + 1);
                 Cur.Meters[N].Num := MN;
                 Cur.Meters[N].Den := MD;
+                Cur.Meters[N].TripletFeel := MTriplet;
               end;
             end
             else

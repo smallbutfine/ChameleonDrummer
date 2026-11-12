@@ -144,6 +144,7 @@ var
   Parts: TStringList;
   Text, Problem, BpmText: string;
   I: Integer;
+  DummyTriplet: Boolean;
 const
   HELP = 'expected name:bars:bpm:num/den, e.g. bridge:4:96:7/8 (bpm - keeps the song tempo)';
 begin
@@ -186,7 +187,7 @@ begin
           [ASpec, MIN_SECTION_TEMPO, MAX_SECTION_TEMPO]);
     end;
 
-    if not TryParseMeter(Parts[3], Result.MeterNum, Result.MeterDen) then
+    if not TryParseMeterWithTriplet(Parts[3], Result.MeterNum, Result.MeterDen, DummyTriplet) then
       raise Exception.CreateFmt('Invalid --segment "%s": "%s" is not a meter like 7/8 (%s)',
         [ASpec, Parts[3], HELP]);
     Problem := MeterProblem(Result.MeterNum, Result.MeterDen);

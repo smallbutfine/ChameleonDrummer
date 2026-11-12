@@ -11,27 +11,33 @@ uses
 
 type
 
-{ TimeSignature â€” time signature representation. }
+{ TimeSignature — time signature representation. }
 TTimeSignature = class
   Numerator: Integer;
   Denominator: Integer;
+  TripletFeel: Boolean;
 private
   function GetBeatsPerBar: double;
 public
-  constructor Create(ANumerator, ADenominator: Integer);
+  constructor Create(ANumerator, ADenominator: Integer; ATripletFeel: Boolean = False);
   destructor Destroy; override;
   procedure Validate;
+  function GetStepsPerBar(AResolution: Integer): Integer;
   property BeatsPerBar: double read GetBeatsPerBar;
+  property StepsPerBar[AResolution: Integer]: Integer read GetStepsPerBar;
 end;
 
 const
   { The meters the engine plays: any numerator from 2 to 32 over 2, 4, 8 or 16
-    (2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8, 15/16 ...). }
+    (2/4, 3/4, 5/4, 7/8, 9/8, 11/8, 13/8, 15/16 ...).
+    Append 'T' for triplet feel (e.g., 4/4T, 7/8T, 5/4T). }
   MIN_METER_NUMERATOR = 2;
   MAX_METER_NUMERATOR = 32;
 
-{ "7/8" -> 7 and 8. False when the text is not two whole numbers around a
-  slash. The numbers are not range-checked here, see MeterProblem. }
+{ "7/8" or "7/8T" -> 7 and 8. False when the text is not two whole numbers around a
+  slash. The numbers are not range-checked here, see MeterProblem.
+  ATripletFeel returns True when the 'T' suffix is present. }
+function TryParseMeterWithTriplet(const AText: string; out ANum, ADen: Integer; out ATripletFeel: Boolean): Boolean;
 function TryParseMeter(const AText: string; out ANum, ADen: Integer): Boolean;
 
 { '' when the engine can play the meter, else what is wrong with it. }
@@ -55,8 +61,9 @@ function MeterBackbeats(ANum, ADen: Integer): specialize TArray<Double>;
 { Length of one unit (1/ADen) in quarter notes. }
 function MeterUnitQuarters(ADen: Integer): Double;
 
-{ '7/8' }
-function MeterName(ANum, ADen: Integer): string;
+{ '7/8' or '7/8T' }
+function MeterName(ANum, ADen: Integer; ATripletFeel: Boolean = False): string;
+
 
 implementation
 
@@ -70,14 +77,21 @@ begin
       Exit(False);
 end;
 
-function TryParseMeter(const AText: string; out ANum, ADen: Integer): Boolean;
+function TryParseMeterWithTriplet(const AText: string; out ANum, ADen: Integer; out ATripletFeel: Boolean): Boolean;
 var
   P: Integer;
   T, A, B: string;
 begin
   ANum := 0;
   ADen := 0;
+  ATripletFeel := False;
   T := Trim(AText);
+  { Check for 'T' suffix for triplet feel }
+  if (Length(T) > 0) and (UpCase(T[Length(T)]) = 'T') then
+  begin
+    ATripletFeel := True;
+    T := Copy(T, 1, Length(T) - 1);
+  end;
   P := Pos('/', T);
   Result := False;
   if P < 2 then
@@ -89,6 +103,13 @@ begin
   ANum := StrToInt(A);
   ADen := StrToInt(B);
   Result := True;
+end;
+
+function TryParseMeter(const AText: string; out ANum, ADen: Integer): Boolean;
+var
+  DummyTriplet: Boolean;
+begin
+  Result := TryParseMeterWithTriplet(AText, ANum, ADen, DummyTriplet);
 end;
 
 function MeterProblem(ANum, ADen: Integer): string;
@@ -176,17 +197,21 @@ begin
     Result := 4.0 / ADen;
 end;
 
-function MeterName(ANum, ADen: Integer): string;
+function MeterName(ANum, ADen: Integer; ATripletFeel: Boolean = False): string;
 begin
   Result := IntToStr(ANum) + '/' + IntToStr(ADen);
+  if ATripletFeel then
+    Result := Result + 'T';
 end;
+
 
 { ── TimeSignature ─────────────────────────────── }
 
-constructor TTimeSignature.Create(ANumerator, ADenominator: Integer);
+constructor TTimeSignature.Create(ANumerator, ADenominator: Integer; ATripletFeel: Boolean = False);
 begin
   Numerator := ANumerator;
   Denominator := ADenominator;
+  TripletFeel := ATripletFeel;
   Validate;
 end;
 
@@ -207,6 +232,13 @@ end;
 function TTimeSignature.GetBeatsPerBar: double;
 begin
   Result := Numerator * (4.0 / Denominator);
+end;
+
+function TTimeSignature.GetStepsPerBar(AResolution: Integer): Integer;
+begin
+  Result := Numerator * AResolution div Denominator;
+  if TripletFeel then
+    Result := Result * 3 div 2;
 end;
 
 destructor TTimeSignature.Destroy;
