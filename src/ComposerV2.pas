@@ -792,6 +792,7 @@ var
   HasVocabulary: Boolean;
   GenericWeight, GmdShare, VocabShare, WeightSum: Double;
   NewFill: TFill;
+  SectionIntensitiesLocal: specialize TArray<Double>;
 begin
   if not Assigned(FPluginManager.Registry.GetGenrePlugin(Genre)) then
     raise Exception.CreateFmt('Unsupported genre: %s', [Genre]);
@@ -906,11 +907,15 @@ begin
       if not Assigned(FGenrePlugin) then
         Continue;
       { Grooves, fills and the fallback groove are built in this section's meter. }
+      WriteLn('DEBUG: about to SetMeter ' + IntToStr(SectionMeterNum) + '/' + IntToStr(SectionMeterDen));
       FGenrePlugin.SetMeter(SectionMeterNum, SectionMeterDen);
+      WriteLn('DEBUG: about to SetTripletFeel ' + BoolToStr(SectionDef.TripletFeel, True));
       FGenrePlugin.SetTripletFeel(SectionDef.TripletFeel);
+      WriteLn('DEBUG: about to set Params');
       Params.MeterNum := SectionMeterNum;
       Params.MeterDen := SectionMeterDen;
       Params.TripletFeel := SectionDef.TripletFeel;
+      WriteLn('DEBUG: about to GetSectionCurveMap');
 
       { Calculate section intensity range from curve map for flavor filtering }
       MinIntensityRange := 1.0;
@@ -926,16 +931,22 @@ begin
       if not Assigned(FGenrePlugin) then
         Continue;
 
+      WriteLn('DEBUG: about to GetSectionFlavorsFiltered');
       { Load section patterns — intensity-aware flavor selection }
       Flavors := FGenrePlugin.GetSectionFlavorsFiltered(SectionName, Params, MinIntensityRange, MaxIntensityRange);
+      WriteLn('DEBUG: GetSectionFlavorsFiltered done, count=' + IntToStr(Flavors.Count));
       if not Assigned(Flavors) then
         Flavors := specialize TList<TPattern>.Create;
+      WriteLn('DEBUG: about to GetPatterns GMD');
       GMDFlavors := FGMDPatternLibrary.GetPatterns(
         Genre, Style, 'beat', SectionMeterNum, SectionMeterDen);
+      WriteLn('DEBUG: GetPatterns GMD done, count=' + IntToStr(GMDFlavors.Count));
+      WriteLn('DEBUG: about to process GMD flavors');
       try
         for Idx := 0 to GMDFlavors.Count - 1 do
         begin
           FlavorItem := GMDFlavors[Idx];
+          WriteLn('DEBUG: GMD flavor ' + IntToStr(Idx));
           try
             Flavors.Add(FGenrePlugin.AdaptExternalPattern(FlavorItem, Params));
           finally
@@ -950,10 +961,13 @@ begin
         GMDFlavors := nil;
       end;
 
+      WriteLn('DEBUG: about to build Available');
       Available := specialize TList<TPattern>.Create;
       for FlavorItem in Flavors do
         if Assigned(FlavorItem) then
           Available.Add(FlavorItem);
+      WriteLn('DEBUG: Available count=' + IntToStr(Available.Count));
+      WriteLn('DEBUG: before meter filter');
 
       { Strict meter filtering: when --strict-meter is set, only keep patterns
         whose time signature matches the requested song meter. }
@@ -962,6 +976,13 @@ begin
         J := Available.Count - 1;
         while J >= 0 do
         begin
+          WriteLn('DEBUG: strict filter J=' + IntToStr(J));
+          if not Assigned(Available[J]) then
+          begin
+            WriteLn('DEBUG: strict filter Available[' + IntToStr(J) + '] is nil');
+            Dec(J);
+            Continue;
+          end;
           if (Available[J].TimeSignature.Numerator <> ASongMeterNum) or
              (Available[J].TimeSignature.Denominator <> ASongMeterDen) or
              (Available[J].TimeSignature.TripletFeel <> Params.TripletFeel) then
@@ -987,11 +1008,21 @@ begin
         Patterns without first_meter metadata (inferred meter) are kept as-is. }
       if (not AStrictMeter) and (ASongMeterNum <> 0) and (ASongMeterDen <> 0) then
       begin
+        WriteLn('DEBUG: entering non-strict meter filter');
         J := Available.Count - 1;
         while J >= 0 do
         begin
+          WriteLn('DEBUG: non-strict filter J=' + IntToStr(J));
+          if not Assigned(Available[J]) then
+          begin
+            WriteLn('DEBUG: non-strict filter Available[' + IntToStr(J) + '] is nil');
+            Dec(J);
+            Continue;
+          end;
+          WriteLn('DEBUG: non-strict filter About to access Metadata');
           HasFirstMeter := Available[J].Metadata.TryGetValue('first_meter_num', FirstMeterNumStr) and
                            Available[J].Metadata.TryGetValue('first_meter_den', FirstMeterDenStr);
+          WriteLn('DEBUG: non-strict filter HasFirstMeter=' + BoolToStr(HasFirstMeter, True));
           if HasFirstMeter then
           begin
             FirstMeterNum := StrToIntDef(FirstMeterNumStr, -1);
@@ -1014,20 +1045,28 @@ begin
               Available.Add(FlavorItem);
         end;
       end;
+      WriteLn('DEBUG: after meter filter, Available count=' + IntToStr(Available.Count));
+      WriteLn('DEBUG: before MacroComposer.Create, FRng assigned=' + BoolToStr(Assigned(FRng), True));
 
       { Macro-composer phase tracking }
       MacroComposer := TMacroComposer.Create(FRng.NextInt(10000));
+      WriteLn('DEBUG: after MacroComposer.Create');
       NextPhraseBar := 0;
       CurrentPhraseStartBar := 0;
       PhraseIndex := 0;
 
       for BarIndex := 0 to Bars - 1 do
       begin
+        WriteLn('DEBUG: bar loop BarIndex=' + IntToStr(BarIndex) + ' of ' + IntToStr(Bars));
         { Get intensity point for this bar position }
+        WriteLn('DEBUG: about to GetIntensityPt');
         IntensityPt := GetIntensityPt(CurveMap, SectionName, BarIndex, Bars);
+        WriteLn('DEBUG: GetIntensityPt done, IntensityPt=' + FloatToStr(IntensityPt));
 
         { Determine macro-composer phase for purposeful variation }
+        WriteLn('DEBUG: about to DeterminePhase');
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
+        WriteLn('DEBUG: DeterminePhase done');
 
         if BarIndex >= NextPhraseBar then
         begin
@@ -1133,6 +1172,8 @@ begin
         end;
         GeneratedBars.Add(FinalPattern);
       end;
+      
+
 
       { Combine bars into a section }
       Combined := nil;
@@ -1140,14 +1181,18 @@ begin
         CombineBarPatterns(GeneratedBars, Combined);
 
       { Precompute per-bar intensity values for the fill picker }
-      SetLength(SectionIntensities, Bars);
+      SetLength(SectionIntensitiesLocal, Bars);
+
       for JBar := 0 to Bars - 1 do
-        SectionIntensities[JBar] := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
-      {
-        Determine fill placement based on section context using precomputed intensities
-      }
+      begin
+        SectionIntensitiesLocal[JBar] := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
+
+      end;
+
+
       Fills := FFilPicker.PickFillsForSection(
-        Genre, Params, Bars, SectionName, FillBarIndices, SectionIntensities);
+        Genre, Params, Bars, SectionName, FillBarIndices, SectionIntensitiesLocal);
+
 
       { Where a fill comes from, by weight: the drummer's own vocabulary
         (GetSignatureFills of the drummer plugin) first, recorded GMD fills
@@ -1210,6 +1255,7 @@ begin
           SignatureFills.Free;
         end;
       end;
+      WriteLn('DEBUG: after vocabulary try-finally');
 
       { Fills written on the 16th grid swing with the groove; recorded GMD
         fills (added below) keep their own feel. }
@@ -1473,15 +1519,14 @@ var
   InstName: string;
 //  DebugF: TextFile;
 begin
-  // Debug output for diagnosis
-  //AssignFile(DebugF, 'combine_debug.txt');
-  //Rewrite(DebugF);
-  //WriteLn(DebugF, '[CombineBarPatterns] input_bars=' + IntToStr(GeneratedBars.Count));
+  
   if not Assigned(GeneratedBars) or (GeneratedBars.Count = 0) then
     Exit;
-
+  
   TargetPattern := GeneratedBars[0].Copy;
+    
   //WriteLn(DebugF, '  bar0 beats:');
+  
   for Beat in GeneratedBars[0].Beats do
   begin
     if Assigned(Beat.Instrument) then
@@ -1490,14 +1535,18 @@ begin
       InstName := '(nil)';
   //  WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position) + '] name=' + InstName);
   end;
+  
+  
 
   for IBeat := 1 to GeneratedBars.Count - 1 do
   begin
-    { Add beats from subsequent bars, offsetting positions. }
     Offset := IBeat * TargetPattern.TimeSignature.BeatsPerBar;
-  //  WriteLn(DebugF, '  bar' + IntToStr(IBeat) + ' beats:');
+    
+    
+    
     for Beat in GeneratedBars[IBEat].Beats do
     begin
+      
       if Assigned(Beat.Instrument) then
         InstName := Beat.Instrument.Name
       else
@@ -1510,19 +1559,23 @@ begin
       NewBeat.Accent := Beat.Accent;
       NewBeat.InstrumentPromoted := Beat.InstrumentPromoted;
     end;
+    
   end;
-
+  
   TargetPattern.Metadata.AddOrSetValue('phrase_bars', IntToStr(GeneratedBars.Count));
+  
 
 //  WriteLn(DebugF, '  combined beats:');
-  for Beat in TargetPattern.Beats do
+  for IBeat := 0 to TargetPattern.Beats.Count - 1 do
   begin
+    Beat := TargetPattern.Beats[IBeat];
     if Assigned(Beat.Instrument) then
       InstName := Beat.Instrument.Name
     else
       InstName := '(nil)';
  //   WriteLn(DebugF, '    beat[' + FloatToStr(Beat.Position) + '] name=' + InstName);
   end;
+  
 
   Combined := TargetPattern;
 end;

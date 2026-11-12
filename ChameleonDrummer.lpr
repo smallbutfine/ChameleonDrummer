@@ -27,6 +27,7 @@ var
   I: Integer;
 
 begin
+  Randomize;
   try
     if (ParamCount < 1) then
     begin
