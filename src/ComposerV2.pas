@@ -1067,6 +1067,7 @@ begin
         WriteLn('DEBUG: about to DeterminePhase');
         Phase := MacroComposer.DeterminePhase(BarIndex, Bars);
         WriteLn('DEBUG: DeterminePhase done');
+        WriteLn('DEBUG: BarIndex=' + IntToStr(BarIndex) + ' NextPhraseBar=' + IntToStr(NextPhraseBar));
 
         if BarIndex >= NextPhraseBar then
         begin
@@ -1105,7 +1106,9 @@ begin
           else
             NextPhraseBar := BarIndex + 1;
         end;
+        WriteLn('DEBUG: after phrase selection, CurrentPattern=' + Ord(Assigned(CurrentPattern)).ToString);
 
+        WriteLn('DEBUG: about to set BasePattern');
         BasePattern := CurrentPattern;
         DrummedPattern := nil;
         BarSourcePattern := nil;
@@ -1172,11 +1175,15 @@ begin
         end;
         GeneratedBars.Add(FinalPattern);
       end;
+      WriteLn('DEBUG: bar loop complete');
+      WriteLn('DEBUG: about to combine bars for section=' + SectionName);
       
 
 
       { Combine bars into a section }
+      WriteLn('DEBUG: before Combined := nil');
       Combined := nil;
+      WriteLn('DEBUG: after Combined := nil');
       if GeneratedBars.Count > 0 then
         CombineBarPatterns(GeneratedBars, Combined);
 
