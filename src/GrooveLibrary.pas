@@ -337,18 +337,19 @@ function FileGrooveVariants(const AGenre, AStyle, AKind: string;
   AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): TGrooveVariants;
 var
   G: TGenreGrooves;
-  MeterKeyStr, Style: string;
+  Style: string;
   I: Integer;
 
   { The grooves of one style for the kind, else its verse grooves. }
-  function OfStyle(const AStyleName: string; out AVariants: TGrooveVariants): Boolean;
+  function OfStyle(const AStyleName: string; ATriplet: Boolean;
+    out AVariants: TGrooveVariants): Boolean;
   var
     KeyNoMeter, KeyWithMeter: string;
   begin
     KeyNoMeter := AStyleName + '|' + AKind;
     KeyWithMeter := KeyNoMeter;
     if AMeterNum <> 0 then
-      KeyWithMeter := KeyWithMeter + '|' + MeterKey(AMeterNum, AMeterDen, ATripletFeel);
+      KeyWithMeter := KeyWithMeter + '|' + MeterKey(AMeterNum, AMeterDen, ATriplet);
     Result := G.Kinds.TryGetValue(KeyWithMeter, AVariants) or
       G.Kinds.TryGetValue(KeyNoMeter, AVariants) or
       G.Kinds.TryGetValue(AStyleName + '|verse|' + KeyWithMeter, AVariants) or
@@ -362,14 +363,24 @@ begin
     Exit;
   Style := LowerCase(AStyle);
   if G.Styles.IndexOf(Style) >= 0 then
-    if OfStyle(Style, Result) then
+  begin
+    if OfStyle(Style, ATripletFeel, Result) then
       Exit;
+    { Triplet feel requested but no triplet groove: fall back to straight grooves
+      of the same meter. }
+    if ATripletFeel and OfStyle(Style, False, Result) then
+      Exit;
+  end;
   { For a meter other than 4/4 the genre may have grooves for it in another
     style: that is closer than a plain groove. 4/4 keeps the built-ins. }
   if AMeterNum <> 0 then
     for I := 0 to G.Styles.Count - 1 do
-      if OfStyle(G.Styles[I], Result) then
+    begin
+      if OfStyle(G.Styles[I], ATripletFeel, Result) then
         Exit;
+      if ATripletFeel and OfStyle(G.Styles[I], False, Result) then
+        Exit;
+    end;
   Result := nil;
 end;
 

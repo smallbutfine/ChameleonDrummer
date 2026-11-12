@@ -22,6 +22,7 @@ TGenrePlugin = class(TObject)
 private
   FIntensityProfile: specialize TDictionary<string, Double>;
   FMeterNum, FMeterDen: Integer;
+  FTripletFeel: Boolean;
 protected
   procedure SetIntensityProfile(const AProfile: specialize TDictionary<string, Double>); virtual;
 public
@@ -31,8 +32,10 @@ public
   { The meter the grooves are built in: 4/4 until the composer sets the meter
     of the section it is working on. }
   procedure SetMeter(ANum, ADen: Integer);
+  procedure SetTripletFeel(AValue: Boolean);
   property MeterNum: Integer read FMeterNum;
   property MeterDen: Integer read FMeterDen;
+  property TripletFeel: Boolean read FTripletFeel;
 
   { Abstract properties (must be overridden). }
   function GetGenreName: string; virtual;
@@ -83,11 +86,17 @@ begin
   FMeterDen := ADen;
 end;
 
+procedure TGenrePlugin.SetTripletFeel(AValue: Boolean);
+begin
+  FTripletFeel := AValue;
+end;
+
 constructor TGenrePlugin.Create;
 begin
   inherited Create;
   FMeterNum := 4;
   FMeterDen := 4;
+  FTripletFeel := False;
   FIntensityProfile := specialize TDictionary<string, Double>.Create;
 end;
 

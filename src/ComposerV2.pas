@@ -907,8 +907,10 @@ begin
         Continue;
       { Grooves, fills and the fallback groove are built in this section's meter. }
       FGenrePlugin.SetMeter(SectionMeterNum, SectionMeterDen);
+      FGenrePlugin.SetTripletFeel(SectionDef.TripletFeel);
       Params.MeterNum := SectionMeterNum;
       Params.MeterDen := SectionMeterDen;
+      Params.TripletFeel := SectionDef.TripletFeel;
 
       { Calculate section intensity range from curve map for flavor filtering }
       MinIntensityRange := 1.0;
@@ -1281,7 +1283,10 @@ begin
       Params.Complexity := SavedComplexity;
       { The plugin is shared: leave it in 4/4 for whoever uses it next. }
       if Assigned(FGenrePlugin) then
+      begin
         FGenrePlugin.SetMeter(4, 4);
+        FGenrePlugin.SetTripletFeel(False);
+      end;
 
       if Assigned(MacroComposer) then
         MacroComposer.Free;

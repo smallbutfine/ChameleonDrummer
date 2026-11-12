@@ -122,6 +122,7 @@ begin
     end;
   end;
   Result := specialize TList<TFill>.Create;
+  { First pass: exact match (triplet feel if requested) }
   for B in Blocks do
   begin
     { Get meter from header (first meter if any, else 4/4) }
@@ -151,6 +152,40 @@ begin
       on E: Exception do
         AddConfigWarning(TabMessage(Path, B.HeaderLine,
           Format('[%s]: %s - this fill is skipped', [B.Words[0], E.Message])));
+    end;
+  end;
+  { Fallback: triplet feel requested but no triplet fills found - try straight fills
+    of the same meter. }
+  if ATripletFeel and (Result.Count = 0) then
+  begin
+    for B in Blocks do
+    begin
+      Num := 4;
+      Den := 4;
+      if Length(B.Meters) > 0 then
+      begin
+        Num := B.Meters[0].Num;
+        Den := B.Meters[0].Den;
+      end;
+      if (Num <> AMeterNum) or (Den <> AMeterDen) or (B.Meters[0].TripletFeel <> False) then
+        Continue;
+      SetLength(FillMeters, 0);
+      if Num <> 0 then
+      begin
+        SetLength(FillMeters, 1);
+        FillMeters[0].Num := Num;
+        FillMeters[0].Den := Den;
+        FillMeters[0].TripletFeel := B.Meters[0].TripletFeel;
+      end;
+      try
+        Fill := TFill.Create(BuildDrumTabPattern(B.Words[0], B.Lines, 1.0, 1, FillMeters));
+        Fill.Energy := EnergyOf(B);
+        Result.Add(Fill);
+      except
+        on E: Exception do
+          AddConfigWarning(TabMessage(Path, B.HeaderLine,
+            Format('[%s]: %s - this fill is skipped', [B.Words[0], E.Message])));
+      end;
     end;
   end;
 end;
