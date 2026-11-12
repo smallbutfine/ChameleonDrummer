@@ -331,25 +331,37 @@ var
   Violations: specialize TList<TLimbViolation>;
   Progress: Boolean;
   I: Integer;
+  SavedLimbGap, SavedFootGap: Double;
 begin
-  { Nothing to repair - hand the very same pattern back to the caller. }
-  if not NeedsFix(APattern) then
-    Exit(APattern);
-
-  Result := APattern.Copy;
+  { Triplet feel uses a finer subdivision grid (3 hits per triplet step
+    instead of per straight step), so the minimum limb gap may be smaller.
+    Scale the engine's gap limits down by 2/3 when triplet feel is active. }
+  SavedLimbGap := FEngine.MinLimbGapBeats;
+  SavedFootGap := FEngine.MinFootGapBeats;
+  if Assigned(APattern.TimeSignature) and APattern.TimeSignature.TripletFeel then
+  begin
+    FEngine.MinLimbGapBeats := SavedLimbGap * 2 / 3;
+    FEngine.MinFootGapBeats := SavedFootGap * 2 / 3;
+  end;
   try
-    repeat
-      Violations := FEngine.FindViolations(Result);
-      try
-        Progress := False;
-        for I := 0 to Violations.Count - 1 do
-          if RemoveViolation(FEngine, Result, Violations[I]) then
-          begin
-            Progress := True;
-            Break;
-          end;
-      finally
-        for I := 0 to Violations.Count - 1 do
+    { Nothing to repair - hand the very same pattern back to the caller. }
+    if not NeedsFix(APattern) then
+      Exit(APattern);
+
+    Result := APattern.Copy;
+    try
+      repeat
+        Violations := FEngine.FindViolations(Result);
+        try
+          Progress := False;
+          for I := 0 to Violations.Count - 1 do
+            if RemoveViolation(FEngine, Result, Violations[I]) then
+            begin
+              Progress := True;
+              Break;
+            end;
+        finally
+          for I := 0 to Violations.Count - 1 do
           Violations[I].Free;
         Violations.Free;
       end;
@@ -357,6 +369,10 @@ begin
   except
     Result.Free;
     raise;
+  end;
+  finally
+    FEngine.MinLimbGapBeats := SavedLimbGap;
+    FEngine.MinFootGapBeats := SavedFootGap;
   end;
 end;
 

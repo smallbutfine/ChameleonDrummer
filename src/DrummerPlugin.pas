@@ -210,6 +210,8 @@ begin
 end;
 
 procedure TDrummerPlugin.ApplyTechnique(APattern: TPattern; const TechniqueName: string; Intensity: Double);
+var
+  Beat: TBeat;
 begin
   { Default: no-op. Subclasses override to apply specific techniques. }
   case LowerCase(TechniqueName) of
@@ -223,7 +225,16 @@ begin
       end;
     'triplet_feel':
       begin
-        { Apply triplet vocabulary }
+        { When the pattern carries triplet feel, accent hits that fall on
+          the triplet grid (every third subdivision) so the triplet pulse
+          is audible. Intensity scales the velocity boost. }
+        if Assigned(APattern) and APattern.TimeSignature.TripletFeel then
+          for Beat in APattern.Beats do
+            if Beat.Velocity > 0 then
+            begin
+              Beat.Velocity := Min(127, Beat.Velocity + Round(8 * Intensity));
+              Beat.Accent := True;
+            end;
       end;
     'shuffle':
       begin

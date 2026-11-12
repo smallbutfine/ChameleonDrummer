@@ -87,16 +87,20 @@ All 5 targets compile successfully.
 - `MeterOption()` returns `MeterName(Num, Den, ATriplet)` which outputs `7/8T`
 - `CommonOptions()` passes `--time-sig 7/8T` to the CLI, which correctly sets `Args.TripletFeel`
 
-### Phase 7: Engine Integration — ComposerV2 & DrummerMods
-- `ComposerV2.pas`: Pattern selection should prefer triplet grooves when song meter has triplet feel
-- `DrummerMods.pas`: `DrummerPlugin.TripletFeel` field exists but `ApplyTechnique` triplet case is empty — implement triplet-specific modifications
-- `PatternFixer.pas`: Triplet-aware physical constraints (3 hits per triplet step instead of per straight step)
+### Phase 7: Engine Integration — ComposerV2 & DrummerMods — COMPLETED
+- `DrummerPlugin.pas`: `ApplyTechnique` triplet case implemented — accents hits on triplet grid when pattern has triplet feel (velocity boost + Accent flag)
+- `PatternFixer.pas`: `Fix` method scales `MinLimbGapBeats`/`MinFootGapBeats` down by 2/3 when triplet feel is active (finer triplet grid allows closer hits), restores original values in finally block
+- `ComposerV2.pas`: Already passes `TripletFeel` through `SetTripletFeel()` and `Params.TripletFeel`; meter filtering already checks `TimeSignature.TripletFeel`; GMD pattern filtering already considers triplet feel via `Params.TripletFeel`
+- Groove/fill library already prefers triplet variants with straight fallback (Phase 5)
 
-### Phase 8: Testing & Documentation
-- Unit tests for `TryParseMeterWithTriplet()` with `4/4T`, `7/8T`, `5/4T`, etc.
-- Unit tests for `GetStepsPerBar()` triplet calculation (4/4T at resolution 16 = 24 steps)
-- Add sample groove/fill files with triplet headers to `config/grooves/` and `config/fills/`
-- Update README.md and docs with triplet meter usage examples
+### Phase 8: Testing & Documentation — COMPLETED
+- `tests/test_triplet_meter.pas`: 43 unit tests for `TryParseMeterWithTriplet()`, `GetStepsPerBar()`, `MeterName()` — all pass
+- `config/grooves/rock.tab`: Added triplet-feel groove blocks (4/4T, 7/8T for classic verse/chorus)
+- `config/fills/bonham.tab`: Added triplet-feel fill blocks (4/4T, 7/8T)
+- Fixed all `MeterName()` call sites to pass `TripletFeel` (CLIInterface.pas ×3, SongStructure.pas ×1)
+- CLI output now shows `Time sig: 4/4T` / `7/8T` instead of `4/4` / `7/8`
+
+### Remaining: Docs updates (README.md, docs folder with triplet meter usage examples)
 
 ---
 

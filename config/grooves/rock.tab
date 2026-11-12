@@ -261,6 +261,41 @@ S .... x... .... x... | .... x... .... x...
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 T3@0.5 .... .... .... .... | .... .... .... .xxx
 
+# Triplet-feel grooves (24 steps per bar for 4/4T, 21 for 7/8T)
+# The T suffix in the header marks triplet feel.
+
+[classic verse 4/4T intensity=0.20-0.60]
+K x..... x..... x..... x..... | x..... x..... x..... x.....
+S .....x .....x .....x .....x | .....x .....x .....x .....x
+H xxxxxxxxxxxxxxxxxxxxxxxx | xxxxxxxxxxxxxxxxxxxxxxxx
+
+[classic verse 4/4T intensity=0.40-0.80]
+K x..... ..x... x..... ..x... | x..... ..x... ..x... x.....
+S .....x .....x .....x .....x | .....x .....x .....x .....x
+H xxxxxxxxxxxxxxxxxxxxxxxx | xxxxxxxxxxxxxxxxxxxxxxxx
+
+[classic chorus 4/4T intensity=0.40-0.80]
+K x..... .... .....x ....xxxx | x..... .... .....x ....xxxx
+S .....x .....x .....x .....x | .....x .....x .....x .....x
+HO xxxxxxxxxxxxxxxxxxxxxxxx | xxxxxxxxxxxxxxxxxxxxxxxx
+C X..... .... .....x ....xxxx | .... .... .... ....xxxxxxxx
+
+[classic verse 7/8T intensity=0.20-0.60]
+K x...... x...... x...... | x...... x...... x......
+S ......x ......x ......x | ......x ......x ......x
+H xxxxxxxxxxxxxxxxxxxxx | xxxxxxxxxxxxxxxxxxxxx
+
+[classic verse 7/8T intensity=0.40-0.80]
+K x...... .....x. x...... .....x. | x...... .....x. .....x. x......
+S ......x ......x ......x | ......x ......x ......x
+H xxxxxxxxxxxxxxxxxxxxx | xxxxxxxxxxxxxxxxxxxxx
+
+[classic chorus 7/8T intensity=0.40-0.80]
+K x...... .... ......x ... | x...... .... ......x ...
+S ......x ......x ......x | ......x ......x ......x
+HO xxxxxxxxxxxxxxxxxxxxx | xxxxxxxxxxxxxxxxxxxxx
+C X...... .... ......x ... | .... .... .... .........
+
 [hard verse intensity=0.20-0.60]
 K x... .... x... ..x. | x... .... x... ....
 S .... x... .... x... | .... x... .... x...

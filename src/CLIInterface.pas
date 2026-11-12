@@ -532,7 +532,7 @@ begin
     if Length(Args.Sections) > 0 then
       Writeln(Format('Structure   : %s', [DescribeStructure(Args.Sections)]));
     if Args.MeterNum > 0 then
-      Writeln(Format('Time sig    : %s', [MeterName(Args.MeterNum, Args.MeterDen)]));
+      Writeln(Format('Time sig    : %s', [MeterName(Args.MeterNum, Args.MeterDen, Args.TripletFeel)]));
 
     { The same song goes into the project and the session, so all three agree. }
     if Args.ExportReaper then
@@ -578,7 +578,7 @@ begin
     FGenerator.SavePatternMidi(Pattern, OutputFile, Tempo);
     Writeln(Format('Pattern generated: %s', [OutputFile]));
     if Args.MeterNum > 0 then
-      Writeln(Format('Time sig    : %s', [MeterName(Args.MeterNum, Args.MeterDen)]));
+      Writeln(Format('Time sig    : %s', [MeterName(Args.MeterNum, Args.MeterDen, Args.TripletFeel)]));
   finally
     Pattern.Free;
   end;
@@ -832,7 +832,7 @@ begin
   Writeln(Format('Additive rhythm pattern generated: %s', [Args.OutputFile]));
   Writeln(Format('Groups: %d, Bars: %d', [Length(Groups), Length(TimeSigs)]));
   for I := 0 to Length(TimeSigs) - 1 do
-    Writeln(Format('  Bar %d: %s', [I + 1, MeterName(TimeSigs[I].Numerator, TimeSigs[I].Denominator)]));
+    Writeln(Format('  Bar %d: %s', [I + 1, MeterName(TimeSigs[I].Numerator, TimeSigs[I].Denominator, TimeSigs[I].TripletFeel)]));
 
   { Write timeline JSON if requested }
   if (Args.WriteTimelinePath <> '') then

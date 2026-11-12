@@ -148,6 +148,44 @@ S ... ... ... x.x
 T1 ... ... .... x.
 K ... ... ... x..
 
+# Triplet-feel fills (24 steps per bar for 4/4T, 21 for 7/8T)
+# The T suffix in the header marks triplet feel.
+
+[bonham_fill_short_4_4T energy=0.3 4/4T]
+S .....x .....x .....x .....x
+T1 .....x .....x .....x .....x
+
+[bonham_fill_half_4_4T energy=0.6 4/4T]
+S .....x .....x .....x .....x
+T1 .....x .....x .....x .....x
+T2 .....x .....x .....x .....x
+T3 .....x .....x .....x .....x
+
+[bonham_fill_big_4_4T energy=0.9 4/4T]
+S .....x .....x .....x .....x
+T1 .....x .....x .....x .....x
+T2 .....x .....x .....x .....x
+T3 .....x .....x .....x .....x
+K .....x .....x .....x .....x
+
+[bonham_fill_short_7_8T energy=0.4 7/8T]
+S ......x ......x ......x
+T1 ......x ......x ......x
+K ......x ......x ......x
+
+[bonham_fill_half_7_8T energy=0.6 7/8T]
+S ......x ......x ......x
+T1 ......x ......x ......x
+T2 ......x ......x ......x
+T3 ......x ......x ......x
+
+[bonham_fill_big_7_8T energy=0.9 7/8T]
+S ......x ......x ......x
+T1 ......x ......x ......x
+T2 ......x ......x ......x
+T3 ......x ......x ......x
+K ......x ......x ......x
+
 [bonham_fill_odd_7_8 energy=0.4]
 S ... xxx ... .....
 T1 ... ... xxx .....

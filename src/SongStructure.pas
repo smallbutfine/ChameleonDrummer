@@ -211,7 +211,7 @@ begin
     if AStructure[I].Tempo > 0 then
       Part := Part + '@' + IntToStr(AStructure[I].Tempo);
     if AStructure[I].MeterNum > 0 then
-      Part := Part + ' ' + MeterName(AStructure[I].MeterNum, AStructure[I].MeterDen);
+      Part := Part + ' ' + MeterName(AStructure[I].MeterNum, AStructure[I].MeterDen, AStructure[I].TripletFeel);
     if Result <> '' then
       Result := Result + ' ';
     Result := Result + Part;
