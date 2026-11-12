@@ -59,6 +59,7 @@ type
   TBarGrid = record
     InstChars: array of TInstCharEntry;
     Steps: Integer;   { steps in this bar (varies with mixed meters) }
+    TripletFeel: Boolean; { triplet feel for this bar }
   end;
 
   TBarGridArray = array of TBarGrid;
@@ -67,6 +68,7 @@ type
     Tick: Int64;      { absolute MIDI tick where this meter starts }
     Num: Integer;     { numerator }
     Den: Integer;     { denominator }
+    TripletFeel: Boolean; { triplet feel (e.g., 7/8T) }
   end;
 
   TMeterChangeArray = array of TMeterChange;
@@ -627,11 +629,21 @@ var
   HW0, HW1: string;
   BarText: string;
   BSteps: Integer;
+  AnyTriplet: Boolean;
 begin
   Lines := TStringList.Create;
   BarStrings := TStringList.Create;
   try
     { Build header }
+    { Check if any bar has triplet feel }
+    AnyTriplet := False;
+    for I := 0 to High(Bars) do
+      if Bars[I].TripletFeel then
+      begin
+        AnyTriplet := True;
+        Break;
+      end;
+
     if Mode = 'fill' then
       Header := Format('[%s energy=%.2f]', [FillName, FillEnergy])
     else
@@ -649,8 +661,12 @@ begin
         else
           HW1 := 'verse';
       end;
-      Header := Format('[%s %s intensity=%.2f-%.2f]',
-        [HW0, HW1, IntensityLow, IntensityHigh]);
+      if AnyTriplet then
+        Header := Format('[%s %s intensity=%.2f-%.2f meter=triplet]',
+          [HW0, HW1, IntensityLow, IntensityHigh])
+      else
+        Header := Format('[%s %s intensity=%.2f-%.2f]',
+          [HW0, HW1, IntensityLow, IntensityHigh]);
     end;
     Lines.Add(Header);
 
@@ -925,6 +941,14 @@ begin
     begin
       A := Copy(MeterStr, 1, P - 1);
       B := Copy(MeterStr, P + 1, MaxInt);
+      { Check for 'T' suffix for triplet feel }
+      if (Length(B) > 0) and (UpCase(B[Length(B)]) = 'T') then
+      begin
+        MeterChanges[0].TripletFeel := True;
+        B := Copy(B, 1, Length(B) - 1);
+      end
+      else
+        MeterChanges[0].TripletFeel := False;
       S := StrToIntDef(A, 4);
       D := StrToIntDef(B, 4);
       { Replace all meter changes with a single one }

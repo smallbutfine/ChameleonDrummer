@@ -13,7 +13,7 @@ uses
   time_signature, generation_parameters, GenrePlugin,
   DrummerPlugin, PluginRegistry, ComposerTypes, AdvancedHumanization,
   GMDPatternLibrary, LimbConstraints, PatternFixer, DrummerProfiles,
-  patterns_templates;
+  patterns_templates, FillLibrary;
 
 type
   { Structure entry type for song sections - must match DrumGenerator.TStructureEntry }
@@ -28,6 +28,8 @@ type
     Complexity: Double;
     { Meter of this section (7/8: 7 and 8); 0 = the song's meter. }
     MeterNum, MeterDen: Integer;
+    { Triplet feel for this section (e.g., 7/8T). }
+    TripletFeel: Boolean;
   end;
 
   { Intensity Curve Enum }
@@ -294,10 +296,10 @@ begin
         energy; otherwise it fills the last two beats and the groove
         keeps playing before it. The built-in generic fills are written
         for 4/4; another meter gets a tom run that fits its bar. }
-      if (Params.MeterNum <> 4) or (Params.MeterDen <> 4) then
+      if (Params.MeterNum <> 4) or (Params.MeterDen <> 4) or Params.TripletFeel then
         Result.Add(TFill.Create(BuildMeterFallbackFill('fill_' +
           IntToStr(Params.MeterNum) + '_' + IntToStr(Params.MeterDen),
-          Params.MeterNum, Params.MeterDen, IntensityValues[I] > 0.8)))
+          Params.MeterNum, Params.MeterDen, IntensityValues[I] > 0.8, Params.TripletFeel)))
       else
         Result.Add(TFill.Create(GenerateFillPattern(
           SelectFillType(Genre, SectionName, I, IntensityValues[I]), 1,
@@ -959,7 +961,8 @@ begin
         while J >= 0 do
         begin
           if (Available[J].TimeSignature.Numerator <> ASongMeterNum) or
-             (Available[J].TimeSignature.Denominator <> ASongMeterDen) then
+             (Available[J].TimeSignature.Denominator <> ASongMeterDen) or
+             (Available[J].TimeSignature.TripletFeel <> Params.TripletFeel) then
           begin
             Available[J].Free;
             Available.Delete(J);
@@ -991,7 +994,8 @@ begin
           begin
             FirstMeterNum := StrToIntDef(FirstMeterNumStr, -1);
             FirstMeterDen := StrToIntDef(FirstMeterDenStr, -1);
-            if (FirstMeterNum <> ASongMeterNum) or (FirstMeterDen <> ASongMeterDen) then
+            if (FirstMeterNum <> ASongMeterNum) or (FirstMeterDen <> ASongMeterDen) or
+               (Available[J].TimeSignature.TripletFeel <> Params.TripletFeel) then
             begin
               Available[J].Free;
               Available.Delete(J);
@@ -1154,7 +1158,7 @@ begin
         DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
         if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
           SignatureFills := (DrummerPlugin as TDrummerPlugin).GetFillVocabulary(
-            ADrummer, SectionMeterNum, SectionMeterDen);
+            ADrummer, SectionMeterNum, SectionMeterDen, SectionDef.TripletFeel);
       end;
       HasVocabulary := Assigned(SignatureFills) and (SignatureFills.Count > 0);
       if HasVocabulary then

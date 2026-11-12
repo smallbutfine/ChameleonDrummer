@@ -57,7 +57,7 @@ public
     the list is empty and ConfigWarnings says which block to add. The caller
     owns the list and the fills. }
   function GetFillVocabulary(const AKey: string;
-    AMeterNum: Integer = 4; AMeterDen: Integer = 4): specialize TList<TFill>;
+    AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): specialize TList<TFill>;
 
   { Helper methods. }
   function IsPreferredForGenre(const Genre: string): boolean; virtual;
@@ -151,11 +151,11 @@ begin
 end;
 
 function TDrummerPlugin.GetFillVocabulary(const AKey: string;
-  AMeterNum, AMeterDen: Integer): specialize TList<TFill>;
+  AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): specialize TList<TFill>;
 begin
-  if (AMeterNum <> 4) or (AMeterDen <> 4) then
+  if (AMeterNum <> 4) or (AMeterDen <> 4) or ATripletFeel then
   begin
-    Result := FileFills(AKey, AMeterNum, AMeterDen);
+    Result := FileFills(AKey, AMeterNum, AMeterDen, ATripletFeel);
     if Result = nil then
       Result := specialize TList<TFill>.Create;
     if Result.Count = 0 then
@@ -164,7 +164,7 @@ begin
         [AMeterNum, AMeterDen, AKey, AKey, AMeterNum, AMeterDen, AKey]));
     Exit;
   end;
-  Result := FileFills(AKey);
+  Result := FileFills(AKey, 4, 4, False);
   if Result = nil then
     Result := GetSignatureFills;
 end;

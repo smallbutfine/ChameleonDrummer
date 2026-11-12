@@ -27,6 +27,7 @@ private
   FCustomParameters: specialize TDictionary<string, string>;
   FMeterNum: Integer;
   FMeterDen: Integer;
+  FTripletFeel: Boolean;
 public
   constructor Create(AGenre, AStyle: string; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6; AHumanization: Double = 0.5;
@@ -51,6 +52,8 @@ public
     otherwise); grooves, fills and the pedal pattern follow it. }
   property MeterNum: Integer read FMeterNum write FMeterNum;
   property MeterDen: Integer read FMeterDen write FMeterDen;
+  { Triplet feel: when true, the meter uses triplet subdivision (e.g., 4/4T). }
+  property TripletFeel: Boolean read FTripletFeel write FTripletFeel;
 end;
 
 implementation
