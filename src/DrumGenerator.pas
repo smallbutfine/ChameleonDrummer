@@ -60,7 +60,7 @@ public
     ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
     AHumanization: Double = 0.5; ASwing: Double = 0.0;
     AMeterNum: Integer = 4; AMeterDen: Integer = 4;
-    AStrictMeter: Boolean = False): TSong;
+    AStrictMeter: Boolean = False; ATripletFeel: Boolean = False): TSong;
 
   { Create a complete song — always uses V2 (bar-by-bar evolution). }
   function CreateSong(const Genre, Style: string; ATempo: Integer = 0;
@@ -68,7 +68,7 @@ public
     ADrummer: string = ''; AComplexity: Double = 0.5;
     ADynamics: Double = 0.6; AHumanization: Double = 0.5;
     ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4;
-    AStrictMeter: Boolean = False): TSong;
+    AStrictMeter: Boolean = False; ATripletFeel: Boolean = False): TSong;
 
   { The default song structure of a genre as it is before it is fitted to a
     song length: config/sections/<genre>.json, else the built-in one. }
@@ -523,7 +523,7 @@ function TDrumGenerator.CreateSongV2(const Genre, Style: string; ATempo: Integer
   ADrummer: string = ''; AComplexity: Double = 0.5; ADynamics: Double = 0.6;
   AHumanization: Double = 0.5; ASwing: Double = 0.0;
   AMeterNum: Integer = 4; AMeterDen: Integer = 4;
-  AStrictMeter: Boolean = False): TSong;
+  AStrictMeter: Boolean = False; ATripletFeel: Boolean = False): TSong;
 { Bar-by-bar pattern evolution (Engine V2). }
 var
   Tempo: Integer;
@@ -561,7 +561,8 @@ begin
   Composer := TComposerV2.Create(FPluginManager, Random(MaxInt));
   try
     Result := Composer.CreateSong(Genre, Style, Tempo, Structure, ADrummer,
-      AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen);
+      AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen,
+      ATripletFeel);
 
     { Apply genre-aware hi-hat -> ride/crash promotion for high-energy
       sections (chorus / bridge / pre_chorus). This runs per section so the
@@ -630,11 +631,11 @@ function TDrumGenerator.CreateSong(const Genre, Style: string; ATempo: Integer =
   ADrummer: string = ''; AComplexity: Double = 0.5;
   ADynamics: Double = 0.6; AHumanization: Double = 0.5;
   ASwing: Double = 0.0; AMeterNum: Integer = 4; AMeterDen: Integer = 4;
-  AStrictMeter: Boolean = False): TSong;
+  AStrictMeter: Boolean = False; ATripletFeel: Boolean = False): TSong;
 begin
   Exit(CreateSongV2(Genre, Style, ATempo, AStructure, ADrumKit, ADrummer,
     AComplexity, ADynamics, AHumanization, ASwing, AMeterNum, AMeterDen,
-    AStrictMeter));
+    AStrictMeter, ATripletFeel));
 end;
 
 procedure TDrumGenerator.SaveSongMidi(const ASong: TSong; const AOutputPath: string);

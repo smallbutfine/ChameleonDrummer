@@ -121,7 +121,7 @@ public
     AComplexity: Double = 0.5; ADynamics: Double = 0.6;
     AHumanization: Double = 0.5; ASwing: Double = 0.0;
     ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4;
-    AStrictMeter: Boolean = False): TSong;
+    AStrictMeter: Boolean = False; ATripletFeel: Boolean = False): TSong;
 
   property PluginManager: PluginRegistry.TPluginManager read FPluginManager write FPluginManager;
 end;
@@ -732,7 +732,7 @@ function TComposerV2.CreateSong(const Genre, Style: string; ATempo: Integer;
   AComplexity: Double = 0.5; ADynamics: Double = 0.6;
   AHumanization: Double = 0.5; ASwing: Double = 0.0;
   ASongMeterNum: Integer = 4; ASongMeterDen: Integer = 4;
-  AStrictMeter: Boolean = False): TSong;
+  AStrictMeter: Boolean = False; ATripletFeel: Boolean = False): TSong;
 var
   SectionMeterNum, SectionMeterDen: Integer;
   MeterText: string;
@@ -810,7 +810,7 @@ begin
   { Create generation parameters }
   Params := TGenerationParameters.Create(
     Genre, Style, ADrummer, AComplexity, ADynamics, AHumanization,
-    0.35, EnsureRange(ASwing, 0.0, 1.0));
+    0.35, EnsureRange(ASwing, 0.0, 1.0), 0.9, ATripletFeel);
 
   { Auto-select a random preferred drummer when none is specified }
   if ADrummer = '' then

@@ -31,7 +31,8 @@ private
 public
   constructor Create(AGenre, AStyle: string; ADrummer: string = '';
     AComplexity: Double = 0.5; ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-    AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.0; ARideThreshold: Double = 0.9);
+    AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.0; ARideThreshold: Double = 0.9;
+    ATripletFeel: Boolean = False);
   destructor Destroy; override;
 
   property Genre: string read FGenre write FGenre;
@@ -62,7 +63,8 @@ implementation
 
 constructor TGenerationParameters.Create(AGenre, AStyle: string; ADrummer: string = '';
   AComplexity: Double = 0.5; ADynamics: Double = 0.6; AHumanization: Double = 0.5;
-  AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.0; ARideThreshold: Double = 0.9);
+  AFillFrequency: Double = 0.35; ASwingRatio: Double = 0.0; ARideThreshold: Double = 0.9;
+  ATripletFeel: Boolean = False);
 var
   ParamValue: Double;
 begin
@@ -80,6 +82,7 @@ begin
   FContextBlend := 0.0;
   FMeterNum := 4;
   FMeterDen := 4;
+  FTripletFeel := ATripletFeel;
   FCustomParameters := specialize TDictionary<string, string>.Create;
 
   { Validate }

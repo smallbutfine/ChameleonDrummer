@@ -26,6 +26,7 @@ type
     Swing: Double; // 0 = straight (default), 0.67 = classic 2:1 swing, 1 = 3:1
     MeterNum: Integer; // --time-sig num/den; 0 = not given (4/4)
     MeterDen: Integer;
+    TripletFeel: Boolean; // --time-sig with T suffix (e.g., 7/8T)
     Drummer: String;
     OutputFile: String;
     Mapping: String; // Keymap filename stem (gm, ad2, ezd3, etc)
@@ -154,8 +155,8 @@ begin
       Inc(I);
       if (I >= Length(Args)) then
         raise Exception.Create('--time-sig requires a value like 7/8');
-      if not TryParseMeter(Args[I], Result.MeterNum, Result.MeterDen) then
-        raise Exception.CreateFmt('Invalid --time-sig "%s": expected num/den, e.g. 7/8 or 3/4', [Args[I]]);
+      if not TryParseMeterWithTriplet(Args[I], Result.MeterNum, Result.MeterDen, Result.TripletFeel) then
+        raise Exception.CreateFmt('Invalid --time-sig "%s": expected num/den or num/denT, e.g. 7/8 or 7/8T', [Args[I]]);
       W := MeterProblem(Result.MeterNum, Result.MeterDen);
       if W <> '' then
         raise Exception.CreateFmt('Invalid --time-sig "%s": %s', [Args[I], W]);
@@ -453,6 +454,7 @@ begin
   Writeln('  --humanization <0-1> Humanization intensity (default: 0.3)');
   Writeln('  --swing <0-1>        Swing feel: 0 straight (default), 0.67 classic 2:1, 1 = 3:1');
   Writeln('  --time-sig <n/d>     Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)');
+    Writeln('  --time-sig <n/d>T    Meter with triplet feel (e.g., 4/4T, 7/8T, 5/4T)');
   Writeln('  --strict-meter       Only use patterns matching --time-sig');
   Writeln('  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8');
   Writeln('                       (bpm - keeps the song tempo); mix freely with --section');
@@ -512,7 +514,8 @@ begin
     Args.Humanization, // AHumanization - humanization intensity from CLI
     Args.Swing,
     SongMeterNum(Args), SongMeterDen(Args),
-    Args.StrictMeter  // AStrictMeter - only use patterns matching --time-sig
+    Args.StrictMeter,  // AStrictMeter - only use patterns matching --time-sig
+    Args.TripletFeel  // ATripletFeel - triplet feel (e.g., 7/8T)
   );
 
   PrintGeneratorWarnings;
@@ -714,7 +717,9 @@ begin
     0.6,               // ADynamics
     Args.Humanization, // AHumanization
     Args.Swing,
-    SongMeterNum(Args), SongMeterDen(Args)  // ASwing
+    SongMeterNum(Args), SongMeterDen(Args),
+    Args.StrictMeter,  // AStrictMeter
+    Args.TripletFeel   // ATripletFeel
   );
   PrintGeneratorWarnings;
 
@@ -757,11 +762,13 @@ begin
     Args.Sections, // AStructure - from --section, nil = genre default
     DrumKit,
     Args.Drummer,
-    Args.Complexity,  // AComplexity - pattern complexity from CLI
+    Args.Complexity,  // AComplexity
     0.6,               // ADynamics
     Args.Humanization, // AHumanization
     Args.Swing,
-    SongMeterNum(Args), SongMeterDen(Args)  // ASwing
+    SongMeterNum(Args), SongMeterDen(Args),
+    Args.StrictMeter,  // AStrictMeter
+    Args.TripletFeel   // ATripletFeel
   );
 
   PrintGeneratorWarnings;
