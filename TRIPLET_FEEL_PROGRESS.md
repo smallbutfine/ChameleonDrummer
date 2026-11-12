@@ -64,7 +64,7 @@
 
 ---
 
-## REMAINING WORK (Phases 6-8)
+## REMAINING WORK (Phases 7-8)
 
 ### Phase 5: Groove/Fill Engine Selection for Triplets — COMPLETED
 - `TGenrePlugin.TripletFeel` field + `SetTripletFeel()` added (GenrePlugin.pas)
@@ -76,11 +76,16 @@
 
 All 5 targets compile successfully.
 
-### Phase 6: Step Editor GUI Integration
+### Phase 6: Step Editor GUI Integration — COMPLETED (step editor)
 - GUI already lists `4/4T, 7/8T, 5/4T...` in meter dropdown (line 266 of MainFrm.pas)
 - Already passes `--meter` to `midi_to_tab.exe` (line 488-489)
-- No dedicated UI toggle for triplet feel yet — the dropdown selection IS the triplet indicator
-- Consider adding visual indicator when triplet meter is selected
+- Dropdown selection IS the triplet indicator
+
+### Phase 6: Main GUI Integration — COMPLETED
+- `gui/MainFrm.pas`: Meter dropdown now lists `4/4T, 7/8T, 5/4T, ...` (line 177)
+- `MeterOption()` uses `TryParseMeterWithTriplet()` to parse `T` suffix
+- `MeterOption()` returns `MeterName(Num, Den, ATriplet)` which outputs `7/8T`
+- `CommonOptions()` passes `--time-sig 7/8T` to the CLI, which correctly sets `Args.TripletFeel`
 
 ### Phase 7: Engine Integration — ComposerV2 & DrummerMods
 - `ComposerV2.pas`: Pattern selection should prefer triplet grooves when song meter has triplet feel
