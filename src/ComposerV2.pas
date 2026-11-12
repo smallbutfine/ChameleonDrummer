@@ -354,7 +354,7 @@ begin
   begin
     WriteLn(Format('TFillPicker.SelectFillType: about to compute (IntensityPt - THRESHOLD) / (1.0 - THRESHOLD) = (%f - %f) / (1.0 - %f)', [IntensityPt, THRESHOLD, THRESHOLD]));
     Result := Random < MAX_CHANCE * (IntensityPt - THRESHOLD) / (1.0 - THRESHOLD);
-    WriteLn(Format('TFillPicker.SelectFillType: Result=%f', [Result]));
+    WriteLn(Format('TFillPicker.SelectFillType: Result=%s', [BoolToStr(Result, True)]));
   end;
 end;
 
@@ -947,19 +947,12 @@ begin
         begin
           FlavorItem := GMDFlavors[Idx];
           WriteLn('DEBUG: GMD flavor ' + IntToStr(Idx));
-          try
-            Flavors.Add(FGenrePlugin.AdaptExternalPattern(FlavorItem, Params));
-          finally
-            FlavorItem.Free;
-            GMDFlavors[Idx] := nil;
-          end;
+          Flavors.Add(FGenrePlugin.AdaptExternalPattern(FlavorItem, Params));
+          WriteLn('DEBUG: adapted flavor');
         end;
       finally
-        for FlavorItem in GMDFlavors do
-          FlavorItem.Free;
-        GMDFlavors.Free;
-        GMDFlavors := nil;
-      end;
+        { GMDFlavors items are cached/shared in FGMDPatternLibrary -- do NOT free them. }
+        GMDFlavors.Clear;
 
       WriteLn('DEBUG: about to build Available');
       Available := specialize TList<TPattern>.Create;
@@ -987,7 +980,6 @@ begin
              (Available[J].TimeSignature.Denominator <> ASongMeterDen) or
              (Available[J].TimeSignature.TripletFeel <> Params.TripletFeel) then
           begin
-            Available[J].Free;
             Available.Delete(J);
           end;
           Dec(J);
@@ -1030,7 +1022,6 @@ begin
             if (FirstMeterNum <> ASongMeterNum) or (FirstMeterDen <> ASongMeterDen) or
                (Available[J].TimeSignature.TripletFeel <> Params.TripletFeel) then
             begin
-              Available[J].Free;
               Available.Delete(J);
             end;
           end;
@@ -1189,7 +1180,8 @@ begin
       WriteLn('DEBUG: after if block');
       WriteLn('DEBUG: about to SetLength SectionIntensitiesLocal, Bars=' + IntToStr(Bars));
 
-      { Precompute per-bar intensity values for the fill picker }
+      { Precompute per-bar intensity values for the fill picker (already set above) }
+      WriteLn('DEBUG: about to populate SectionIntensitiesLocal, Bars=' + IntToStr(Bars));
       SetLength(SectionIntensitiesLocal, Bars);
 
       for JBar := 0 to Bars - 1 do
@@ -1238,7 +1230,7 @@ begin
                  (SignatureFill.Pattern.Beats.Count > 0) and
                  (SignatureFill.Pattern.DurationBars <= FillBarIndices[J] + 1) then
                 WeightSum := WeightSum + FillEnergyWeight(
-                  SignatureFill, SectionIntensities[FillBarIndices[J]]);
+                  SignatureFill, SectionIntensitiesLocal[FillBarIndices[J]]);
             if WeightSum <= 0 then
               Continue;
             for SignatureFill in SignatureFills do
@@ -1249,9 +1241,9 @@ begin
                 NewFill := TFill.Create(SignatureFill.Pattern.Copy);
                 NewFill.Energy := SignatureFill.Energy;
                 NewFill.TargetBar := FillBarIndices[J];
-               // WriteLn(Format('ComposerV2.CreateSong: about to compute VocabShare * FillEnergyWeight / WeightSum = %f * %f / %f', [VocabShare, FillEnergyWeight(SignatureFill, SectionIntensities[FillBarIndices[J]]), WeightSum]));
+               // WriteLn(Format('ComposerV2.CreateSong: about to compute VocabShare * FillEnergyWeight / WeightSum = %f * %f / %f', [VocabShare, FillEnergyWeight(SignatureFill, SectionIntensitiesLocal[FillBarIndices[J]]), WeightSum]));
     NewFill.TriggerProbability := VocabShare * FillEnergyWeight(
-                  SignatureFill, SectionIntensities[FillBarIndices[J]]) / WeightSum;
+                  SignatureFill, SectionIntensitiesLocal[FillBarIndices[J]]) / WeightSum;
     //WriteLn(Format('ComposerV2.CreateSong: TriggerProbability = %f', [NewFill.TriggerProbability]));
                 Fills.Add(NewFill);
               end;
@@ -1298,10 +1290,8 @@ begin
             Fills.Add(NewFill);
           end;
       finally
-        for FlavorItem in GMDFlavors do
-          FlavorItem.Free;
-        GMDFlavors.Free;
-        GMDFlavors := nil;
+        { GMDFlavors items are cached/shared in FGMDPatternLibrary -- do NOT free them. }
+        GMDFlavors.Clear;  
       end;
 
       { Calculate groove timing offsets per bar }
@@ -1347,9 +1337,8 @@ begin
         MacroComposer.Free;
       if Assigned(GMDFlavors) then
       begin
-        for FlavorItem in GMDFlavors do
-          FlavorItem.Free;
-        GMDFlavors.Free;
+        { Clear but don't free items -- they're cached/shared in FGMDPatternLibrary. }
+        GMDFlavors.Clear;
       end;
       if Assigned(Fills) then
       begin
@@ -1363,9 +1352,10 @@ begin
         Available.Free;
       if Assigned(Flavors) then
       begin
-        for FlavorItem in Flavors do
-          if Assigned(FlavorItem) then
-            FlavorItem.Free;
+        { Clear container only -- pattern objects are shared with Available and
+          must not be freed here. The patterns will be freed when Available is
+          freed next below. }
+        Flavors.Clear;
         Flavors.Free;
       end;
       for Idx := GeneratedBars.Count - 1 downto 0 do
