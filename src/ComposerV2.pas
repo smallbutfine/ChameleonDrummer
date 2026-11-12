@@ -1184,8 +1184,10 @@ begin
       WriteLn('DEBUG: before Combined := nil');
       Combined := nil;
       WriteLn('DEBUG: after Combined := nil');
-      if GeneratedBars.Count > 0 then
+      if Assigned(GeneratedBars) and (GeneratedBars.Count > 0) then
         CombineBarPatterns(GeneratedBars, Combined);
+      WriteLn('DEBUG: after if block');
+      WriteLn('DEBUG: about to SetLength SectionIntensitiesLocal, Bars=' + IntToStr(Bars));
 
       { Precompute per-bar intensity values for the fill picker }
       SetLength(SectionIntensitiesLocal, Bars);
@@ -1368,7 +1370,7 @@ begin
       end;
       for Idx := GeneratedBars.Count - 1 downto 0 do
         GeneratedBars[Idx].Free;
-      GeneratedBars.Free;
+      GeneratedBars.Clear;
     end;
   end;
 
