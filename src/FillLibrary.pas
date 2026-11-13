@@ -104,6 +104,7 @@ var
   Fill: TFill;
   Num, Den: Integer;
   FillMeters: array of TMeterPair;
+  HasMeter, MeterMatches, TripletOK: Boolean;
 begin
   Result := nil;
   if ADrummer = '' then
@@ -111,9 +112,12 @@ begin
   Path := FindConfigFile('fills', LowerCase(ADrummer) + '.tab');
   if Path = '' then
     Exit;
+  WriteLn('DEBUG FL: ParseTabFile start');
   try
     Blocks := ParseTabFile(Path);
+    WriteLn('DEBUG FL: ParseTabFile OK blocks=' + IntToStr(Length(Blocks)));
     CheckFillBlocks(Blocks, Path);
+    WriteLn('DEBUG FL: CheckFillBlocks OK');
   except
     on E: Exception do
     begin
@@ -128,12 +132,16 @@ begin
     { Get meter from header (first meter if any, else 4/4) }
     Num := 4;
     Den := 4;
-    if Length(B.Meters) > 0 then
+    HasMeter := Length(B.Meters) > 0;
+    if HasMeter then
     begin
       Num := B.Meters[0].Num;
       Den := B.Meters[0].Den;
     end;
-    if (Num <> AMeterNum) or (Den <> AMeterDen) or (B.Meters[0].TripletFeel <> ATripletFeel) then
+    { Default 4/4 is fine; skip only if triplet feel doesn't match when meters exist }
+    MeterMatches := (Num = AMeterNum) and (Den = AMeterDen);
+    TripletOK := (Length(B.Meters) = 0) or (B.Meters[0].TripletFeel = ATripletFeel);
+    if not (MeterMatches and TripletOK) then
       Continue;
     { Build meters array from single meter }
     SetLength(FillMeters, 0);
