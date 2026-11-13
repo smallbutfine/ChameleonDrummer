@@ -1188,19 +1188,30 @@ begin
         CombineBarPatterns(GeneratedBars, Combined);
       WriteLn('DEBUG: after if block');
       WriteLn('DEBUG: about to SetLength SectionIntensitiesLocal, Bars=' + IntToStr(Bars));
+      WriteLn('DEBUG: SectionIntensitiesLocal addr=' + IntToStr(Integer(Pointer(SectionIntensitiesLocal))));
+      WriteLn('DEBUG: SectionIntensitiesLocal length before=' + IntToStr(Length(SectionIntensitiesLocal)));
 
       { Precompute per-bar intensity values for the fill picker }
       SetLength(SectionIntensitiesLocal, Bars);
+      WriteLn('DEBUG: after SetLength OK');
 
       for JBar := 0 to Bars - 1 do
       begin
         SectionIntensitiesLocal[JBar] := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
+        WriteLn('DEBUG: JBar=' + IntToStr(JBar) + ' intensity=' + FloatToStr(SectionIntensitiesLocal[JBar]));
 
       end;
+      WriteLn('DEBUG: after intensity loop OK');
 
-
+      WriteLn('DEBUG: before PickFillsForSection');
+      WriteLn('DEBUG: FFilPicker addr=' + IntToStr(Integer(Pointer(FFilPicker))));
+      WriteLn('DEBUG: Genre=' + Genre + ' SectionName=' + SectionName);
+      WriteLn('DEBUG: FillBarIndices length=' + IntToStr(Length(FillBarIndices)));
       Fills := FFilPicker.PickFillsForSection(
         Genre, Params, Bars, SectionName, FillBarIndices, SectionIntensitiesLocal);
+      WriteLn('DEBUG: PickFillsForSection returned OK');
+      WriteLn('DEBUG: Fills addr=' + IntToStr(Integer(Pointer(Fills))) + ' count=' + IntToStr(IfThen(Assigned(Fills), Fills.Count, -1)));
+      WriteLn('DEBUG: Params addr=' + IntToStr(Integer(Pointer(Params))));
 
 
       { Where a fill comes from, by weight: the drummer's own vocabulary
@@ -1209,14 +1220,23 @@ begin
         fallback. The generic fills are tied to their bar; the others compete
         for every placed bar. }
       SignatureFills := nil;
+      WriteLn('DEBUG: step1 SigFillsSet');
       if ADrummer <> '' then
       begin
+        WriteLn('DEBUG: step2 drummer=' + ADrummer);
         DrummerPlugin := FPluginManager.Registry.GetDrummerPlugin(ADrummer);
+        WriteLn('DEBUG: step3 GetDrummerPlugin done addr=' + IntToStr(Integer(Pointer(DrummerPlugin))));
         if Assigned(DrummerPlugin) and (DrummerPlugin is TDrummerPlugin) then
+        begin
+          WriteLn('DEBUG: step4 typecheck OK');
           SignatureFills := (DrummerPlugin as TDrummerPlugin).GetFillVocabulary(
             ADrummer, SectionMeterNum, SectionMeterDen, SectionDef.TripletFeel);
+          WriteLn('DEBUG: step5 GetFillVocabulary done count=' + IntToStr(IfThen(Assigned(SignatureFills), SignatureFills.Count, -1)));
+        end
+        else
+          WriteLn('DEBUG: step4 typecheck FAILED or not assigned');
       end;
-      HasVocabulary := Assigned(SignatureFills) and (SignatureFills.Count > 0);
+      WriteLn('DEBUG: step6 HasVocabulary check');
       if HasVocabulary then
       begin
         GenericWeight := 0.15; GmdShare := 0.25; VocabShare := 0.6;

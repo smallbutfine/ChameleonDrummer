@@ -153,8 +153,10 @@ end;
 function TDrummerPlugin.GetFillVocabulary(const AKey: string;
   AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): specialize TList<TFill>;
 begin
+  WriteLn('DEBUG GP:GetFillVocabulary key=' + AKey + ' meter=' + IntToStr(AMeterNum) + '/' + IntToStr(AMeterDen));
   if (AMeterNum <> 4) or (AMeterDen <> 4) or ATripletFeel then
   begin
+    WriteLn('DEBUG GP: non-default meter branch');
     Result := FileFills(AKey, AMeterNum, AMeterDen, ATripletFeel);
     if Result = nil then
       Result := specialize TList<TFill>.Create;
@@ -164,9 +166,15 @@ begin
         [AMeterNum, AMeterDen, AKey, AKey, AMeterNum, AMeterDen, AKey]));
     Exit;
   end;
+  WriteLn('DEBUG GP: default meter branch');
   Result := FileFills(AKey, 4, 4, False);
+  WriteLn('DEBUG GP: FileFills done addr=' + IntToStr(Integer(Pointer(Result))));
   if Result = nil then
+  begin
+    WriteLn('DEBUG GP: FileFills nil, calling GetSignatureFills');
     Result := GetSignatureFills;
+    WriteLn('DEBUG GP: GetSignatureFills done addr=' + IntToStr(Integer(Pointer(Result))));
+  end;
 end;
 
 function CreateSignatureFillPattern(const AFillName: string): TPattern;
