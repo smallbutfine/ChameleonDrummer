@@ -953,7 +953,7 @@ begin
       finally
         { GMDFlavors items are cached/shared in FGMDPatternLibrary -- do NOT free them. }
         GMDFlavors.Clear;
-
+      end;
       WriteLn('DEBUG: about to build Available');
       Available := specialize TList<TPattern>.Create;
       for FlavorItem in Flavors do
