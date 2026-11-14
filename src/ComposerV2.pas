@@ -72,7 +72,7 @@ type
     function GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
   public
     function GetBarOffsetMs(ABarIndex: Integer; ABars: Integer; ATempo: Integer; IntensityPt: Double;
-      const ASectionName, AGenre, ADrummer: string): Single;
+      const ASectionName, AGenre, ADrummer: string; ATripletFeel: Boolean = False): Single;
   end;
 
   { TMacroComposer — manages groove library phases and variation cycling }
@@ -519,11 +519,12 @@ end;
 { TGrooveEngine — Microtiming groove offsets per bar }
 
 function TGrooveEngine.GetBarOffsetMs(ABarIndex: Integer; ABars: Integer;
-  ATempo: Integer; IntensityPt: Double; const ASectionName, AGenre, ADrummer: string): Single;
+  ATempo: Integer; IntensityPt: Double; const ASectionName, AGenre, ADrummer: string; ATripletFeel: Boolean): Single;
 var
   DrummerBias: Single;
   SectionContext: Single;
   MicrotimingMod: Single;
+  BeatDurationMs: Single;
 begin
   if ATempo <= 0 then
     Exit(0);
@@ -534,12 +535,15 @@ begin
   // Get section-specific groove context
   SectionContext := GetSectionGrooveContext(ASectionName, AGenre);
 
-  // Bias values are fractions of a beat; convert once to bounded milliseconds.
-  { Use bar count as cycle length so the groove modulates across the full section,
-    not just within every 4 bars — essential for non-4/4 and triplet meters. }
+  // Bias values are fractions of a beat; convert to milliseconds using triplet-aware subdivision.
+  { In triplet feel the "beat" is a dotted-quarter (1.5x), so each ms-of-offset
+    maps to a longer physical duration — scale accordingly. }
+  BeatDurationMs := 60000.0 / ATempo;
+  if ATripletFeel then
+    BeatDurationMs := BeatDurationMs * 1.5;
   MicrotimingMod := (ABarIndex mod ABars) * 0.005;
   Result := DrummerBias + SectionContext + MicrotimingMod * IntensityPt;
-  Result := EnsureRange(Result * (60000.0 / ATempo), -25.0, 25.0);
+  Result := EnsureRange(Result * BeatDurationMs, -25.0, 25.0);
 end;
 
 function TGrooveEngine.GetDrummerGrooveBias(const ADrummer: string): Single;
@@ -1327,7 +1331,7 @@ begin
         begin
           IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
           OffsetMs := FGrooveEngine.GetBarOffsetMs(
-            JBar, Bars, SectionTempo, IntensityPt, SectionName, Genre, ADrummer);
+            JBar, Bars, SectionTempo, IntensityPt, SectionName, Genre, ADrummer, SectionDef.TripletFeel);
           Section.GrooveOffsetsMs.Add(OffsetMs);
         end;
       if Section.GrooveOffsetsMs.Count = 0 then
