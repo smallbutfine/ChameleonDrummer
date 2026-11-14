@@ -201,7 +201,7 @@ begin
       end;
       WriteLn('DEBUG FL:fallback block ' + IntToStr(BlockIdx) + ' processing...');
       SetLength(FillMeters, 0);
-      if Num <> 0 then
+      if HasMeter then
       begin
         SetLength(FillMeters, 1);
         FillMeters[0].Num := Num;

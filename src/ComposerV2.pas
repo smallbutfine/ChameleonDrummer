@@ -71,7 +71,7 @@ type
     function GetDrummerGrooveBias(const ADrummer: string): Single;
     function GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
   public
-    function GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: Double;
+    function GetBarOffsetMs(ABarIndex: Integer; ABars: Integer; ATempo: Integer; IntensityPt: Double;
       const ASectionName, AGenre, ADrummer: string): Single;
   end;
 
@@ -518,8 +518,8 @@ end;
 
 { TGrooveEngine — Microtiming groove offsets per bar }
 
-function TGrooveEngine.GetBarOffsetMs(ABarIndex: Integer; ATempo: Integer; IntensityPt: Double;
-  const ASectionName, AGenre, ADrummer: string): Single;
+function TGrooveEngine.GetBarOffsetMs(ABarIndex: Integer; ABars: Integer;
+  ATempo: Integer; IntensityPt: Double; const ASectionName, AGenre, ADrummer: string): Single;
 var
   DrummerBias: Single;
   SectionContext: Single;
@@ -535,7 +535,9 @@ begin
   SectionContext := GetSectionGrooveContext(ASectionName, AGenre);
 
   // Bias values are fractions of a beat; convert once to bounded milliseconds.
-  MicrotimingMod := (ABarIndex mod 4) * 0.005;
+  { Use bar count as cycle length so the groove modulates across the full section,
+    not just within every 4 bars — essential for non-4/4 and triplet meters. }
+  MicrotimingMod := (ABarIndex mod ABars) * 0.005;
   Result := DrummerBias + SectionContext + MicrotimingMod * IntensityPt;
   Result := EnsureRange(Result * (60000.0 / ATempo), -25.0, 25.0);
 end;
@@ -1325,7 +1327,7 @@ begin
         begin
           IntensityPt := GetIntensityPt(CurveMap, SectionName, JBar, Bars);
           OffsetMs := FGrooveEngine.GetBarOffsetMs(
-            JBar, SectionTempo, IntensityPt, SectionName, Genre, ADrummer);
+            JBar, Bars, SectionTempo, IntensityPt, SectionName, Genre, ADrummer);
           Section.GrooveOffsetsMs.Add(OffsetMs);
         end;
       if Section.GrooveOffsetsMs.Count = 0 then
