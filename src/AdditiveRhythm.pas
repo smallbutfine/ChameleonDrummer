@@ -29,18 +29,22 @@ function ParseAdditiveGrouping(const S: String; AGridResolution: Integer): TAddi
 
 { Resolve time signatures from additive groups.
   Each group becomes one bar with numerator = group size, denominator = grid resolution / 4.
-  For example, grid=16 (16th notes), group size 3 -> 3/16 = 3/8 time signature. }
-function ResolveTimeSignatures(const Groups: TAdditiveGroupDynArray; AGridResolution: Integer): TTimeSignatureDynArray;
+  For example, grid=16 (16th notes), group size 3 -> 3/16 = 3/8 time signature.
+  ATripletFeel enables triplet feel on all bars so GetStepsPerBar() returns x3/2 steps. }
+function ResolveTimeSignatures(const Groups: TAdditiveGroupDynArray; AGridResolution: Integer;
+  ATripletFeel: Boolean): TTimeSignatureDynArray;
 
 { Generate a drum pattern from additive rhythm groups.
   - Kick on first step of each group (downbeat of each additive cell)
   - Snare on backbeat positions (using MeterBackbeats)
   - Hi-hat continuous on grid resolution
-  - Applies drummer styling if specified }
+  - Applies drummer styling if specified
+  ATripletFeel enables triplet feel so step counts use x3/2 multiplier. }
 function GenerateAdditivePattern(
   const Groups: TAdditiveGroupDynArray;
   AGridResolution: Integer;
   ATempo: Integer;
+  ATripletFeel: Boolean;
   ADrummer: String = '';
   ADrummerIntensity: Double = 1.0
 ): TPattern;
@@ -94,7 +98,8 @@ begin
   end;
 end;
 
-function ResolveTimeSignatures(const Groups: TAdditiveGroupDynArray; AGridResolution: Integer): TTimeSignatureDynArray;
+function ResolveTimeSignatures(const Groups: TAdditiveGroupDynArray; AGridResolution: Integer;
+  ATripletFeel: Boolean): TTimeSignatureDynArray;
 var
   I: Integer;
   Den: Integer;
@@ -108,7 +113,7 @@ begin
   for I := 0 to High(Groups) do
   begin
     Num := Groups[I].Size;
-    TS := TTimeSignature.Create(Num, Den);
+    TS := TTimeSignature.Create(Num, Den, ATripletFeel);
     SetLength(Result, Length(Result) + 1);
     Result[High(Result)] := TS;
   end;
@@ -118,8 +123,9 @@ function GenerateAdditivePattern(
   const Groups: TAdditiveGroupDynArray;
   AGridResolution: Integer;
   ATempo: Integer;
-  ADrummer: String;
-  ADrummerIntensity: Double
+  ATripletFeel: Boolean;
+  ADrummer: String = '';
+  ADrummerIntensity: Double = 1.0
 ): TPattern;
 var
   PluginReg: TPluginRegistry;
@@ -146,7 +152,7 @@ begin
   SnareInst := TInstrumentRegistry.Get('snare');
   HatInst := TInstrumentRegistry.Get('hihat');
 
-  TimeSigs := ResolveTimeSignatures(Groups, AGridResolution);
+  TimeSigs := ResolveTimeSignatures(Groups, AGridResolution, ATripletFeel);
   TotalBars := Length(TimeSigs);
 
   { Get drummer plugin if specified }
@@ -170,7 +176,7 @@ begin
       Result.TimeSignature.Free;
       Result.TimeSignature := TTimeSignature.Create(TimeSigs[BarIndex].Numerator, TimeSigs[BarIndex].Denominator);
 
-      StepsPerBar := TimeSigs[BarIndex].Numerator * (AGridResolution div 4);
+      StepsPerBar := TimeSigs[BarIndex].GetStepsPerBar(AGridResolution);
 
       { Get backbeat positions for this meter }
       Backbeats := MeterBackbeats(TimeSigs[BarIndex].Numerator, TimeSigs[BarIndex].Denominator);

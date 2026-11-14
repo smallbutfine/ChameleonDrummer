@@ -818,14 +818,14 @@ begin
     raise Exception.Create('Invalid grouping string: no valid groups found');
 
   { Resolve time signatures from groups }
-  TimeSigs := ResolveTimeSignatures(Groups, Args.GridResolution);
+  TimeSigs := ResolveTimeSignatures(Groups, Args.GridResolution, Args.TripletFeel);
   if Length(TimeSigs) = 0 then
     raise Exception.Create('Could not resolve time signatures from grouping');
 
 
   { Generate pattern }
   Pattern := GenerateAdditivePattern(Groups, Args.GridResolution, Args.Tempo,
-    Args.Drummer, Args.DrummerIntensity);
+    Args.TripletFeel, Args.Drummer, Args.DrummerIntensity);
 
   { Save MIDI }
   FGenerator.SavePatternMidi(Pattern, Args.OutputFile, Args.Tempo);
