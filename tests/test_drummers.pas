@@ -379,14 +379,14 @@ begin
   GrooveEngine := TGrooveEngine.Create;
   try
     BonhamOffset := GrooveEngine.GetBarOffsetMs(
-      0, 4, 120, 0.5, 'verse', 'rock', 'bonham');
+      0, 4, 120, 0.5, 'verse', 'rock', 'bonham', False);
     HoglanOffset := GrooveEngine.GetBarOffsetMs(
-      0, 4, 120, 0.5, 'verse', 'metal', 'hoglan');
+      0, 4, 120, 0.5, 'verse', 'metal', 'hoglan', False);
     Check((Abs(BonhamOffset - 12.5) < 0.001) and
       (Abs(HoglanOffset + 3.5) < 0.001),
       'drummer groove profiles must resolve to bounded millisecond offsets');
     Check(GrooveEngine.GetBarOffsetMs(
-      0, 0, 0.5, 'verse', 'metal', 'hoglan') = 0,
+      0, 0, 0.5, 'verse', 'metal', 'hoglan', False) = 0,
       'invalid tempo must not produce an invalid groove offset');
   finally
     GrooveEngine.Free;
