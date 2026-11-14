@@ -41,6 +41,10 @@ const
   SH_S  = 'S ... x.. ... x.. | ... x.. ... x..';
   SH_H  = 'H x.x x.x x.x x.x | x.x x.x x.x x.x';
   SH_G  = 'S@0.5 ..g ..g ..g ..g | ..g ..g ..g ..g';
+  { shuffle (7 steps for 7/8T) — adapts the shuffle ride to dotted-quarter beats }
+  SH_S7 = 'S .... x... .... | .... x... ....';
+  SH_H7 = 'H x..x .x.. ..x. | x..x .x.. ..x.';
+  SH_G7 = 'S@0.5 .g.. ...g .... | .g.. ...g ....';
 
 function ClassicLines(const AKind: string; V: Integer): TTabLines;
 begin
@@ -101,6 +105,38 @@ begin
     else
       Result := ['K X..x ..x. .x.x ..x. | X.xx ..x. .x.. xx.x', S24, H16,
         'S@0.5 ...g .g.. ...g ..g. | ..g. .g.. .g.. ...g'];
+    end;
+end;
+
+function ShuffleLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Funk shuffle in 7/8T — adapts the swing ride to dotted-quarter beats.
+    Kick pattern follows the shuffle accent map across 7 eighth notes. }
+  Result := nil;
+  if AKind = 'chorus' then
+    case V of
+      0: Result := ['K X.. .... x... .... | X.. .... ... ..x', SH_S7, SH_H7, 'C X.. .... .... .... | .... .... ... ..x'];
+      1: Result := ['K X.. ..x. ... .... | X.. ... x... ....', SH_S7, SH_H7, SH_G7,
+           'C X.. .... .... .... | X.. .... .... ....'];
+    else
+      Result := ['K X.. x.x. ... x.x. | X.. x.x. .x. x.x.', SH_S7,
+        'R x..x .x.. ..x. x..x | .x.. x... x..x ..x', SH_G7, 'C X.. .... .... .... | X.. .... .... ....'];
+    end
+  else if AKind = 'bridge' then
+    case V of
+      0: Result := ['K X.. .... .... .... | X.. .... ... ..x', 'SS .... x... .... ... | .... x... .... ....',
+           'H x... x... x... x... | x... x... .... ....'];
+      1: Result := ['K X.. .... ..x. .... | X.. .... .... ...', SH_S7, 'H x.x x.x x.x x.x | x.x x.x x.x .xx'];
+    else
+      Result := ['K X.. ..x. x... ..x. | X.. ..x. x... ..x.', SH_S7, SH_H7, SH_G7];
+    end
+  else
+    case V of
+      0: Result := ['K X.. .... x... .... | X.. .... ... ..x', SH_S7, SH_H7];
+      1: Result := ['K X.. .... x... ..x. | X.. .... ... x...', SH_S7, SH_H7,
+           'S@0.5 .... ..g. .... .... | .... ..g. ... ....'];
+    else
+      Result := ['K X.. ..x. x... ..x. | X.. ..x. x... ..x.', SH_S7, SH_H7, SH_G7];
     end;
 end;
 
@@ -266,8 +302,10 @@ begin
   if V < 0 then V := 0;
   if V > 2 then V := 2;
   case LowerCase(AStyle) of
+    'shuffle':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := ShuffleLines7(AKind, V)
+      else Result := ShuffleLines(AKind, V);
     'pfunk': Result := PFunkLines(AKind, V);
-    'shuffle': Result := ShuffleLines(AKind, V);
     'new_orleans': Result := NewOrleansLines(AKind, V);
     'fusion': Result := FusionLines(AKind, V);
     'minimal': Result := MinimalLines(AKind, V);

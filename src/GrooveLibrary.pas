@@ -340,8 +340,26 @@ var
   Style: string;
   I: Integer;
 
-  { The grooves of one style for the kind, else its verse grooves. }
-  function OfStyle(const AStyleName: string; ATriplet: Boolean;
+  { Always look at meter-specific and verse|meter keys; never fall through to
+    the no-meter key because that would return grooves of a different grid. }
+  function OfStyleMeterSpecific(const AStyleName: string; ATriplet: Boolean;
+    out AVariants: TGrooveVariants): Boolean;
+  var
+    KeyWithMeter, KeyVerseMeter: string;
+  begin
+    KeyWithMeter := AStyleName + '|' + AKind;
+    KeyVerseMeter := KeyWithMeter;
+    if AMeterNum <> 0 then
+    begin
+      KeyWithMeter := KeyWithMeter + '|' + MeterKey(AMeterNum, AMeterDen, ATriplet);
+      KeyVerseMeter := AStyleName + '|verse|' + KeyWithMeter;
+    end;
+    Result := G.Kinds.TryGetValue(KeyWithMeter, AVariants) or
+      G.Kinds.TryGetValue(KeyVerseMeter, AVariants);
+  end;
+
+  { Fallback for cross-genre search: also tries no-meter key as last resort. }
+  function OfStyleAny(const AStyleName: string; ATriplet: Boolean;
     out AVariants: TGrooveVariants): Boolean;
   var
     KeyNoMeter, KeyWithMeter: string;
@@ -364,11 +382,12 @@ begin
   Style := LowerCase(AStyle);
   if G.Styles.IndexOf(Style) >= 0 then
   begin
-    if OfStyle(Style, ATripletFeel, Result) then
+    { Always try meter-specific key first (including triplet). }
+    if OfStyleMeterSpecific(Style, ATripletFeel, Result) then
       Exit;
-    { Triplet feel requested but no triplet groove: fall back to straight grooves
-      of the same meter. }
-    if ATripletFeel and OfStyle(Style, False, Result) then
+    { When triplet feel is requested but no triplet grooves exist, try
+      straight grooves of the same meter (may have partial overlap). }
+    if ATripletFeel and OfStyleMeterSpecific(Style, False, Result) then
       Exit;
   end;
   { For a meter other than 4/4 the genre may have grooves for it in another
@@ -376,9 +395,9 @@ begin
   if AMeterNum <> 0 then
     for I := 0 to G.Styles.Count - 1 do
     begin
-      if OfStyle(G.Styles[I], ATripletFeel, Result) then
+      if OfStyleAny(G.Styles[I], ATripletFeel, Result) then
         Exit;
-      if ATripletFeel and OfStyle(G.Styles[I], False, Result) then
+      if ATripletFeel and OfStyleAny(G.Styles[I], False, Result) then
         Exit;
     end;
   Result := nil;

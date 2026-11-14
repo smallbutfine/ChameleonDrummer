@@ -44,6 +44,11 @@ const
   SH_S   = 'S ... x.. ... x.. | ... x.. ... x..';
   SH_SS  = 'SS ... x.. ... x.. | ... x.. ... x..';
   SH_Q   = 'H x.. x.. x.. x.. | x.. x.. x.. x..';
+  { Shuffle (7 steps for 7/8T) — adapts the blues shuffle to dotted-quarter beats }
+  SH_H7  = 'H x..x .x.. ..x. | x..x .x.. ..x.';
+  SH_R7  = 'R x..x .x.. ..x. | x..x .x.. ..x.';
+  SH_S7  = 'S .... x... .... | .... x... ....';
+  SH_SS7 = 'SS .... x... .... | .... x... ....';
 
 function ClassicLines(const AKind: string; V: Integer): TTabLines;
 begin
@@ -71,6 +76,38 @@ begin
            'S@0.6 .... ..g. .... ...g | .... ..g. .... ....'];
     else
       Result := ['K x... .x.. x... ..x. | x.x. .... x... .x..', SN24, R8];
+    end;
+end;
+
+function BluesLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Blues shuffle in 7/8T — adapts the ride/shuffle pattern to dotted-quarter beats.
+    Kick follows the blues shuffle accent map across 7 eighth notes. }
+  Result := nil;
+  if AKind = 'chorus' then
+    case V of
+      0: Result := ['K x.. .... x... .... | x.. .... x... ..x', SH_S7, SH_R7, 'C X.. .... .... .... | x.. ... ... ...'];
+      1: Result := ['K x.. ..x. ... ..x. | x.. .x. .... x...', SH_S7, SH_R7, 'C X.. .... .... .... | ..x. ... ... ..x'];
+    else
+      Result := ['K x.. x.x. ... x.x. | x.. x.x. x.. x.x.', SH_S7, SH_R7,
+        'C X.. ... ... ... ... | X.. ... ... ... ...'];
+    end
+  else if AKind = 'bridge' then
+    case V of
+      0: Result := ['K x.. .... .... .... | x.. .... ... ..x', SH_SS7, 'H x... x... x... x... | x... x... .... ....'];
+      1: Result := ['K x.. .... x... .... | x.. .... x... ..x', SH_S7,
+           'R x..x .x.. ..x. x..x | .x.. x... x..x ..x'];
+    else
+      Result := ['K x.. ..x. ... ..x. | x.. ..x. x.. x.x', SH_S7, SH_R7,
+        'T1@0.5 .... .... .... .... | .... .... .... ..x'];
+    end
+  else
+    case V of
+      0: Result := ['K x.. .... x... .... | x.. .... ... ..x', SH_S7, SH_H];
+      1: Result := ['K x.. .... x... ..x. | x.. .... x... ...', SH_S7, SH_H,
+           'S@0.6 .... ..g. .... ... | .... ..g. ... ..g'];
+    else
+      Result := ['K x.. x.x. ... x.x. | x.. x.x. x.x. xxxx', SH_S7, SH_R7];
     end;
 end;
 
@@ -255,7 +292,9 @@ begin
   if V < 0 then V := 0;
   if V > 2 then V := 2;
   case LowerCase(AStyle) of
-    'blues': Result := BluesLines(AKind, V);
+    'blues':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := BluesLines7(AKind, V)
+      else Result := BluesLines(AKind, V);
     'alternative': Result := AlternativeLines(AKind, V);
     'progressive': Result := ProgressiveLines(AKind, V);
     'punk': Result := PunkLines(AKind, V);

@@ -50,6 +50,15 @@ const
   HP24 = 'HP .... x... .... x... | .... x... .... x...';
   CR16 = 'C X... .... .... .... | .... .... .... ....';
   CR16B = 'C X... .... .... .... | X... .... .... ....';
+  CR16B_7 = 'C X... .... .... .... | x... .... ..x. ....';
+  { 7-step fusion/contemporary building blocks — adapts the 16-step kick pattern
+    to 7 steps (one eighth note per position) with ride on dotted-quarter beats. }
+  S24_7  = 'S x... .... x... .... | x... .... x... ...';
+  R8_7   = 'R x..x .x.. ..x. x..x | .x.. x... ..x. x.';
+  R4_7   = 'R x... x... x... x... | x... x... x... ....';
+  H8_7   = 'H x..x .x.. ..x. x..x | .x.. x... ..x. x.';
+  HP24_7 = 'HP x... .... x... .... | .... x... .... ...';
+  CR16_7 = 'C X... .... .... .... | x... ... ..x. ....';
   { 8-step latin building blocks }
   BOSSA_K = 'K x..x x..x | x..x x..x';
   CLAVE   = 'SS x..x ..x. | ..x. x...';
@@ -288,6 +297,75 @@ begin
     end;
 end;
 
+function FusionLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Fusion in 7/8T — adapts the kick pattern to 7 eighth notes.
+    Ride on dotted-quarter beats (beat positions); kick follows the original
+    accent pattern mapped to 7 steps. Ghost notes carry the fusion feel. }
+  Result := nil;
+  if AKind = 'chorus' then
+    case V of
+      0: Result := ['K x... ..x. .... ..x. | .... ..x. .... ..x.', S24_7, R8_7, CR16_7];
+      1: Result := ['K x..x ..x. .... ..x. | .... ..x. .x.. ....', S24_7, H8_7, CR16_7];
+    else
+      Result := ['K x.xx ..x. ..x. ..x. | ...x ..xx x.x. ..x.', S24_7, R8_7, CR16B_7,
+        'S@0.6 .g.. .... ..g. .... | .g.. ..g. .... .g..'];
+    end
+  else if AKind = 'bridge' then
+    case V of
+      0: Result := ['K x... .... ..x. .... | .... .... .... ..x.',
+           'S .... .... x... .... | .... .... .... ....', R4_7];
+      1: Result := ['K x... ..x. .... .... | .... ..x. .... ....',
+           'SS .... x... .... .... | .... x... .... ....', H8_7];
+    else
+      Result := ['K x..x ..x. .x.. .... | .... ..x. .x.. ....', S24_7, R8_7,
+        'T1@0.5 .... .... .... .... | .... .... .... ..xx'];
+    end
+  else
+    case V of
+      0: Result := ['K x... ..x. .x.. .... | .... ..x. .... ....', S24_7, H8_7];
+      1: Result := ['K x..x ..x. .x.. .... | .... ..x. .... ....', S24_7, R8_7, HP24_7];
+    else
+      Result := ['K x..x ..x. ...x .... | .... ..x. .x.. ....', S24_7, R8_7, HP24_7,
+        'S@0.5 .... ..g. .... .g.. | .... .g.. .... ....'];
+    end;
+end;
+
+function ContemporaryLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Contemporary fusion in 7/8T — adapts kick pattern to 7 eighth notes.
+    Keeps the heavy backbeat and syncopated kick of contemporary grooves. }
+  Result := nil;
+  if AKind = 'chorus' then
+    case V of
+      0: Result := ['K x... .... ..x. .... | .... .... ..x. ....', S24_7, R4_7, CR16_7];
+      1: Result := ['K x..x ..x. .... .... | .... ..x. .x.. ....', S24_7, H8_7, CR16B_7];
+    else
+      Result := ['K x.xx ..x. ...x .... | .x.. ..x. x.x. ...', S24_7, R8_7, CR16B_7, HP24_7];
+    end
+  else if AKind = 'bridge' then
+    case V of
+      0: Result := ['K x... .... .... ..x. | .... .... .... ....',
+           'SS .... .... x... .... | .... .... .... ....',
+           'R .... .... x... .... | .... .... x... ....'];
+      1: Result := ['K x... .... ..x. .... | .... .... .... ....',
+           'S .... .... x... .... | .... .... .... ....', H8_7];
+    else
+      Result := ['K x..x .... ..x. .... | .... .... .... ....', S24_7, R8_7,
+        'T1@0.5 .... .... .... .... | .... .... .... ..xx'];
+    end
+  else
+    case V of
+      0: Result := ['K x... .... ..x. .... | .... .... .... ....',
+           'SS .... .... x... .... | .... .... x... ....', R4_7];
+      1: Result := ['K x... ..x. .... .... | .... .... ..x. ....',
+           'S .... .... x... .... | .... .... .... ....', R8_7];
+    else
+      Result := ['K x..x ..x. ...x .... | .... .... .... ....', S24_7, R8_7,
+        'S@0.5 .... ..g. .... .... | .g.. .... .... ...g', HP24_7];
+    end;
+end;
+
 function ContemporaryLines(const AKind: string; V: Integer): TTabLines;
 begin
   Result := nil;
@@ -341,8 +419,12 @@ begin
       if (AMeterNum = 7) and (AMeterDen = 8) then Result := BalladLines7(AKind, V)
       else Result := BalladLines(AKind, V);
     'latin': Result := LatinLines(AKind, V); { latin is not swing-based }
-    'fusion': Result := FusionLines(AKind, V); { fusion uses 16-step grids }
-    'contemporary': Result := ContemporaryLines(AKind, V);
+    'fusion':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := FusionLines7(AKind, V)
+      else Result := FusionLines(AKind, V);
+    'contemporary':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := ContemporaryLines7(AKind, V)
+      else Result := ContemporaryLines(AKind, V);
   else
     if (AMeterNum = 7) and (AMeterDen = 8) then Result := SwingLines7(AKind, V)
     else Result := SwingLines(AKind, V);
