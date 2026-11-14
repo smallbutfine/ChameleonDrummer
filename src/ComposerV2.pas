@@ -69,7 +69,7 @@ type
   TGrooveEngine = class
   private
     function GetDrummerGrooveBias(const ADrummer: string): Single;
-    function GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
+    function GetSectionGrooveContext(const ASectionName, AGenre: string; ATripletFeel: Boolean): Single;
   public
     function GetBarOffsetMs(ABarIndex: Integer; ABars: Integer; ATempo: Integer; IntensityPt: Double;
       const ASectionName, AGenre, ADrummer: string; ATripletFeel: Boolean = False): Single;
@@ -533,7 +533,7 @@ begin
   DrummerBias := GetDrummerGrooveBias(ADrummer);
 
   // Get section-specific groove context
-  SectionContext := GetSectionGrooveContext(ASectionName, AGenre);
+  SectionContext := GetSectionGrooveContext(ASectionName, AGenre, ATripletFeel);
 
   // Bias values are fractions of a beat; convert to milliseconds using triplet-aware subdivision.
   { In triplet feel the "beat" is a dotted-quarter (1.5x), so each ms-of-offset
@@ -553,7 +553,7 @@ begin
   Result := GetDrummerProfile(ADrummer).GrooveBias;
 end;
 
-function TGrooveEngine.GetSectionGrooveContext(const ASectionName, AGenre: string): Single;
+function TGrooveEngine.GetSectionGrooveContext(const ASectionName, AGenre: string; ATripletFeel: Boolean): Single;
 begin
   // Adjust groove context based on section type and genre
   if (Pos('intro', LowerCase(ASectionName)) > 0) then Exit(-0.015);
@@ -562,8 +562,8 @@ begin
   if (Pos('bridge', LowerCase(ASectionName)) > 0) then Exit(-0.020);
 
   case LowerCase(AGenre) of
-    'funk': Exit(0.015);
-    'jazz': Exit(0.020);
+    'funk': Exit(EnsureRange(0.015 + (IfThen(ATripletFeel, -0.003, 0)), -0.1, 0.1));
+    'jazz': Exit(EnsureRange(0.020 + (IfThen(ATripletFeel, 0.008, 0)), -0.1, 0.1));
     'metal': Exit(-0.005);
     else Exit(0.0);
   end;
