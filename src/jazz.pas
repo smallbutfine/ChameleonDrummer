@@ -129,7 +129,7 @@ begin
   { Grooves are drum tabs in JazzGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('jazz', FStyle, AKind, AVariant, FComplexity,
-    JazzGrooveLines(FStyle, AKind, AVariant mod 3),
+    JazzGrooveLines(FStyle, AKind, AVariant mod 3, MeterNum, MeterDen, TripletFeel),
     MeterNum, MeterDen, TripletFeel);
 end;
 

@@ -360,10 +360,8 @@ begin
     Exit;
   if FSwingRatio > 0 then
     Exit;
-  if FTimeSignature.Denominator <> 4 then
-    Exit;
-
-  { A pattern with notes on the triplet grid is already swung or shuffled. }
+  { Skip distortion for patterns already on a triplet grid — they have their own
+    built-in shuffle feel, not a straight swing offset. }
   for Beat in FBeats do
   begin
     Frac := Beat.Position - Math.Floor(Beat.Position);
