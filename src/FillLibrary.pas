@@ -104,7 +104,9 @@ var
   Fill: TFill;
   Num, Den: Integer;
   FillMeters: array of TMeterPair;
-  HasMeter, MeterMatches, TripletOK: Boolean;
+  HasMeter, MeterMatches, TripletOK, MeterOK: Boolean;
+  S, BlockHeader, BlockIdxStr: string;
+  BlockIdx: Integer;
 begin
   Result := nil;
   if ADrummer = '' then
@@ -145,7 +147,7 @@ begin
       Continue;
     { Build meters array from single meter }
     SetLength(FillMeters, 0);
-    if Num <> 0 then
+    if HasMeter and (Num <> 0) then
     begin
       SetLength(FillMeters, 1);
       FillMeters[0].Num := Num;
@@ -166,17 +168,38 @@ begin
     of the same meter. }
   if ATripletFeel and (Result.Count = 0) then
   begin
+    WriteLn('DEBUG FL:fallback: entering IF block');
+    WriteLn('DEBUG FL:fallback: Blocks addr=' + IntToStr(Integer(Pointer(Blocks))) + ' length=' + IntToStr(Length(Blocks)));
+    BlockIdx := 0;
+    WriteLn('DEBUG FL:fallback: about to enter for-in loop');
     for B in Blocks do
     begin
+      WriteLn('DEBUG FL:fallback: INSIDE for-in, BlockIdx=' + IntToStr(BlockIdx));
+      S := 'DEBUG FL:fallback block ' + IntToStr(BlockIdx);
+      WriteLn(S);
+      BlockIdxStr := IntToStr(BlockIdx);
       Num := 4;
       Den := 4;
-      if Length(B.Meters) > 0 then
+      HasMeter := Length(B.Meters) > 0;
+      if HasMeter then
       begin
         Num := B.Meters[0].Num;
         Den := B.Meters[0].Den;
       end;
-      if (Num <> AMeterNum) or (Den <> AMeterDen) or (B.Meters[0].TripletFeel <> False) then
+      { Only accept blocks that match meter AND have straight (non-triplet) feel }
+      MeterOK := (HasMeter = False) or ((Num = AMeterNum) and (Den = AMeterDen));
+      if HasMeter then
+        TripletOK := (B.Meters[0].TripletFeel = False)
+      else
+        TripletOK := True;
+      S := 'DEBUG FL:fallback block ' + IntToStr(BlockIdx) + ' hasMeter=' + BoolToStr(HasMeter, True) + ' meter=' + IntToStr(Num) + '/' + IntToStr(Den) + ' MeterOK=' + BoolToStr(MeterOK, True) + ' TripletOK=' + BoolToStr(TripletOK, True);
+      WriteLn(S);
+      if not (MeterOK and TripletOK) then
+      begin
+        WriteLn('DEBUG FL:fallback block ' + IntToStr(BlockIdx) + ' SKIPPED');
         Continue;
+      end;
+      WriteLn('DEBUG FL:fallback block ' + IntToStr(BlockIdx) + ' processing...');
       SetLength(FillMeters, 0);
       if Num <> 0 then
       begin
