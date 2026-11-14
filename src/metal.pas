@@ -135,7 +135,7 @@ begin
   { Grooves are drum tabs in MetalGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('metal', AStyle, AKind, AVariant, FComplexity,
-    MetalGrooveLines(AStyle, AKind, AVariant mod 3),
+    MetalGrooveLines(AStyle, AKind, AVariant mod 3, MeterNum, MeterDen, TripletFeel),
     MeterNum, MeterDen, TripletFeel);
 end;
 

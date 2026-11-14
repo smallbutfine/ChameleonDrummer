@@ -18,8 +18,11 @@ interface
 uses
   SysUtils, patterns_templates;
 
-{ Tab lines of one groove. Unknown styles fall back to 'house'. }
-function ElectronicGrooveLines(const AStyle, AKind: string; AVariant: Integer): TTabLines;
+{ Tab lines of one groove. AMeterNum/AMeterDen specify the meter context.
+  Electronic styles are not swing-based, but the params are accepted for
+  consistency with the build pipeline. Unknown styles fall back to 'house'. }
+function ElectronicGrooveLines(const AStyle, AKind: string; AVariant: Integer;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4; ATripletFeel: Boolean = False): TTabLines;
 
 implementation
 
@@ -160,7 +163,8 @@ begin
     end;
 end;
 
-function ElectronicGrooveLines(const AStyle, AKind: string; AVariant: Integer): TTabLines;
+function ElectronicGrooveLines(const AStyle, AKind: string; AVariant: Integer;
+  AMeterNum: Integer; AMeterDen: Integer; ATripletFeel: Boolean): TTabLines;
 var
   V: Integer;
 begin

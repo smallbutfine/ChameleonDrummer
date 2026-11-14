@@ -19,8 +19,11 @@ interface
 uses
   SysUtils, patterns_templates;
 
-{ Tab lines of one groove. Unknown styles fall back to 'classic'. }
-function FunkGrooveLines(const AStyle, AKind: string; AVariant: Integer): TTabLines;
+{ Tab lines of one groove. AMeterNum/AMeterDen specify the meter context.
+  For shuffle (12-step triplet grid) no change needed — the engine times
+  it correctly. Unknown styles fall back to 'classic'. }
+function FunkGrooveLines(const AStyle, AKind: string; AVariant: Integer;
+  AMeterNum: Integer = 4; AMeterDen: Integer = 4; ATripletFeel: Boolean = False): TTabLines;
 
 implementation
 
@@ -254,7 +257,8 @@ begin
     end;
 end;
 
-function FunkGrooveLines(const AStyle, AKind: string; AVariant: Integer): TTabLines;
+function FunkGrooveLines(const AStyle, AKind: string; AVariant: Integer;
+  AMeterNum: Integer; AMeterDen: Integer; ATripletFeel: Boolean): TTabLines;
 var
   V: Integer;
 begin

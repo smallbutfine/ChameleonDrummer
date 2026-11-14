@@ -129,7 +129,7 @@ begin
   { Grooves are drum tabs in RockGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('rock', FStyle, AKind, AVariant, FComplexity,
-    RockGrooveLines(FStyle, AKind, AVariant mod 3),
+    RockGrooveLines(FStyle, AKind, AVariant mod 3, MeterNum, MeterDen, TripletFeel),
     MeterNum, MeterDen, TripletFeel);
 end;
 

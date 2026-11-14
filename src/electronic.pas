@@ -121,7 +121,7 @@ begin
   { Grooves are drum tabs in ElectronicGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('electronic', FStyle, AKind, AVariant, FComplexity,
-    ElectronicGrooveLines(FStyle, AKind, AVariant mod 3),
+    ElectronicGrooveLines(FStyle, AKind, AVariant mod 3, MeterNum, MeterDen, TripletFeel),
     MeterNum, MeterDen, TripletFeel);
 end;
 

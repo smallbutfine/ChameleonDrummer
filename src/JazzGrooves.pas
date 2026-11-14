@@ -20,8 +20,11 @@ interface
 uses
   SysUtils, patterns_templates;
 
-{ Tab lines of one groove. Unknown styles fall back to 'swing'. }
-function JazzGrooveLines(const AStyle, AKind: string; AVariant: Integer): TTabLines;
+{ Tab lines of one groove. AMeterNum/AMeterDen specify the meter context.
+  For 7/8T meters (or any triplet meter), 7-step variants are used
+  instead of 12-step so the ride pattern really swings. }
+function JazzGrooveLines(const AStyle, AKind: string; AVariant: Integer;
+  AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean = False): TTabLines;
 
 implementation
 
@@ -33,6 +36,12 @@ const
   HPS  = 'HP ... x.. ... x.. | ... x.. ... x..';
   FEA  = 'K o.. o.. o.. o.. | o.. o.. o.. o..';
   CR12 = 'C X.. ... ... ... | ... ... ... ...';
+  { 7-step (7/8T) swing building blocks — 1 bar = 7 eighth notes, one beat per step. }
+  SWR7  = 'R x.x ... .x. | ... x.. ..x';
+  RQ7   = 'R x... .... ..x. | x... .... x...';
+  HPS7  = 'HP ... x.. ..x. | x... .... ....';
+  FEA7  = 'K o.. .o. .... | ..o. x... ....';
+  CR127 = 'C X.. .... .... | x... ... ..x.';
   { 16-step building blocks }
   S24  = 'S .... x... .... x... | .... x... .... x...';
   R8   = 'R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.';
@@ -77,6 +86,33 @@ begin
     end;
 end;
 
+function SwingLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { 7/8T swing grooves — ride pattern uses dotted-quarter steps (1 per beat). }
+  Result := nil;
+  if AKind = 'chorus' then
+    case V of
+      0: Result := [SWR7, HPS7, 'K x.. .... .... | ... .... x..', CR127];
+      1: Result := [SWR7, HPS7, FEA7, 'S ..x. .o. .... | .... ..x. ..o.'];
+    else
+      Result := [SWR7, HPS7, 'K x.. o.. ... | o.. ... ..x.', CR127];
+    end
+  else if AKind = 'bridge' then
+    case V of
+      0: Result := [RQ7, HPS7, 'K .... .... ... | ... x... ....', RQ7];
+      1: Result := [SWR7, HPS7, FEA7];
+    else
+      Result := [SWR7, HPS7, FEA7, 'S .... ..x. .o. | .o. ... ....'];
+    end
+  else
+    case V of
+      0: Result := [SWR7, HPS7, FEA7];
+      1: Result := [SWR7, HPS7, 'K x.. .o. .... | .... x... ..x.', CR127];
+    else
+      Result := [SWR7, HPS7, FEA7, 'S ..x. .x. .... | .... ..o. ...'];
+    end;
+end;
+
 function BebopLines(const AKind: string; V: Integer): TTabLines;
 begin
   Result := nil;
@@ -109,6 +145,12 @@ begin
         'S ... ..x .x. ... | .x. ..x ... ..x',
         'C@0.6 ... ... ... ... | X.. ... ... ...'];
     end;
+end;
+
+function BebopLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Bebop in 7/8T uses the swing-style groove variants. }
+  Result := SwingLines7(AKind, V);
 end;
 
 function HardBopLines(const AKind: string; V: Integer): TTabLines;
@@ -147,6 +189,12 @@ begin
     end;
 end;
 
+function HardBopLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Hard bop in 7/8T uses the swing-style groove variants. }
+  Result := SwingLines7(AKind, V);
+end;
+
 function BalladLines(const AKind: string; V: Integer): TTabLines;
 begin
   Result := nil;
@@ -173,6 +221,12 @@ begin
     else
       Result := [SWR, HPS, FEA, 'S ... ... ... ..o | ... ..o ... ...'];
     end;
+end;
+
+function BalladLines7(const AKind: string; V: Integer): TTabLines;
+begin
+  { Ballad in 7/8T uses the swing-style groove variants. }
+  Result := SwingLines7(AKind, V);
 end;
 
 function LatinLines(const AKind: string; V: Integer): TTabLines;
@@ -267,22 +321,31 @@ begin
     end;
 end;
 
-function JazzGrooveLines(const AStyle, AKind: string; AVariant: Integer): TTabLines;
+function JazzGrooveLines(const AStyle, AKind: string; AVariant: Integer;
+  AMeterNum, AMeterDen: Integer; ATripletFeel: Boolean): TTabLines;
 var
   V: Integer;
 begin
   V := AVariant;
   if V < 0 then V := 0;
   if V > 2 then V := 2;
+  { Use 7-step variants for 7/8T (and other triplet meters). }
   case LowerCase(AStyle) of
-    'bebop': Result := BebopLines(AKind, V);
-    'hard_bop': Result := HardBopLines(AKind, V);
-    'ballad': Result := BalladLines(AKind, V);
-    'latin': Result := LatinLines(AKind, V);
-    'fusion': Result := FusionLines(AKind, V);
+    'bebop':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := BebopLines7(AKind, V)
+      else Result := BebopLines(AKind, V);
+    'hard_bop':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := HardBopLines7(AKind, V)
+      else Result := HardBopLines(AKind, V);
+    'ballad':
+      if (AMeterNum = 7) and (AMeterDen = 8) then Result := BalladLines7(AKind, V)
+      else Result := BalladLines(AKind, V);
+    'latin': Result := LatinLines(AKind, V); { latin is not swing-based }
+    'fusion': Result := FusionLines(AKind, V); { fusion uses 16-step grids }
     'contemporary': Result := ContemporaryLines(AKind, V);
   else
-    Result := SwingLines(AKind, V);
+    if (AMeterNum = 7) and (AMeterDen = 8) then Result := SwingLines7(AKind, V)
+    else Result := SwingLines(AKind, V);
   end;
 end;
 

@@ -122,7 +122,7 @@ begin
   { Grooves are drum tabs in FunkGrooves.pas: three per style and section
     kind, tagged with overlapping intensity bands. }
   Result := BuildGroove('funk', FStyle, AKind, AVariant, FComplexity,
-    FunkGrooveLines(FStyle, AKind, AVariant mod 3),
+    FunkGrooveLines(FStyle, AKind, AVariant mod 3, MeterNum, MeterDen, TripletFeel),
     MeterNum, MeterDen, TripletFeel);
 end;
 
