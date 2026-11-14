@@ -18,7 +18,8 @@ type
   TInstrumentFamily = (ifKick, ifSnare, ifHihat, ifCymbal, ifTom, ifOther);
 
   TDrummerProfile = record
-    GrooveBias: Double;                       { fraction of a beat }
+    GrooveBias: Double;                       { fraction of a beat, straight feel }
+    GrooveBiasTriple: Double;                 { override for triplet feel (0 = use GrooveBias) }
     TimingMs: array[TInstrumentFamily] of Double; { constant offset per family }
   end;
 
@@ -43,11 +44,12 @@ var
   GProfiles: TStringList = nil;   { name -> index into GStore }
   GStore: array of TDrummerProfile;
 
-function EmptyProfile(ABias: Double): TDrummerProfile;
+function EmptyProfile(ABias, ABiasTriple: Double): TDrummerProfile;
 var
   F: TInstrumentFamily;
 begin
   Result.GrooveBias := ABias;
+  Result.GrooveBiasTriple := ABiasTriple;
   for F := Low(TInstrumentFamily) to High(TInstrumentFamily) do
     Result.TimingMs[F] := 0.0;
 end;
@@ -61,15 +63,15 @@ end;
 
 procedure LoadBuiltInDefaults;
 begin
-  GDefault := EmptyProfile(0.005);
-  AddProfile('bonham', EmptyProfile(0.025));
-  AddProfile('porcaro', EmptyProfile(-0.010));
-  AddProfile('weckl', EmptyProfile(0.005));
-  AddProfile('chambers', EmptyProfile(-0.005));
-  AddProfile('carey', EmptyProfile(0.015));
-  AddProfile('peart', EmptyProfile(0.0));
-  AddProfile('hoglan', EmptyProfile(-0.002));
-  AddProfile('copeland', EmptyProfile(0.020));
+  GDefault := EmptyProfile(0.005, 0.0);
+  AddProfile('bonham', EmptyProfile(0.025, 0.0));
+  AddProfile('porcaro', EmptyProfile(-0.010, 0.0));
+  AddProfile('weckl', EmptyProfile(0.005, 0.012));
+  AddProfile('chambers', EmptyProfile(-0.005, 0.010));
+  AddProfile('carey', EmptyProfile(0.015, 0.0));
+  AddProfile('peart', EmptyProfile(0.0, 0.0));
+  AddProfile('hoglan', EmptyProfile(-0.002, 0.0));
+  AddProfile('copeland', EmptyProfile(0.020, 0.0));
 end;
 
 function FindProfileFile: string;
@@ -91,6 +93,8 @@ function ReadProfile(AIni: TIniFile; const ASection: string;
   const AFallback: TDrummerProfile): TDrummerProfile;
 var
   Fmt: TFormatSettings;
+  S: string;
+  F: Double;
   function ReadF(const AKey: string; ADefault: Double): Double;
   var
     S: string;
@@ -105,6 +109,18 @@ begin
   Fmt := DefaultFormatSettings;
   Fmt.DecimalSeparator := '.';
   Result.GrooveBias := ReadF('groove_bias', AFallback.GrooveBias);
+  { groove_bias_triple overrides groove_bias when ATripletFeel is true.}
+  { A value of exactly 0 means "no override" (use groove_bias). }
+  S := Trim(AIni.ReadString(ASection, 'groove_bias_triple', ''));
+  if S = '' then
+    Result.GrooveBiasTriple := AFallback.GrooveBiasTriple
+  else
+  begin
+    if TryStrToFloat(S, F, Fmt) then
+      Result.GrooveBiasTriple := F
+    else
+      Result.GrooveBiasTriple := AFallback.GrooveBiasTriple;
+  end;
   Result.TimingMs[ifKick] := ReadF('timing_kick', AFallback.TimingMs[ifKick]);
   Result.TimingMs[ifSnare] := ReadF('timing_snare', AFallback.TimingMs[ifSnare]);
   Result.TimingMs[ifHihat] := ReadF('timing_hihat', AFallback.TimingMs[ifHihat]);

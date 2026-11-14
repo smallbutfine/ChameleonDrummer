@@ -68,7 +68,7 @@ type
   { TGrooveEngine — calculates microtiming offsets per drummer/style }
   TGrooveEngine = class
   private
-    function GetDrummerGrooveBias(const ADrummer: string): Single;
+    function GetDrummerGrooveBias(const ADrummer: string; ATripletFeel: Boolean): Single;
     function GetSectionGrooveContext(const ASectionName, AGenre: string; ATripletFeel: Boolean): Single;
   public
     function GetBarOffsetMs(ABarIndex: Integer; ABars: Integer; ATempo: Integer; IntensityPt: Double;
@@ -530,7 +530,7 @@ begin
     Exit(0);
 
   // Get drummer-specific groove bias (positive = behind beat, negative = push forward)
-  DrummerBias := GetDrummerGrooveBias(ADrummer);
+  DrummerBias := GetDrummerGrooveBias(ADrummer, ATripletFeel);
 
   // Get section-specific groove context
   SectionContext := GetSectionGrooveContext(ASectionName, AGenre, ATripletFeel);
@@ -546,11 +546,16 @@ begin
   Result := EnsureRange(Result * BeatDurationMs, -25.0, 25.0);
 end;
 
-function TGrooveEngine.GetDrummerGrooveBias(const ADrummer: string): Single;
+function TGrooveEngine.GetDrummerGrooveBias(const ADrummer: string; ATripletFeel: Boolean): Single;
+var
+  Profile: TDrummerProfile;
 begin
   { Per-drummer bias comes from config/drummer_profiles.ini; the loader
     falls back to built-in values when the file is missing. }
-  Result := GetDrummerProfile(ADrummer).GrooveBias;
+  Profile := GetDrummerProfile(ADrummer);
+  if ATripletFeel and (Profile.GrooveBiasTriple <> 0) then
+    Exit(Profile.GrooveBiasTriple);
+  Result := Profile.GrooveBias;
 end;
 
 function TGrooveEngine.GetSectionGrooveContext(const ASectionName, AGenre: string; ATripletFeel: Boolean): Single;
