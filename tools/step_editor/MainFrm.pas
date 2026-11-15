@@ -1774,7 +1774,7 @@ procedure TMainForm.UpdateBlockNavigationUI;
 var
   UIEnabled: Boolean;
 begin
-  UIEnabled := FIsConfigFile and (Length(FTabBlocks) > 0);
+  UIEnabled := FIsConfigFile;
 
   cbTabSelector.Visible := UIEnabled;
   btnTabPrev.Visible := UIEnabled;
