@@ -255,7 +255,6 @@ object MainForm: TMainForm
     Width = 300
     ItemHeight = 21
     Style = csDropDownList
-    TabOrder = 16
     Visible = False
     OnChange = cbTabSelectorChange
   end
@@ -265,7 +264,6 @@ object MainForm: TMainForm
     Top = 840
     Width = 30
     Caption = '◀'
-    TabOrder = 17
     Visible = False
     OnClick = btnTabPrevClick
   end
@@ -275,7 +273,6 @@ object MainForm: TMainForm
     Top = 840
     Width = 30
     Caption = '▶'
-    TabOrder = 18
     Visible = False
     OnClick = btnTabNextClick
   end
@@ -285,7 +282,6 @@ object MainForm: TMainForm
     Top = 842
     Width = 80
     Caption = ''
-    TabOrder = 19
     Visible = False
   end
   object edBlockStyle: TEdit
@@ -293,7 +289,6 @@ object MainForm: TMainForm
     Height = 24
     Top = 876
     Width = 120
-    TabOrder = 20
     Text = ''
     Visible = False
   end
@@ -302,7 +297,6 @@ object MainForm: TMainForm
     Height = 24
     Top = 876
     Width = 100
-    TabOrder = 21
     Text = ''
     Visible = False
   end
@@ -311,7 +305,6 @@ object MainForm: TMainForm
     Height = 24
     Top = 876
     Width = 60
-    TabOrder = 22
     Text = '0.20'
     Visible = False
   end
@@ -320,7 +313,6 @@ object MainForm: TMainForm
     Height = 24
     Top = 876
     Width = 60
-    TabOrder = 23
     Text = '0.60'
     Visible = False
   end
@@ -330,7 +322,6 @@ object MainForm: TMainForm
     Top = 914
     Width = 80
     Caption = 'Save Block'
-    TabOrder = 24
     Visible = False
   end
   object btnNewBlock: TButton
@@ -339,7 +330,6 @@ object MainForm: TMainForm
     Top = 914
     Width = 80
     Caption = 'New Block'
-    TabOrder = 25
     Visible = False
   end
   object btnDeleteBlock: TButton
@@ -348,7 +338,6 @@ object MainForm: TMainForm
     Top = 914
     Width = 80
     Caption = 'Delete'
-    TabOrder = 26
     Visible = False
   end
 end
