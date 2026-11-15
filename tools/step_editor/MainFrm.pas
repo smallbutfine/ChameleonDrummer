@@ -45,6 +45,8 @@ type
     btnBrowseInput: TButton;
     btnNewPattern: TButton;
 
+    lblEditor: TLabel;
+
     lblMapping: TLabel;
     cbMapping: TComboBox;
     lblStyle: TLabel;
