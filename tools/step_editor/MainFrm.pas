@@ -317,6 +317,11 @@ begin
 
   FAutoScaler := TWindowAutoScaler.Create(Self);
   SetupBlockNavigationUI;
+  // Wire event handlers for static block navigation controls
+  if Assigned(edBlockStyle) then edBlockStyle.OnChange := @MarkBlockModified;
+  if Assigned(edBlockKind) then edBlockKind.OnChange := @MarkBlockModified;
+  if Assigned(edIntensityLow) then edIntensityLow.OnChange := @MarkBlockModified;
+  if Assigned(edIntensityHigh) then edIntensityHigh.OnChange := @MarkBlockModified;
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
 
@@ -1759,133 +1764,8 @@ begin
 end;
 
 procedure TMainForm.SetupBlockNavigationUI;
-var
-  Y: Integer;
 begin
-  Y := sbStatus.Top - 150;
-  
-  cbTabSelector := TComboBox.Create(Self);
-  with cbTabSelector do begin
-    Parent := Self;
-    Name := 'cbTabSelector';
-    Left := 12; Top := Y;
-    Width := 300; Height := 24;
-    Style := csDropDownList;
-    OnChange := @cbTabSelectorChange;
-    Visible := False;
-  end;
-  
-  btnTabPrev := TButton.Create(Self);
-  with btnTabPrev do begin
-    Parent := Self;
-    Name := 'btnTabPrev';
-    Left := 320; Top := Y;
-    Width := 30; Height := 24;
-    Caption := '◀';
-    OnClick := @btnTabPrevClick;
-    Visible := False;
-  end;
-  
-  btnTabNext := TButton.Create(Self);
-  with btnTabNext do begin
-    Parent := Self;
-    Name := 'btnTabNext';
-    Left := 355; Top := Y;
-    Width := 30; Height := 24;
-    Caption := '▶';
-    OnClick := @btnTabNextClick;
-    Visible := False;
-  end;
-  
-  lblTabPosition := TLabel.Create(Self);
-  with lblTabPosition do begin
-    Parent := Self;
-    Name := 'lblTabPosition';
-    Left := 390; Top := Y + 4;
-    Width := 80; Height := 16;
-    Caption := '';
-    Visible := False;
-  end;
-  
-  Y := Y + 30;
-  edBlockStyle := TEdit.Create(Self);
-  with edBlockStyle do begin
-    Parent := Self;
-    Name := 'edBlockStyle';
-    Left := 12; Top := Y;
-    Width := 120; Height := 24;
-    Text := '';
-    Visible := False;
-  end;
-  
-  edBlockKind := TEdit.Create(Self);
-  with edBlockKind do begin
-    Parent := Self;
-    Name := 'edBlockKind';
-    Left := 140; Top := Y;
-    Width := 100; Height := 24;
-    Text := '';
-    Visible := False;
-  end;
-  
-  edIntensityLow := TEdit.Create(Self);
-  with edIntensityLow do begin
-    Parent := Self;
-    Name := 'edIntensityLow';
-    Left := 248; Top := Y;
-    Width := 60; Height := 24;
-    Text := '0.20';
-    Visible := False;
-  end;
-  
-  edIntensityHigh := TEdit.Create(Self);
-  with edIntensityHigh do begin
-    Parent := Self;
-    Name := 'edIntensityHigh';
-    Left := 315; Top := Y;
-    Width := 60; Height := 24;
-    Text := '0.60';
-    Visible := False;
-  end;
-  
-  Y := Y + 30;
-  btnSaveBlock := TButton.Create(Self);
-  with btnSaveBlock do begin
-    Parent := Self;
-    Name := 'btnSaveBlock';
-    Left := 12; Top := Y;
-    Width := 80; Height := 28;
-    Caption := 'Save Block';
-    OnClick := @btnSaveBlockClick;
-    Visible := False;
-  end;
-  
-  btnNewBlock := TButton.Create(Self);
-  with btnNewBlock do begin
-    Parent := Self;
-    Name := 'btnNewBlock';
-    Left := 100; Top := Y;
-    Width := 80; Height := 28;
-    Caption := 'New Block';
-    OnClick := @btnNewBlockClick;
-    Visible := False;
-  end;
-  
-  btnDeleteBlock := TButton.Create(Self);
-  with btnDeleteBlock do begin
-    Parent := Self;
-    Name := 'btnDeleteBlock';
-    Left := 188; Top := Y;
-    Width := 80; Height := 28;
-    Caption := 'Delete';
-    OnClick := @btnDeleteBlockClick;
-    Visible := False;
-  end;
-  
-  edBlockStyle.OnChange := @MarkBlockModified;
-  edBlockKind.OnChange := @MarkBlockModified;
-  edIntensityLow.OnChange := @MarkBlockModified;
-  edIntensityHigh.OnChange := @MarkBlockModified;
+  // No-op: all block navigation controls are defined in .lfm
 end;
 
 procedure TMainForm.UpdateBlockNavigationUI;
@@ -1894,17 +1774,17 @@ var
 begin
   UIEnabled := FIsConfigFile and (Length(FTabBlocks) > 0);
 
-  if Assigned(cbTabSelector) then cbTabSelector.Visible := UIEnabled;
-  if Assigned(btnTabPrev) then btnTabPrev.Visible := UIEnabled;
-  if Assigned(btnTabNext) then btnTabNext.Visible := UIEnabled;
-  if Assigned(lblTabPosition) then lblTabPosition.Visible := UIEnabled;
-  if Assigned(edBlockStyle) then edBlockStyle.Visible := UIEnabled;
-  if Assigned(edBlockKind) then edBlockKind.Visible := UIEnabled;
-  if Assigned(edIntensityLow) then edIntensityLow.Visible := UIEnabled;
-  if Assigned(edIntensityHigh) then edIntensityHigh.Visible := UIEnabled;
-  if Assigned(btnSaveBlock) then btnSaveBlock.Visible := UIEnabled;
-  if Assigned(btnNewBlock) then btnNewBlock.Visible := UIEnabled;
-  if Assigned(btnDeleteBlock) then btnDeleteBlock.Visible := UIEnabled;
+  cbTabSelector.Visible := UIEnabled;
+  btnTabPrev.Visible := UIEnabled;
+  btnTabNext.Visible := UIEnabled;
+  lblTabPosition.Visible := UIEnabled;
+  edBlockStyle.Visible := UIEnabled;
+  edBlockKind.Visible := UIEnabled;
+  edIntensityLow.Visible := UIEnabled;
+  edIntensityHigh.Visible := UIEnabled;
+  btnSaveBlock.Visible := UIEnabled;
+  btnNewBlock.Visible := UIEnabled;
+  btnDeleteBlock.Visible := UIEnabled;
   
   if UIEnabled then begin
     UpdateHeaderFields;

@@ -227,8 +227,8 @@ begin
 
   sbSections := TScrollBox.Create(Self);
   with sbSections do begin
-    Parent := gbSong; Left := 0; Top := 210;
-    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 210;
+    Parent := gbSong; Left := 0; Top := 240;
+    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 240;
     Align := alNone; Anchors := [akLeft, akTop, akRight, akBottom];
     BorderStyle := bsNone; VertScrollBar.Tracking := True; HorzScrollBar.Visible := False;
   end;
@@ -541,13 +541,13 @@ begin
 
   sbSections.DisableAlign;
   try
-    Y := 8;
+    Y := 16;
     for I := 0 to High(FSectionNames) do begin
     lblName := TLabel.Create(sbSections);
     with lblName do begin
       Parent := sbSections;
       Left := 12; Top := Y;
-      Width := 80; Height := 14;
+      Width := 80; Height := 24;
       Caption := Format('Section %d', [I+1]);
       AutoSize := False;
       ShowHint := True;
@@ -601,7 +601,7 @@ begin
     Parent := sbSections;
     Name := 'btnAddSection';
     Left := 12; Top := Y + 4;
-    Width := 100; Height := 28;
+    Width := 110; Height := 28;
     Caption := '+ Add Section';
     OnClick := @BtnAddSectionClick;
     ShowHint := True;
@@ -613,7 +613,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnResetStructure';
-    Left := 116; Top := Y + 4;
+    Left := 126; Top := Y + 4;
     Width := 100; Height := 28;
     Caption := 'Reset';
     OnClick := @BtnResetStructureClick;
@@ -626,7 +626,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnSaveConfig';
-    Left := 220; Top := Y + 4;
+    Left := 230; Top := Y + 4;
     Width := 80; Height := 28;
     Caption := 'Save';
     OnClick := @mnuExportConfigClick;
@@ -639,7 +639,7 @@ begin
   with btnAdd do begin
     Parent := sbSections;
     Name := 'btnLoadConfig';
-    Left := 304; Top := Y + 4;
+    Left := 314; Top := Y + 4;
     Width := 80; Height := 28;
     Caption := 'Load';
     OnClick := @mnuImportConfigClick;
@@ -982,7 +982,7 @@ end;
 
 procedure TMainForm.mnuAboutClick(Sender: TObject);
 begin
-  ShowMessage('ChameleonDrummer GUI v1.0.634' + LineEnding + LineEnding + '(c) 2026 Martin Haverland');
+  ShowMessage('ChameleonDrummer GUI' + LineEnding + LineEnding + '(c) 2026 Martin Haverland');
 end;
 
 procedure TMainForm.mnuAddSectionClick(Sender: TObject);

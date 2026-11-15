@@ -248,4 +248,107 @@ object MainForm: TMainForm
         Width = 75
       end>
   end
+  object cbTabSelector: TComboBox
+    Left = 12
+    Height = 24
+    Top = 840
+    Width = 300
+    ItemHeight = 21
+    Style = csDropDownList
+    TabOrder = 16
+    Visible = False
+    OnChange = cbTabSelectorChange
+  end
+  object btnTabPrev: TButton
+    Left = 320
+    Height = 24
+    Top = 840
+    Width = 30
+    Caption = '◀'
+    TabOrder = 17
+    Visible = False
+    OnClick = btnTabPrevClick
+  end
+  object btnTabNext: TButton
+    Left = 355
+    Height = 24
+    Top = 840
+    Width = 30
+    Caption = '▶'
+    TabOrder = 18
+    Visible = False
+    OnClick = btnTabNextClick
+  end
+  object lblTabPosition: TLabel
+    Left = 390
+    Height = 21
+    Top = 842
+    Width = 80
+    Caption = ''
+    TabOrder = 19
+    Visible = False
+  end
+  object edBlockStyle: TEdit
+    Left = 12
+    Height = 24
+    Top = 876
+    Width = 120
+    TabOrder = 20
+    Text = ''
+    Visible = False
+  end
+  object edBlockKind: TEdit
+    Left = 140
+    Height = 24
+    Top = 876
+    Width = 100
+    TabOrder = 21
+    Text = ''
+    Visible = False
+  end
+  object edIntensityLow: TEdit
+    Left = 248
+    Height = 24
+    Top = 876
+    Width = 60
+    TabOrder = 22
+    Text = '0.20'
+    Visible = False
+  end
+  object edIntensityHigh: TEdit
+    Left = 315
+    Height = 24
+    Top = 876
+    Width = 60
+    TabOrder = 23
+    Text = '0.60'
+    Visible = False
+  end
+  object btnSaveBlock: TButton
+    Left = 12
+    Height = 28
+    Top = 914
+    Width = 80
+    Caption = 'Save Block'
+    TabOrder = 24
+    Visible = False
+  end
+  object btnNewBlock: TButton
+    Left = 100
+    Height = 28
+    Top = 914
+    Width = 80
+    Caption = 'New Block'
+    TabOrder = 25
+    Visible = False
+  end
+  object btnDeleteBlock: TButton
+    Left = 188
+    Height = 28
+    Top = 914
+    Width = 80
+    Caption = 'Delete'
+    TabOrder = 26
+    Visible = False
+  end
 end

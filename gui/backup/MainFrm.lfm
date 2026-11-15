@@ -1,10 +1,10 @@
 object MainForm: TMainForm
-  Left = 522
-  Height = 939
-  Top = 93
+  Left = 361
+  Height = 967
+  Top = 25
   Width = 1206
   Caption = 'ChameleonDrummer'
-  ClientHeight = 939
+  ClientHeight = 967
   ClientWidth = 1206
   DesignTimePPI = 144
   Menu = MainMenu
@@ -14,26 +14,26 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   object gbSong: TGroupBox
     Left = 16
-    Height = 772
-    Top = 12
+    Height = 812
+    Top = 16
     Width = 624
     Caption = 'Song'
-    ClientHeight = 746
+    ClientHeight = 786
     ClientWidth = 620
     TabOrder = 0
     object rbPattern: TRadioButton
-      Left = 18
+      Left = 88
       Height = 25
-      Top = 0
+      Top = -8
       Width = 208
       Caption = 'Pattern (single pattern)'
       TabOrder = 0
       OnClick = rgModeChange
     end
     object rbSong: TRadioButton
-      Left = 300
+      Left = 336
       Height = 25
-      Top = 0
+      Top = -8
       Width = 182
       Caption = 'Song (full structure)'
       Checked = True
@@ -45,7 +45,7 @@ object MainForm: TMainForm
       Left = 18
       Height = 21
       Hint = 'Select genre'
-      Top = 68
+      Top = 40
       Width = 50
       Caption = 'Genre'
       ParentShowHint = False
@@ -55,7 +55,7 @@ object MainForm: TMainForm
       Left = 96
       Height = 29
       Hint = 'Select genre'
-      Top = 60
+      Top = 40
       Width = 270
       ItemHeight = 21
       ParentShowHint = False
@@ -67,7 +67,7 @@ object MainForm: TMainForm
     object lblStyle: TLabel
       Left = 18
       Height = 21
-      Top = 116
+      Top = 80
       Width = 40
       Caption = 'Style'
     end
@@ -75,7 +75,7 @@ object MainForm: TMainForm
       Left = 96
       Height = 29
       Hint = 'Select style'
-      Top = 108
+      Top = 80
       Width = 270
       ItemHeight = 21
       ParentShowHint = False
@@ -86,7 +86,7 @@ object MainForm: TMainForm
     object lblDrummer: TLabel
       Left = 18
       Height = 21
-      Top = 164
+      Top = 120
       Width = 73
       Caption = 'Drummer'
     end
@@ -94,7 +94,7 @@ object MainForm: TMainForm
       Left = 96
       Height = 29
       Hint = 'Select drummer'
-      Top = 158
+      Top = 120
       Width = 270
       ItemHeight = 21
       ParentShowHint = False
@@ -105,7 +105,7 @@ object MainForm: TMainForm
     object lblMapping: TLabel
       Left = 18
       Height = 21
-      Top = 218
+      Top = 208
       Width = 65
       Caption = 'Keymap'
     end
@@ -113,7 +113,7 @@ object MainForm: TMainForm
       Left = 96
       Height = 29
       Hint = 'Select keymap'
-      Top = 210
+      Top = 208
       Width = 270
       ItemHeight = 21
       ParentShowHint = False
@@ -124,7 +124,7 @@ object MainForm: TMainForm
     object lblMeter: TLabel
       Left = 18
       Height = 21
-      Top = 266
+      Top = 162
       Width = 46
       Caption = 'Meter'
     end
@@ -132,7 +132,7 @@ object MainForm: TMainForm
       Left = 96
       Height = 29
       Hint = 'Select meter (e.g. 7/8)'
-      Top = 260
+      Top = 160
       Width = 120
       ItemHeight = 21
       ParentShowHint = False
@@ -141,9 +141,9 @@ object MainForm: TMainForm
       TabOrder = 6
     end
     object chkStrictMeter: TCheckBox
-      Left = 255
+      Left = 240
       Height = 25
-      Top = 266
+      Top = 162
       Width = 328
       Caption = 'Strictly use exactly this time signature.'
       Checked = True
@@ -398,15 +398,15 @@ object MainForm: TMainForm
   object gbLog: TGroupBox
     Left = 16
     Height = 112
-    Top = 784
+    Top = 832
     Width = 1230
     Caption = 'Log'
     ClientHeight = 86
     ClientWidth = 1226
     TabOrder = 7
     object memLog: TMemo
-      Left = 12
-      Height = 80
+      Left = 16
+      Height = 72
       Hint = 'Generation log output'
       Top = 0
       Width = 1162
@@ -421,7 +421,7 @@ object MainForm: TMainForm
   object pbProgress: TProgressBar
     Left = 226
     Height = 24
-    Top = 904
+    Top = 936
     Width = 964
     TabOrder = 8
     Visible = False

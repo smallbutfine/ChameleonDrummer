@@ -174,7 +174,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   inherited;
 
-  cbMeter.Items.CommaText := '4/4,2/4,3/4,5/4,6/8,7/8,9/8,11/8,13/8,15/16';
+  cbMeter.Items.CommaText := '4/4,4/4T,2/4,2/4T,3/4,3/4T,5/4,5/4T,6/8,6/8T,7/8,7/8T,9/8,9/8T,11/8,11/8T,13/8,13/8T,15/16,15/16T';
   cbMeter.ItemIndex := 0;
   chkStrictMeter.Checked := True;
   {$IFDEF MSWINDOWS}FDark := False;{$ENDIF}
@@ -716,15 +716,16 @@ end;
 function TMainForm.MeterOption(out AText: String): Boolean;
 var
   Num, Den: Integer;
+  ATriplet: Boolean;
   Problem: String;
 begin
   AText := '';
   Result := True;
   if (Trim(cbMeter.Text) = '') or (Trim(cbMeter.Text) = '4/4') then
     Exit;
-  if not TryParseMeter(cbMeter.Text, Num, Den) then
+  if not TryParseMeterWithTriplet(cbMeter.Text, Num, Den, ATriplet) then
   begin
-    Log('The meter "' + cbMeter.Text + '" is not like 7/8.');
+    Log('The meter "' + cbMeter.Text + '" is not like 7/8 or 7/8T.');
     Exit(False);
   end;
   Problem := MeterProblem(Num, Den);
@@ -733,7 +734,7 @@ begin
     Log(Format('The meter %d/%d cannot be played: %s.', [Num, Den, Problem]));
     Exit(False);
   end;
-  AText := Format('%d/%d', [Num, Den]);
+  AText := MeterName(Num, Den, ATriplet);
 end;
 
 { Options that both modes pass on. }
