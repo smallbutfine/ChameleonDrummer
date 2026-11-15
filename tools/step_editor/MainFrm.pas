@@ -107,6 +107,13 @@ type
     btnSaveBlock: TButton;
     btnNewBlock: TButton;
     btnDeleteBlock: TButton;
+    // Event handlers for block navigation (must be published for LFM streaming)
+    procedure cbTabSelectorChange(Sender: TObject);
+    procedure btnTabPrevClick(Sender: TObject);
+    procedure btnTabNextClick(Sender: TObject);
+    procedure btnSaveBlockClick(Sender: TObject);
+    procedure btnNewBlockClick(Sender: TObject);
+    procedure btnDeleteBlockClick(Sender: TObject);
 
   private
     FInputPath: string;
@@ -167,12 +174,6 @@ type
     procedure SetupBlockNavigationUI;
     procedure UpdateBlockNavigationUI;
     procedure UpdateHeaderFields;
-    procedure cbTabSelectorChange(Sender: TObject);
-    procedure btnTabPrevClick(Sender: TObject);
-    procedure btnTabNextClick(Sender: TObject);
-    procedure btnSaveBlockClick(Sender: TObject);
-    procedure btnNewBlockClick(Sender: TObject);
-    procedure btnDeleteBlockClick(Sender: TObject);
     procedure SurgicalSaveBlock;
     procedure MarkBlockModified(Sender: TObject);
 
@@ -1607,6 +1608,22 @@ begin
             (Pos('config' + PathDelim + 'fills', LowerName) > 0);
 end;
 
+procedure TMainForm.LoadTabFile(const AFileName: string);
+begin
+  FIsConfigFile := IsConfigTabFile(AFileName);
+  FTabBlocks := nil;
+  FTabBars := nil;
+  FSelectedBlock := -1;
+  FBlockModified := False;
+
+  if FIsConfigFile then
+    ParseConfigTabFile(AFileName)
+  else
+    ParseForeignTabFile(AFileName);
+
+  UpdateBlockNavigationUI;
+end;
+
 procedure TMainForm.ParseConfigTabFile(const AFileName: string);
 var
   SL: TStringList;
@@ -1704,20 +1721,31 @@ begin
   end;
 end;
 
-procedure TMainForm.LoadTabFile(const AFileName: string);
+procedure TMainForm.UpdateBlockNavigationUI;
+var
+  UIEnabled: Boolean;
 begin
-  FIsConfigFile := IsConfigTabFile(AFileName);
-  FTabBlocks := nil;
-  FTabBars := nil;
-  FSelectedBlock := -1;
-  FBlockModified := False;
+  UIEnabled := FIsConfigFile or (Length(FTabBlocks) > 0);
 
-  if FIsConfigFile then
-    ParseConfigTabFile(AFileName)
-  else
-    ParseForeignTabFile(AFileName);
+  cbTabSelector.Visible := UIEnabled;
+  btnTabPrev.Visible := UIEnabled;
+  btnTabNext.Visible := UIEnabled;
+  lblTabPosition.Visible := UIEnabled;
+  edBlockStyle.Visible := UIEnabled;
+  edBlockKind.Visible := UIEnabled;
+  edIntensityLow.Visible := UIEnabled;
+  edIntensityHigh.Visible := UIEnabled;
+  btnSaveBlock.Visible := UIEnabled;
+  btnNewBlock.Visible := UIEnabled;
+  btnDeleteBlock.Visible := UIEnabled;
 
-  UpdateBlockNavigationUI;
+  if UIEnabled then begin
+    UpdateHeaderFields;
+    lblTabPosition.Caption := Format('%d of %d', [FSelectedBlock + 1, Length(FTabBlocks)]);
+    btnTabPrev.Enabled := FSelectedBlock > 0;
+    btnTabNext.Enabled := FSelectedBlock < Length(FTabBlocks) - 1;
+    btnDeleteBlock.Enabled := Length(FTabBlocks) > 1;
+  end;
 end;
 
 function TMainForm.BuildBlockText(const ABlock: TTabBlock): string;
@@ -1770,32 +1798,6 @@ begin
   // No-op: all block navigation controls are defined in .lfm
 end;
 
-procedure TMainForm.UpdateBlockNavigationUI;
-var
-  UIEnabled: Boolean;
-begin
-  UIEnabled := FIsConfigFile;
-
-  cbTabSelector.Visible := UIEnabled;
-  btnTabPrev.Visible := UIEnabled;
-  btnTabNext.Visible := UIEnabled;
-  lblTabPosition.Visible := UIEnabled;
-  edBlockStyle.Visible := UIEnabled;
-  edBlockKind.Visible := UIEnabled;
-  edIntensityLow.Visible := UIEnabled;
-  edIntensityHigh.Visible := UIEnabled;
-  btnSaveBlock.Visible := UIEnabled;
-  btnNewBlock.Visible := UIEnabled;
-  btnDeleteBlock.Visible := UIEnabled;
-  
-  if UIEnabled then begin
-    UpdateHeaderFields;
-    lblTabPosition.Caption := Format('%d of %d', [FSelectedBlock + 1, Length(FTabBlocks)]);
-    btnTabPrev.Enabled := FSelectedBlock > 0;
-    btnTabNext.Enabled := FSelectedBlock < Length(FTabBlocks) - 1;
-    btnDeleteBlock.Enabled := Length(FTabBlocks) > 1;
-  end;
-end;
 
 procedure TMainForm.UpdateHeaderFields;
 begin
