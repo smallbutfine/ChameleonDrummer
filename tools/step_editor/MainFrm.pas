@@ -1706,16 +1706,22 @@ end;
 
 procedure TMainForm.LoadTabFile(const AFileName: string);
 begin
-  FIsConfigFile := IsConfigTabFile(AFileName);
   FTabBlocks := nil;
   FTabBars := nil;
   FSelectedBlock := -1;
   FBlockModified := False;
 
-  if FIsConfigFile then
-    ParseConfigTabFile(AFileName)
-  else
+  { Always try config file parsing first (blocks with [style kind intensity] headers).
+    Fall back to foreign tab parsing if no blocks are found. }
+  ParseConfigTabFile(AFileName);
+  if Length(FTabBlocks) = 0 then begin
+    FIsConfigFile := False;
     ParseForeignTabFile(AFileName);
+  end else begin
+    FIsConfigFile := True;
+  end;
+
+  UpdateBlockNavigationUI;
 
   UpdateBlockNavigationUI;
 end;
