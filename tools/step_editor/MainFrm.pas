@@ -1621,7 +1621,7 @@ begin
     
     for I := 0 to SL.Count - 1 do
     begin
-      Line := SL[I];
+      Line := Trim(SL[I]);
       if (Line <> '') and (Line[1] = '[') then begin
         if BlockIdx >= 0 then begin
           FTabBlocks[BlockIdx].LineEnd := I - 1;
