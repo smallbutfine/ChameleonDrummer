@@ -104,6 +104,7 @@ type
     procedure mnuImportConfigClick(Sender: TObject);
     {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
+    procedure MainFormShow(Sender: TObject);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
     procedure FormDestroy(Sender: TObject);
 
@@ -253,6 +254,19 @@ begin
   FAutoScaler := TWindowAutoScaler.Create(Self);
   OnDestroy := @FormDestroy;
   end;
+
+procedure TMainForm.MainFormShow(Sender: TObject);
+begin
+  sbSections := TScrollBox.Create(Self);
+  with sbSections do begin
+    Parent := gbSong; Left := 0; Top := 240;
+    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 240;
+    Align := alNone; Anchors := [akLeft, akTop, akRight, akBottom];
+    BorderStyle := bsNone; VertScrollBar.Tracking := True; HorzScrollBar.Visible := False;
+  end;
+
+  ResetToDefaultStructure;
+end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
