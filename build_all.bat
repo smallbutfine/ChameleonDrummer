@@ -339,22 +339,22 @@ echo [GUI] Moving GUI executables...
 REM chameleondrummer_gui.lpi target is ../chameleondrummer_gui -> project root
 if "%T_OS%"=="darwin" (
     if exist "%ROOT%\chameleondrummer_gui.app" (
-        move /y "%ROOT%\chameleondrummer_gui.app" "%TD%\" >&1
+        move /y "%ROOT%\chameleondrummer_gui.app" "%TD%\" >nul 2>&1
         echo   moved chameleondrummer_gui.app
     ) else (
         echo   WARNING: chameleondrummer_gui.app not found at expected locations
     )
 ) else if exist "%ROOT%\chameleondrummer_gui.exe" (
-    move /y "%ROOT%\chameleondrummer_gui.exe" "%TD%\" >&1
+    move /y "%ROOT%\chameleondrummer_gui.exe" "%TD%\" >nul 2>&1
     echo   moved chameleondrummer_gui.exe
 ) else if exist "%ROOT%\gui\chameleondrummer_gui.exe" (
-    move /y "%ROOT%\gui\chameleondrummer_gui.exe" "%TD%\" >&1
+    move /y "%ROOT%\gui\chameleondrummer_gui.exe" "%TD%\" >nul 2>&1
     echo   moved gui\chameleondrummer_gui.exe
 ) else if exist "%ROOT%\gui\chameleondrummer_gui" (
-    move /y "%ROOT%\gui\chameleondrummer_gui" "%TD%\" >&1
+    move /y "%ROOT%\gui\chameleondrummer_gui" "%TD%\" >nul 2>&1
     echo   moved gui\chameleondrummer_gui
 ) else if exist "%ROOT%\chameleondrummer_gui" (
-    move /y "%ROOT%\chameleondrummer_gui" "%TD%\" >&1
+    move /y "%ROOT%\chameleondrummer_gui" "%TD%\" >nul 2>&1
     echo   moved chameleondrummer_gui
 ) else (
     echo   WARNING: chameleondrummer_gui not found at expected locations
@@ -363,25 +363,25 @@ if "%T_OS%"=="darwin" (
 REM step_editor.lpi target is ../step_editor relative to tools/step_editor/
 if "%T_OS%"=="darwin" (
     if exist "%ROOT%\tools\step_editor\step_editor.app" (
-        move /y "%ROOT%\tools\step_editor\step_editor.app" "%TD%\tools\" >&1
+        move /y "%ROOT%\tools\step_editor\step_editor.app" "%TD%\tools\" >nul 2>&1
         echo   moved tools\step_editor\step_editor.app
     ) else (
         echo   WARNING: step_editor.app not found at expected locations
     )
 ) else if exist "%ROOT%\tools\step_editor\step_editor.exe" (
-    move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\" >&1
+    move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\" >nul 2>&1
     echo   moved tools\step_editor\step_editor.exe
 ) else if exist "%ROOT%\tools\step_editor\step_editor" (
-    move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\" >&1
+    move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\" >nul 2>&1
     echo   moved tools\step_editor\step_editor
 ) else if exist "%ROOT%\tools\step_editor.exe" (
-    move /y "%ROOT%\tools\step_editor.exe" "%TD%\tools\" >&1
+    move /y "%ROOT%\tools\step_editor.exe" "%TD%\tools\" >nul 2>&1
     echo   moved tools\step_editor.exe
 ) else if exist "%ROOT%\step_editor.exe" (
-    move /y "%ROOT%\step_editor.exe" "%TD%\tools\" >&1
+    move /y "%ROOT%\step_editor.exe" "%TD%\tools\" >nul 2>&1
     echo   moved step_editor.exe
 ) else if exist "%ROOT%\step_editor" (
-    move /y "%ROOT%\step_editor" "%TD%\tools\" >&1
+    move /y "%ROOT%\step_editor" "%TD%\tools\" >nul 2>&1
     echo   moved step_editor
 ) else (
     echo   WARNING: step_editor not found at expected locations
