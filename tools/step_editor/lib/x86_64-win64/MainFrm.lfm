@@ -323,6 +323,7 @@ object MainForm: TMainForm
     Width = 80
     Caption = 'Save Block'
     Visible = False
+    OnClick = btnSaveBlockClick
   end
   object btnNewBlock: TButton
     Left = 100
@@ -331,6 +332,7 @@ object MainForm: TMainForm
     Width = 80
     Caption = 'New Block'
     Visible = False
+    OnClick = btnNewBlockClick
   end
   object btnDeleteBlock: TButton
     Left = 188
@@ -339,5 +341,6 @@ object MainForm: TMainForm
     Width = 80
     Caption = 'Delete'
     Visible = False
+    OnClick = btnDeleteBlockClick
   end
 end

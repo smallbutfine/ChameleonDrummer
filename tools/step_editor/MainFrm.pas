@@ -1892,6 +1892,16 @@ begin
   finally
     SL.Free;
   end;
+
+  // Re-parse the file so LineStart/LineEnd and Bars stay in sync with the saved content
+  ParseConfigTabFile(Block.SourceFile);
+  if FSelectedBlock >= Length(FTabBlocks) then
+    FSelectedBlock := Length(FTabBlocks) - 1;
+  if cbTabSelector.Items.Count > FSelectedBlock then
+    cbTabSelector.ItemIndex := FSelectedBlock;
+  UpdateHeaderFields;
+  RenderPage(0);
+  UpdateBlockNavigationUI;
 end;
 
 procedure TMainForm.btnNewBlockClick(Sender: TObject);
