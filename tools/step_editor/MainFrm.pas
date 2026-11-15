@@ -1718,10 +1718,6 @@ begin
     ParseForeignTabFile(AFileName);
 
   UpdateBlockNavigationUI;
-
-  UpdateBlockNavigationUI;
-
-  UpdateBlockNavigationUI;
 end;
 
 function TMainForm.BuildBlockText(const ABlock: TTabBlock): string;
