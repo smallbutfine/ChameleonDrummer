@@ -94,6 +94,20 @@ type
     procedure cbStyleChange(Sender: TObject);
     procedure cbKindChange(Sender: TObject);
 
+  published
+    // Block navigation UI controls (linked from MainFrm.lfm)
+    cbTabSelector: TComboBox;
+    btnTabPrev: TButton;
+    btnTabNext: TButton;
+    lblTabPosition: TLabel;
+    edBlockStyle: TEdit;
+    edBlockKind: TEdit;
+    edIntensityLow: TEdit;
+    edIntensityHigh: TEdit;
+    btnSaveBlock: TButton;
+    btnNewBlock: TButton;
+    btnDeleteBlock: TButton;
+
   private
     FInputPath: string;
     FOutputDir: string;
@@ -115,20 +129,6 @@ type
     FSelectedBlock: Integer;
     FIsConfigFile: Boolean;
     FBlockModified: Boolean;
-
-    // UI controls for block navigation
-    cbTabSelector: TComboBox;
-    btnTabPrev: TButton;
-    btnTabNext: TButton;
-    lblTabPosition: TLabel;
-    edBlockStyle: TEdit;
-    edBlockKind: TEdit;
-    edIntensityLow: TEdit;
-    edIntensityHigh: TEdit;
-    btnSaveBlock: TButton;
-    btnNewBlock: TButton;
-    btnDeleteBlock: TButton;
-
 
     procedure LoadMidiAndConvert;
     procedure LoadTabFile(const AFileName: string);
