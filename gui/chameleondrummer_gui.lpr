@@ -1,6 +1,7 @@
 program ChameleonDrummerGUI;
 
 {$mode objfpc}{$H+}
+{$APPTYPE GUI}
 
 { ChameleonDrummer - graphical front end.
 
