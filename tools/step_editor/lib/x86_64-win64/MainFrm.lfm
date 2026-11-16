@@ -1,10 +1,10 @@
 object MainForm: TMainForm
-  Left = 0
-  Height = 1020
-  Top = 0
+  Left = 310
+  Height = 892
+  Top = 54
   Width = 1440
   Caption = 'ChameleonDrummer — Step Editor'
-  ClientHeight = 1020
+  ClientHeight = 892
   ClientWidth = 1440
   DesignTimePPI = 144
   LCLVersion = '4.8.0.0'
@@ -223,25 +223,25 @@ object MainForm: TMainForm
     Caption = 'Header preview'
   end
   object btnSavePatternAs: TButton
-    Left = 24
-    Height = 45
-    Top = 660
-    Width = 225
-    Caption = 'Save Selection as Pattern'
+    Left = 23
+    Height = 72
+    Top = 672
+    Width = 373
+    Caption = 'Save as Groove/Fill Pattern'
     TabOrder = 3
     OnClick = btnSavePatternAsClick
   end
   object memStatus: TMemo
     Left = 444
     Height = 120
-    Top = 618
+    Top = 720
     Width = 948
     TabOrder = 4
   end
   object sbStatus: TStatusBar
     Left = 0
     Height = 28
-    Top = 992
+    Top = 864
     Width = 1440
     Panels = <    
       item
@@ -249,97 +249,104 @@ object MainForm: TMainForm
       end>
   end
   object cbTabSelector: TComboBox
-    Left = 12
-    Height = 24
-    Top = 840
+    Left = 816
+    Height = 29
+    Top = 550
     Width = 300
     ItemHeight = 21
     Style = csDropDownList
+    TabOrder = 17
     Visible = False
     OnChange = cbTabSelectorChange
   end
   object btnTabPrev: TButton
-    Left = 320
+    Left = 704
     Height = 24
-    Top = 840
+    Top = 547
     Width = 30
     Caption = '◀'
+    TabOrder = 18
     Visible = False
     OnClick = btnTabPrevClick
   end
   object btnTabNext: TButton
-    Left = 355
+    Left = 744
     Height = 24
-    Top = 840
+    Top = 550
     Width = 30
     Caption = '▶'
+    TabOrder = 19
     Visible = False
     OnClick = btnTabNextClick
   end
   object lblTabPosition: TLabel
     Left = 390
-    Height = 21
+    Height = 1
     Top = 842
-    Width = 80
-    Caption = ''
+    Width = 1
     Visible = False
   end
   object edBlockStyle: TEdit
-    Left = 12
-    Height = 24
-    Top = 876
-    Width = 120
-    Text = ''
+    Left = 816
+    Height = 29
+    Top = 600
+    Width = 124
+    TabOrder = 20
     Visible = False
   end
   object edBlockKind: TEdit
-    Left = 140
-    Height = 24
-    Top = 876
-    Width = 100
-    Text = ''
+    Left = 816
+    Height = 29
+    Top = 648
+    Width = 124
+    TabOrder = 21
     Visible = False
   end
   object edIntensityLow: TEdit
-    Left = 248
-    Height = 24
-    Top = 876
+    Left = 1032
+    Height = 29
+    Top = 598
     Width = 60
+    TabOrder = 22
     Text = '0.20'
     Visible = False
   end
   object edIntensityHigh: TEdit
-    Left = 315
-    Height = 24
-    Top = 876
+    Left = 1104
+    Height = 29
+    Top = 598
     Width = 60
+    TabOrder = 23
     Text = '0.60'
     Visible = False
   end
   object btnSaveBlock: TButton
-    Left = 12
-    Height = 28
-    Top = 914
-    Width = 80
+    Left = 1208
+    Height = 61
+    Top = 616
+    Width = 184
     Caption = 'Save Block'
+    TabOrder = 24
     Visible = False
     OnClick = btnSaveBlockClick
   end
   object btnNewBlock: TButton
-    Left = 100
+    Left = 1152
     Height = 28
-    Top = 914
-    Width = 80
+    Top = 550
+    Width = 120
     Caption = 'New Block'
+    TabOrder = 25
     Visible = False
     OnClick = btnNewBlockClick
   end
   object btnDeleteBlock: TButton
-    Left = 188
+    Left = 1312
     Height = 28
-    Top = 914
+    Top = 550
     Width = 80
     Caption = 'Delete'
+    TabOrder = 26
     Visible = False
     OnClick = btnDeleteBlockClick
   end

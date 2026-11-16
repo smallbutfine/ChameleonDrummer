@@ -226,16 +226,6 @@ begin
   tbSwing.Min := 0; tbSwing.Max := 100; tbSwing.Position := 0;
   UpdateValueLabels;
 
-  sbSections := TScrollBox.Create(Self);
-  with sbSections do begin
-    Parent := gbSong; Left := 0; Top := 240;
-    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 240;
-    Align := alNone; Anchors := [akLeft, akTop, akRight, akBottom];
-    BorderStyle := bsNone; VertScrollBar.Tracking := True; HorzScrollBar.Visible := False;
-  end;
-
-  ResetToDefaultStructure;
-
   StatusBar := TStatusBar.Create(Self);
   with StatusBar do begin
     Parent := Self; Align := alBottom; SimplePanel := False;
@@ -259,7 +249,7 @@ procedure TMainForm.MainFormShow(Sender: TObject);
 begin
   sbSections := TScrollBox.Create(Self);
   with sbSections do begin
-    Parent := gbSong; Left := 0; Top := 240;
+    Parent := gbSong; Left := 0; Top := 160;
     Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 240;
     Align := alNone; Anchors := [akLeft, akTop, akRight, akBottom];
     BorderStyle := bsNone; VertScrollBar.Tracking := True; HorzScrollBar.Visible := False;
