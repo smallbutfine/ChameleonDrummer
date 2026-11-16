@@ -250,7 +250,7 @@ begin
   sbSections := TScrollBox.Create(Self);
   with sbSections do begin
     Parent := gbSong; Left := 0; Top := 190;
-    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 240;
+    Width := gbSong.ClientWidth; Height := gbSong.ClientHeight - 190;
     Align := alNone; Anchors := [akLeft, akTop, akRight, akBottom];
     BorderStyle := bsNone; VertScrollBar.Tracking := True; HorzScrollBar.Visible := False;
   end;
