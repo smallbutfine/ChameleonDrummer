@@ -100,10 +100,10 @@ type
     btnTabPrev: TButton;
     btnTabNext: TButton;
     lblTabPosition: TLabel;
-    edBlockStyle: TEdit;
-    edBlockKind: TEdit;
-    edIntensityLow: TEdit;
-    edIntensityHigh: TEdit;
+    cbBlockStyle: TComboBox;
+    cbBlockKind: TComboBox;
+    trkIntensityLow: TTrackBar;
+    trkIntensityHigh: TTrackBar;
     btnSaveBlock: TButton;
     btnNewBlock: TButton;
     btnDeleteBlock: TButton;
@@ -114,6 +114,10 @@ type
     procedure btnSaveBlockClick(Sender: TObject);
     procedure btnNewBlockClick(Sender: TObject);
     procedure btnDeleteBlockClick(Sender: TObject);
+    procedure cbBlockStyleChange(Sender: TObject);
+    procedure cbBlockKindChange(Sender: TObject);
+    procedure trkIntensityLowChange(Sender: TObject);
+    procedure trkIntensityHighChange(Sender: TObject);
 
   private
     FInputPath: string;
@@ -135,6 +139,7 @@ type
     FTabBlocks: TTabBlocks;
     FSelectedBlock: Integer;
     FIsConfigFile: Boolean;
+    FIsGrooveFile: Boolean; // true when loaded from config/grooves/ (has genre styles)
     FBlockModified: Boolean;
 
     procedure LoadMidiAndConvert;
@@ -153,6 +158,7 @@ type
     procedure LoadKindList;
     procedure LoadGrooveList;
     procedure LoadDrummerList;
+    procedure LoadGrooveListForBlockStyle;
     procedure UpdateHeaderPreview;
     {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
     procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
@@ -250,6 +256,19 @@ begin
   cbResolution.Items.Add('8');
   cbResolution.Items.Add('16');
   cbResolution.Items.Add('32');
+
+  // Pre-populate block kind combo box with standard values
+  if Assigned(cbBlockKind) then begin
+    cbBlockKind.Items.Clear;
+    cbBlockKind.Items.Add('intro');
+    cbBlockKind.Items.Add('verse');
+    cbBlockKind.Items.Add('chorus');
+    cbBlockKind.Items.Add('bridge');
+    cbBlockKind.Items.Add('outro');
+    cbBlockKind.Items.Add('fill');
+  end;
+  cbResolution.Items.Add('16');
+  cbResolution.Items.Add('32');
   cbResolution.ItemIndex := 2;
 
   cbZoom.Items.Clear;
@@ -320,11 +339,7 @@ begin
 
   FAutoScaler := TWindowAutoScaler.Create(Self);
   SetupBlockNavigationUI;
-  // Wire event handlers for static block navigation controls
-  if Assigned(edBlockStyle) then edBlockStyle.OnChange := @MarkBlockModified;
-  if Assigned(edBlockKind) then edBlockKind.OnChange := @MarkBlockModified;
-  if Assigned(edIntensityLow) then edIntensityLow.OnChange := @MarkBlockModified;
-  if Assigned(edIntensityHigh) then edIntensityHigh.OnChange := @MarkBlockModified;
+  // All event handlers are wired in MainFrm.lfm
   {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
 
@@ -1258,17 +1273,18 @@ begin
       SL.Add(Line);
     end;
 
-  if radFill.Checked then
-    OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'fills' +
-      IncludeTrailingPathDelimiter(GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex])) + '.tab'
-  else if radGroove.Checked then
-    OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves' +
-      IncludeTrailingPathDelimiter(GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex])) + '.tab'
-  else
-  begin
-    UpdateStatus('Please select Groove or Fill mode.');
-    Exit;
-  end;
+    // Determine output path based on mode
+    if radFill.Checked then
+      OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'fills' +
+        IncludeTrailingPathDelimiter(GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex])) + '.tab'
+    else if radGroove.Checked then
+      OutFile := IncludeTrailingPathDelimiter(FOutputDir) + 'grooves' +
+        IncludeTrailingPathDelimiter(GetStyleNameFromItem(cbStyle.Items[cbStyle.ItemIndex])) + '.tab'
+    else
+    begin
+      UpdateStatus('Please select Groove or Fill mode.');
+      Exit;
+    end;
 
     Valid := True;
     if not DirectoryExists(OutFile) then
@@ -1295,11 +1311,13 @@ var
   StyleFile: string;
 begin
   cbStyle.Items.Clear;
+  cbBlockStyle.Items.Clear;
   StyleFile := IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt';
   UpdateStatus('Style file: ' + StyleFile);
   if not FileExists(StyleFile) then
   begin
     cbStyle.Items.Add('(none yet)');
+    cbBlockStyle.Items.Add('(none yet)');
     Exit;
   end;
 
@@ -1311,13 +1329,17 @@ begin
       Line := Trim(SL[I]);
       if (Line = '') or (Line[1] = '#') then Continue;
       cbStyle.Items.Add(Line);
+      cbBlockStyle.Items.Add(Line);
     end;
   finally
     SL.Free;
   end;
 
   if cbStyle.Items.Count = 0 then
+  begin
     cbStyle.Items.Add('(none yet)');
+    cbBlockStyle.Items.Add('(none yet)');
+  end;
   if cbStyle.ItemIndex < 0 then
     cbStyle.ItemIndex := 0;
 end;
@@ -1367,6 +1389,32 @@ begin
     cbStyle.Items.Add('(none yet)');
   if cbStyle.ItemIndex < 0 then
     cbStyle.ItemIndex := 0;
+end;
+
+procedure TMainForm.LoadGrooveListForBlockStyle;
+var
+  SL: TStringList;
+  I: Integer;
+  Line, StyleFile: string;
+begin
+  cbBlockStyle.Items.Clear;
+  StyleFile := IncludeTrailingPathDelimiter(FOutputDir) + 'styles.txt';
+  if not FileExists(StyleFile) then begin
+    cbBlockStyle.Items.Add('(none yet)');
+    Exit;
+  end;
+  
+  SL := TStringList.Create;
+  try
+    SL.LoadFromFile(StyleFile);
+    for I := 0 to SL.Count - 1 do begin
+      Line := Trim(SL[I]);
+      if (Line = '') or (Line[1] = '#') then Continue;
+      cbBlockStyle.Items.Add(Line);
+    end;
+  finally
+    SL.Free;
+  end;
 end;
 
 procedure TMainForm.LoadKindList;
@@ -1609,8 +1657,16 @@ begin
 end;
 
 procedure TMainForm.LoadTabFile(const AFileName: string);
+var
+  LowerName: string;
 begin
   FIsConfigFile := IsConfigTabFile(AFileName);
+  
+  // Determine if source is a groove file (has genre styles) or fill file (no style)
+  LowerName := LowerCase(AFileName);
+  LowerName := StringReplace(LowerName, '/', PathDelim, [rfReplaceAll]);
+  FIsGrooveFile := Pos('config' + PathDelim + 'grooves', LowerName) > 0;
+
   FTabBlocks := nil;
   FTabBars := nil;
   FSelectedBlock := -1;
@@ -1731,10 +1787,19 @@ begin
   btnTabPrev.Visible := UIEnabled;
   btnTabNext.Visible := UIEnabled;
   lblTabPosition.Visible := UIEnabled;
-  edBlockStyle.Visible := UIEnabled;
-  edBlockKind.Visible := UIEnabled;
-  edIntensityLow.Visible := UIEnabled;
-  edIntensityHigh.Visible := UIEnabled;
+  
+  if FIsGrooveFile then begin
+    // Groove files have a genre/style field - populate from styles.txt and show the combo box
+    cbBlockStyle.Visible := UIEnabled;
+    LoadGrooveListForBlockStyle;
+  end else begin
+    // Fill files don't have a genre style - hide the block style dropdown
+    cbBlockStyle.Visible := False;
+  end;
+  
+  cbBlockKind.Visible := UIEnabled;
+  trkIntensityLow.Visible := UIEnabled;
+  trkIntensityHigh.Visible := UIEnabled;
   btnSaveBlock.Visible := UIEnabled;
   btnNewBlock.Visible := UIEnabled;
   btnDeleteBlock.Visible := UIEnabled;
@@ -1800,12 +1865,31 @@ end;
 
 
 procedure TMainForm.UpdateHeaderFields;
+var
+  StyleIdx, KindIdx: Integer;
 begin
   if (FSelectedBlock >= 0) and (FSelectedBlock < Length(FTabBlocks)) then begin
-    edBlockStyle.Text := FTabBlocks[FSelectedBlock].Style;
-    edBlockKind.Text := FTabBlocks[FSelectedBlock].Kind;
-    edIntensityLow.Text := FormatFloat('0.00', FTabBlocks[FSelectedBlock].IntensityLow);
-    edIntensityHigh.Text := FormatFloat('0.00', FTabBlocks[FSelectedBlock].IntensityHigh);
+    if Assigned(cbBlockStyle) and Assigned(cbBlockKind) then begin
+      // Find existing style in combo box
+      StyleIdx := cbBlockStyle.Items.IndexOf(FTabBlocks[FSelectedBlock].Style);
+      if StyleIdx >= 0 then
+        cbBlockStyle.ItemIndex := StyleIdx
+      else begin
+        cbBlockStyle.Items.Add(FTabBlocks[FSelectedBlock].Style);
+        cbBlockStyle.ItemIndex := cbBlockStyle.Items.Count - 1;
+      end;
+
+      KindIdx := cbBlockKind.Items.IndexOf(FTabBlocks[FSelectedBlock].Kind);
+      if KindIdx >= 0 then
+        cbBlockKind.ItemIndex := KindIdx
+      else begin
+        cbBlockKind.Items.Add(FTabBlocks[FSelectedBlock].Kind);
+        cbBlockKind.ItemIndex := cbBlockKind.Items.Count - 1;
+      end;
+
+      trkIntensityLow.Position := Round(FTabBlocks[FSelectedBlock].IntensityLow * 100);
+      trkIntensityHigh.Position := Round(FTabBlocks[FSelectedBlock].IntensityHigh * 100);
+    end;
     FBlockModified := False;
   end;
 end;
@@ -1862,16 +1946,32 @@ end;
 procedure TMainForm.SurgicalSaveBlock;
 var
   SL: TStringList;
-  Block: TTabBlock;
   I: Integer;
+  Block: TTabBlock;
 begin
   if (FSelectedBlock < 0) or (FSelectedBlock >= Length(FTabBlocks)) then Exit;
   
   Block := FTabBlocks[FSelectedBlock];
-  Block.Style := edBlockStyle.Text;
-  Block.Kind := edBlockKind.Text;
-  Block.IntensityLow := StrToFloatDef(edIntensityLow.Text, 0.0);
-  Block.IntensityHigh := StrToFloatDef(edIntensityHigh.Text, 1.0);
+  
+  // Read style from combo box
+  if Assigned(cbBlockStyle) and (cbBlockStyle.Visible) and (cbBlockStyle.ItemIndex >= 0) then begin
+    if cbBlockStyle.ItemIndex < cbBlockStyle.Items.Count - 1 then
+      Block.Style := cbBlockStyle.Items[cbBlockStyle.ItemIndex]
+    else
+      Block.Style := cbBlockStyle.Text; // Allow custom entry
+  end;
+  
+  // Read kind from combo box
+  if Assigned(cbBlockKind) and (cbBlockKind.ItemIndex >= 0) then begin
+    if cbBlockKind.ItemIndex < cbBlockKind.Items.Count - 1 then
+      Block.Kind := cbBlockKind.Items[cbBlockKind.ItemIndex]
+    else
+      Block.Kind := cbBlockKind.Text; // Allow custom entry
+  end;
+  
+  // Read intensity from trackbars
+  Block.IntensityLow := trkIntensityLow.Position / 100.0;
+  Block.IntensityHigh := trkIntensityHigh.Position / 100.0;
   FTabBlocks[FSelectedBlock] := Block;
   
   SL := TStringList.Create;
@@ -1902,6 +2002,38 @@ begin
   UpdateHeaderFields;
   RenderPage(0);
   UpdateBlockNavigationUI;
+end;
+
+procedure TMainForm.cbBlockStyleChange(Sender: TObject);
+begin
+  if Assigned(cbBlockStyle) and (cbBlockStyle.ItemIndex < 0) then Exit;
+  FBlockModified := True;
+  MarkBlockModified(Self);
+end;
+
+procedure TMainForm.cbBlockKindChange(Sender: TObject);
+begin
+  if Assigned(cbBlockKind) and (cbBlockKind.ItemIndex < 0) then Exit;
+  FBlockModified := True;
+  MarkBlockModified(Self);
+end;
+
+procedure TMainForm.trkIntensityLowChange(Sender: TObject);
+begin
+  if Assigned(trkIntensityLow) and (trkIntensityLow.Position > trkIntensityHigh.Position) then begin
+    trkIntensityLow.Position := trkIntensityHigh.Position;
+  end;
+  FBlockModified := True;
+  MarkBlockModified(Self);
+end;
+
+procedure TMainForm.trkIntensityHighChange(Sender: TObject);
+begin
+  if Assigned(trkIntensityHigh) and (trkIntensityHigh.Position < trkIntensityLow.Position) then begin
+    trkIntensityHigh.Position := trkIntensityLow.Position;
+  end;
+  FBlockModified := True;
+  MarkBlockModified(Self);
 end;
 
 procedure TMainForm.btnNewBlockClick(Sender: TObject);

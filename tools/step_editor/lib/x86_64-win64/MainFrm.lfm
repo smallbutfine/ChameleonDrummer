@@ -286,39 +286,79 @@ object MainForm: TMainForm
     Width = 1
     Visible = False
   end
-  object edBlockStyle: TEdit
+  object lblBlockStyle: TLabel
     Left = 816
-    Height = 29
-    Top = 600
-    Width = 124
+    Height = 21
+    Top = 596
+    Width = 54
+    Caption = 'Style:'
+  end
+  object cbBlockStyle: TComboBox
+    Left = 870
+    Height = 25
+    Top = 592
+    Width = 180
+    ItemHeight = 16
     TabOrder = 20
     Visible = False
+    OnChange = cbBlockStyleChange
+    Style = csDropDownList
+    ItemIndex = -1
   end
-  object edBlockKind: TEdit
+  object lblBlockKind: TLabel
     Left = 816
-    Height = 29
-    Top = 648
-    Width = 124
+    Height = 21
+    Top = 644
+    Width = 37
+    Caption = 'Kind:'
+  end
+  object cbBlockKind: TComboBox
+    Left = 870
+    Height = 25
+    Top = 640
+    Width = 180
+    ItemHeight = 16
     TabOrder = 21
     Visible = False
+    OnChange = cbBlockKindChange
+    Style = csDropDownList
+    ItemIndex = -1
   end
-  object edIntensityLow: TEdit
-    Left = 1032
-    Height = 29
-    Top = 598
-    Width = 60
+  object lblIntensityLow: TLabel
+    Left = 1074
+    Height = 21
+    Top = 596
+    Width = 30
+    Caption = 'From:'
+  end
+  object trkIntensityLow: TTrackBar
+    Left = 1108
+    Height = 36
+    Top = 590
+    Width = 72
+    Min = 0
+    Max = 100
     TabOrder = 22
-    Text = '0.20'
     Visible = False
+    OnChange = trkIntensityLowChange
   end
-  object edIntensityHigh: TEdit
-    Left = 1104
-    Height = 29
-    Top = 598
-    Width = 60
+  object lblIntensityHigh: TLabel
+    Left = 1192
+    Height = 21
+    Top = 596
+    Width = 24
+    Caption = 'To:'
+  end
+  object trkIntensityHigh: TTrackBar
+    Left = 1220
+    Height = 36
+    Top = 590
+    Width = 72
+    Min = 0
+    Max = 100
     TabOrder = 23
-    Text = '0.60'
     Visible = False
+    OnChange = trkIntensityHighChange
   end
   object btnSaveBlock: TButton
     Left = 1208
