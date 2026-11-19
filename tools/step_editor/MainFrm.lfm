@@ -6,7 +6,7 @@ object MainForm: TMainForm
   Caption = 'ChameleonDrummer — Step Editor'
   ClientHeight = 678
   ClientWidth = 1440
-  DesignTimePPI = 96
+  DesignTimePPI = 144
   LCLVersion = '4.8.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
