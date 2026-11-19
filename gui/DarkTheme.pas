@@ -26,7 +26,7 @@ interface
 
 uses
   Classes, SysUtils, LCLType, Controls, Forms, Graphics, StdCtrls, ExtCtrls, ComCtrls,
-  Spin, Menus, IniFiles, Registry, Windows, Grids;
+  Spin, Menus, IniFiles, Registry, Windows;
 
 type
   TThemeChoice = (tcSystem, tcLight, tcDark);
@@ -336,9 +336,7 @@ begin
       Access.Font.Color := DARK_TEXT;
     end
     else if (AControl is TCustomGroupBox) or (AControl is TCustomCheckBox) or
-            (AControl is TRadioButton) or (AControl is TCustomPanel) or
-            (AControl is TScrollBox) or (AControl is TMemo) or
-            (AControl is TStringGrid) or (AControl is TStatusBar) then
+            (AControl is TRadioButton) or (AControl is TCustomPanel) then
     begin
       Access.Color := DARK_FORM;
       Access.Font.Color := DARK_TEXT;
@@ -360,9 +358,7 @@ begin
     else if (AControl is TCustomLabel) then
       Access.Font.Color := clWindowText
     else if (AControl is TCustomGroupBox) or (AControl is TCustomCheckBox) or
-            (AControl is TRadioButton) or (AControl is TCustomPanel) or
-            (AControl is TScrollBox) or (AControl is TMemo) or
-            (AControl is TStringGrid) or (AControl is TStatusBar) then
+            (AControl is TRadioButton) or (AControl is TCustomPanel) then
     begin
       Access.Color := clBtnFace;
       Access.Font.Color := clWindowText;

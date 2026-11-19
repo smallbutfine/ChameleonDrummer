@@ -4,11 +4,6 @@
     <Version Value="12"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
-      <Scaled Value="True"/>
-      <UseXPManifest Value="True"/>
-      <XPManifest>
-        <DpiAware Value="True"/>
-      </XPManifest>
     </General>
     <BuildModes>
       <Item Name="default" Default="True"/>
@@ -60,5 +55,8 @@
         <OptimizationLevel Value="2"/>
       </Optimizations>
     </CodeGeneration>
+    <LCLScaling Value="True"/>
+    <UseManifest Value="True"/>
+    <ManifestFile Value="chameleondrummer_gui.manifest"/>
   </CompilerOptions>
 </CONFIG>
