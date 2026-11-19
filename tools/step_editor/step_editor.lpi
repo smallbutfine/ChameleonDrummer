@@ -4,6 +4,11 @@
     <Version Value="12"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
+      <Scaled Value="True"/>
+      <UseXPManifest Value="True"/>
+      <XPManifest>
+        <DpiAware Value="True"/>
+      </XPManifest>
     </General>
     <BuildModes>
       <Item Name="default" Default="True"/>
@@ -43,6 +48,7 @@
       <Filename Value="step_editor.exe"/>
     </Target>
     <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <CodeGeneration>
@@ -57,8 +63,5 @@
         </Win32>
       </Options>
     </Linking>
-    <LCLScaling Value="True"/>
-    <UseManifest Value="True"/>
-    <ManifestFile Value="step_editor.manifest"/>
   </CompilerOptions>
 </CONFIG>
