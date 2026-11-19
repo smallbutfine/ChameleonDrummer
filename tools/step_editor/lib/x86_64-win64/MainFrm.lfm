@@ -1,11 +1,11 @@
 object MainForm: TMainForm
-  Left = 310
-  Height = 892
-  Top = 54
-  Width = 1440
+  Left = 379
+  Height = 678
+  Top = 165
+  Width = 1243
   Caption = 'ChameleonDrummer — Step Editor'
-  ClientHeight = 892
-  ClientWidth = 1440
+  ClientHeight = 678
+  ClientWidth = 1243
   DesignTimePPI = 144
   LCLVersion = '4.8.0.0'
   OnCreate = FormCreate
@@ -21,12 +21,12 @@ object MainForm: TMainForm
     Left = 144
     Height = 29
     Top = 20
-    Width = 600
+    Width = 552
     TabOrder = 8
     OnChange = edInputChange
   end
   object btnBrowseInput: TButton
-    Left = 756
+    Left = 696
     Height = 38
     Top = 20
     Width = 112
@@ -35,10 +35,10 @@ object MainForm: TMainForm
     OnClick = btnBrowseInputClick
   end
   object btnNewPattern: TButton
-    Left = 876
-    Height = 38
-    Top = 20
-    Width = 210
+    Left = 444
+    Height = 28
+    Top = 503
+    Width = 114
     Caption = 'Add Pattern'
     TabOrder = 10
     OnClick = btnNewPatternClick
@@ -54,7 +54,7 @@ object MainForm: TMainForm
     Left = 24
     Height = 29
     Top = 100
-    Width = 372
+    Width = 140
     ItemHeight = 21
     TabOrder = 11
     Text = '(default GM)'
@@ -88,92 +88,92 @@ object MainForm: TMainForm
     Caption = 'Style:'
   end
   object cbStyle: TComboBox
-    Left = 24
+    Left = 80
     Height = 29
-    Top = 208
-    Width = 372
+    Top = 180
+    Width = 180
     ItemHeight = 21
     TabOrder = 2
     OnChange = cbStyleChange
   end
   object lblKind: TLabel
-    Left = 24
+    Left = 25
     Height = 21
-    Top = 258
+    Top = 232
     Width = 41
     Caption = 'Kind:'
   end
   object cbKind: TComboBox
-    Left = 24
+    Left = 80
     Height = 29
-    Top = 286
-    Width = 372
+    Top = 232
+    Width = 180
     ItemHeight = 21
     TabOrder = 13
     OnChange = cbKindChange
   end
   object lblIntensity: TLabel
-    Left = 24
+    Left = 23
     Height = 21
-    Top = 336
+    Top = 288
     Width = 71
     Caption = 'Intensity:'
   end
   object cbIntensity: TComboBox
-    Left = 24
+    Left = 120
     Height = 29
-    Top = 364
-    Width = 372
+    Top = 288
+    Width = 100
     ItemHeight = 21
     TabOrder = 14
     Text = '0.2-0.6'
     OnChange = cbIntensityChange
   end
   object lblEnergy: TLabel
-    Left = 24
+    Left = 23
     Height = 21
-    Top = 414
+    Top = 336
     Width = 62
     Caption = 'Energy:'
   end
   object cbEnergy: TComboBox
-    Left = 24
+    Left = 120
     Height = 29
-    Top = 442
-    Width = 372
+    Top = 336
+    Width = 54
     ItemHeight = 21
     TabOrder = 5
     Text = '0.5'
     OnChange = cbEnergyChange
   end
   object lblResolution: TLabel
-    Left = 24
+    Left = 23
     Height = 21
-    Top = 492
+    Top = 384
     Width = 90
     Caption = 'Resolution:'
   end
   object cbResolution: TComboBox
-    Left = 24
+    Left = 120
     Height = 29
-    Top = 520
-    Width = 372
+    Top = 384
+    Width = 56
     ItemHeight = 21
     TabOrder = 6
     Text = '16'
   end
   object lblMeter: TLabel
-    Left = 24
+    Left = 25
     Height = 21
-    Top = 570
+    Top = 432
     Width = 51
     Caption = 'Meter:'
   end
   object cbMeter: TComboBox
-    Left = 24
+    Left = 120
     Height = 29
-    Top = 598
-    Width = 372
+    Top = 432
+    Width = 84
     ItemHeight = 21
     TabOrder = 7
     OnChange = cbMeterChange
@@ -186,9 +186,9 @@ object MainForm: TMainForm
     Caption = 'Step Editor:'
   end
   object sgTab: TStringGrid
-    Left = 444
+    Left = 272
     Height = 416
-    Top = 100
+    Top = 72
     Width = 948
     ColCount = 2
     FixedRows = 0
@@ -199,59 +199,60 @@ object MainForm: TMainForm
     OnSelectCell = sgTabSelectCell
   end
   object lblZoom: TLabel
-    Left = 444
+    Left = 272
     Height = 21
-    Top = 550
+    Top = 505
     Width = 50
     Caption = 'Zoom:'
   end
   object cbZoom: TComboBox
-    Left = 498
+    Left = 320
     Height = 29
-    Top = 546
-    Width = 182
+    Top = 503
+    Width = 110
     ItemHeight = 21
     TabOrder = 0
     Text = '16 steps'
     OnChange = cbZoomChange
   end
   object lblHeaderPreview: TLabel
-    Left = 444
+    Left = 272
     Height = 21
-    Top = 588
+    Top = 544
     Width = 126
     Caption = 'Header preview'
   end
   object btnSavePatternAs: TButton
     Left = 23
     Height = 72
-    Top = 672
-    Width = 373
+    Top = 504
+    Width = 237
     Caption = 'Save as Groove/Fill Pattern'
     TabOrder = 3
     OnClick = btnSavePatternAsClick
   end
   object memStatus: TMemo
-    Left = 444
-    Height = 120
-    Top = 720
-    Width = 948
+    Left = 23
+    Height = 56
+    Top = 592
+    Width = 913
     TabOrder = 4
+    OnChange = memStatusChange
   end
   object sbStatus: TStatusBar
     Left = 0
     Height = 28
-    Top = 864
-    Width = 1440
+    Top = 650
+    Width = 1243
     Panels = <    
       item
         Width = 75
       end>
   end
   object cbTabSelector: TComboBox
-    Left = 816
+    Left = 840
     Height = 29
-    Top = 550
+    Top = 24
     Width = 300
     ItemHeight = 21
     Style = csDropDownList
@@ -260,9 +261,9 @@ object MainForm: TMainForm
     OnChange = cbTabSelectorChange
   end
   object btnTabPrev: TButton
-    Left = 704
+    Left = 1152
     Height = 24
-    Top = 547
+    Top = 20
     Width = 30
     Caption = '◀'
     TabOrder = 18
@@ -270,9 +271,9 @@ object MainForm: TMainForm
     OnClick = btnTabPrevClick
   end
   object btnTabNext: TButton
-    Left = 744
+    Left = 1186
     Height = 24
-    Top = 550
+    Top = 20
     Width = 30
     Caption = '▶'
     TabOrder = 19
@@ -287,103 +288,105 @@ object MainForm: TMainForm
     Visible = False
   end
   object lblBlockStyle: TLabel
-    Left = 816
+    Left = 744
     Height = 21
-    Top = 596
-    Width = 54
+    Top = 544
+    Width = 45
     Caption = 'Style:'
+    Visible = False
   end
   object cbBlockStyle: TComboBox
-    Left = 870
-    Height = 25
-    Top = 592
-    Width = 180
-    ItemHeight = 16
+    Left = 792
+    Height = 29
+    Top = 544
+    Width = 184
+    ItemHeight = 21
+    Style = csDropDownList
     TabOrder = 20
     Visible = False
     OnChange = cbBlockStyleChange
-    Style = csDropDownList
-    ItemIndex = -1
   end
   object lblBlockKind: TLabel
-    Left = 816
+    Left = 984
     Height = 21
-    Top = 644
-    Width = 37
+    Top = 544
+    Width = 41
     Caption = 'Kind:'
+    Visible = False
   end
   object cbBlockKind: TComboBox
-    Left = 870
-    Height = 25
-    Top = 640
-    Width = 180
-    ItemHeight = 16
+    Left = 1032
+    Height = 29
+    Top = 544
+    Width = 184
+    ItemHeight = 21
+    Style = csDropDownList
     TabOrder = 21
     Visible = False
     OnChange = cbBlockKindChange
-    Style = csDropDownList
-    ItemIndex = -1
   end
   object lblIntensityLow: TLabel
-    Left = 1074
+    Left = 856
     Height = 21
-    Top = 596
-    Width = 30
+    Top = 505
+    Width = 46
     Caption = 'From:'
+    Visible = False
   end
   object trkIntensityLow: TTrackBar
-    Left = 1108
+    Left = 896
     Height = 36
-    Top = 590
-    Width = 72
-    Min = 0
+    Top = 504
+    Width = 136
     Max = 100
+    Position = 0
+    OnChange = trkIntensityLowChange
     TabOrder = 22
     Visible = False
-    OnChange = trkIntensityLowChange
   end
   object lblIntensityHigh: TLabel
-    Left = 1192
+    Left = 1048
     Height = 21
-    Top = 596
-    Width = 24
+    Top = 505
+    Width = 25
     Caption = 'To:'
+    Visible = False
   end
   object trkIntensityHigh: TTrackBar
-    Left = 1220
+    Left = 1072
     Height = 36
-    Top = 590
-    Width = 72
-    Min = 0
+    Top = 504
+    Width = 144
     Max = 100
+    Position = 0
+    OnChange = trkIntensityHighChange
     TabOrder = 23
     Visible = False
-    OnChange = trkIntensityHighChange
   end
   object btnSaveBlock: TButton
-    Left = 1208
-    Height = 61
-    Top = 616
-    Width = 184
+    Left = 976
+    Height = 45
+    Top = 600
+    Width = 240
     Caption = 'Save Block'
     TabOrder = 24
     Visible = False
     OnClick = btnSaveBlockClick
   end
   object btnNewBlock: TButton
-    Left = 1152
+    Left = 568
     Height = 28
-    Top = 550
-    Width = 120
+    Top = 503
+    Width = 112
     Caption = 'New Block'
     TabOrder = 25
     Visible = False
     OnClick = btnNewBlockClick
   end
   object btnDeleteBlock: TButton
-    Left = 1312
+    Left = 688
     Height = 28
-    Top = 550
+    Top = 503
     Width = 80
     Caption = 'Delete'
     TabOrder = 26

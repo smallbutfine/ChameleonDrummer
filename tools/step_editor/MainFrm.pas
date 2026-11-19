@@ -81,6 +81,7 @@ type
     procedure btnNewPatternClick(Sender: TObject);
     procedure edInputChange(Sender: TObject);
     procedure btnSavePatternAsClick(Sender: TObject);
+    procedure memStatusChange(Sender: TObject);
     procedure sgTabSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
     procedure sgTabClick(Sender: TObject);
@@ -1305,6 +1306,11 @@ begin
   finally
     SL.Free;
   end;
+end;
+
+procedure TMainForm.memStatusChange(Sender: TObject);
+begin
+
 end;
 
 procedure TMainForm.LoadGrooveList;
