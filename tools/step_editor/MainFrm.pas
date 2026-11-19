@@ -100,9 +100,13 @@ type
     btnTabPrev: TButton;
     btnTabNext: TButton;
     lblTabPosition: TLabel;
+    lblBlockStyle: TLabel;
     cbBlockStyle: TComboBox;
+    lblBlockKind: TLabel;
     cbBlockKind: TComboBox;
+    lblIntensityLow: TLabel;
     trkIntensityLow: TTrackBar;
+    lblIntensityHigh: TLabel;
     trkIntensityHigh: TTrackBar;
     btnSaveBlock: TButton;
     btnNewBlock: TButton;
@@ -1791,15 +1795,20 @@ begin
   if FIsGrooveFile then begin
     // Groove files have a genre/style field - populate from styles.txt and show the combo box
     cbBlockStyle.Visible := UIEnabled;
+    lblBlockStyle.Visible := UIEnabled;
     LoadGrooveListForBlockStyle;
   end else begin
     // Fill files don't have a genre style - hide the block style dropdown
     cbBlockStyle.Visible := False;
+    lblBlockStyle.Visible := False;
   end;
   
   cbBlockKind.Visible := UIEnabled;
+  lblBlockKind.Visible := UIEnabled;
   trkIntensityLow.Visible := UIEnabled;
   trkIntensityHigh.Visible := UIEnabled;
+  lblIntensityLow.Visible := UIEnabled;
+  lblIntensityHigh.Visible := UIEnabled;
   btnSaveBlock.Visible := UIEnabled;
   btnNewBlock.Visible := UIEnabled;
   btnDeleteBlock.Visible := UIEnabled;
