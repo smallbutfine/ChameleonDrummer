@@ -20,6 +20,7 @@ uses
 {$R *.res}
 {$ENDIF}
 begin
+  Application.Scaled:=True;
   Application.Title:='';
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
