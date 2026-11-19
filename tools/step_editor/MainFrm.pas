@@ -222,6 +222,8 @@ var
   FName: string;
   Base: string;
 begin
+  inherited;
+
   Caption := 'ChameleonDrummer — Step Editor';
   DefaultMonitor := dmMainForm;
 
