@@ -515,6 +515,12 @@ if "%T_OS%"=="darwin" (
             echo   WARNING: Inno Setup compiler returned error
         ) else (
             echo   OK: Installer created
+            :: Installation starten
+                echo Starte Installation...
+                start /wait "" "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+                echo [OK] Installation abgeschlossen.
+
+            echo.
             if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
             copy /y "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" "%ROOT%\Deploy\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" >nul 2>&1
             del /q "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" 2>nul

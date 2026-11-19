@@ -218,7 +218,7 @@ object MainForm: TMainForm
   object lblHeaderPreview: TLabel
     Left = 272
     Height = 21
-    Top = 544
+    Top = 546
     Width = 126
     Caption = 'Header preview'
   end
@@ -244,7 +244,7 @@ object MainForm: TMainForm
     Height = 28
     Top = 650
     Width = 1243
-    Panels = <    
+    Panels = <
       item
         Width = 75
       end>

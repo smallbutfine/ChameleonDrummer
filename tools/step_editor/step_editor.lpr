@@ -1,6 +1,7 @@
 program step_editor;
 
 {$mode objfpc}{$H+}
+{$APPTYPE GUI}
 
 { step_editor — Visual step editor for ChameleonDrummer .tab files.
 
