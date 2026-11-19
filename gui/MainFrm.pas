@@ -256,6 +256,10 @@ begin
   end;
 
   ResetToDefaultStructure;
+
+  {$IFDEF MSWINDOWS}
+  ThemeControlTree(Self, FDark);
+  {$ENDIF}
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
