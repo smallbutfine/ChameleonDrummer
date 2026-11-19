@@ -235,23 +235,23 @@ echo [Deploy] Creating Deploy folder...
 if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 
 REM Copy Linux tar.gz packages
-if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-x64.tar.gz" >nul
-    echo   OK: ChameleonDrummer-linux-x64.tar.gz
+if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz" (
+    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz" >nul
+    echo   OK: ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz
 )
-if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-arm.tar.gz" >nul
-    echo   OK: ChameleonDrummer-linux-arm.tar.gz
+if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" (
+    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" >nul
+    echo   OK: ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz
 )
 
-REM Copy macOS .app bundles
+REM Zip and copy macOS .app bundles
 if exist "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" (
-    xcopy /y /e /i "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui-macos-intel.app" >nul
-    echo   OK: chameleondrummer_gui-macos-intel.app
+    powershell -command "Compress-Archive -Path '%OUT_ROOT%\\macos-intel\\chameleondrummer_gui.app' -DestinationPath '%ROOT%\\Deploy\\chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip' -Force"
+    echo   OK: chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip
 )
 if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
-    xcopy /y /e /i "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui-macos-aarch64.app" >nul
-    echo   OK: chameleondrummer_gui-macos-aarch64.app
+    powershell -command "Compress-Archive -Path '%OUT_ROOT%\\macos-aarch64\\chameleondrummer_gui.app' -DestinationPath '%ROOT%\\Deploy\\chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
+    echo   OK: chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip
 )
 
 echo.
@@ -497,9 +497,9 @@ if "%T_OS%"=="darwin" (
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
     pushd "%OUT_ROOT%" || (echo ERROR: pushd failed & exit /b 1)
-    "%TAR%" -czf "ChameleonDrummer-%T_NAME%.tar.gz" "%T_NAME%"
+    "%TAR%" -czf "ChameleonDrummer-%T_NAME%-v!DETECTED_VERSION!.tar.gz" "%T_NAME%"
     popd
-    echo   OK: ChameleonDrummer-%T_NAME%.tar.gz
+    echo   OK: ChameleonDrummer-%T_NAME%-v!DETECTED_VERSION!.tar.gz
 ) else if "%T_OS%"=="win64" (
     echo [Pkg] Windows installer...
     if exist "%ISCC%" (
