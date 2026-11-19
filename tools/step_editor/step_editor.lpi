@@ -57,5 +57,8 @@
         </Win32>
       </Options>
     </Linking>
+    <LCLScaling Value="True"/>
+    <UseManifest Value="True"/>
+    <ManifestFile Value="step_editor.manifest"/>
   </CompilerOptions>
 </CONFIG>

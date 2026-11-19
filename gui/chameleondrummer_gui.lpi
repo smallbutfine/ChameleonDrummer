@@ -55,5 +55,8 @@
         <OptimizationLevel Value="2"/>
       </Optimizations>
     </CodeGeneration>
+    <LCLScaling Value="True"/>
+    <UseManifest Value="True"/>
+    <ManifestFile Value="chameleondrummer_gui.manifest"/>
   </CompilerOptions>
 </CONFIG>
