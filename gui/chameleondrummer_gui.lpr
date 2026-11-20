@@ -15,11 +15,16 @@ program ChameleonDrummerGUI;
 }
 
 uses
-  Interfaces, Forms, MainFrm;
+  Interfaces, Forms, MainFrm, uDarkStyleParams, uMetaDarkStyle, uDarkStyleSchemes;
 {$IFDEF WINDOWS}
 {$R *.res}
 {$ENDIF}
 begin
+  RequireDerivedFormResource := True;
+  {$IFDEF WINDOWS}
+  PreferredAppMode := pamAllowDark;
+  uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
+  {$ENDIF}
   Application.Scaled:=True;
   Application.Title:='';
   Application.Initialize;

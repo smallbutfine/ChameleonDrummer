@@ -18,7 +18,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Interfaces, Forms,
+  Interfaces, Forms, uDarkStyleParams, uMetaDarkStyle, uDarkStyleSchemes,
   MainFrm;
 {$IFDEF MSWINDOWS}
 {$R *.res} // Standard Lazarus-Ressource (für das Icon)
@@ -27,6 +27,10 @@ uses
 
 begin
   RequireDerivedFormResource := True;
+  {$IFDEF WINDOWS}
+  PreferredAppMode := pamAllowDark;
+  uMetaDarkStyle.ApplyMetaDarkStyle(DefaultDark);
+  {$ENDIF}
   Application.Scaled:=True;
   Application.Title:='';
   Application.Initialize;
