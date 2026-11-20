@@ -553,6 +553,7 @@ set "BUNDLE_DIR=%~1"
 set "APP_NAME=%~2"
 set "DISPLAY_NAME=%~3"
 
+set "BUNDLE_DIR=%BUNDLE_DIR:/=\%"
 set "APP_BUNDLE=%BUNDLE_DIR%\%APP_NAME%.app"
 set "MACOS_DIR=%APP_BUNDLE%\Contents\MacOS"
 set "RES_DIR=%APP_BUNDLE%\Contents\Resources"
