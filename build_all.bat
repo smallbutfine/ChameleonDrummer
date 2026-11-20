@@ -249,17 +249,9 @@ if exist "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" (
     powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-intel\chameleondrummer_gui.app' -DestinationPath '%ROOT%\Deploy\chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip' -Force"
     echo   OK: chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip
 )
-if exist "%OUT_ROOT%\macos-intel\tools\step_editor.app" (
-    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-intel\tools\step_editor.app' -DestinationPath '%ROOT%\Deploy\step_editor-macos-intel-v!DETECTED_VERSION!.zip' -Force"
-    echo   OK: step_editor-macos-intel-v!DETECTED_VERSION!.zip
-)
 if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
     powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app' -DestinationPath '%ROOT%\Deploy\chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
     echo   OK: chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip
-)
-if exist "%OUT_ROOT%\macos-aarch64\tools\step_editor.app" (
-    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-aarch64\tools\step_editor.app' -DestinationPath '%ROOT%\Deploy\step_editor-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
-    echo   OK: step_editor-macos-aarch64-v!DETECTED_VERSION!.zip
 )
 
 echo.
