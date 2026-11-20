@@ -28,6 +28,7 @@ type
     FInfos: array of TControlScaleInfo;
     FOldOnResize: TNotifyEvent;
     FEnabled: Boolean;
+    FRescaling: Boolean;
     procedure CollectControls(AControl: TControl);
     procedure ApplyScale(AControl: TControl; const AInfo: TControlScaleInfo; AScale: Double);
     procedure OnFormResize(Sender: TObject);
@@ -171,8 +172,14 @@ end;
 
 procedure TWindowAutoScaler.OnFormResize(Sender: TObject);
 begin
-  if FEnabled then
-    Rescale;
+  if FEnabled and not FRescaling then begin
+    FRescaling := True;
+    try
+      Rescale;
+    finally
+      FRescaling := False;
+    end;
+  end;
   if Assigned(FOldOnResize) then
     FOldOnResize(Sender);
 end;
