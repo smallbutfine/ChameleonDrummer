@@ -246,12 +246,20 @@ if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" (
 
 REM Zip and copy macOS .app bundles
 if exist "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" (
-    powershell -command "Compress-Archive -Path '%OUT_ROOT%\\macos-intel\\chameleondrummer_gui.app' -DestinationPath '%ROOT%\\Deploy\\chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip' -Force"
+    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-intel\chameleondrummer_gui.app' -DestinationPath '%ROOT%\Deploy\chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip' -Force"
     echo   OK: chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip
 )
+if exist "%OUT_ROOT%\macos-intel\tools\step_editor.app" (
+    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-intel\tools\step_editor.app' -DestinationPath '%ROOT%\Deploy\step_editor-macos-intel-v!DETECTED_VERSION!.zip' -Force"
+    echo   OK: step_editor-macos-intel-v!DETECTED_VERSION!.zip
+)
 if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
-    powershell -command "Compress-Archive -Path '%OUT_ROOT%\\macos-aarch64\\chameleondrummer_gui.app' -DestinationPath '%ROOT%\\Deploy\\chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
+    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app' -DestinationPath '%ROOT%\Deploy\chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
     echo   OK: chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip
+)
+if exist "%OUT_ROOT%\macos-aarch64\tools\step_editor.app" (
+    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-aarch64\tools\step_editor.app' -DestinationPath '%ROOT%\Deploy\step_editor-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
+    echo   OK: step_editor-macos-aarch64-v!DETECTED_VERSION!.zip
 )
 
 echo.
@@ -582,6 +590,9 @@ if exist "%BUNDLE_DIR%\tools\midi_to_tab" (
 )
 if exist "%BUNDLE_DIR%\tools\step_editor" (
     copy /y "%BUNDLE_DIR%\tools\step_editor" "%RES_DIR%\tools\step_editor" 2>nul
+)
+if exist "%BUNDLE_DIR%\tools\step_editor.app" (
+    xcopy /y /e /i "%BUNDLE_DIR%\tools\step_editor.app" "%RES_DIR%\tools\step_editor.app" 2>nul
 )
 
 REM Copy support files into Resources
