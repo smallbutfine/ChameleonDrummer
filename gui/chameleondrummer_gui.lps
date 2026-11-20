@@ -25,7 +25,6 @@
       </Unit>
       <Unit>
         <Filename Value="version.rc"/>
-        <IsPartOfProject Value="True"/>
         <UsageCount Value="22"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit>
@@ -46,7 +45,7 @@
         <UsageCount Value="10"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="6">
+    <JumpHistory HistoryIndex="5">
       <Position>
         <Filename Value="MainFrm.pas"/>
       </Position>
@@ -57,10 +56,6 @@
       <Position>
         <Filename Value="MainFrm.pas"/>
         <Caret Line="180" Column="44"/>
-      </Position>
-      <Position>
-        <Filename Value="MainFrm.pas"/>
-        <Caret Line="960" Column="3" TopLine="1093"/>
       </Position>
       <Position>
         <Filename Value="MainFrm.pas"/>

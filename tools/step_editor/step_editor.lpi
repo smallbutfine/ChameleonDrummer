@@ -8,6 +8,7 @@
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
+        <LongPathAware Value="True"/>
       </XPManifest>
     </General>
     <BuildModes>

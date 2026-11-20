@@ -27,7 +27,7 @@ uses
 
 begin
   RequireDerivedFormResource := True;
-  Application.Scaled:=False;
+  Application.Scaled:=True;
   Application.Title:='';
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
