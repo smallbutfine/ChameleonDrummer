@@ -125,8 +125,11 @@ begin
     Exit;
   end;
 
-  AControl.Left := Round(AInfo.Left * AScale);
-  AControl.Top := Round(AInfo.Top * AScale);
+  if AControl <> FForm then
+  begin
+    AControl.Left := Round(AInfo.Left * AScale);
+    AControl.Top := Round(AInfo.Top * AScale);
+  end;
   AControl.Width := Round(AInfo.Width * AScale);
   AControl.Height := Round(AInfo.Height * AScale);
 
