@@ -162,7 +162,7 @@ begin
 
   FForm.DisableAlign;
   try
-    for i := 0 to High(FInfos) do
+    for i := 1 to High(FInfos) do
       if Assigned(FInfos[i].Control) then
         ApplyScale(FInfos[i].Control, FInfos[i], MinScale);
   finally
