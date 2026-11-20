@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Dialogs,
-  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}DarkTheme, Windows,{$ENDIF} Graphics,
+  Grids, FileUtil, Process, Math, {$IFDEF MSWINDOWS}Windows,{$ENDIF} Graphics,
   AutoScale;
 
 type
@@ -136,9 +136,7 @@ type
     FTotalPages: Integer;
     FInstOrder: array of string;
     FInstColMap: array of Integer;
-    {$IFDEF MSWINDOWS}FDark: Boolean;{$ENDIF}
     FAutoScaler: TWindowAutoScaler;
-    FInThemeApply: Boolean;
 
     // Tab block management
     FTabBlocks: TTabBlocks;
@@ -165,16 +163,6 @@ type
     procedure LoadDrummerList;
     procedure LoadGrooveListForBlockStyle;
     procedure UpdateHeaderPreview;
-    {$IFDEF MSWINDOWS}procedure ApplyDarkTheme(ADark: Boolean);
-    procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer;
-      ARect: TRect; State: TOwnerDrawState);{$ENDIF}
-    procedure ComboBoxDropDown(Sender: TObject);
-    {$IFDEF MSWINDOWS}procedure SystemThemeChanged(Sender: TObject);{$ENDIF}
-    {$IFDEF MSWINDOWS}procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
-      const Rect: TRect);{$ENDIF}
-    {$IFDEF MSWINDOWS}procedure sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
-      ARect: TRect; AState: TGridDrawState);{$ENDIF}
-
     // Tab block methods (cross-platform)
     function IsConfigTabFile(const AFileName: string): Boolean;
     procedure ParseConfigTabFile(const AFileName: string);
@@ -253,9 +241,7 @@ begin
   sgTab.Options := sgTab.Options - [goRowSelect, goVertLine] + [goRangeSelect, goAlwaysShowEditor];
   sgTab.OnSelectCell := @sgTabSelectCell;
   sgTab.OnClick := @sgTabClick;
-  {$IFDEF MSWINDOWS}sgTab.OnDrawCell := @sgTabDrawCell;{$ENDIF}
   sbStatus.SimplePanel := False;
-  {$IFDEF MSWINDOWS}sbStatus.OnDrawPanel := @StatusBarDrawPanel;{$ENDIF}
   sbStatus.Panels[0].Style := psOwnerDraw;
 
   cbResolution.Items.Clear;
@@ -329,11 +315,6 @@ begin
     end;
   end;
 
-  {$IFDEF MSWINDOWS}
-  OnSystemThemeChange := @SystemThemeChanged;
-  ApplyDarkTheme(ResolveDark(LoadThemeChoice)); // Use saved theme choice or system default
-  {$ENDIF}
-  {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
   sbStatus.Panels[0].Text := 'Ready';
   UpdateHeaderPreview;
 
@@ -347,15 +328,11 @@ begin
   FAutoScaler := TWindowAutoScaler.Create(Self);
   SetupBlockNavigationUI;
   // All event handlers are wired in MainFrm.lfm
-  {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FAutoScaler.Free;
-  {$IFDEF MSWINDOWS}
-  UnhookForm(Handle);
-  {$ENDIF}
   FTabBars := nil;
   FTabBlocks := nil;
   FInstOrder := nil;
@@ -1443,216 +1420,12 @@ begin
     cbKind.ItemIndex := 0;
 end;
 
-{$IFDEF MSWINDOWS}
-procedure TMainForm.ApplyDarkTheme(ADark: Boolean);
-begin
-  if FInThemeApply then Exit;
-  FInThemeApply := True;
-  try
-    FDark := ADark;
-    ApplyTheme(Self, FDark);
-    ThemeControlTree(Self, FDark);
-    // Update combo boxes for owner-draw
-    cbMapping.Style := csOwnerDrawFixed;
-    cbStyle.Style := csOwnerDrawFixed;
-    cbKind.Style := csOwnerDrawFixed;
-    cbResolution.Style := csOwnerDrawFixed;
-    cbMeter.Style := csOwnerDrawFixed;
-    cbIntensity.Style := csOwnerDrawFixed;
-    cbEnergy.Style := csOwnerDrawFixed;
-    cbZoom.Style := csOwnerDrawFixed;
-    {$IFDEF MSWINDOWS}cbMapping.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbStyle.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbKind.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbResolution.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbMeter.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbIntensity.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbEnergy.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);
-    cbZoom.OnDrawItem := TDrawItemEvent(@ComboBoxDrawItem);{$ENDIF}
-    cbMapping.OnDropDown := @ComboBoxDropDown;
-    cbStyle.OnDropDown := @ComboBoxDropDown;
-    cbKind.OnDropDown := @ComboBoxDropDown;
-    cbResolution.OnDropDown := @ComboBoxDropDown;
-    cbMeter.OnDropDown := @ComboBoxDropDown;
-    cbIntensity.OnDropDown := @ComboBoxDropDown;
-    cbEnergy.OnDropDown := @ComboBoxDropDown;
-    cbZoom.OnDropDown := @ComboBoxDropDown;
-    {$IFDEF MSWINDOWS}
-    // Update status bar panel colors for dark mode - avoid paint race
-    sbStatus.OnDrawPanel := nil;
-    try
-      if FDark then begin
-        sbStatus.Panels[0].Style := psOwnerDraw;
-      end else begin
-        sbStatus.Panels[0].Style := psText;
-      end;
-    finally
-      sbStatus.OnDrawPanel := @StatusBarDrawPanel;
-    end;
-    // Grid fixed cells (instrument labels + step numbers)
-    if FDark then
-      sgTab.FixedColor := DARK_PANEL
-    else
-      sgTab.FixedColor := clBtnFace;
-    // Grid cell text color
-    if FDark then
-      sgTab.Font.Color := DARK_TEXT
-    else
-      sgTab.Font.Color := clWindowText;
-    {$ENDIF}
-  finally
-    FInThemeApply := False;
-  end;
-end;
-{$ENDIF}
 
 
-{$IFDEF MSWINDOWS}
-procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel;
-  const Rect: TRect);
-var
-  Flags: Longint;
-  R: TRect;
-begin
-  R := Rect;
-  with Sender.Canvas do begin
-    if FDark then begin
-      Brush.Color := $2D2D2D;
-      Font.Color := clWhite;
-    end else begin
-      Brush.Color := clBtnFace;
-      Font.Color := clWindowText;
-    end;
-    FillRect(R);
-    Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
-    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);
-  end;
-end;
 
-procedure TMainForm.sgTabDrawCell(Sender: TObject; ACol, ARow: Integer;
-  ARect: TRect; AState: TGridDrawState);
-var
-  Grid: TStringGrid;
-  I, CumSteps: Integer;
-  IsBarStart: Boolean;
-begin
-  Grid := Sender as TStringGrid;
-  with Grid.Canvas do begin
-    if FDark then begin
-      Brush.Color := DARK_PANEL;
-      Font.Color := DARK_TEXT;
-    end else begin
-      Brush.Color := clWindow;
-      Font.Color := clWindowText;
-    end;
-    FillRect(ARect);
-    DrawText(Handle, PChar(Grid.Cells[ACol, ARow]), -1, ARect,
-      DT_CENTER or DT_VCENTER or DT_SINGLELINE);
 
-    // Draw vertical line at left edge of every cell (replaces goVertLine)
-    Pen.Width := 1;
-    if FDark then
-      Pen.Color := DARK_BORDER
-    else
-      Pen.Color := clSilver;
-    MoveTo(ARect.Left, ARect.Top);
-    LineTo(ARect.Left, ARect.Bottom - 1);
 
-    // Draw thicker vertical line at bar boundaries
-    IsBarStart := False;
-    CumSteps := 0;
-    for I := 0 to High(FTabBars) - 1 do begin
-      CumSteps := CumSteps + FTabBars[I].Steps;
-      if ACol = CumSteps + 1 then begin
-        IsBarStart := True;
-        Break;
-      end;
-    end;
 
-    if IsBarStart then begin
-      Pen.Width := 3;
-      if FDark then
-        Pen.Color := DARK_BORDER
-      else
-        Pen.Color := clBlack;
-      MoveTo(ARect.Left, ARect.Top);
-      LineTo(ARect.Left, ARect.Bottom - 1);
-    end;
-
-    // Draw right edge of last column
-    if ACol = Grid.ColCount - 1 then begin
-      Pen.Width := 1;
-      if FDark then
-        Pen.Color := DARK_BORDER
-      else
-        Pen.Color := clSilver;
-      MoveTo(ARect.Right - 1, ARect.Top);
-      LineTo(ARect.Right - 1, ARect.Bottom - 1);
-    end;
-  end;
-end;
-{$ENDIF}
-
-{$IFDEF MSWINDOWS}
-procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer;
-  ARect: TRect; State: TOwnerDrawState);
-var
-  CB: TComboBox;
-  S: string;
-begin
-  CB := Control as TComboBox;
-  with CB.Canvas do
-  begin
-    if FDark then
-    begin
-      if odSelected in State then
-      begin
-        Brush.Color := $404040;
-        Font.Color := clWhite;
-      end
-      else
-      begin
-        Brush.Color := $2D2D2D;
-        Font.Color := clWhite;
-      end;
-    end
-    else
-    begin
-      if odSelected in State then
-      begin
-        Brush.Color := clHighlight;
-        Font.Color := clHighlightText;
-      end
-      else
-      begin
-        Brush.Color := clWindow;
-        Font.Color := clWindowText;
-      end;
-    end;
-    FillRect(ARect);
-    if Index >= 0 then
-    begin
-      S := CB.Items[Index];
-      TextOut(ARect.Left + 2, ARect.Top + 1, S);
-    end;
-  end;
-end;
-{$ENDIF}
-
-procedure TMainForm.ComboBoxDropDown(Sender: TObject);
-begin
-  { Dropdown theming is handled by Windows dark mode API via SetAppDarkMode.
-    The previous handle-hack (FindWindowEx + SendMessage) was unsafe:
-    internal LCL listbox handles can be destroyed between OnDropDown and here,
-    causing CTD on SendMessage/InvalidateRect to dead handles. }
-end;
-{$IFDEF MSWINDOWS}
-procedure TMainForm.SystemThemeChanged(Sender: TObject);
-begin
-  { Windows switched between light and dark apps: follow it when asked to. }
-  ApplyDarkTheme(ResolveDark(LoadThemeChoice));
-end;
-{$ENDIF}
 
 // ============================================================================
 // TAB BLOCK MANAGEMENT IMPLEMENTATION

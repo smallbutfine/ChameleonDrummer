@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls, ExtCtrls, ComCtrls, Spin,
-  Dialogs, LCLType, Graphics, {$IFDEF MSWINDOWS}DarkTheme, ShellApi, Windows,{$ENDIF} process, StrUtils, menus, CliLookup,
+  Dialogs, LCLType, Graphics, {$IFDEF MSWINDOWS}ShellApi, Windows,{$ENDIF} process, StrUtils, menus, CliLookup,
   time_signature, AutoScale;
 
 type
@@ -32,9 +32,6 @@ type
     mnuFile: TMenuItem;
     mnuEdit: TMenuItem;
     mnuView: TMenuItem;
-    mnuThemeSystem: TMenuItem;
-    mnuThemeLight: TMenuItem;
-    {$IFDEF MSWINDOWS}mnuThemeDark: TMenuItem;{$ENDIF}
     mnuAddSection: TMenuItem;
     mnuResetStructure: TMenuItem;
     mnuDeleteSection: TMenuItem;
@@ -102,24 +99,16 @@ type
     procedure mnuDeleteSectionClick(Sender: TObject);
     procedure mnuExportConfigClick(Sender: TObject);
     procedure mnuImportConfigClick(Sender: TObject);
-    {$IFDEF MSWINDOWS}procedure mnuThemeClick(Sender: TObject);{$ENDIF}
     procedure mnuAboutClick(Sender: TObject);
     procedure MainFormShow(Sender: TObject);
-    procedure ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
     procedure FormDestroy(Sender: TObject);
 
   private
     FSectionNames: TStrDynArray;
     FSectionBars: TIntDynArray;
     FCliTool: String;
-     {$IFDEF MSWINDOWS}FThemeChoice: TThemeChoice;
-    FDark: Boolean;{$ENDIF}
     FAutoScaler: TWindowAutoScaler;
-    FInThemeApply: Boolean;
     procedure Log(const AText: String);
-    {$IFDEF MSWINDOWS}procedure SetTheme(AChoice: TThemeChoice; ASave: Boolean);
-    procedure SystemThemeChanged(Sender: TObject);
-    procedure ThemeMenuChecks;{$ENDIF}
 
     procedure FillStyles;
 
@@ -139,7 +128,6 @@ type
     procedure ClearSectionControls;
     procedure SyncSectionArraysFromControls;
     procedure ComboBoxDropDown(Sender: TObject);
-    procedure StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
   public
     procedure BtnAddSectionClick(Sender: TObject);
     procedure BtnResetStructureClick(Sender: TObject);
@@ -178,7 +166,6 @@ begin
   cbMeter.Items.CommaText := '4/4,4/4T,2/4,2/4T,3/4,3/4T,5/4,5/4T,6/8,6/8T,7/8,7/8T,9/8,9/8T,11/8,11/8T,13/8,13/8T,15/16,15/16T';
   cbMeter.ItemIndex := 0;
   chkStrictMeter.Checked := True;
-  {$IFDEF MSWINDOWS}FDark := False;{$ENDIF}
 
   // Aktiviert das manuelle Zeichnen (Owner-Draw)
   cbGenre.Style := csOwnerDrawFixed;
@@ -189,12 +176,6 @@ begin
   cbExport.Style := csOwnerDrawFixed;
 
   // Verknüpft die Events mit der neuen Methode
-  cbGenre.OnDrawItem := @ComboBoxDrawItem;
-  cbStyle.OnDrawItem := @ComboBoxDrawItem;
-  cbDrummer.OnDrawItem := @ComboBoxDrawItem;
-  cbMapping.OnDrawItem := @ComboBoxDrawItem;
-  cbMeter.OnDrawItem := @ComboBoxDrawItem;
-  cbExport.OnDrawItem := @ComboBoxDrawItem;
 
   FillLists;
   FillStyles;
@@ -232,14 +213,10 @@ begin
     Panels.Add; Panels[0].Width := 300;
     Panels.Add; Panels[1].Width := 150;
     Panels.Add; Panels[2].Width := 100;
-    OnDrawPanel := @StatusBarDrawPanel;
   end;
 
   Log('Choose a genre and style, pick a drummer, then press Generate.');
   StatusBar.Panels[0].Text := 'Ready';
-
-  {$IFDEF MSWINDOWS}OnSystemThemeChange := @SystemThemeChanged; SetTheme(LoadThemeChoice, False);{$ENDIF}
-  {$IFDEF MSWINDOWS}ThemeControlTree(Self, FDark);{$ENDIF}
 
   FAutoScaler := TWindowAutoScaler.Create(Self);
   OnDestroy := @FormDestroy;
@@ -261,67 +238,9 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FAutoScaler.Free;
-  {$IFDEF MSWINDOWS}
-  UnhookForm(Handle);
-  {$ENDIF}
 end;
 
-{$IFDEF MSWINDOWS}procedure TMainForm.ThemeMenuChecks;
-begin
-  mnuThemeSystem.Checked := FThemeChoice = tcSystem;
-  mnuThemeLight.Checked := FThemeChoice = tcLight;
-  mnuThemeDark.Checked := FThemeChoice = tcDark;
-end;
 
-procedure TMainForm.SetTheme(AChoice: TThemeChoice; ASave: Boolean);
-begin
-  if FInThemeApply then Exit;
-  FInThemeApply := True;
-  try
-    FThemeChoice := AChoice;
-    FDark := ResolveDark(AChoice);
-    ThemeMenuChecks;
-    ApplyTheme(Self, FDark);
-    { Update status bar panel colors for dark mode - avoid paint race }
-    if Assigned(StatusBar) then begin
-      StatusBar.OnDrawPanel := nil;
-      try
-        if FDark then begin
-          StatusBar.Panels[0].Style := psOwnerDraw;
-          StatusBar.Panels[1].Style := psOwnerDraw;
-          StatusBar.Panels[2].Style := psOwnerDraw;
-        end else begin
-          StatusBar.Panels[0].Style := psText;
-          StatusBar.Panels[1].Style := psText;
-          StatusBar.Panels[2].Style := psText;
-        end;
-      finally
-        StatusBar.OnDrawPanel := @StatusBarDrawPanel;
-      end;
-    end;
-    if ASave then
-      SaveThemeChoice(AChoice);
-  finally
-    FInThemeApply := False;
-  end;
-end;
-
-procedure TMainForm.SystemThemeChanged(Sender: TObject);
-begin
-  { Windows switched between light and dark apps: follow it when asked to. }
-  if FThemeChoice = tcSystem then
-    SetTheme(tcSystem, False);
-end;
-
-procedure TMainForm.mnuThemeClick(Sender: TObject);
-begin
-  if Sender = mnuThemeDark then
-    SetTheme(tcDark, True)
-  else if Sender = mnuThemeLight then
-    SetTheme(tcLight, True)
-  else
-    SetTheme(tcSystem, True);
-end;{$ENDIF}
 
 { The command line tool is the only source of genres, styles and drummers. If
   it is missing, the lists stay empty, Generate is off, and the log says where
@@ -657,8 +576,7 @@ begin
     sbSections.EnableAlign;
   end;
 
-  { the controls made here are new: give them the current colours }
-  {$IFDEF MSWINDOWS}ThemeControlTree(sbSections, FDark);{$ENDIF}
+  { the controls made here are new }
 end;
 
 procedure TMainForm.SyncSectionArraysFromControls;
@@ -956,25 +874,6 @@ begin
   Close;
 end;
 
-procedure TMainForm.StatusBarDrawPanel(Sender: TStatusBar; Panel: TStatusPanel; const Rect: TRect);
-var
-  Flags: Longint;
-  R: TRect;
-begin
-  R := Rect;
-  with Sender.Canvas do begin
-    {$IFDEF MSWINDOWS}if FDark then begin
-      Brush.Color := $2D2D2D;
-      Font.Color := clWhite;
-    end else begin
-      Brush.Color := clBtnFace;
-      Font.Color := clWindowText;
-    end;
-    FillRect(R);
-    Flags := DT_LEFT or DT_VCENTER or DT_SINGLELINE;
-    DrawText(Handle, PChar(Panel.Text), -1, R, Flags);{$ENDIF}
-  end;
-end;
 
 procedure TMainForm.ComboBoxDropDown(Sender: TObject);
 begin
@@ -1161,42 +1060,5 @@ begin
   // Label click handler
 end;
 
-procedure TMainForm.ComboBoxDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: StdCtrls.TOwnerDrawState);
-var
-  CB: TComboBox;
-  IsSelected: Boolean;
-begin
- {$IFDEF MSWINDOWS} CB := Control as TComboBox;
-  // KORREKTUR: Unit-Präfix LCLType hinzugefügt, um den Typen-Konflikt zu lösen
-  IsSelected := LCLType.odSelected in State;
-
-  with CB.Canvas do begin
-    if FDark then begin
-      if IsSelected then begin
-        Brush.Color := TColor($404040); // Dunkles Grau statt Blau
-        Font.Color := clWhite;
-      end else begin
-        Brush.Color := TColor($2D2D2D);
-        Font.Color := clWhite;
-      end;
-    end else begin
-      if IsSelected then begin
-        Brush.Color := TColor($E0E0E0); // Helles Grau statt Blau
-        Font.Color := clBlack;
-      end else begin
-        Brush.Color := clWindow;
-        Font.Color := clWindowText;
-      end;
-    end;
-
-    FillRect(ARect);
-    TextRect(ARect, ARect.Left + 4, ARect.Top + 2, CB.Items[Index]);
-
-
-    // KORREKTUR: Auch hier das Präfix für odFocused nutzen
-    if LCLType.odFocused in State then DrawFocusRect(ARect);
-
-  end;{$ENDIF}
-end;
 
 end.

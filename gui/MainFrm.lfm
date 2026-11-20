@@ -1,18 +1,18 @@
 object MainForm: TMainForm
-  Left = 361
+  Left = 335
   Height = 923
-  Top = 25
+  Top = 68
   Width = 1215
   Caption = 'ChameleonDrummer'
   ClientHeight = 923
   ClientWidth = 1215
   DesignTimePPI = 144
   Menu = MainMenu
-  OnShow = MainFormShow
   Position = poScreenCenter
   ShowHint = True
   LCLVersion = '4.8.0.0'
   OnCreate = FormCreate
+  OnShow = MainFormShow
   object gbSong: TGroupBox
     Left = 16
     Height = 732
@@ -282,6 +282,7 @@ object MainForm: TMainForm
       Max = 100
       Position = 50
       OnChange = tbComplexityChange
+      ParentColor = False
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
@@ -309,6 +310,7 @@ object MainForm: TMainForm
       Max = 100
       Position = 30
       OnChange = tbHumanizationChange
+      ParentColor = False
       ParentShowHint = False
       ShowHint = True
       TabOrder = 2
@@ -336,6 +338,7 @@ object MainForm: TMainForm
       Max = 100
       Position = 0
       OnChange = tbSwingChange
+      ParentColor = False
       ParentShowHint = False
       ShowHint = True
       TabOrder = 3
@@ -484,19 +487,16 @@ object MainForm: TMainForm
         Caption = '&System colours'
         GroupIndex = 1
         RadioItem = True
-        OnClick = mnuThemeClick
       end
       object mnuThemeLight: TMenuItem
         Caption = '&Light'
         GroupIndex = 1
         RadioItem = True
-        OnClick = mnuThemeClick
       end
       object mnuThemeDark: TMenuItem
         Caption = '&Dark'
         GroupIndex = 1
         RadioItem = True
-        OnClick = mnuThemeClick
       end
     end
     object mnuHelp: TMenuItem
