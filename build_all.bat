@@ -562,64 +562,64 @@ if not exist "%MACOS_DIR%" mkdir "%MACOS_DIR%"
 if not exist "%RES_DIR%" mkdir "%RES_DIR%"
 
 REM Copy GUI executable into MacOS folder
-if exist "%BUNDLE_DIR%\\%APP_NAME%" (
-    copy /y "%BUNDLE_DIR%\\%APP_NAME%" "%MACOS_DIR%\\%APP_NAME%" 2>nul
-) else if exist "%BUNDLE_DIR%\\%APP_NAME%.exe" (
-    copy /y "%BUNDLE_DIR%\\%APP_NAME%.exe" "%MACOS_DIR%\\%APP_NAME%" 2>nul
+if exist "%BUNDLE_DIR%\%APP_NAME%" (
+    copy /y "%BUNDLE_DIR%\%APP_NAME%" "%MACOS_DIR%\%APP_NAME%" 2>nul
+) else if exist "%BUNDLE_DIR%\%APP_NAME%.exe" (
+    copy /y "%BUNDLE_DIR%\%APP_NAME%.exe" "%MACOS_DIR%\%APP_NAME%" 2>nul
 )
 
 REM Copy CLI executable into MacOS folder (if present)
-if exist "%BUNDLE_DIR%\\ChameleonDrummer" (
-    copy /y "%BUNDLE_DIR%\\ChameleonDrummer" "%MACOS_DIR%\\ChameleonDrummer" 2>nul
-) else if exist "%BUNDLE_DIR%\\ChameleonDrummer.exe" (
-    copy /y "%BUNDLE_DIR%\\ChameleonDrummer.exe" "%MACOS_DIR%\\ChameleonDrummer" 2>nul
+if exist "%BUNDLE_DIR%\ChameleonDrummer" (
+    copy /y "%BUNDLE_DIR%\ChameleonDrummer" "%MACOS_DIR%\ChameleonDrummer" 2>nul
+) else if exist "%BUNDLE_DIR%\ChameleonDrummer.exe" (
+    copy /y "%BUNDLE_DIR%\ChameleonDrummer.exe" "%MACOS_DIR%\ChameleonDrummer" 2>nul
 )
 
 REM Copy tools into Resources/tools
-if not exist "%RES_DIR%\\tools" mkdir "%RES_DIR%\\tools"
-if exist "%BUNDLE_DIR%\\tools\\midi_to_tab" (
-    copy /y "%BUNDLE_DIR%\\tools\\midi_to_tab" "%RES_DIR%\\tools\\midi_to_tab" 2>nul
+if not exist "%RES_DIR%\tools" mkdir "%RES_DIR%\tools"
+if exist "%BUNDLE_DIR%\tools\midi_to_tab" (
+    copy /y "%BUNDLE_DIR%\tools\midi_to_tab" "%RES_DIR%\tools\midi_to_tab" 2>nul
 )
-if exist "%BUNDLE_DIR%\\tools\\step_editor" (
-    copy /y "%BUNDLE_DIR%\\tools\\step_editor" "%RES_DIR%\\tools\\step_editor" 2>nul
+if exist "%BUNDLE_DIR%\tools\step_editor" (
+    copy /y "%BUNDLE_DIR%\tools\step_editor" "%RES_DIR%\tools\step_editor" 2>nul
 )
 
 REM Copy support files into Resources
-xcopy /y /e /i "%BUNDLE_DIR%\\mappings" "%RES_DIR%\\mappings" >nul 2>nul
-xcopy /y /e /i "%BUNDLE_DIR%\\Assets" "%RES_DIR%\\Assets" >nul 2>nul
-xcopy /y /e /i "%BUNDLE_DIR%\\ardour" "%RES_DIR%\\ardour" >nul 2>nul
-xcopy /y /e /i "%BUNDLE_DIR%\\config" "%RES_DIR%\\config" >nul 2>nul
-copy /y "%BUNDLE_DIR%\\LICENSE" "%RES_DIR%\\LICENSE" >nul 2>nul
-copy /y "%BUNDLE_DIR%\\README.md" "%RES_DIR%\\README.md" >nul 2>nul
-copy /y "%BUNDLE_DIR%\\CONTRIBUTING.md" "%RES_DIR%\\CONTRIBUTING.md" >nul 2>nul
-copy /y "%BUNDLE_DIR%\\NAME" "%RES_DIR%\\NAME" >nul 2>nul
+xcopy /y /e /i "%BUNDLE_DIR%\mappings" "%RES_DIR%\mappings" >nul 2>nul
+xcopy /y /e /i "%BUNDLE_DIR%\Assets" "%RES_DIR%\Assets" >nul 2>nul
+xcopy /y /e /i "%BUNDLE_DIR%\ardour" "%RES_DIR%\ardour" >nul 2>nul
+xcopy /y /e /i "%BUNDLE_DIR%\config" "%RES_DIR%\config" >nul 2>nul
+copy /y "%BUNDLE_DIR%\LICENSE" "%RES_DIR%\LICENSE" >nul 2>nul
+copy /y "%BUNDLE_DIR%\README.md" "%RES_DIR%\README.md" >nul 2>nul
+copy /y "%BUNDLE_DIR%\CONTRIBUTING.md" "%RES_DIR%\CONTRIBUTING.md" >nul 2>nul
+copy /y "%BUNDLE_DIR%\NAME" "%RES_DIR%\NAME" >nul 2>nul
 
 REM Create PkgInfo
-echo APPL???? > "%APP_BUNDLE%\\Contents\\PkgInfo"
+echo APPL???? > "%APP_BUNDLE%\Contents\PkgInfo"
 
 REM Create Info.plist
-echo ^?xml version="1.0" encoding="UTF-8"?^> > "%APP_BUNDLE%\\Contents\\Info.plist"
-echo ^<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo ^<plist version="1.0"^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo ^<dict^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>CFBundleName^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<string^>%DISPLAY_NAME%</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>CFBundleExecutable^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<string^>%APP_NAME%</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>CFBundleIdentifier^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<string^>com.chameleondrummer.%APP_NAME%</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>CFBundleInfoDictionaryVersion^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<string^>6.0</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>CFBundlePackageType^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<string^>APPL</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>CFBundleSignature^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<string^>????</string^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>LSRequiresCarbon^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<false/^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<key^>NSHighResolutionCapable^</key^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo   ^<true/^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo ^</dict^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
-echo ^</plist^> >> "%APP_BUNDLE%\\Contents\\Info.plist"
+echo ^?xml version="1.0" encoding="UTF-8"?^> > "%APP_BUNDLE%\Contents\Info.plist"
+echo ^<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo ^<plist version="1.0"^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo ^<dict^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>CFBundleName^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<string^>%DISPLAY_NAME%</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>CFBundleExecutable^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<string^>%APP_NAME%</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>CFBundleIdentifier^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<string^>com.chameleondrummer.%APP_NAME%</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>CFBundleInfoDictionaryVersion^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<string^>6.0</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>CFBundlePackageType^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<string^>APPL</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>CFBundleSignature^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<string^>????</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>LSRequiresCarbon^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<false/^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<key^>NSHighResolutionCapable^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo   ^<true/^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo ^</dict^> >> "%APP_BUNDLE%\Contents\Info.plist"
+echo ^</plist^> >> "%APP_BUNDLE%\Contents\Info.plist"
 
 echo   OK: %APP_NAME%.app
 goto :eof
