@@ -30,7 +30,7 @@ type
     FEnabled: Boolean;
     FRescaling: Boolean;
     procedure CollectControls(AControl: TControl);
-    procedure ApplyScale(AControl: TControl; const AInfo: TControlScaleInfo; AScale: Double);
+    procedure ApplyScale(AControl: TControl; const AInfo: TControlScaleInfo; AScaleX, AScaleY: Double);
     procedure OnFormResize(Sender: TObject);
   public
     constructor Create(AForm: TCustomForm);
@@ -109,7 +109,7 @@ begin
       CollectControls(TWinControl(AControl).Controls[i]);
 end;
 
-procedure TWindowAutoScaler.ApplyScale(AControl: TControl; const AInfo: TControlScaleInfo; AScale: Double);
+procedure TWindowAutoScaler.ApplyScale(AControl: TControl; const AInfo: TControlScaleInfo; AScaleX, AScaleY: Double);
 var
   Grid: TStringGrid;
   i: Integer;
@@ -119,38 +119,38 @@ begin
   if AInfo.Align <> alNone then
   begin
     if not (akLeft in AInfo.Anchors) then
-      AControl.Left := Round(AInfo.Left * AScale);
+      AControl.Left := Round(AInfo.Left * AScaleX);
     if not (akTop in AInfo.Anchors) then
-      AControl.Top := Round(AInfo.Top * AScale);
+      AControl.Top := Round(AInfo.Top * AScaleY);
     Exit;
   end;
 
-  AControl.Left := Round(AInfo.Left * AScale);
-  AControl.Top := Round(AInfo.Top * AScale);
-  AControl.Width := Round(AInfo.Width * AScale);
-  AControl.Height := Round(AInfo.Height * AScale);
+  AControl.Left := Round(AInfo.Left * AScaleX);
+  AControl.Top := Round(AInfo.Top * AScaleY);
+  AControl.Width := Round(AInfo.Width * AScaleX);
+  AControl.Height := Round(AInfo.Height * AScaleY);
 
   if AInfo.FontSize > 0 then
-    AControl.Font.Size := Round(AInfo.FontSize * AScale);
+    AControl.Font.Size := Round(AControl.Font.Size * AScaleY);
 
   if AControl is TStringGrid then
   begin
     Grid := TStringGrid(AControl);
-    Grid.DefaultRowHeight := Round(AInfo.DefaultRowHeight * AScale);
-    Grid.DefaultColWidth := Round(AInfo.DefaultColWidth * AScale);
+    Grid.DefaultRowHeight := Round(AInfo.DefaultRowHeight * AScaleY);
+    Grid.DefaultColWidth := Round(AInfo.DefaultColWidth * AScaleX);
     for i := 0 to Grid.ColCount - 1 do
       if i < Length(AInfo.ColWidths) then
-        Grid.ColWidths[i] := Round(AInfo.ColWidths[i] * AScale);
+        Grid.ColWidths[i] := Round(AInfo.ColWidths[i] * AScaleX);
     for i := 0 to Grid.RowCount - 1 do
       if i < Length(AInfo.RowHeights) then
-        Grid.RowHeights[i] := Round(AInfo.RowHeights[i] * AScale);
+        Grid.RowHeights[i] := Round(AInfo.RowHeights[i] * AScaleY);
   end;
 end;
 
 procedure TWindowAutoScaler.Rescale;
 var
   i: Integer;
-  ScaleX, ScaleY, MinScale: Double;
+  ScaleX, ScaleY: Double;
 begin
   if not FEnabled or not Assigned(FForm) then Exit;
   if (FBaseWidth = 0) or (FBaseHeight = 0) then Exit;
@@ -158,13 +158,11 @@ begin
   ScaleX := FForm.ClientWidth / FBaseWidth;
   ScaleY := FForm.ClientHeight / FBaseHeight;
 
-  if ScaleX < ScaleY then MinScale := ScaleX else MinScale := ScaleY;
-
   FForm.DisableAlign;
   try
     for i := 0 to High(FInfos) do
       if Assigned(FInfos[i].Control) then
-        ApplyScale(FInfos[i].Control, FInfos[i], MinScale);
+        ApplyScale(FInfos[i].Control, FInfos[i], ScaleX, ScaleY);
   finally
     FForm.EnableAlign;
   end;
