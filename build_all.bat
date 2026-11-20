@@ -14,8 +14,8 @@ set "LAZBUILD=C:\fpcupdeluxe\lazarus\lazbuild.exe"
 set "FPC=%FPC_DIR%\fpc.exe"
 set "OUT_ROOT=%ROOT%\dist"
 set "CROSS_BIN_DIR=C:\fpcupdeluxe\cross\bin"
-set "ISCC=%ProgramFiles(x86)%\\Inno Setup 6\\ISCC.exe"
-if not exist "%ISCC%" set "ISCC=%ProgramFiles%\\Inno Setup 6\\ISCC.exe"
+set "ISCC=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+if not exist "%ISCC%" set "ISCC=%ProgramFiles%\Inno Setup 6\ISCC.exe"
 set "TAR=tar"
 set "APP_NAME=ChameleonDrummer"
 set "EXE_FILE=ChameleonDrummer.exe"
@@ -106,67 +106,6 @@ echo         END >> "%ROOT%\ChameleonDrummer.rc"
     echo         VALUE "Translation", 0x409, 1200 >> "%ROOT%\ChameleonDrummer.rc"
     echo     END >> "%ROOT%\ChameleonDrummer.rc"
     echo END >> "%ROOT%\ChameleonDrummer.rc"
-)
-
-REM --- Generate VERSIONINFO for chameleondrummer_gui ---
-echo 1 VERSIONINFO > "%ROOT%\gui\chameleondrummer_gui.rc"
-echo FILEVERSION !VERSION_COMMAS!,0 >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo PRODUCTVERSION !VERSION_COMMAS!,0 >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo FILEFLAGSMASK 0x3fL >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo FILEFLAGS 0x0L >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo FILEOS 0x40004L >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo FILETYPE 0x2L >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo FILESUBTYPE 0x0L >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo BEGIN >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo     BLOCK "StringFileInfo" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo     BEGIN >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo         BLOCK "040904b0" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo         BEGIN >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "CompanyName", "!EXTRACTED_COMPANY!" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "FileDescription", "ChameleonDrummer GUI" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "FileVersion", "!DETECTED_VERSION!" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "InternalName", "chameleondrummer_gui" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "LegalCopyright", "Copyright !BUILD_YEAR! !EXTRACTED_COMPANY!" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "OriginalFilename", "chameleondrummer_gui.exe" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "ProductName", "ChameleonDrummer GUI" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo             VALUE "ProductVersion", "!DETECTED_VERSION!" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo         END >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo     END >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo     BLOCK "VarFileInfo" >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo     BEGIN >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo         VALUE "Translation", 0x409, 1200 >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo     END >> "%ROOT%\gui\chameleondrummer_gui.rc"
-echo END >> "%ROOT%\gui\chameleondrummer_gui.rc"
-
-REM --- Generate VERSIONINFO for step_editor ---
-echo 1 VERSIONINFO > "%ROOT%\tools\step_editor\step_editor.rc"
-echo FILEVERSION !VERSION_COMMAS!,0 >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo PRODUCTVERSION !VERSION_COMMAS!,0 >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo FILEFLAGSMASK 0x3fL >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo FILEFLAGS 0x0L >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo FILEOS 0x40004L >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo FILETYPE 0x2L >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo FILESUBTYPE 0x0L >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo BEGIN >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo     BLOCK "StringFileInfo" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo     BEGIN >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo         BLOCK "040904b0" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo         BEGIN >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "CompanyName", "!EXTRACTED_COMPANY!" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "FileDescription", "ChameleonDrummer Step Editor" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "FileVersion", "!DETECTED_VERSION!" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "InternalName", "step_editor" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "LegalCopyright", "Copyright !BUILD_YEAR! !EXTRACTED_COMPANY!" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "OriginalFilename", "step_editor.exe" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "ProductName", "ChameleonDrummer Step Editor" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo             VALUE "ProductVersion", "!DETECTED_VERSION!" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo         END >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo     END >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo     BLOCK "VarFileInfo" >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo     BEGIN >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo         VALUE "Translation", 0x409, 1200 >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo     END >> "%ROOT%\tools\step_editor\step_editor.rc"
-echo END >> "%ROOT%\tools\step_editor\step_editor.rc"
 
 REM --- Compile resource file ---
 if exist "%FPC_DIR%\windres.exe" (
@@ -235,23 +174,23 @@ echo [Deploy] Creating Deploy folder...
 if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 
 REM Copy Linux tar.gz packages
-if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz" >nul
-    echo   OK: ChameleonDrummer-linux-x64-v!DETECTED_VERSION!.tar.gz
+if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" (
+    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-x64.tar.gz" >nul
+    echo   OK: ChameleonDrummer-linux-x64.tar.gz
 )
-if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz" >nul
-    echo   OK: ChameleonDrummer-linux-arm-v!DETECTED_VERSION!.tar.gz
+if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" (
+    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-arm.tar.gz" >nul
+    echo   OK: ChameleonDrummer-linux-arm.tar.gz
 )
 
-REM Zip and copy macOS .app bundles
+REM Copy macOS .app bundles
 if exist "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" (
-    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-intel\chameleondrummer_gui.app' -DestinationPath '%ROOT%\Deploy\chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip' -Force"
-    echo   OK: chameleondrummer_gui-macos-intel-v!DETECTED_VERSION!.zip
+    xcopy /y /e /i "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui-macos-intel.app" >nul
+    echo   OK: chameleondrummer_gui-macos-intel.app
 )
 if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
-    powershell -command "Compress-Archive -Path '%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app' -DestinationPath '%ROOT%\Deploy\chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip' -Force"
-    echo   OK: chameleondrummer_gui-macos-aarch64-v!DETECTED_VERSION!.zip
+    xcopy /y /e /i "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui-macos-aarch64.app" >nul
+    echo   OK: chameleondrummer_gui-macos-aarch64.app
 )
 
 echo.
@@ -493,13 +432,13 @@ set "TD=%OUT_ROOT%\%T_NAME%"
 if "%T_OS%"=="darwin" (
     echo [Pkg] Creating macOS .app bundles...
     call :make_app_bundle "%TD%" "chameleondrummer_gui" "ChameleonDrummer"
-    call :make_app_bundle "%TD%\\tools" "step_editor" "StepEditor"
+    call :make_app_bundle "%TD%\tools" "step_editor" "StepEditor"
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
     pushd "%OUT_ROOT%" || (echo ERROR: pushd failed & exit /b 1)
-    "%TAR%" -czf "ChameleonDrummer-%T_NAME%-v!DETECTED_VERSION!.tar.gz" "%T_NAME%"
+    "%TAR%" -czf "ChameleonDrummer-%T_NAME%.tar.gz" "%T_NAME%"
     popd
-    echo   OK: ChameleonDrummer-%T_NAME%-v!DETECTED_VERSION!.tar.gz
+    echo   OK: ChameleonDrummer-%T_NAME%.tar.gz
 ) else if "%T_OS%"=="win64" (
     echo [Pkg] Windows installer...
     if exist "%ISCC%" (
@@ -509,18 +448,12 @@ if "%T_OS%"=="darwin" (
         copy /y "%TD%\tools\midi_to_tab.exe" "%ROOT%\tools\midi_to_tab.exe" >nul 2>&1
         copy /y "%TD%\tools\step_editor.exe" "%ROOT%\tools\step_editor.exe" >nul 2>&1
         echo   Running Inno Setup compiler...
-        pushd "%ROOT%\\installer" || (echo ERROR: pushd failed & exit /b 1)
+        pushd "%ROOT%\installer" || (echo ERROR: pushd failed & exit /b 1)
         "%ISCC%" /Q /dMyAppId="%NEW_GUID%" /dMyAppName="%APP_NAME%" /dMyAppVersion="!DETECTED_VERSION!" /dMyExeName="%EXE_FILE%" /dMyAppPublisher="!EXTRACTED_COMPANY!" installer.iss
         if errorlevel 1 (
             echo   WARNING: Inno Setup compiler returned error
         ) else (
             echo   OK: Installer created
-            :: Installation starten
-                echo Starte Installation...
-                start /wait "" "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-                echo [OK] Installation abgeschlossen.
-
-            echo.
             if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
             copy /y "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" "%ROOT%\Deploy\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" >nul 2>&1
             del /q "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" 2>nul
@@ -553,7 +486,6 @@ set "BUNDLE_DIR=%~1"
 set "APP_NAME=%~2"
 set "DISPLAY_NAME=%~3"
 
-set "BUNDLE_DIR=%BUNDLE_DIR:/=\%"
 set "APP_BUNDLE=%BUNDLE_DIR%\%APP_NAME%.app"
 set "MACOS_DIR=%APP_BUNDLE%\Contents\MacOS"
 set "RES_DIR=%APP_BUNDLE%\Contents\Resources"
@@ -583,9 +515,6 @@ if exist "%BUNDLE_DIR%\tools\midi_to_tab" (
 if exist "%BUNDLE_DIR%\tools\step_editor" (
     copy /y "%BUNDLE_DIR%\tools\step_editor" "%RES_DIR%\tools\step_editor" 2>nul
 )
-if exist "%BUNDLE_DIR%\tools\step_editor.app" (
-    xcopy /y /e /i "%BUNDLE_DIR%\tools\step_editor.app" "%RES_DIR%\tools\step_editor.app" 2>nul
-)
 
 REM Copy support files into Resources
 xcopy /y /e /i "%BUNDLE_DIR%\mappings" "%RES_DIR%\mappings" >nul 2>nul
@@ -600,29 +529,33 @@ copy /y "%BUNDLE_DIR%\NAME" "%RES_DIR%\NAME" >nul 2>nul
 REM Create PkgInfo
 echo APPL???? > "%APP_BUNDLE%\Contents\PkgInfo"
 
-REM Create Info.plist
-echo ^?xml version="1.0" encoding="UTF-8"?^> > "%APP_BUNDLE%\Contents\Info.plist"
-echo ^<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo ^<plist version="1.0"^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo ^<dict^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>CFBundleName^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<string^>%DISPLAY_NAME%</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>CFBundleExecutable^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<string^>%APP_NAME%</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>CFBundleIdentifier^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<string^>com.chameleondrummer.%APP_NAME%</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>CFBundleInfoDictionaryVersion^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<string^>6.0</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>CFBundlePackageType^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<string^>APPL</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>CFBundleSignature^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<string^>????</string^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>LSRequiresCarbon^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<false/^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<key^>NSHighResolutionCapable^</key^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo   ^<true/^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo ^</dict^> >> "%APP_BUNDLE%\Contents\Info.plist"
-echo ^</plist^> >> "%APP_BUNDLE%\Contents\Info.plist"
+set "PLIST_FILE=%APP_BUNDLE%\Contents\Info.plist"
+set "L1=<?xml version="1.0" encoding="UTF-8"?>"
+set "L2=<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com">"
+set "L3=<plist version="1.0">"
+set "L4=<dict>"
+set "L5=  <key>CFBundleName</key>"
+set "L6=  <string>%DISPLAY_NAME%</string>"
+set "L7=  <key>CFBundleExecutable</key>"
+set "L8=  <string>%APP_NAME%</string>"
+set "L9=  <key>CFBundleIdentifier</key>"
+set "L10=  <string>com.chameleondrummer.%APP_NAME%</string>"
+set "L11=  <key>CFBundleInfoDictionaryVersion</key>"
+set "L12=  <string>6.0</string>"
+set "L13=  <key>CFBundlePackageType</key>"
+set "L14=  <string>APPL</string>"
+set "L15=  <key>CFBundleSignature</key>"
+set "L16=  <string>????</string>"
+set "L17=  <key>LSRequiresCarbon</key>"
+set "L18=  <false/>"
+set "L19=  <key>NSHighResolutionCapable</key>"
+set "L20=  <true/>"
+set "L21=</dict>"
+set "L22=</plist>"
+
+(
+    for /L %%i in (1,1,22) do echo !L%%i!
+) > "%PLIST_FILE%"
 
 echo   OK: %APP_NAME%.app
 goto :eof
