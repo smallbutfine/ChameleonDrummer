@@ -482,6 +482,7 @@ begin
       Name := Format('secCmb%d', [I]);
       Left := 100; Top := Y - 2;
       Width := 160; Height := 24;
+      AutoSize := False;
       Style := csDropDownList;
       ShowHint := True;
       Hint := 'Section ' + IntToStr(I+1) + ' type (intro/verse/chorus/bridge/outro)';
@@ -498,6 +499,7 @@ begin
       Name := Format('secSpn%d', [I]);
       Left := 270; Top := Y - 2;
       Width := 55; Height := 24;
+      AutoSize := False;
       MinValue := 1;
       MaxValue := 64;
       Value := FSectionBars[I];
@@ -510,6 +512,7 @@ begin
       Name := Format('secDel%d', [I]);
       Left := 335; Top := Y - 2;
       Width := 28; Height := 24;
+      AutoSize := False;
       Caption := '-';
       OnClick := @BtnSectionDeleteClick;
       ShowHint := True;
@@ -525,6 +528,7 @@ begin
     Name := 'btnAddSection';
     Left := 12; Top := Y + 4;
     Width := 110; Height := 28;
+    AutoSize := False;
     Caption := '+ Add Section';
     OnClick := @BtnAddSectionClick;
     ShowHint := True;
@@ -538,6 +542,7 @@ begin
     Name := 'btnResetStructure';
     Left := 126; Top := Y + 4;
     Width := 100; Height := 28;
+    AutoSize := False;
     Caption := 'Reset';
     OnClick := @BtnResetStructureClick;
     ShowHint := True;
@@ -551,6 +556,7 @@ begin
     Name := 'btnSaveConfig';
     Left := 230; Top := Y + 4;
     Width := 80; Height := 28;
+    AutoSize := False;
     Caption := 'Save';
     OnClick := @mnuExportConfigClick;
     ShowHint := True;
@@ -564,6 +570,7 @@ begin
     Name := 'btnLoadConfig';
     Left := 314; Top := Y + 4;
     Width := 80; Height := 28;
+    AutoSize := False;
     Caption := 'Load';
     OnClick := @mnuImportConfigClick;
     ShowHint := True;
