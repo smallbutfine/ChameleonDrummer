@@ -60,6 +60,8 @@ set /a PATCH=%PATCH% + 1
 set "DETECTED_VERSION=!MAJOR!.!MINOR!.!PATCH!"
 set "VERSION_COMMAS=!MAJOR!,!MINOR!,!PATCH!"
 
+del /q "%ROOT%\Dist"
+
 echo !MAJOR!.!MINOR!.!PATCH! > "%ROOT%\Assets\version.txt"
 
 echo Build version: !DETECTED_VERSION!
@@ -76,6 +78,12 @@ if exist "%ROOT%\LICENSE" (
 )
 :foundCopyright
 if "%EXTRACTED_COMPANY%"=="" set "EXTRACTED_COMPANY=Independent Developer"
+
+REM --- Determine build year (used in the VERSIONINFO LegalCopyright string) ---
+set "BUILD_YEAR="
+for /f "tokens=2 delims==" %%Y in ('wmic OS get LocalDateTime /format:list 2^>nul') do if not defined BUILD_YEAR set "BUILD_YEAR=%%Y"
+if defined BUILD_YEAR set "BUILD_YEAR=!BUILD_YEAR:~0,4!"
+if not defined BUILD_YEAR set "BUILD_YEAR=%DATE:~-4%"
 
 REM --- Generate VERSIONINFO resource file (simplified) ---
 echo 1 VERSIONINFO > "%ROOT%\ChameleonDrummer.rc"
@@ -175,21 +183,21 @@ if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 
 REM Copy Linux tar.gz packages
 if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-x64.tar.gz" >nul
+    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" >nul
     echo   OK: ChameleonDrummer-linux-x64.tar.gz
 )
 if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer-linux-arm.tar.gz" >nul
+    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" >nul
     echo   OK: ChameleonDrummer-linux-arm.tar.gz
 )
 
 REM Copy macOS .app bundles
 if exist "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" (
-    xcopy /y /e /i "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui-macos-intel.app" >nul
+    xcopy /y /e /i "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.app" >nul
     echo   OK: chameleondrummer_gui-macos-intel.app
 )
 if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
-    xcopy /y /e /i "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui-macos-aarch64.app" >nul
+    xcopy /y /e /i "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.app" >nul
     echo   OK: chameleondrummer_gui-macos-aarch64.app
 )
 
@@ -436,9 +444,9 @@ if "%T_OS%"=="darwin" (
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
     pushd "%OUT_ROOT%" || (echo ERROR: pushd failed & exit /b 1)
-    "%TAR%" -czf "ChameleonDrummer-%T_NAME%.tar.gz" "%T_NAME%"
+    "%TAR%" -czf "ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz" "%T_NAME%"
     popd
-    echo   OK: ChameleonDrummer-%T_NAME%.tar.gz
+    echo   OK: ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz
 ) else if "%T_OS%"=="win64" (
     echo [Pkg] Windows installer...
     if exist "%ISCC%" (
