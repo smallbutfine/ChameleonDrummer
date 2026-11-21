@@ -268,28 +268,28 @@ if "%T_OS%"=="win64" (
     "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\ChameleonDrummer.rc" -o "%ROOT%\ChameleonDrummer.res" --target=pe-x86-64
     if errorlevel 1 (
         echo   ERROR: Resource compilation failed
-        goto :target_done
+        goto :target_failed
     )
     echo   OK
     echo [Res] Compiling midi_to_tab resource file...
     "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\tools\midi_to_tab.rc" -o "%ROOT%\tools\midi_to_tab.res" --target=pe-x86-64
     if errorlevel 1 (
         echo   ERROR: midi_to_tab resource compilation failed
-        goto :target_done
+        goto :target_failed
     )
     echo   OK
     echo [Res] Compiling chameleondrummer_gui resource file...
     "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\gui\chameleondrummer_gui.rc" -o "%ROOT%\gui\chameleondrummer_gui.res" --target=pe-x86-64
     if errorlevel 1 (
         echo   ERROR: chameleondrummer_gui resource compilation failed
-        goto :target_done
+        goto :target_failed
     )
     echo   OK
     echo [Res] Compiling step_editor resource file...
     "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\tools\step_editor\step_editor.rc" -o "%ROOT%\tools\step_editor\step_editor.res" --target=pe-x86-64
     if errorlevel 1 (
         echo   ERROR: step_editor resource compilation failed
-        goto :target_done
+        goto :target_failed
     )
     echo   OK
 )
@@ -297,12 +297,16 @@ if "%T_OS%"=="win64" (
 REM --- CLI: ChameleonDrummer ---
 echo.
 echo [CLI] ChameleonDrummer...
-pushd "%ROOT%" || (echo ERROR: pushd failed & exit /b 1)
+pushd "%ROOT%"
+if errorlevel 1 (
+    echo   ERROR: pushd failed
+    goto :target_failed
+)
 "%CC%" %CC_FLAGS% -FE"%TD%" ChameleonDrummer.lpr
 if errorlevel 1 (
     echo   ERROR: ChameleonDrummer CLI build failed
     popd
-    goto :target_done
+    goto :target_failed
 )
 popd
 echo   OK
@@ -311,12 +315,16 @@ REM --- CLI: midi_to_tab ---
 echo.
 echo [CLI] midi_to_tab...
 if not exist "%TD%\tools" mkdir "%TD%\tools"
-pushd "%ROOT%" || (echo ERROR: pushd failed & exit /b 1)
+pushd "%ROOT%"
+if errorlevel 1 (
+    echo   ERROR: pushd failed
+    goto :target_failed
+)
 "%CC%" %CC_FLAGS% -FE"%TD%\tools" "tools\midi_to_tab.lpr"
 if errorlevel 1 (
     echo   ERROR: midi_to_tab CLI build failed
     popd
-    goto :target_done
+    goto :target_failed
 )
 popd
 echo   OK
@@ -327,7 +335,7 @@ echo [GUI] chameleondrummer_gui...
 "%LAZBUILD%" --os=%T_OS% --cpu=%T_CPU% --ws=%T_WS% --build-all "%ROOT%\gui\chameleondrummer_gui.lpi"
 if errorlevel 1 (
     echo   ERROR: chameleondrummer_gui build failed
-    goto :target_done
+    goto :target_failed
 )
 echo   OK
 
@@ -337,7 +345,7 @@ echo [GUI] step_editor...
 "%LAZBUILD%" --os=%T_OS% --cpu=%T_CPU% --ws=%T_WS% --build-all "%ROOT%\tools\step_editor\step_editor.lpi"
 if errorlevel 1 (
     echo   ERROR: step_editor build failed
-    goto :target_done
+    goto :target_failed
 )
 echo   OK
 
@@ -444,8 +452,17 @@ if "%T_OS%"=="darwin" (
     call :make_app_bundle "%TD%\tools" "step_editor" "StepEditor"
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
-    pushd "%OUT_ROOT%" || (echo ERROR: pushd failed & exit /b 1)
+    pushd "%OUT_ROOT%"
+    if errorlevel 1 (
+        echo   ERROR: pushd failed
+        goto :target_failed
+    )
     "%TAR%" -czf "ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz" "%T_NAME%"
+    if errorlevel 1 (
+        echo   ERROR: tar packaging failed
+        popd
+        goto :target_failed
+    )
     popd
     echo   OK: ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz
 ) else if "%T_OS%"=="win64" (
@@ -457,16 +474,22 @@ if "%T_OS%"=="darwin" (
         copy /y "%TD%\tools\midi_to_tab.exe" "%ROOT%\tools\midi_to_tab.exe" >nul 2>&1
         copy /y "%TD%\tools\step_editor.exe" "%ROOT%\tools\step_editor.exe" >nul 2>&1
         echo   Running Inno Setup compiler...
-        pushd "%ROOT%\installer" || (echo ERROR: pushd failed & exit /b 1)
+        pushd "%ROOT%\installer"
+        if errorlevel 1 (
+            echo   ERROR: pushd failed
+            popd
+            goto :target_failed
+        )
         "%ISCC%" /Q /dMyAppId="%NEW_GUID%" /dMyAppName="%APP_NAME%" /dMyAppVersion="!DETECTED_VERSION!" /dMyExeName="%EXE_FILE%" /dMyAppPublisher="!EXTRACTED_COMPANY!" installer.iss
         if errorlevel 1 (
-            echo   WARNING: Inno Setup compiler returned error
-        ) else (
-            echo   OK: Installer created
-            if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
-            copy /y "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" "%ROOT%\Deploy\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" >nul 2>&1
-            del /q "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" 2>nul
+            echo   ERROR: Inno Setup compiler returned error
+            popd
+            goto :target_failed
         )
+        echo   OK: Installer created
+        if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
+        copy /y "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" "%ROOT%\Deploy\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" >nul 2>&1
+        del /q "%ROOT%\%APP_NAME%_Setup_!DETECTED_VERSION!.exe" 2>nul
         popd
     ) else (
         echo   SKIP: Inno Setup compiler not found
@@ -476,11 +499,15 @@ if "%T_OS%"=="darwin" (
 
 echo.
 echo [%T_NAME%] complete.
+set "RESULT_%T_NAME%=OK"
 goto :target_done
 
 :target_failed
 echo.
 echo *** TARGET %T_NAME% FAILED ***
+set "RESULT_%T_NAME%=FAIL"
+popd 2>nul
+goto :eof
 
 :target_done
 popd 2>nul
