@@ -238,12 +238,12 @@ if not exist "%TD%\tools" mkdir "%TD%\tools"
 
 REM --- Clean previous build artifacts ---
 echo [Clean] Removing previous build artifacts...
-del /q "%ROOT%\*.o" "%ROOT%\*.ppu" "%ROOT%\*.exe" 2>nul
+del /q "%ROOT%\*.o" "%ROOT%\*.ppu" "%ROOT%\*.exe" "%ROOT%\*.res" 2>nul
 rmdir /s /q "%ROOT%\chameleondrummer_gui.app" 2>nul
-del /q "%ROOT%\gui\*.o" "%ROOT%\gui\*.ppu" "%ROOT%\gui\*.exe" 2>nul
+del /q "%ROOT%\gui\*.o" "%ROOT%\gui\*.ppu" "%ROOT%\gui\*.exe" "%ROOT%\gui\*.res" 2>nul
 del /q "%ROOT%\gui\lib\*.o" "%ROOT%\gui\lib\*.ppu" 2>nul
-del /q "%ROOT%\tools\*.o" "%ROOT%\tools\*.ppu" "%ROOT%\tools\*.exe" 2>nul
-del /q "%ROOT%\tools\step_editor\*.o" "%ROOT%\tools\step_editor\*.ppu" "%ROOT%\tools\step_editor\*.exe" 2>nul
+del /q "%ROOT%\tools\*.o" "%ROOT%\tools\*.ppu" "%ROOT%\tools\*.exe" "%ROOT%\tools\*.res" 2>nul
+del /q "%ROOT%\tools\step_editor\*.o" "%ROOT%\tools\step_editor\*.ppu" "%ROOT%\tools\step_editor\*.exe" "%ROOT%\tools\step_editor\*.res" 2>nul
 del /q "%ROOT%\tools\step_editor\lib\*.o" "%ROOT%\tools\step_editor\lib\*.ppu" 2>nul
 del /q "%ROOT%\src\*.o" "%ROOT%\src\*.ppu" 2>nul
 
