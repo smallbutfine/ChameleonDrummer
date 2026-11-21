@@ -456,8 +456,20 @@ set "TD=%OUT_ROOT%\%T_NAME%"
 
 if "%T_OS%"=="darwin" (
     echo [Pkg] Creating macOS .app bundles...
+    REM The CLI is built into %TD% (not into the bundle), so stage it where
+    REM :make_app_bundle expects to find it before building the GUI bundle.
+    if exist "%TD%\ChameleonDrummer" (
+        copy /y "%TD%\ChameleonDrummer" "%TD%\chameleondrummer_gui" >nul 2>&1
+    ) else if exist "%TD%\ChameleonDrummer.exe" (
+        copy /y "%TD%\ChameleonDrummer.exe" "%TD%\chameleondrummer_gui" >nul 2>&1
+    )
     call :make_app_bundle "%TD%" "chameleondrummer_gui" "ChameleonDrummer"
     call :make_app_bundle "%TD%\tools" "step_editor" "StepEditor"
+    REM step_editor.app must live beside the other tools, not inside tools\.
+    if exist "%TD%\tools\step_editor.app" (
+        move /y "%TD%\tools\step_editor.app" "%TD%\step_editor.app" >nul 2>&1
+        echo   moved step_editor.app to bundle root
+    )
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
     pushd "%OUT_ROOT%"
@@ -573,33 +585,44 @@ copy /y "%BUNDLE_DIR%\NAME" "%RES_DIR%\NAME" >nul 2>nul
 REM Create PkgInfo
 echo APPL???? > "%APP_BUNDLE%\Contents\PkgInfo"
 
+REM The plist is written with delayed expansion DISABLED on purpose: with it
+REM enabled, the "!DOCTYPE" sequence has its "!" swallowed and the "//" in the
+REM DTD URL gets mangled, producing a malformed Info.plist.
 set "PLIST_FILE=%APP_BUNDLE%\Contents\Info.plist"
-set "L1=<?xml version="1.0" encoding="UTF-8"?>"
-set "L2=<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com">"
-set "L3=<plist version="1.0">"
-set "L4=<dict>"
-set "L5=  <key>CFBundleName</key>"
-set "L6=  <string>%DISPLAY_NAME%</string>"
-set "L7=  <key>CFBundleExecutable</key>"
-set "L8=  <string>%BUNDLE_EXE%</string>"
-set "L9=  <key>CFBundleIdentifier</key>"
-set "L10=  <string>com.chameleondrummer.%BUNDLE_EXE%</string>"
-set "L11=  <key>CFBundleInfoDictionaryVersion</key>"
-set "L12=  <string>6.0</string>"
-set "L13=  <key>CFBundlePackageType</key>"
-set "L14=  <string>APPL</string>"
-set "L15=  <key>CFBundleSignature</key>"
-set "L16=  <string>????</string>"
-set "L17=  <key>LSRequiresCarbon</key>"
-set "L18=  <false/>"
-set "L19=  <key>NSHighResolutionCapable</key>"
-set "L20=  <true/>"
-set "L21=</dict>"
-set "L22=</plist>"
-
+setlocal disabledelayedexpansion
 (
-    for /L %%i in (1,1,22) do echo !L%%i!
+    echo ^<?xml version="1.0" encoding="UTF-8"?^>
+    echo ^<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com"^>
+    echo ^<plist version="1.0"^>
+    echo ^<dict^>
+    echo   ^<key^>CFBundleName^</key^>
+    echo   ^<string^>%DISPLAY_NAME%^</string^>
+    echo   ^<key^>CFBundleExecutable^</key^>
+    echo   ^<string^>%BUNDLE_EXE%^</string^>
+    echo   ^<key^>CFBundleIdentifier^</key^>
+    echo   ^<string^>com.chameleondrummer.%BUNDLE_EXE%^</string^>
+    echo   ^<key^>CFBundleInfoDictionaryVersion^</key^>
+    echo   ^<string^>6.0^</string^>
+    echo   ^<key^>CFBundlePackageType^</key^>
+    echo   ^<string^>APPL^</string^>
+    echo   ^<key^>CFBundleSignature^</key^>
+    echo   ^<string^>????^</string^>
+    echo   ^<key^>CFBundleShortVersionString^</key^>
+    echo   ^<string^>%DETECTED_VERSION%^</string^>
+    echo   ^<key^>CFBundleVersion^</key^>
+    echo   ^<string^>%DETECTED_VERSION%^</string^>
+    echo   ^<key^>LSMinimumSystemVersion^</key^>
+    echo   ^<string^>10.13^</string^>
+    echo   ^<key^>LSRequiresCarbon^</key^>
+    echo   ^<false/^>
+    echo   ^<key^>NSHighResolutionCapable^</key^>
+    echo   ^<true/^>
+    echo   ^<key^>NSPrincipalClass^</key^>
+    echo   ^<string^>NSApplication^</string^>
+    echo ^</dict^>
+    echo ^</plist^>
 ) > "%PLIST_FILE%"
+endlocal
 
 echo   OK: %BUNDLE_EXE%.app
 goto :eof
