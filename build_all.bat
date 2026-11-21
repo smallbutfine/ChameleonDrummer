@@ -248,9 +248,13 @@ del /q "%ROOT%\tools\step_editor\lib\*.o" "%ROOT%\tools\step_editor\lib\*.ppu" 2
 del /q "%ROOT%\src\*.o" "%ROOT%\src\*.ppu" 2>nul
 
 REM --- Select compiler ---
+REM NOTE: CC_FLAGS intentionally holds no filesystem paths. The -Fu"%ROOT%\src"
+REM include path is appended at each compile call site so that ROOT is expanded
+REM normally (not stored in a variable), which keeps special characters such as
+REM '&' intact.
 if "%COMPILER%"=="native" (
     set "CC=%FPC%"
-    set "CC_FLAGS=-O2 -Fu"%ROOT%\src""
+    set "CC_FLAGS=-O2"
 ) else (
     if "%T_CPU%"=="x86_64" (
         set "CC=%FPC_DIR%\ppcrossx64.exe"
@@ -261,7 +265,7 @@ if "%COMPILER%"=="native" (
     ) else (
         set "CC=%FPC_DIR%\ppcross%T_CPU%.exe"
     )
-    set "CC_FLAGS=-T%T_OS% -P%T_CPU% -O2 -Fu"%ROOT%\src" %XP_PREFIX% %EXTRA_FLAGS%"
+    set "CC_FLAGS=-T%T_OS% -P%T_CPU% -O2 %XP_PREFIX% %EXTRA_FLAGS%"
     if "%T_OS%"=="darwin" set "PATH=%CROSS_BIN_DIR%\all-apple\bin;%PATH%"
     if "%T_OS%"=="linux" set "PATH=%CROSS_BIN_DIR%\%T_OS%-%T_CPU%;%PATH%"
 )
@@ -306,7 +310,7 @@ if errorlevel 1 (
     echo   ERROR: pushd failed
     goto :target_failed
 )
-"%CC%" %CC_FLAGS% -FE"%TD%" ChameleonDrummer.lpr
+"%CC%" %CC_FLAGS% -Fu"%ROOT%\src" -FE"%TD%" ChameleonDrummer.lpr
 if errorlevel 1 (
     echo   ERROR: ChameleonDrummer CLI build failed
     popd
@@ -324,7 +328,7 @@ if errorlevel 1 (
     echo   ERROR: pushd failed
     goto :target_failed
 )
-"%CC%" %CC_FLAGS% -FE"%TD%\tools" "tools\midi_to_tab.lpr"
+"%CC%" %CC_FLAGS% -Fu"%ROOT%\src" -FE"%TD%\tools" "tools\midi_to_tab.lpr"
 if errorlevel 1 (
     echo   ERROR: midi_to_tab CLI build failed
     popd
