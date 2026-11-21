@@ -527,10 +527,10 @@ REM Args: %1 = bundle directory, %2 = executable name, %3 = bundle display name
 REM ============================================================
 :make_app_bundle
 set "BUNDLE_DIR=%~1"
-set "APP_NAME=%~2"
+set "BUNDLE_EXE=%~2"
 set "DISPLAY_NAME=%~3"
 
-set "APP_BUNDLE=%BUNDLE_DIR%\%APP_NAME%.app"
+set "APP_BUNDLE=%BUNDLE_DIR%\%BUNDLE_EXE%.app"
 set "MACOS_DIR=%APP_BUNDLE%\Contents\MacOS"
 set "RES_DIR=%APP_BUNDLE%\Contents\Resources"
 
@@ -538,10 +538,10 @@ if not exist "%MACOS_DIR%" mkdir "%MACOS_DIR%"
 if not exist "%RES_DIR%" mkdir "%RES_DIR%"
 
 REM Copy GUI executable into MacOS folder
-if exist "%BUNDLE_DIR%\%APP_NAME%" (
-    copy /y "%BUNDLE_DIR%\%APP_NAME%" "%MACOS_DIR%\%APP_NAME%" 2>nul
-) else if exist "%BUNDLE_DIR%\%APP_NAME%.exe" (
-    copy /y "%BUNDLE_DIR%\%APP_NAME%.exe" "%MACOS_DIR%\%APP_NAME%" 2>nul
+if exist "%BUNDLE_DIR%\%BUNDLE_EXE%" (
+    copy /y "%BUNDLE_DIR%\%BUNDLE_EXE%" "%MACOS_DIR%\%BUNDLE_EXE%" 2>nul
+) else if exist "%BUNDLE_DIR%\%BUNDLE_EXE%.exe" (
+    copy /y "%BUNDLE_DIR%\%BUNDLE_EXE%.exe" "%MACOS_DIR%\%BUNDLE_EXE%" 2>nul
 )
 
 REM Copy CLI executable into MacOS folder (if present)
@@ -581,9 +581,9 @@ set "L4=<dict>"
 set "L5=  <key>CFBundleName</key>"
 set "L6=  <string>%DISPLAY_NAME%</string>"
 set "L7=  <key>CFBundleExecutable</key>"
-set "L8=  <string>%APP_NAME%</string>"
+set "L8=  <string>%BUNDLE_EXE%</string>"
 set "L9=  <key>CFBundleIdentifier</key>"
-set "L10=  <string>com.chameleondrummer.%APP_NAME%</string>"
+set "L10=  <string>com.chameleondrummer.%BUNDLE_EXE%</string>"
 set "L11=  <key>CFBundleInfoDictionaryVersion</key>"
 set "L12=  <string>6.0</string>"
 set "L13=  <key>CFBundlePackageType</key>"
@@ -601,7 +601,7 @@ set "L22=</plist>"
     for /L %%i in (1,1,22) do echo !L%%i!
 ) > "%PLIST_FILE%"
 
-echo   OK: %APP_NAME%.app
+echo   OK: %BUNDLE_EXE%.app
 goto :eof
 
 REM ============================================================
