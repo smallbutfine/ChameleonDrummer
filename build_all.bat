@@ -60,7 +60,8 @@ set /a PATCH=%PATCH% + 1
 set "DETECTED_VERSION=!MAJOR!.!MINOR!.!PATCH!"
 set "VERSION_COMMAS=!MAJOR!,!MINOR!,!PATCH!"
 
-del /q "%ROOT%\Dist"
+REM --- Clean previous output directory (del cannot remove a directory) ---
+if exist "%ROOT%\dist" rmdir /s /q "%ROOT%\dist"
 
 echo !MAJOR!.!MINOR!.!PATCH! > "%ROOT%\Assets\version.txt"
 
