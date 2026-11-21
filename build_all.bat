@@ -9,14 +9,18 @@ REM Output goes to dist\<target>\
 REM ============================================================
 
 set "ROOT=%CD%"
-set "FPC_DIR=C:\fpcupdeluxe\fpc\bin\i386-win32"
-set "LAZBUILD=C:\fpcupdeluxe\lazarus\lazbuild.exe"
+
+REM --- Toolchain paths (override via environment variables if needed) ---
+if not defined FPC_DIR set "FPC_DIR=C:\fpcupdeluxe\fpc\bin\i386-win32"
+if not defined LAZBUILD set "LAZBUILD=C:\fpcupdeluxe\lazarus\lazbuild.exe"
+if not defined CROSS_BIN_DIR set "CROSS_BIN_DIR=C:\fpcupdeluxe\cross\bin"
 set "FPC=%FPC_DIR%\fpc.exe"
 set "OUT_ROOT=%ROOT%\dist"
-set "CROSS_BIN_DIR=C:\fpcupdeluxe\cross\bin"
-set "ISCC=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
-if not exist "%ISCC%" set "ISCC=%ProgramFiles%\Inno Setup 6\ISCC.exe"
-set "TAR=tar"
+if not defined ISCC (
+    set "ISCC=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+    if not exist "!ISCC!" set "ISCC=%ProgramFiles%\Inno Setup 6\ISCC.exe"
+)
+if not defined TAR set "TAR=tar"
 set "APP_NAME=ChameleonDrummer"
 set "EXE_FILE=ChameleonDrummer.exe"
 
