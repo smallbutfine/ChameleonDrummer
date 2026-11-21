@@ -414,40 +414,40 @@ echo [Files] Copying support files...
 
 REM mappings (project root, not src/)
 if not exist "%TD%\mappings" mkdir "%TD%\mappings"
-copy /y "%ROOT%\mappings\*.json" "%TD%\mappings\"
+call :copy_glob "%ROOT%\mappings\*.json" "%TD%\mappings\" "mappings"
 
 REM Assets/GMD
 if not exist "%TD%\Assets\GMD" mkdir "%TD%\Assets\GMD"
-copy /y "%ROOT%\Assets\GMD\*" "%TD%\Assets\GMD\"
+call :copy_glob "%ROOT%\Assets\GMD\*" "%TD%\Assets\GMD\" "Assets/GMD"
 
 REM Ardour lua
 if not exist "%TD%\ardour" mkdir "%TD%\ardour"
-copy /y "%ROOT%\ardour\*.lua" "%TD%\ardour\"
+call :copy_glob "%ROOT%\ardour\*.lua" "%TD%\ardour\" "ardour"
 
 REM Config root
 if not exist "%TD%\config" mkdir "%TD%\config"
-copy /y "%ROOT%\config\*.ini" "%TD%\config\"
-copy /y "%ROOT%\config\*.json" "%TD%\config\"
-copy /y "%ROOT%\config\*.txt" "%TD%\config\"
+call :copy_glob "%ROOT%\config\*.ini" "%TD%\config\" "config/*.ini"
+call :copy_glob "%ROOT%\config\*.json" "%TD%\config\" "config/*.json"
+call :copy_glob "%ROOT%\config\*.txt" "%TD%\config\" "config/*.txt"
 
 REM Config subdirs
 if not exist "%TD%\config\grooves" mkdir "%TD%\config\grooves"
-copy /y "%ROOT%\config\grooves\*.tab" "%TD%\config\grooves\"
+call :copy_glob "%ROOT%\config\grooves\*.tab" "%TD%\config\grooves\" "config/grooves"
 
 if not exist "%TD%\config\fills" mkdir "%TD%\config\fills"
-copy /y "%ROOT%\config\fills\*.tab" "%TD%\config\fills\"
+call :copy_glob "%ROOT%\config\fills\*.tab" "%TD%\config\fills\" "config/fills"
 
 if not exist "%TD%\config\defaults" mkdir "%TD%\config\defaults"
-copy /y "%ROOT%\config\defaults\*.ini" "%TD%\config\defaults\"
+call :copy_glob "%ROOT%\config\defaults\*.ini" "%TD%\config\defaults\" "config/defaults"
 
 if not exist "%TD%\config\sections" mkdir "%TD%\config\sections"
-copy /y "%ROOT%\config\sections\*.json" "%TD%\config\sections\"
+call :copy_glob "%ROOT%\config\sections\*.json" "%TD%\config\sections\" "config/sections"
 
 REM Root docs
-copy /y "%ROOT%\LICENSE" "%TD%\"
-copy /y "%ROOT%\README.md" "%TD%\"
-copy /y "%ROOT%\CONTRIBUTING.md" "%TD%\"
-copy /y "%ROOT%\NAME" "%TD%\"
+call :copy_glob "%ROOT%\LICENSE" "%TD%\" "LICENSE"
+call :copy_glob "%ROOT%\README.md" "%TD%\" "README.md"
+call :copy_glob "%ROOT%\CONTRIBUTING.md" "%TD%\" "CONTRIBUTING.md"
+call :copy_glob "%ROOT%\NAME" "%TD%\" "NAME"
 set "TD=%OUT_ROOT%\%T_NAME%"
 
 if "%T_OS%"=="darwin" (
@@ -598,6 +598,26 @@ set "L22=</plist>"
 ) > "%PLIST_FILE%"
 
 echo   OK: %APP_NAME%.app
+goto :eof
+
+REM ============================================================
+REM Helper: copy a file/glob, warning instead of failing silently
+REM Args: %1 = source (file or glob), %2 = destination dir, %3 = label
+REM ============================================================
+:copy_glob
+set "SRC=%~1"
+set "DST=%~2"
+set "LABEL=%~3"
+if not exist "%SRC%" (
+    echo   WARNING: missing %LABEL% - no files matched "%SRC%"
+    goto :eof
+)
+copy /y "%SRC%" "%DST%" >nul
+if errorlevel 1 (
+    echo   WARNING: failed to copy %LABEL% from "%SRC%"
+) else (
+    echo   OK: %LABEL%
+)
 goto :eof
 
 REM ============================================================
