@@ -26,7 +26,11 @@ jobs:
         run: |
           choco install innosetup -y --no-progress
           choco install freepascal -y --no-progress
-          # Verify bootstrap fpc is in PATH
+          # The chocolatey install updates PATH but the current shell
+          # does not see it. Add the FPC bin dir manually and persist
+          # it for subsequent steps.
+          echo "/c/tools/freepascal/bin/i386-win32" >> "$GITHUB_PATH"
+          export PATH="/c/tools/freepascal/bin/i386-win32:$PATH"
           fpc -iV
 
       # ---------------------------------------------------------------
