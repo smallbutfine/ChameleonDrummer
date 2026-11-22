@@ -234,6 +234,27 @@ Archive paths are relative to the bundle's parent, so extracting yields
 Verified: both zips contain 55 entries (matching the bundle), store `0755` for
 all four executables, and `bsdtar -tvf` reports `-rwxr-xr-x`.
 
+## Follow-up: exec bit in the Linux tarballs (2026-11-22)
+
+The Linux `.tar.gz` packages had the same root cause: a plain `tar -czf` stored
+every binary as `0644`, so `ChameleonDrummer`, `chameleondrummer_gui`,
+`tools/midi_to_tab` and `tools/step_editor` were not executable after
+extraction.
+
+Fixed by building the archive in two passes over an uncompressed tar and
+globally re-adding the four executables with `--mode='u=rwx,go=rx'`
+(`--mode=u+x` yields `0744`, which works but is not the conventional `0755`).
+
+GNU tar constraints found while doing this:
+
+- It reads `C:/...` as a remote host (`Cannot connect to C:`), so the temp
+  archive path must be POSIX-style (`/tmp/...`).
+- It cannot append to a `.tar.gz`, hence the two-pass + `gzip` approach.
+- `cmd.exe`'s `move` cannot handle `/tmp` sources - use `cp` from Git Bash.
+
+Verified: 172 files per tarball, exactly 4 executables, all `0o755`; both targets
+correct (x86-64 and ARM EABI5).
+
 ---
 
 ## Notes / decisions log

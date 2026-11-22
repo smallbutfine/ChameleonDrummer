@@ -83,6 +83,14 @@ winning a `move`. The real fix was two lines in the build script.
   has no executable bit, so both store the binaries as `0644`/`0666` and they will
   not run after extraction on macOS. Use `tools/zip_app.py`, which writes explicit
   Unix modes (`0755` for `Contents/MacOS/*` and `Contents/Resources/tools/*`).
+- **Linux tarballs need the exec bit forced too.** A plain `tar -czf` stores every
+  binary as `0644`, so the programs will not run after extraction. `build_all.bat`
+  builds the archive in two passes over an uncompressed tar and re-adds the four
+  executables with `--mode='u=rwx,go=rx'`.
+- **GNU tar quirks on this host:** it reads `C:/...` as a remote host and fails with
+  `Cannot connect to C:` - use POSIX paths (`/tmp/...`) for its `-f` argument. It
+  also cannot append to a `.tar.gz`, hence the two-pass + `gzip` approach. Use `cp`
+  (Git Bash) rather than `move` when the source is a `/tmp` path.
 
 ---
 

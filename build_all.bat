@@ -541,14 +541,45 @@ if "%T_OS%"=="darwin" (
         echo   ERROR: pushd failed
         goto :target_failed
     )
-    "%TAR%" -czf "ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz" "%T_NAME%"
+    REM Windows/NTFS has no executable bit, so a plain tar stores every binary as
+    REM 0644 and the programs will not run after extraction on Linux. Build the
+    REM archive in two passes over an uncompressed tar: everything first, then the
+    REM executables with --mode=u+x. (GNU tar cannot append to a .tar.gz.)
+    set "PKG=ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz"
+    REM NOTE: use a POSIX-style temp path. GNU tar (first on PATH in Git Bash)
+    REM reads "C:/..." as a remote host and fails with "Cannot connect to C:".
+    set "TARBALL=/tmp/chameleondrummer_%T_NAME%.tar"
+    tar -cf "!TARBALL!" --exclude="%T_NAME%/ChameleonDrummer" --exclude="%T_NAME%/chameleondrummer_gui" --exclude="%T_NAME%/tools/midi_to_tab" --exclude="%T_NAME%/tools/step_editor" "%T_NAME%"
     if errorlevel 1 (
         echo   ERROR: tar packaging failed
         popd
         goto :target_failed
     )
+    tar -rf "!TARBALL!" --mode='u=rwx,go=rx' "%T_NAME%/ChameleonDrummer" "%T_NAME%/chameleondrummer_gui" "%T_NAME%/tools/midi_to_tab" "%T_NAME%/tools/step_editor"
+    if errorlevel 1 (
+        echo   ERROR: tar packaging failed
+        rm -f "!TARBALL!"
+        popd
+        goto :target_failed
+    )
+    gzip -f "!TARBALL!"
+    if errorlevel 1 (
+        echo   ERROR: tar packaging failed
+        rm -f "!TARBALL!.gz"
+        popd
+        goto :target_failed
+    )
+    REM Use cp (Git Bash), not move: cmd.exe's move cannot handle POSIX /tmp paths.
+    cp -f "!TARBALL!.gz" "!PKG!"
+    if errorlevel 1 (
+        echo   ERROR: tar packaging failed
+        rm -f "!TARBALL!.gz"
+        popd
+        goto :target_failed
+    )
+    rm -f "!TARBALL!.gz"
     popd
-    echo   OK: ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz
+    echo   OK: !PKG!
 ) else if "%T_OS%"=="win64" (
     echo [Pkg] Windows installer...
     if exist "%ISCC%" (
