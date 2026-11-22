@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonDrummer — Command Line Reference</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="concepts.html">Concepts</a>
+      <a href="docs.html">Manual</a>
+      <a href="cli.html">CLI</a>
+      <a href="download.html">Download</a>
+      <a href="de/index.html">DE</a>
+      <a href="es/index.html">ES</a>
+      <a href="fr/index.html">FR</a>
+      <a href="pt/index.html">PT</a>
+      <a href="ru/index.html">RU</a>
+      <a href="zh/index.html">ZH</a>
+    </nav>
+  </div>
+</header>
+
+<section class="docs-section">
+  <div class="container">
+    <h2>Command Line Reference</h2>
+    <p>The <code>ChameleonDrummer</code> executable is the full engine without a
+    GUI. It is the fastest way to generate, script and batch-process drum
+    tracks, and it is what the GUI and the DAW panels call under the hood.</p>
+
+    <div class="quick-reference">
+      <h3>Quick start</h3>
+      <pre>chameleondrummer generate --genre rock --style classic --tempo 120 --output song.mid
+chameleondrummer list genres
+chameleondrummer list styles --genre jazz
+chameleondrummer list drummers</pre>
+    </div>
+
+    <div class="pattern-format">
+      <h3>Commands</h3>
+      <table>
+        <thead>
+          <tr><th>Command</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>generate</code></td><td>Generate a complete song (multi-bar arrangement)</td></tr>
+          <tr><td><code>pattern</code></td><td>Generate a single 1–4 bar pattern</td></tr>
+          <tr><td><code>list</code></td><td>List genres, styles, drummers or mappings</td></tr>
+          <tr><td><code>info</code></td><td>Show version and capability information</td></tr>
+          <tr><td><code>reaper export</code></td><td>Write a REAPER <code>.rpp</code> project</td></tr>
+          <tr><td><code>ardour export</code></td><td>Write an Ardour <code>.ardour</code> session</td></tr>
+          <tr><td><code>additive-rhythm</code></td><td>Generate additive rhythm patterns from a grouping</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Options</h3>
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--genre &lt;name&gt;</code></td><td>metal, rock, jazz, funk, electronic</td></tr>
+          <tr><td><code>--style &lt;name&gt;</code></td><td>Style within the genre (see the style list below)</td></tr>
+          <tr><td><code>--drummer &lt;name&gt;</code></td><td>Drummer whose feel is imitated, e.g. bonham, porcaro, weckl</td></tr>
+          <tr><td><code>--tempo &lt;bpm&gt;</code></td><td>Tempo in BPM (default: the genre/style value)</td></tr>
+          <tr><td><code>--complexity &lt;0-1&gt;</code></td><td>Pattern complexity (default 0.5)</td></tr>
+          <tr><td><code>--humanization &lt;0-1&gt;</code></td><td>Humanization intensity (default 0.3)</td></tr>
+          <tr><td><code>--swing &lt;0-1&gt;</code></td><td>Swing feel: 0 straight, 0.67 classic 2:1, 1 = 3:1</td></tr>
+          <tr><td><code>--time-sig &lt;n/d&gt;</code></td><td>Meter of the song, e.g. <code>3/4</code>, <code>7/8</code>, <code>13/8</code></td></tr>
+          <tr><td><code>--time-sig &lt;n/d&gt;T</code></td><td>Meter with triplet feel, e.g. <code>4/4T</code>, <code>7/8T</code></td></tr>
+          <tr><td><code>--strict-meter</code></td><td>Only use patterns that match <code>--time-sig</code></td></tr>
+          <tr><td><code>--section &lt;n:bars[@bpm]&gt;</code></td><td>One song section; repeat in order</td></tr>
+          <tr><td><code>--segment &lt;n:bars:bpm:n/d&gt;</code></td><td>A section with its own tempo and meter; <code>-</code> for bpm keeps the song tempo</td></tr>
+          <tr><td><code>--structure &lt;file&gt;</code></td><td>Song structure from JSON (sections with bars, tempo, complexity)</td></tr>
+          <tr><td><code>--sidecar &lt;file&gt;</code></td><td>Same as <code>--structure</code>; the REAPER sidecar format works</td></tr>
+          <tr><td><code>--song-map &lt;file&gt;</code></td><td>Per-bar tempo/meter map as JSON</td></tr>
+          <tr><td><code>--mapping &lt;name&gt;</code></td><td>Keymap: <code>gm</code> (default), <code>ad2</code>, <code>ezd3</code>, <code>xg</code></td></tr>
+          <tr><td><code>--output &lt;file&gt;</code></td><td>Output MIDI file path</td></tr>
+          <tr><td><code>--reaper</code>, <code>--ardour</code></td><td>With <code>generate</code>: also write <code>&lt;output&gt;.rpp</code> / the <code>&lt;output&gt;.ardour</code> session</td></tr>
+          <tr><td><code>--write-timeline</code></td><td>Write a timeline JSON after generation</td></tr>
+          <tr><td><code>--list &lt;type&gt;</code></td><td>List genres, styles, drummers or mappings</td></tr>
+          <tr><td><code>--json</code></td><td>Machine-readable JSON output for <code>list</code></td></tr>
+          <tr><td><code>--grouping &lt;str&gt;</code></td><td>Additive grouping, e.g. <code>3-3-3-3-2-2</code> (with <code>additive-rhythm</code>)</td></tr>
+          <tr><td><code>--grid &lt;n&gt;</code></td><td>Grid resolution for <code>additive-rhythm</code> (4, 8, 16, 32)</td></tr>
+          <tr><td><code>--drummer-intensity &lt;0-1&gt;</code></td><td>Drummer intensity for <code>additive-rhythm</code></td></tr>
+          <tr><td><code>--help</code>, <code>-h</code></td><td>Show the built-in help</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Examples</h3>
+      <pre># A doom-metal song at 75 BPM with Hoglan's style
+chameleondrummer generate --genre metal --style doom --tempo 75 --drummer hoglan
+
+# Rock in 7/8 with an Addictive Drums 2 keymap
+chameleondrummer generate --genre rock --style classic --time-sig 7/8 --mapping ad2
+
+# Per-section tempo and meter changes
+chameleondrummer generate --genre jazz --style fusion \
+  --section intro:4 --section verse:8@120 --segment bridge:4:-:7/8
+
+# A single 2-bar pattern instead of a full song
+chameleondrummer pattern --genre funk --style classic --drummer porcaro
+
+# Also write a REAPER project and an Ardour session
+chameleondrummer generate --genre metal --style thrash --reaper --ardour --output song.mid
+
+# Additive rhythm pattern (3-3-3-3-2-2 over 16 steps)
+chameleondrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 --output additive.mid
+
+# Machine-readable output for scripting
+chameleondrummer list genres --json</pre>
+
+      <h3>Available styles</h3>
+      <table>
+        <thead>
+          <tr><th>Genre</th><th>Styles</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>metal</td><td>heavy, death, power, progressive, thrash, doom, breakdown, metal</td></tr>
+          <tr><td>rock</td><td>classic, blues, alternative, progressive, punk, hard, pop, rock</td></tr>
+          <tr><td>jazz</td><td>swing, bebop, fusion, latin, ballad, hard_bop, contemporary, jazz</td></tr>
+          <tr><td>funk</td><td>classic, pfunk, shuffle, new_orleans, fusion, minimal, heavy, funk</td></tr>
+          <tr><td>electronic</td><td>house, techno, drum_and_bass, dubstep, electronic</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Drummers</h3>
+      <p>bonham, porcaro, weckl, chambers, roeder, dee, hoglan, peart, rich,
+      copeland, carey, smith, moon, watts, haake, halpern, doomblues</p>
+
+      <h3>Keymaps</h3>
+      <p><code>gm</code> (General MIDI, default), <code>ad2</code> (Addictive
+      Drums 2), <code>ezd3</code> (EZdrummer 3), <code>xg</code> (Yamaha XG).
+      You can add your own by dropping a JSON file into the <code>mappings</code>
+      folder next to the program — it shows up in <code>list mappings</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="download-section">
+  <div class="container">
+    <h2>Download</h2>
+    <p>Get the latest release from GitHub:</p>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download the latest release</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/manual.html</code> · Pattern format: <code>docs/README.md</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

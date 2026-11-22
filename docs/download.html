@@ -10,11 +10,12 @@
 
 <header>
   <div class="container">
-    <h1>ChameleonDrummer</h1>
+    <h1><span class="logo">◉</span> CHAMELEON<span class="accent">DRUMMER</span></h1>
     <nav>
       <a href="index.html">Home</a>
       <a href="concepts.html">Concepts</a>
       <a href="docs.html">Manual</a>
+      <a href="cli.html">CLI</a>
       <a href="download.html">Download</a>
       <a href="de/index.html">DE</a>
       <a href="es/index.html">ES</a>
@@ -28,36 +29,97 @@
 
 <section class="download-section">
   <div class="container">
-    <h2>Download ChameleonDrummer v1.1.35</h2>
-    <p>ChameleonDrummer is available as compiled executables for Windows. The system is built with Free Pascal and Lazarus, making it lightweight and self-contained.</p>
-    
+    <h2>Download</h2>
+    <p>Prebuilt binaries for Windows, macOS and Linux are attached to every
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest">GitHub Release</a>.
+    Pick the build for your platform below.</p>
+
     <div class="download-options">
       <div class="download-card">
-        <h3>GitHub Release v1.1.35</h3>
-        <p>Download the latest command line interface and graphical user interface executables from the GitHub release page.</p>
-        <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">Download v1.1.35 from GitHub</a>
+        <h3>Windows 64-bit</h3>
+        <p>Installer with the command line tool, the graphical interface, the
+        MIDI&nbsp;→&nbsp;tab converter and the step editor.</p>
+        <p><code>ChameleonDrummer_&lt;version&gt;_Setup.exe</code></p>
+        <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download</a>
+      </div>
+
+      <div class="download-card">
+        <h3>macOS Apple Silicon</h3>
+        <p>Universal app bundle for M1/M2/M3/M4. Contains the GUI, the CLI and
+        both tools.</p>
+        <p><code>chameleondrummer_gui&lt;version&gt;-macos-aarch64.zip</code></p>
+        <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download</a>
+      </div>
+
+      <div class="download-card">
+        <h3>macOS Intel</h3>
+        <p>App bundle for Intel-based Macs.</p>
+        <p><code>chameleondrummer_gui&lt;version&gt;-macos-intel.zip</code></p>
+        <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download</a>
+      </div>
+
+      <div class="download-card">
+        <h3>Linux x86_64</h3>
+        <p>Tarball with all four programs and the config files.</p>
+        <p><code>ChameleonDrummer&lt;version&gt;-linux-x64.tar.gz</code></p>
+        <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download</a>
+      </div>
+
+      <div class="download-card">
+        <h3>Linux ARM</h3>
+        <p>Tarball for ARM64/ARMv7 systems (Raspberry Pi, ARM servers).</p>
+        <p><code>ChameleonDrummer&lt;version&gt;-linux-arm.tar.gz</code></p>
+        <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download</a>
       </div>
     </div>
-    
-    <div class="requirements">
-      <h3>System Requirements</h3>
-      <ul>
-        <li>Windows 10 or later (64-bit)</li>
-        <li>Free Pascal Compiler (FPC) 3.2.2+</li>
-        <li>Lazarus IDE (optional, for development)</li>
-        <li>Minimum 2GB RAM</li>
-      </ul>
-    </div>
-    
+
     <div class="installation">
       <h3>Installation</h3>
-      <p>No installation required. Simply download the executable and run it. The system is self-contained.</p>
-      <p>For development, clone the repository and run:</p>
-      <pre>lazbuild ChameleonDrummer.lpr</pre>
-      <p>or</p>
-      <pre>lazbuild gui/chameleondrummer_gui.lpi</pre>
+
+      <h4>Windows</h4>
+      <p>Run the setup executable. It installs the CLI, the GUI and both tools
+      and adds the install directory to your PATH (optional).</p>
+
+      <h4>macOS</h4>
+      <p>Unzip the archive and drag <code>chameleondrummer_gui.app</code> to
+      <code>/Applications</code>. The app is not code-signed, so the first
+      launch needs one of these:</p>
+      <ul>
+        <li><strong>right-click the app → Open</strong>, then confirm, or</li>
+        <li><code>xattr -dr com.apple.quarantine /Applications/chameleondrummer_gui.app</code></li>
+      </ul>
+      <p>The command line tool and both helpers are inside the bundle at
+      <code>Contents/MacOS</code> and <code>Contents/Resources/tools</code>.</p>
+
+      <h4>Linux</h4>
+      <pre>tar -xzf ChameleonDrummer&lt;version&gt;-linux-x64.tar.gz
+cd linux-x64
+./ChameleonDrummer generate --genre rock --style classic</pre>
+      <p>The tarball preserves the executable bit, so the programs run directly
+      after extraction. No installation step is needed.</p>
     </div>
-    
+
+    <div class="requirements">
+      <h3>Requirements</h3>
+      <ul>
+        <li>Windows 10 or later (64-bit)</li>
+        <li>macOS 10.13 or later (Intel or Apple Silicon)</li>
+        <li>Linux with glibc 2.4+ (x86_64 or ARM)</li>
+        <li>No runtime dependencies — everything is statically linked</li>
+      </ul>
+    </div>
+
+    <div class="installation">
+      <h3>Building from source</h3>
+      <p>You need Free Pascal 3.2.2+ and, for the GUI, Lazarus. To build every
+      target at once (Windows, macOS, Linux) you also need the FPC
+      cross-compilers and Inno Setup 6.</p>
+      <pre>./build_all.bat            # all 5 targets, artifacts in Deploy/
+./build_all.bat --check    # verify the toolchain only</pre>
+      <p>See the <a href="https://github.com/smallbutfine/ChameleonDrummer/blob/main/README.md">README</a>
+      for the full build documentation.</p>
+    </div>
+
     <div class="support">
       <h3>Support</h3>
       <p>For documentation and examples, visit the <a href="docs.html">Documentation</a> section.</p>
@@ -67,7 +129,8 @@
 
 <footer>
   <div class="container">
-    <p>© 2026 ChameleonDrummer Project. All rights reserved.</p>
+    <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/manual.html</code> · Groove format: <code>docs/README.md</code></p>
   </div>
 </footer>
 

@@ -15,6 +15,7 @@
       <a href="index.html">首页</a>
       <a href="concepts.html">概念</a>
       <a href="docs.html">手册</a>
+      <a href="../cli.html">CLI</a>
       <a href="download.html">下载</a>
       <a href="../index.html">EN</a>
       <a href="../de/index.html">DE</a>
@@ -53,7 +54,7 @@
 
     <h2 id="yin-dao">引导</h2>
 
-    <p>ChameleonDrummer 是一个动态 MIDI 鼓生成系统，基于 Free Pascal (FPC) 和 Lazarus Component Library (LCL) 构建。它为 5 种风格（Metal、Rock、Jazz、Funk、Electronic）生成逼真的鼓型，共 32 种风格，以及 17 位鼓手个性。支持多种 MIDI keymap (GM, AD2, EZD3, XG)、从 2/4 到 32/16 的拍号（包括 3/4、5/4、7/8、9/8、11/8、13/8... 等奇数拍）、外部 groove/fill/default 文件、REAPER <code>.rpp</code> 和 Ardour <code>.ardour</code> 会话导出，以及高级人性化、强度曲线和物理可演奏性约束。</p>
+    <p>ChameleonDrummer 是一个动态 MIDI 鼓生成系统，基于 Free Pascal (FPC) 和 Lazarus Component Library (LCL) 构建。它为 5 种风格（Metal、Rock、Jazz、Funk、Electronic）生成逼真的鼓型，共 37 种风格，以及 17 位鼓手个性。支持多种 MIDI keymap (GM, AD2, EZD3, XG)、从 2/4 到 32/16 的拍号（包括 3/4、5/4、7/8、9/8、11/8、13/8... 等奇数拍）、外部 groove/fill/default 文件、REAPER <code>.rpp</code> 和 Ardour <code>.ardour</code> 会话导出，以及高级人性化、强度曲线和物理可演奏性约束。</p>
 
     <p>生成两个可执行文件：</p>
     <ul>
@@ -184,7 +185,7 @@ ChameleonDrummer.exe list mappings</code></pre>
 
     <h3 id="6-groove-yin-qing-codecomposerv2pascode">6. Groove 引擎 (<code>ComposerV2.pas</code>)</h3>
 
-    <p>Groove 从 <code>config/grooves/<genre>.tab</code> 文件加载。每个块声明风格/类型/强度带。引擎每小节选取最佳匹配的 groove。</p>
+    <p>Groove 从 <code>config/grooves/&lt;genre&gt;.tab</code> 文件加载。每个块声明风格/类型/强度带。引擎每小节选取最佳匹配的 groove。</p>
 
     <p><strong>Groove 块格式:</strong></p>
     <pre><code>[style kind intensity=low-high]
@@ -212,7 +213,7 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
     <h3 id="7-fill-xi-tong-codecomposerv2pascode">7. Fill 系统 (<code>ComposerV2.pas</code>)</h3>
 
-    <p>Fill 从 <code>config/fills/<drummer>.tab</code> 加载。每个块声明名称/能量带。引擎在段落边界选取能量匹配小节强度的 fill。</p>
+    <p>Fill 从 <code>config/fills/&lt;drummer&gt;.tab</code> 加载。每个块声明名称/能量带。引擎在段落边界选取能量匹配小节强度的 fill。</p>
 
     <p><strong>Fill 块格式:</strong></p>
     <pre><code>[bonham_fill_short energy=0.3]
@@ -446,7 +447,7 @@ ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 
 
     <h3 id="ming-ling-can-kao">命令参考</h3>
 
-    <pre><code class="lang-bash">Usage: chameleondrummer <command> [options]
+    <pre><code class="lang-bash">Usage: chameleondrummer &lt;command&gt; [options]
 
 Commands:
   generate         Generate a complete song (multi-bar pattern)
@@ -458,33 +459,33 @@ Commands:
   additive-rhythm  Generate additive rhythm patterns
 
 Options:
-  --genre <name>              Genre (metal, rock, jazz, funk, electronic)
-  --style <name>              Style within genre (heavy, classic, swing, ...)
-  --tempo <bpm>               Tempo in BPM (default: genre/style value)
+  --genre &lt;name&gt;              Genre (metal, rock, jazz, funk, electronic)
+  --style &lt;name&gt;              Style within genre (heavy, classic, swing, ...)
+  --tempo &lt;bpm&gt;               Tempo in BPM (default: genre/style value)
   --complexity <0-1>          Pattern complexity (default: 0.5)
   --humanization <0-1>        Humanization intensity (default: 0.3)
   --swing <0-1>               Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
-  --time-sig <n/d>            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --time-sig &lt;n/d&gt;            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
   --strict-meter              Only use patterns matching --time-sig
-  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+  --segment &lt;n:bars:bpm:n/d&gt;  A section with its own tempo and meter, e.g. bridge:4:96:7/8
                               (bpm - keeps the song tempo); mix freely with --section
-  --section <n:bars[@bpm]>    Song structure; repeat once per section, in order
+  --section &lt;n:bars[@bpm]&gt;    Song structure; repeat once per section, in order
                               e.g. --section intro:4 --section verse:8 --section chorus:8@140
                               (without --section the genre default structure is used)
-  --drummer <name>            Drummer style (e.g., bonham, peart, carey)
-  --output <file>             Output MIDI file path
-  --reaper, --ardour          With generate: also write <output>.rpp / the <output>.ardour session
-  --mapping <name>            Keymap to use: gm (default), ad2, ezd3, xg
-  --structure <file>          Song structure from a JSON file (sections with bars, tempo,
+  --drummer &lt;name&gt;            Drummer style (e.g., bonham, peart, carey)
+  --output &lt;file&gt;             Output MIDI file path
+  --reaper, --ardour          With generate: also write &lt;output&gt;.rpp / the &lt;output&gt;.ardour session
+  --mapping &lt;name&gt;            Keymap to use: gm (default), ad2, ezd3, xg
+  --structure &lt;file&gt;          Song structure from a JSON file (sections with bars, tempo,
                               complexity; optional genre, style, tempo). Command-line
                               genre/style/tempo win over the file. Not with --section.
-  --sidecar <file>            Same as --structure (the REAPER sidecar format works)
-  --song-map <file>           Read song map JSON for per-bar tempo/meter
+  --sidecar &lt;file&gt;            Same as --structure (the REAPER sidecar format works)
+  --song-map &lt;file&gt;           Read song map JSON for per-bar tempo/meter
   --write-timeline            Write timeline JSON after generation
-  --list <type>               List: genres, styles, drummers, mappings
+  --list &lt;type&gt;               List: genres, styles, drummers, mappings
   --json                      Output JSON for list commands
-  --grouping <str>            Additive grouping notation (e.g., 3-3-3-3-2-2)
-  --grid <n>                  Grid resolution for additive-rhythm (4, 8, 16, 32)
+  --grouping &lt;str&gt;            Additive grouping notation (e.g., 3-3-3-3-2-2)
+  --grid &lt;n&gt;                  Grid resolution for additive-rhythm (4, 8, 16, 32)
   --drummer-intensity <0-1>   Drummer intensity for additive-rhythm
   --help, -h                  Show this help</code></pre>
 
@@ -526,10 +527,10 @@ Options:
 
     <p>编辑 <code>config/</code> 中的文件：</p>
     <ul>
-      <li><code>config/grooves/<genre>.tab</code> — 添加新 groove, 更改强度带</li>
-      <li><code>config/fills/<drummer>.tab</code> — 添加新 fill, 更改能量级别</li>
-      <li><code>config/defaults/<genre>.ini</code> — 更改默认速度/风格/鼓手</li>
-      <li><code>config/sections/<genre>.json</code> — 更改默认歌曲结构</li>
+      <li><code>config/grooves/&lt;genre&gt;.tab</code> — 添加新 groove, 更改强度带</li>
+      <li><code>config/fills/&lt;drummer&gt;.tab</code> — 添加新 fill, 更改能量级别</li>
+      <li><code>config/defaults/&lt;genre&gt;.ini</code> — 更改默认速度/风格/鼓手</li>
+      <li><code>config/sections/&lt;genre&gt;.json</code> — 更改默认歌曲结构</li>
     </ul>
 
     <p>无需重新编译 — 引擎在运行时读取这些。</p>
@@ -557,14 +558,14 @@ midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</
     <table>
       <tr><th>选项</th><th>说明</th></tr>
       <tr><td><code>--fill</code></td><td>输出 fill 块而非 groove 块</td></tr>
-      <tr><td><code>--name <name></code></td><td>Fill 名称 (默认: <code>fill</code>)</td></tr>
+      <tr><td><code>--name &lt;name&gt;</code></td><td>Fill 名称 (默认: <code>fill</code>)</td></tr>
       <tr><td><code>--energy <0-1></code></td><td>Fill 能量 (默认: 0.5)</td></tr>
-      <tr><td><code>--meter <n/d></code></td><td>拍号覆盖 (默认: MIDI 元或 4/4)</td></tr>
-      <tr><td><code>--resolution <n></code></td><td>每四分音符步数: 4, 8, 16, 32 (默认: 16)</td></tr>
-      <tr><td><code>--mapping <file></code></td><td>Keymap JSON 文件 (默认: 内置 GM map)</td></tr>
-      <tr><td><code>--style <name></code></td><td>Groove 风格名称 (默认: <code>midi</code>)</td></tr>
-      <tr><td><code>--kind <name></code></td><td>Groove 类型: verse/chorus/bridge (默认: <code>verse</code>)</td></tr>
-      <tr><td><code>--intensity <low-high></code></td><td>Groove 强度带 (默认: <code>0.2-0.6</code>)</td></tr>
+      <tr><td><code>--meter &lt;n/d&gt;</code></td><td>拍号覆盖 (默认: MIDI 元或 4/4)</td></tr>
+      <tr><td><code>--resolution &lt;n&gt;</code></td><td>每四分音符步数: 4, 8, 16, 32 (默认: 16)</td></tr>
+      <tr><td><code>--mapping &lt;file&gt;</code></td><td>Keymap JSON 文件 (默认: 内置 GM map)</td></tr>
+      <tr><td><code>--style &lt;name&gt;</code></td><td>Groove 风格名称 (默认: <code>midi</code>)</td></tr>
+      <tr><td><code>--kind &lt;name&gt;</code></td><td>Groove 类型: verse/chorus/bridge (默认: <code>verse</code>)</td></tr>
+      <tr><td><code>--intensity &lt;low-high&gt;</code></td><td>Groove 强度带 (默认: <code>0.2-0.6</code>)</td></tr>
     </table>
 
     <p>输出以 CRLF 行尾写入, 可直接放入 <code>config/grooves/</code> 或 <code>config/fills/</code>。</p>
@@ -695,7 +696,7 @@ HH  x.x.x.x.x.x.x.x
 
     <h3 id="step-editor-bao-cun-mo-shi">保存模式</h3>
 
-    <p><strong>Save Pattern As:</strong> 将当前网格 (或选定区域) 导出为 <code>config/grooves/<style>.tab</code> 或 <code>config/fills/<style>.tab</code> 中的新 <code>.tab</code> 文件, 取决于 Groove/Fill 模式。</p>
+    <p><strong>Save Pattern As:</strong> 将当前网格 (或选定区域) 导出为 <code>config/grooves/&lt;style&gt;.tab</code> 或 <code>config/fills/&lt;style&gt;.tab</code> 中的新 <code>.tab</code> 文件, 取决于 Groove/Fill 模式。</p>
 
     <p><strong>Save Block:</strong> (仅配置文件) 在源文件中手术式更新当前块。</p>
 
@@ -725,15 +726,15 @@ HH  x.x.x.x.x.x.x.x
     <pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
 
 Options:
-  --mapping <file>       Keymap JSON (default: built-in GM)
-  --style <name>         Groove style name
-  --kind <name>          Groove kind (verse, chorus, bridge, intro, outro, fill)
-  --intensity <low-high> Groove intensity band (e.g., 0.2-0.6)
+  --mapping &lt;file&gt;       Keymap JSON (default: built-in GM)
+  --style &lt;name&gt;         Groove style name
+  --kind &lt;name&gt;          Groove kind (verse, chorus, bridge, intro, outro, fill)
+  --intensity &lt;low-high&gt; Groove intensity band (e.g., 0.2-0.6)
   --energy <0-1>         Fill energy level
-  --resolution <n>       Steps per quarter note (4, 8, 16, 32)
-  --meter <n/d>          Time signature (e.g., 4/4, 7/8, 4/4T)
+  --resolution &lt;n&gt;       Steps per quarter note (4, 8, 16, 32)
+  --meter &lt;n/d&gt;          Time signature (e.g., 4/4, 7/8, 4/4T)
   --fill                  Output fill block instead of groove
-  --output <file>         Write tab to file (default: stdout)</code></pre>
+  --output &lt;file&gt;         Write tab to file (default: stdout)</code></pre>
 
     <h3 id="step-editor-jian-yi">提示与最佳实践</h3>
     <ul>
@@ -778,9 +779,9 @@ Options:
 
 <section class="download-section">
   <div class="container">
-    <h2>下载 v1.1.35</h2>
+    <h2>下载</h2>
     <p>从 GitHub 下载最新版本:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">下载 v1.1.35</a>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">下载</a>
   </div>
 </section>
 

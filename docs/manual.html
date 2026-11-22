@@ -15,6 +15,7 @@
       <a href="index.html">Home</a>
       <a href="concepts.html">Concepts</a>
       <a href="docs.html">Manual</a>
+      <a href="cli.html">CLI</a>
       <a href="download.html">Download</a>
       <a href="de/index.html">DE</a>
       <a href="es/index.html">ES</a>
@@ -52,7 +53,7 @@
 
     <h2 id="introduction">Introduction</h2>
 
-    <p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 32 styles total, and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), meters from 2/4 to 32/16 (including odd meters like 3/4, 5/4, 7/8, 9/8, 11/8, 13/8...), external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
+    <p>ChameleonDrummer is a dynamic MIDI drum generation system built in Free Pascal (FPC) with the Lazarus Component Library (LCL). It generates realistic drum patterns for 5 genres (Metal, Rock, Jazz, Funk, Electronic) with 37 styles total, and 17 drummer personalities. It supports multiple MIDI keymaps (GM, AD2, EZD3, XG), meters from 2/4 to 32/16 (including odd meters like 3/4, 5/4, 7/8, 9/8, 11/8, 13/8...), external groove/fill/default files, REAPER <code>.rpp</code> and Ardour <code>.ardour</code> session export, and advanced humanization, intensity curves, and physical playability constraints.</p>
 
     <p>Two executables are produced:</p>
     <ul>
@@ -66,23 +67,66 @@
 
     <h3 id="requirements">Requirements</h3>
     <ul>
-      <li>Windows (primary target; Linux/macOS possible with FPC/LCL)</li>
-      <li>Free Pascal Compiler (FPC) 3.2.2+</li>
-      <li>Lazarus IDE (optional, for graphical user interface development)</li>
-      <li>Free Pascal Compiler (FPC) 3.2.2+ (for the <code>tools/midi_to_tab.exe</code> converter)</li>
+      <li>Windows 10+ (64-bit), macOS 10.13+ (Intel or Apple Silicon), or Linux (x86_64 / ARM)</li>
+      <li>No runtime dependencies — the shipped binaries are statically linked</li>
+      <li>Free Pascal Compiler (FPC) 3.2.2+ — only needed to build from source</li>
+      <li>Lazarus IDE 3.0+ — only needed to build the two GUI programs</li>
     </ul>
 
+    <h3 id="downloading">Downloading a release</h3>
+    <p>Every release on GitHub carries a build for each platform:</p>
+    <table>
+      <thead><tr><th>Platform</th><th>Artifact</th></tr></thead>
+      <tbody>
+        <tr><td>Windows 64-bit</td><td><code>ChameleonDrummer_&lt;version&gt;_Setup.exe</code></td></tr>
+        <tr><td>macOS Apple Silicon</td><td><code>chameleondrummer_gui&lt;version&gt;-macos-aarch64.zip</code></td></tr>
+        <tr><td>macOS Intel</td><td><code>chameleondrummer_gui&lt;version&gt;-macos-intel.zip</code></td></tr>
+        <tr><td>Linux x86_64</td><td><code>ChameleonDrummer&lt;version&gt;-linux-x64.tar.gz</code></td></tr>
+        <tr><td>Linux ARM</td><td><code>ChameleonDrummer&lt;version&gt;-linux-arm.tar.gz</code></td></tr>
+      </tbody>
+    </table>
+
+    <h4>macOS</h4>
+    <p>Unzip and drag <code>chameleondrummer_gui.app</code> to <code>/Applications</code>.
+    The bundle is not code-signed, so the first launch needs
+    <strong>right-click → Open</strong>, or:</p>
+    <pre><code class="lang-bash">xattr -dr com.apple.quarantine /Applications/chameleondrummer_gui.app</code></pre>
+    <p>The CLI and both tools live inside the bundle at
+    <code>Contents/MacOS</code> and <code>Contents/Resources/tools</code>.</p>
+
+    <h4>Linux</h4>
+    <pre><code class="lang-bash">tar -xzf ChameleonDrummer&lt;version&gt;-linux-x64.tar.gz
+cd linux-x64
+./ChameleonDrummer generate --genre rock --style classic</code></pre>
+
     <h3 id="building-from-source">Building from Source</h3>
-    <pre><code class="lang-bash"># Command line interface executable
-cd B:\dev\github\ChameleonDrummer
+    <p>From the repository root, in Git Bash or <code>cmd.exe</code>:</p>
+    <pre><code class="lang-bash">./build_all.bat            # all 5 targets, artifacts in Deploy/
+./build_all.bat --check    # verify the toolchain only, build nothing</code></pre>
+    <p>The script builds Windows, macOS (Intel and Apple Silicon) and Linux
+    (x86_64 and ARM), then writes the release artifacts to <code>Deploy/</code>.
+    It prints a summary and exits non-zero if any target fails.</p>
+    <p>Toolchain paths can be overridden with the <code>FPC_DIR</code>,
+    <code>LAZBUILD</code>, <code>CROSS_BIN_DIR</code>, <code>ISCC</code> and
+    <code>TAR</code> environment variables. Set <code>NO_VERSION_BUMP=1</code> to
+    build the version already in <code>Assets/version.txt</code> without
+    incrementing it.</p>
+
+    <h4>Building a single program</h4>
+    <pre><code class="lang-bash"># CLI
 "%SystemDrive%\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe" -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
 
-# Graphical user interface executable
-cd gui
-cmd /c "build_gui.bat < NUL"</code></pre>
+# GUI
+lazbuild --build-all gui/chameleondrummer_gui.lpi
+
+# Step editor
+lazbuild --build-all tools/step_editor/step_editor.lpi</code></pre>
 
     <h3 id="running-the-executable">Running the Executable</h3>
-    <p>Both executables are self-contained. Place <code>ChameleonDrummer.exe</code> and <code>chameleondrummer_gui.exe</code> in the same directory, or reference the command line interface from the graphical user interface's working directory.</p>
+    <p>All four programs are self-contained. Keep <code>ChameleonDrummer</code>,
+    <code>chameleondrummer_gui</code> and the <code>tools/</code> folder together —
+    the GUI launches the CLI and the step editor from there, and the step editor
+    in turn calls <code>midi_to_tab</code>.</p>
 
     <hr>
 
@@ -183,7 +227,7 @@ ChameleonDrummer.exe list mappings</code></pre>
 
     <h3 id="6-groove-engine-codecomposerv2pascode">6. Groove Engine (<code>ComposerV2.pas</code>)</h3>
 
-    <p>Grooves are loaded from <code>config/grooves/<genre>.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
+    <p>Grooves are loaded from <code>config/grooves/&lt;genre&gt;.tab</code> files. Each block defines a style/kind/intensity band. The engine picks the best-fitting groove per bar.</p>
 
     <p><strong>Groove block format:</strong></p>
     <pre><code>[style kind intensity=low-high]
@@ -211,7 +255,7 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
     <h3 id="7-fill-system-codecomposerv2pascode">7. Fill System (<code>ComposerV2.pas</code>)</h3>
 
-    <p>Fills are loaded from <code>config/fills/<drummer>.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
+    <p>Fills are loaded from <code>config/fills/&lt;drummer&gt;.tab</code>. Each block defines a name/energy band. The engine picks a fill whose energy matches the bar's intensity at section boundaries.</p>
 
     <p><strong>Fill block format:</strong></p>
     <pre><code>[bonham_fill_short energy=0.3]
@@ -445,7 +489,7 @@ ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 
 
     <h3 id="command-reference">Command Reference</h3>
 
-    <pre><code class="lang-bash">Usage: chameleondrummer <command> [options]
+    <pre><code class="lang-bash">Usage: chameleondrummer &lt;command&gt; [options]
 
 Commands:
   generate         Generate a complete song (multi-bar pattern)
@@ -457,33 +501,33 @@ Commands:
   additive-rhythm  Generate additive rhythm patterns
 
 Options:
-  --genre <name>              Genre (metal, rock, jazz, funk, electronic)
-  --style <name>              Style within genre (heavy, classic, swing, ...)
-  --tempo <bpm>               Tempo in BPM (default: genre/style value)
+  --genre &lt;name&gt;              Genre (metal, rock, jazz, funk, electronic)
+  --style &lt;name&gt;              Style within genre (heavy, classic, swing, ...)
+  --tempo &lt;bpm&gt;               Tempo in BPM (default: genre/style value)
   --complexity <0-1>          Pattern complexity (default: 0.5)
   --humanization <0-1>        Humanization intensity (default: 0.3)
   --swing <0-1>               Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
-  --time-sig <n/d>            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --time-sig &lt;n/d&gt;            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
   --strict-meter              Only use patterns matching --time-sig
-  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+  --segment &lt;n:bars:bpm:n/d&gt;  A section with its own tempo and meter, e.g. bridge:4:96:7/8
                               (bpm - keeps the song tempo); mix freely with --section
-  --section <n:bars[@bpm]>    Song structure; repeat once per section, in order
+  --section &lt;n:bars[@bpm]&gt;    Song structure; repeat once per section, in order
                               e.g. --section intro:4 --section verse:8 --section chorus:8@140
                               (without --section the genre default structure is used)
-  --drummer <name>            Drummer style (e.g., bonham, peart, carey)
-  --output <file>             Output MIDI file path
-  --reaper, --ardour          With generate: also write <output>.rpp / the <output>.ardour session
-  --mapping <name>            Keymap to use: gm (default), ad2, ezd3, xg
-  --structure <file>          Song structure from a JSON file (sections with bars, tempo,
+  --drummer &lt;name&gt;            Drummer style (e.g., bonham, peart, carey)
+  --output &lt;file&gt;             Output MIDI file path
+  --reaper, --ardour          With generate: also write &lt;output&gt;.rpp / the &lt;output&gt;.ardour session
+  --mapping &lt;name&gt;            Keymap to use: gm (default), ad2, ezd3, xg
+  --structure &lt;file&gt;          Song structure from a JSON file (sections with bars, tempo,
                               complexity; optional genre, style, tempo). Command-line
                               genre/style/tempo win over the file. Not with --section.
-  --sidecar <file>            Same as --structure (the REAPER sidecar format works)
-  --song-map <file>           Read song map JSON for per-bar tempo/meter
+  --sidecar &lt;file&gt;            Same as --structure (the REAPER sidecar format works)
+  --song-map &lt;file&gt;           Read song map JSON for per-bar tempo/meter
   --write-timeline            Write timeline JSON after generation
-  --list <type>               List: genres, styles, drummers, mappings
+  --list &lt;type&gt;               List: genres, styles, drummers, mappings
   --json                      Output JSON for list commands
-  --grouping <str>            Additive grouping notation (e.g., 3-3-3-3-2-2)
-  --grid <n>                  Grid resolution for additive-rhythm (4, 8, 16, 32)
+  --grouping &lt;str&gt;            Additive grouping notation (e.g., 3-3-3-3-2-2)
+  --grid &lt;n&gt;                  Grid resolution for additive-rhythm (4, 8, 16, 32)
   --drummer-intensity <0-1>   Drummer intensity for additive-rhythm
   --help, -h                  Show this help</code></pre>
 
@@ -525,10 +569,10 @@ Options:
 
     <p>Edit files in <code>config/</code>:</p>
     <ul>
-      <li><code>config/grooves/<genre>.tab</code> — add new grooves, change intensity bands</li>
-      <li><code>config/fills/<drummer>.tab</code> — add new fills, change energy levels</li>
-      <li><code>config/defaults/<genre>.ini</code> — change default tempo/style/drummer</li>
-      <li><code>config/sections/<genre>.json</code> — change default song structure</li>
+      <li><code>config/grooves/&lt;genre&gt;.tab</code> — add new grooves, change intensity bands</li>
+      <li><code>config/fills/&lt;drummer&gt;.tab</code> — add new fills, change energy levels</li>
+      <li><code>config/defaults/&lt;genre&gt;.ini</code> — change default tempo/style/drummer</li>
+      <li><code>config/sections/&lt;genre&gt;.json</code> — change default song structure</li>
     </ul>
 
     <p>No recompilation needed — the engine reads these at runtime.</p>
@@ -556,14 +600,14 @@ midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</
     <table>
       <tr><th>Option</th><th>Description</th></tr>
       <tr><td><code>--fill</code></td><td>Output a fill block instead of a groove block</td></tr>
-      <tr><td><code>--name <name></code></td><td>Fill name (default: <code>fill</code>)</td></tr>
+      <tr><td><code>--name &lt;name&gt;</code></td><td>Fill name (default: <code>fill</code>)</td></tr>
       <tr><td><code>--energy <0-1></code></td><td>Fill energy (default: 0.5)</td></tr>
-      <tr><td><code>--meter <n/d></code></td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
-      <tr><td><code>--resolution <n></code></td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
-      <tr><td><code>--mapping <file></code></td><td>Keymap JSON file (default: built-in GM map)</td></tr>
-      <tr><td><code>--style <name></code></td><td>Groove style name (default: <code>midi</code>)</td></tr>
-      <tr><td><code>--kind <name></code></td><td>Groove kind: verse/chorus/bridge (default: <code>verse</code>)</td></tr>
-      <tr><td><code>--intensity <low-high></code></td><td>Groove intensity band (default: <code>0.2-0.6</code>)</td></tr>
+      <tr><td><code>--meter &lt;n/d&gt;</code></td><td>Meter override (default: from MIDI meta or 4/4)</td></tr>
+      <tr><td><code>--resolution &lt;n&gt;</code></td><td>Steps per quarter note: 4, 8, 16, 32 (default: 16)</td></tr>
+      <tr><td><code>--mapping &lt;file&gt;</code></td><td>Keymap JSON file (default: built-in GM map)</td></tr>
+      <tr><td><code>--style &lt;name&gt;</code></td><td>Groove style name (default: <code>midi</code>)</td></tr>
+      <tr><td><code>--kind &lt;name&gt;</code></td><td>Groove kind: verse/chorus/bridge (default: <code>verse</code>)</td></tr>
+      <tr><td><code>--intensity &lt;low-high&gt;</code></td><td>Groove intensity band (default: <code>0.2-0.6</code>)</td></tr>
     </table>
 
     <p>Output is written with CRLF line endings, ready to drop into <code>config/grooves/</code> or <code>config/fills/</code>.</p>
@@ -694,7 +738,7 @@ HH  x.x.x.x.x.x.x.x
 
     <h3 id="step-editor-saving-patterns">Saving Patterns</h3>
 
-    <p><strong>Save Pattern As:</strong> Exports the current grid (or selected region) as a new <code>.tab</code> file in <code>config/grooves/<style>.tab</code> or <code>config/fills/<style>.tab</code> depending on Groove/Fill mode.</p>
+    <p><strong>Save Pattern As:</strong> Exports the current grid (or selected region) as a new <code>.tab</code> file in <code>config/grooves/&lt;style&gt;.tab</code> or <code>config/fills/&lt;style&gt;.tab</code> depending on Groove/Fill mode.</p>
 
     <p><strong>Save Block:</strong> (Config files only) Surgically updates the current block in its source file.</p>
 
@@ -724,15 +768,15 @@ HH  x.x.x.x.x.x.x.x
     <pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
 
 Options:
-  --mapping <file>       Keymap JSON (default: built-in GM)
-  --style <name>         Groove style name
-  --kind <name>          Groove kind (verse, chorus, bridge, intro, outro, fill)
-  --intensity <low-high> Groove intensity band (e.g., 0.2-0.6)
+  --mapping &lt;file&gt;       Keymap JSON (default: built-in GM)
+  --style &lt;name&gt;         Groove style name
+  --kind &lt;name&gt;          Groove kind (verse, chorus, bridge, intro, outro, fill)
+  --intensity &lt;low-high&gt; Groove intensity band (e.g., 0.2-0.6)
   --energy <0-1>         Fill energy level
-  --resolution <n>       Steps per quarter note (4, 8, 16, 32)
-  --meter <n/d>          Time signature (e.g., 4/4, 7/8, 4/4T)
+  --resolution &lt;n&gt;       Steps per quarter note (4, 8, 16, 32)
+  --meter &lt;n/d&gt;          Time signature (e.g., 4/4, 7/8, 4/4T)
   --fill                  Output fill block instead of groove
-  --output <file>         Write tab to file (default: stdout)</code></pre>
+  --output &lt;file&gt;         Write tab to file (default: stdout)</code></pre>
 
     <h3 id="step-editor-tips">Tips & Best Practices</h3>
     <ul>
@@ -777,16 +821,16 @@ Options:
 
 <section class="download-section">
   <div class="container">
-    <h2>Download v1.1.35</h2>
+    <h2>Download</h2>
     <p>Get the latest release from GitHub:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">Download v1.1.35</a>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download the latest release</a>
   </div>
 </section>
 
 <footer>
   <div class="container">
     <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
-    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code></p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/manual.html</code> · Pascal docs: <code>PASCAL_PROGRAMS.md</code></p>
   </div>
 </footer>
 

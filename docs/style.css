@@ -423,3 +423,32 @@ a:hover {
   color: #00ffcc;
   text-decoration: none;
 }
+
+/* ---- Tables (CLI reference, docs) ---- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 0.95em;
+}
+th, td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 255, 170, 0.18);
+  vertical-align: top;
+}
+th {
+  color: #00ffaa;
+  font-weight: 600;
+  white-space: nowrap;
+}
+tbody tr:hover {
+  background: rgba(0, 255, 170, 0.05);
+}
+td code, th code {
+  color: #00ffcc;
+  background: rgba(0, 255, 170, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}

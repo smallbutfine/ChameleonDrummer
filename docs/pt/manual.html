@@ -15,6 +15,7 @@
       <a href="index.html">INÍCIO</a>
       <a href="concepts.html">CONCEITOS</a>
       <a href="docs.html">MANUAL</a>
+      <a href="../cli.html">CLI</a>
       <a href="download.html">BAIXAR</a>
       <a href="../index.html">EN</a>
       <a href="../de/index.html">DE</a>
@@ -53,7 +54,7 @@
 
     <h2 id="introducao">Introdução</h2>
 
-    <p>ChameleonDrummer é um sistema de geração dinâmica de MIDI para bateria, construído em Free Pascal (FPC) com a Lazarus Component Library (LCL). Gera padrões de bateria realistas para 5 gêneros (Metal, Rock, Jazz, Funk, Electronic) com 32 estilos no total, e 17 personalidades de bateristas. Suporta múltiplos keymaps MIDI (GM, AD2, EZD3, XG), compassos de 2/4 a 32/16 (incluindo compassos ímpares como 3/4, 5/4, 7/8, 9/8, 11/8, 13/8...), arquivos externos de grooves/fills/defaults, exportação de sessões REAPER <code>.rpp</code> e Ardour <code>.ardour</code>, e humanização avançada, curvas de intensidade, e restrições de jogabilidade física.</p>
+    <p>ChameleonDrummer é um sistema de geração dinâmica de MIDI para bateria, construído em Free Pascal (FPC) com a Lazarus Component Library (LCL). Gera padrões de bateria realistas para 5 gêneros (Metal, Rock, Jazz, Funk, Electronic) com 37 estilos no total, e 17 personalidades de bateristas. Suporta múltiplos keymaps MIDI (GM, AD2, EZD3, XG), compassos de 2/4 a 32/16 (incluindo compassos ímpares como 3/4, 5/4, 7/8, 9/8, 11/8, 13/8...), arquivos externos de grooves/fills/defaults, exportação de sessões REAPER <code>.rpp</code> e Ardour <code>.ardour</code>, e humanização avançada, curvas de intensidade, e restrições de jogabilidade física.</p>
 
     <p>Dois executáveis são produzidos:</p>
     <ul>
@@ -132,7 +133,7 @@ ChameleonDrummer.exe list mappings</code></pre>
       <li><strong>Velocity</strong> (<code>Integer</code>): Velocity MIDI 0 (silêncio) a 127 (máximo). Faz alguns golpes soarem mais fortes ou suaves.</li>
       <li><strong>Duração</strong> (<code>Double</code>): Comprimento nota em pulsos. Maioria golpes bateria muito curtos (~0.1 pulsos), mas alguns podem ser mais longos para efeito.</li>
       <li><strong>GhostNote</strong> (<code>Boolean</code>): Nota sutil, baixa velocity para sensação groove. Pense no baterista tocando levemente aro de tambor entre golpes principais.</li>
-      <li><strong>Accent</strong> (<code>Boolean</strong>): Golpe enfatizado. Como baterista põe ênfase em certos pulsos (como caixa nos tempos 2 e 4 no rock).</li>
+      <li><strong>Accent</strong> (<code>Boolean</code>): Golpe enfatizado. Como baterista põe ênfase em certos pulsos (como caixa nos tempos 2 e 4 no rock).</li>
       <li><strong>InstrumentPromoted</strong> (<code>Boolean</code>): Flag proveniência. Verdadeiro só quando instrumento deste pulso alterado no local por plugin gênero promovendo golpe hi-hat existente a prato maior energia para seção alta energia.</li>
     </ul>
 
@@ -184,7 +185,7 @@ ChameleonDrummer.exe list mappings</code></pre>
 
     <h3 id="6-motor-groove-codecomposerv2pascode">6. Motor Groove (<code>ComposerV2.pas</code>)</h3>
 
-    <p>Grooves carregados de arquivos <code>config/grooves/<genre>.tab</code>. Cada bloco define estilo/tipo/banda intensidade. Motor escolhe melhor groove por compasso.</p>
+    <p>Grooves carregados de arquivos <code>config/grooves/&lt;genre&gt;.tab</code>. Cada bloco define estilo/tipo/banda intensidade. Motor escolhe melhor groove por compasso.</p>
 
     <p><strong>Formato bloco groove:</strong></p>
     <pre><code>[style kind intensity=low-high]
@@ -212,7 +213,7 @@ H  x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.</code></pre>
 
     <h3 id="7-sistema-fills-codecomposerv2pascode">7. Sistema Fills (<code>ComposerV2.pas</code>)</h3>
 
-    <p>Fills carregados de <code>config/fills/<drummer>.tab</code>. Cada bloco define nome/banda energia. Motor escolhe fill cuja energia corresponde intensidade compasso nos limites seção.</p>
+    <p>Fills carregados de <code>config/fills/&lt;drummer&gt;.tab</code>. Cada bloco define nome/banda energia. Motor escolhe fill cuja energia corresponde intensidade compasso nos limites seção.</p>
 
     <p><strong>Formato bloco fill:</strong></p>
     <pre><code>[bonham_fill_short energy=0.3]
@@ -446,7 +447,7 @@ ChameleonDrummer additive-rhythm --grouping "3-3-3-3-2-2" --grid 16 --tempo 120 
 
     <h3 id="referencia-comandos">Referência Comandos</h3>
 
-    <pre><code class="lang-bash">Usage: chameleondrummer <command> [options]
+    <pre><code class="lang-bash">Usage: chameleondrummer &lt;command&gt; [options]
 
 Commands:
   generate         Generate a complete song (multi-bar pattern)
@@ -458,33 +459,33 @@ Commands:
   additive-rhythm  Generate additive rhythm patterns
 
 Options:
-  --genre <name>              Genre (metal, rock, jazz, funk, electronic)
-  --style <name>              Style within genre (heavy, classic, swing, ...)
-  --tempo <bpm>               Tempo in BPM (default: genre/style value)
+  --genre &lt;name&gt;              Genre (metal, rock, jazz, funk, electronic)
+  --style &lt;name&gt;              Style within genre (heavy, classic, swing, ...)
+  --tempo &lt;bpm&gt;               Tempo in BPM (default: genre/style value)
   --complexity <0-1>          Pattern complexity (default: 0.5)
   --humanization <0-1>        Humanization intensity (default: 0.3)
   --swing <0-1>               Swing feel: 0 = straight (default), 0.67 = classic 2:1, 1 = 3:1
-  --time-sig <n/d>            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
+  --time-sig &lt;n/d&gt;            Meter of the song, e.g. 3/4, 5/4, 7/8, 9/8, 11/8, 13/8 (default 4/4)
   --strict-meter              Only use patterns matching --time-sig
-  --segment <n:bars:bpm:n/d>  A section with its own tempo and meter, e.g. bridge:4:96:7/8
+  --segment &lt;n:bars:bpm:n/d&gt;  A section with its own tempo and meter, e.g. bridge:4:96:7/8
                               (bpm - keeps the song tempo); mix freely with --section
-  --section <n:bars[@bpm]>    Song structure; repeat once per section, in order
+  --section &lt;n:bars[@bpm]&gt;    Song structure; repeat once per section, in order
                               e.g. --section intro:4 --section verse:8 --section chorus:8@140
                               (without --section the genre default structure is used)
-  --drummer <name>            Drummer style (e.g., bonham, peart, carey)
-  --output <file>             Output MIDI file path
-  --reaper, --ardour          With generate: also write <output>.rpp / the <output>.ardour session
-  --mapping <name>            Keymap to use: gm (default), ad2, ezd3, xg
-  --structure <file>          Song structure from a JSON file (sections with bars, tempo,
+  --drummer &lt;name&gt;            Drummer style (e.g., bonham, peart, carey)
+  --output &lt;file&gt;             Output MIDI file path
+  --reaper, --ardour          With generate: also write &lt;output&gt;.rpp / the &lt;output&gt;.ardour session
+  --mapping &lt;name&gt;            Keymap to use: gm (default), ad2, ezd3, xg
+  --structure &lt;file&gt;          Song structure from a JSON file (sections with bars, tempo,
                               complexity; optional genre, style, tempo). Command-line
                               genre/style/tempo win over the file. Not with --section.
-  --sidecar <file>            Same as --structure (the REAPER sidecar format works)
-  --song-map <file>           Read song map JSON for per-bar tempo/meter
+  --sidecar &lt;file&gt;            Same as --structure (the REAPER sidecar format works)
+  --song-map &lt;file&gt;           Read song map JSON for per-bar tempo/meter
   --write-timeline            Write timeline JSON after generation
-  --list <type>               List: genres, styles, drummers, mappings
+  --list &lt;type&gt;               List: genres, styles, drummers, mappings
   --json                      Output JSON for list commands
-  --grouping <str>            Additive grouping notation (e.g., 3-3-3-3-2-2)
-  --grid <n>                  Grid resolution for additive-rhythm (4, 8, 16, 32)
+  --grouping &lt;str&gt;            Additive grouping notation (e.g., 3-3-3-3-2-2)
+  --grid &lt;n&gt;                  Grid resolution for additive-rhythm (4, 8, 16, 32)
   --drummer-intensity <0-1>   Drummer intensity for additive-rhythm
   --help, -h                  Show this help</code></pre>
 
@@ -526,10 +527,10 @@ Options:
 
     <p>Edite arquivos em <code>config/</code>:</p>
     <ul>
-      <li><code>config/grooves/<genre>.tab</code> — adicionar novos grooves, mudar bandas intensidade</li>
-      <li><code>config/fills/<drummer>.tab</code> — adicionar novos fills, mudar níveis energia</li>
-      <li><code>config/defaults/<genre>.ini</code> — mudar tempo/estilo/baterista padrão</li>
-      <li><code>config/sections/<genre>.json</code> — mudar estrutura música padrão</li>
+      <li><code>config/grooves/&lt;genre&gt;.tab</code> — adicionar novos grooves, mudar bandas intensidade</li>
+      <li><code>config/fills/&lt;drummer&gt;.tab</code> — adicionar novos fills, mudar níveis energia</li>
+      <li><code>config/defaults/&lt;genre&gt;.ini</code> — mudar tempo/estilo/baterista padrão</li>
+      <li><code>config/sections/&lt;genre&gt;.json</code> — mudar estrutura música padrão</li>
     </ul>
 
     <p>Sem recompilação necessária — motor lê estes em runtime.</p>
@@ -557,14 +558,14 @@ midi_to_tab.exe input.mid --mapping mappings/gm.json --style rock --kind verse</
     <table>
       <tr><th>Opção</th><th>Descrição</th></tr>
       <tr><td><code>--fill</code></td><td>Saída bloco fill em vez de groove</td></tr>
-      <tr><td><code>--name <name></code></td><td>Nome fill (padrão: <code>fill</code>)</td></tr>
-      <tr><td><code>--energy <0-1></code></td><td>Energia fill (padrão: 0.5)</td></tr>
-      <tr><td><code>--meter <n/d></code></td><td>Override compasso (padrão: meta MIDI ou 4/4)</td></tr>
-      <tr><td><code>--resolution <n></code></td><td>Passos por semicolcheia: 4, 8, 16, 32 (padrão: 16)</td></tr>
-      <tr><td><code>--mapping <file></code></td><td>Arquivo JSON keymap (padrão: GM map integrado)</td></tr>
-      <tr><td><code>--style <name></code></td><td>Nome estilo groove (padrão: <code>midi</code>)</td></tr>
-      <tr><td><code>--kind <name></code></td><td>Tipo groove: verse/chorus/bridge (padrão: <code>verse</code>)</td></tr>
-      <tr><td><code>--intensity <low-high></code></td><td>Banda intensidade groove (padrão: <code>0.2-0.6</code>)</td></tr>
+      <tr><td><code>--name &lt;name&gt;</code></td><td>Nome fill (padrão: <code>fill</code>)</td></tr>
+      <tr><td><code>--energy &lt;0-1&gt;</code></td><td>Energia fill (padrão: 0.5)</td></tr>
+      <tr><td><code>--meter &lt;n/d&gt;</code></td><td>Override compasso (padrão: meta MIDI ou 4/4)</td></tr>
+      <tr><td><code>--resolution &lt;n&gt;</code></td><td>Passos por semicolcheia: 4, 8, 16, 32 (padrão: 16)</td></tr>
+      <tr><td><code>--mapping &lt;file&gt;</code></td><td>Arquivo JSON keymap (padrão: GM map integrado)</td></tr>
+      <tr><td><code>--style &lt;name&gt;</code></td><td>Nome estilo groove (padrão: <code>midi</code>)</td></tr>
+      <tr><td><code>--kind &lt;name&gt;</code></td><td>Tipo groove: verse/chorus/bridge (padrão: <code>verse</code>)</td></tr>
+      <tr><td><code>--intensity &lt;low-high&gt;</code></td><td>Banda intensidade groove (padrão: <code>0.2-0.6</code>)</td></tr>
     </table>
 
     <p>Saída escrita com fins linha CRLF, pronta para <code>config/grooves/</code> ou <code>config/fills/</code>.</p>
@@ -695,7 +696,7 @@ HH  x.x.x.x.x.x.x.x
 
     <h3 id="step-editor-salvamento-patterns">Salvamento Patterns</h3>
 
-    <p><strong>Save Pattern As:</strong> Exporta grade atual (ou região selecionada) novo arquivo <code>.tab</code> em <code>config/grooves/<style>.tab</code> ou <code>config/fills/<style>.tab</code> conforme modo Groove/Fill.</p>
+    <p><strong>Save Pattern As:</strong> Exporta grade atual (ou região selecionada) novo arquivo <code>.tab</code> em <code>config/grooves/&lt;style&gt;.tab</code> ou <code>config/fills/&lt;style&gt;.tab</code> conforme modo Groove/Fill.</p>
 
     <p><strong>Save Block:</strong> (Só arquivos config) Atualiza cirurgicamente bloco atual no arquivo fonte.</p>
 
@@ -725,15 +726,15 @@ HH  x.x.x.x.x.x.x.x
     <pre><code class="lang-bash">midi_to_tab.exe input.mid [options]
 
 Options:
-  --mapping <file>       Keymap JSON (default: built-in GM)
-  --style <name>         Groove style name
-  --kind <name>          Groove kind (verse, chorus, bridge, intro, outro, fill)
-  --intensity <low-high> Groove intensity band (e.g., 0.2-0.6)
-  --energy <0-1>         Fill energy level
-  --resolution <n>       Steps per quarter note (4, 8, 16, 32)
-  --meter <n/d>          Time signature (e.g., 4/4, 7/8, 4/4T)
+  --mapping &lt;file&gt;       Keymap JSON (default: built-in GM)
+  --style &lt;name&gt;         Groove style name
+  --kind &lt;name&gt;          Groove kind (verse, chorus, bridge, intro, outro, fill)
+  --intensity &lt;low-high&gt; Groove intensity band (e.g., 0.2-0.6)
+  --energy &lt;0-1&gt;         Fill energy level
+  --resolution &lt;n&gt;       Steps per quarter note (4, 8, 16, 32)
+  --meter &lt;n/d&gt;          Time signature (e.g., 4/4, 7/8, 4/4T)
   --fill                  Output fill block instead of groove
-  --output <file>         Write tab to file (default: stdout)</code></pre>
+  --output &lt;file&gt;         Write tab to file (default: stdout)</code></pre>
 
     <h3 id="step-editor-dicas">Dicas & Melhores Práticas</h3>
     <ul>
@@ -778,9 +779,9 @@ Options:
 
 <section class="download-section">
   <div class="container">
-    <h2>Baixar v1.1.35</h2>
+    <h2>Baixar</h2>
     <p>Baixe a última versão do GitHub:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">Baixar v1.1.35</a>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Baixar</a>
   </div>
 </section>
 

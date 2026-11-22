@@ -15,6 +15,7 @@
       <a href="index.html">Home</a>
       <a href="concepts.html">Concepts</a>
       <a href="docs.html">Manual</a>
+      <a href="cli.html">CLI</a>
       <a href="download.html">Download</a>
       <a href="de/index.html">DE</a>
       <a href="es/index.html">ES</a>
@@ -41,13 +42,21 @@
       <article class="doc-card">
         <h3>Pascal Program Documentation</h3>
         <p>Detailed analysis of the two Pascal programs (command line interface and graphical user interface) with file structure, entry points, command parsing, and implementation details.</p>
-        <a href="../docs/PASCAL_PROGRAMS.md" class="btn">Read Pascal Docs</a>
+        <a href="PASCAL_PROGRAMS.md" class="btn">Read Pascal Docs</a>
       </article>
       
       <article class="doc-card">
         <h3>Concepts Explanation</h3>
         <p>Deep dive into the MIDI generation principles: pattern model, song structure, bar-by-bar evolution, intensity curves, macro composer, groove engine, fills, humanization, and physical constraints.</p>
         <a href="concepts.html" class="btn">Read Concepts</a>
+      </article>
+
+      <article class="doc-card">
+        <h3>Command Line Reference</h3>
+        <p>Every command and option of the <code>ChameleonDrummer</code> CLI in one
+        place: generate, pattern, list, info, reaper, ardour — plus all 37 styles,
+        the 17 drummers and the keymaps, with worked examples.</p>
+        <a href="cli.html" class="btn">Read CLI Reference</a>
       </article>
     </div>
     
@@ -58,7 +67,7 @@
         <li><strong>Command Line Interface Commands</strong> — <code>chameleondrummer generate --genre metal --style death --tempo 75</code></li>
         <li><strong>Graphical User Interface Usage</strong> — Select genre, style, drummer, mapping, then click Generate</li>
         <li><strong>Available Options</strong> — <code>chameleondrummer list genres</code>, <code>chameleondrummer list styles --genre jazz</code>, <code>chameleondrummer list drummers</code></li>
-        <li><strong>Pattern Format Reference</strong> — <a href="../../README.md">README.md</a> (full groove/fill syntax, meters, instruments)</li>
+        <li><strong>Pattern Format Reference</strong> — <a href="README.md">README.md</a> (full groove/fill syntax, meters, instruments)</li>
         <li><strong>Odd Meters</strong> — <code>--time-sig 7/8</code>, <code>--segment verse:4:100:7/8</code></li>
       </ul>
     </div>
@@ -126,16 +135,16 @@ S ... ... ... xxx</code></pre>
 
 <section class="download-section">
   <div class="container">
-    <h2>Download v1.1.35</h2>
+    <h2>Download</h2>
     <p>Get the latest release from GitHub:</p>
-    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/tag/v1.1.35" class="btn">Download v1.1.35</a>
+    <a href="https://github.com/smallbutfine/ChameleonDrummer/releases/latest" class="btn">Download the latest release</a>
   </div>
 </section>
 
 <footer>
   <div class="container">
     <p>ChameleonDrummer — FreePascal / Lazarus MIDI Drum Generation.</p>
-    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/USER_MANUAL.md</code> · Pascal docs: <code>docs/PASCAL_PROGRAMS.md</code> · Pattern format: <code>README.md</code></p>
+    <p>Source: <code>ChameleonDrummer/</code> · Manual: <code>docs/manual.html</code> · Pascal docs: <code>PASCAL_PROGRAMS.md</code> · Pattern format: <code>README.md</code></p>
   </div>
 </footer>
 
