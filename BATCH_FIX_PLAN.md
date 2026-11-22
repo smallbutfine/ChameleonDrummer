@@ -20,69 +20,160 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done + verified, `[-]` dropped (rea
       (`20261122005310.180000+060`), so a `:~0,4` substring is required. Verified
       output: `Copyright 2026 Martin Haverland`.
 
-- [ ] **P1.2** `del /q "%ROOT%\Dist"` (L63) is invalid syntax and never cleans.
+- [x] **P1.2** `del /q "%ROOT%\Dist"` (L63) is invalid syntax and never cleans.
       Replace with `rmdir /s /q "%ROOT%\dist" 2>nul`.
       Verify: `dist\` is gone before a build and recreated empty.
+      DONE: now `if exist "%ROOT%\dist" rmdir /s /q "%ROOT%\dist"`. Verified in a
+      sandbox that a populated `dist\` (nested dirs + files) is fully removed.
 
-- [ ] **P1.3** Error routing: every failure does `goto :target_done`, so
+- [x] **P1.3** Error routing: every failure does `goto :target_done`, so
       `:target_failed` (L474) is dead code and failures are reported as success.
       Route failures to `:target_failed`, set `RESULT_<T>=FAIL`, `goto :target_done`.
       Verify: forced failure prints `*** TARGET ... FAILED ***` and summary shows FAIL.
+      DONE: all error blocks now `goto :target_failed`; success sets
+      `RESULT_<T>=OK`. Also replaced the `pushd ... || (exit /b 1)` constructs
+      (which killed the whole script) with `if errorlevel 1` + `goto :target_failed`.
+      Verified with a forced `-Zbadflag`: prints `*** TARGET win64 FAILED ***` and
+      `RESULT_win64=[FAIL]`.
 
-- [ ] **P1.4** `:target_failed` falls through into `:target_done` (L474-480).
+- [x] **P1.4** `:target_failed` falls through into `:target_done` (L474-480).
       Give it its own `popd` + `goto :eof` so it does not re-run target_done logic.
+      DONE: `:target_failed` now sets `RESULT_<T>=FAIL`, does its own `popd 2>nul`
+      and `goto :eof`; `:target_done` is a separate label reached only on success.
 
 ## Phase 2 — Robustness
 
-- [ ] **P2.1** Hardcoded toolchain paths (L12-17). Allow env-var override with the
+- [x] **P2.1** Hardcoded toolchain paths (L12-17). Allow env-var override with the
       current paths as defaults (`FPC_DIR`, `LAZBUILD`, `CROSS_BIN_DIR`, `ISCC`).
       Verify: override env var is honoured.
+      DONE: each path is now `if not defined X set "X=..."`. The ISCC fallback is
+      nested inside the `if not defined ISCC` block so a user-supplied ISCC is not
+      clobbered. Verified: defaults resolve to the fpcupdeluxe/Inno paths; env
+      overrides (`FPC_DIR`, `ISCC`) are honoured.
 
-- [ ] **P2.2** Unguarded `copy`/`xcopy` of support files (L398-431). Wrap each in
+- [x] **P2.2** Unguarded `copy`/`xcopy` of support files (L398-431). Wrap each in
       `if exist` and warn on missing source.
       Verify: missing source produces a warning, not silent success.
+      DONE: added a `:copy_glob SRC DST LABEL` helper; all support-file copies now
+      `call :copy_glob`. Verified: existing sources print `OK: <label>` and copy;
+      missing sources print `WARNING: missing <label> - no files matched "<path>"`.
 
-- [ ] **P2.3** Fragile quoting in `CC_FLAGS` (L242, L253):
+- [x] **P2.3** Fragile quoting in `CC_FLAGS` (L242, L253):
       `set "CC_FLAGS=-O2 -Fu"%ROOT%\src""`. Rebuild quoting safely.
       Verify: build still succeeds with a ROOT containing spaces (simulate).
+      DONE: `CC_FLAGS` no longer embeds any path; `-Fu"%ROOT%\src"` is appended at
+      each compile call site so ROOT expands normally. Found and fixed a real bug:
+      the old form truncated at `&` in ROOT (`C:\a & b` -> `-Fu"C:\a"`). Verified a
+      full compile+link from `C:\a & b` (ampersand + space) -> `EXITCODE=0`.
 
-- [ ] **P2.4** Clean step (L230-237) does not remove `.res` files, which are
+- [x] **P2.4** Clean step (L230-237) does not remove `.res` files, which are
       generated at L114. Add `*.res` to the clean set.
       Verify: no stale `.res` survives a clean.
+      DONE: added `*.res` to the root, `gui\`, `tools\` and `tools\step_editor\`
+      clean lines. Verified in a sandbox: all `.res`/`.o`/`.exe` removed,
+      unrelated files (`keep.txt`) untouched.
 
-- [ ] **P2.5** `:make_app_bundle` (L488) clobbers global `APP_NAME`.
+- [x] **P2.5** `:make_app_bundle` (L488) clobbers global `APP_NAME`.
       Use a local name (`BUNDLE_EXE`) instead.
       Verify: `APP_NAME` unchanged after bundle creation.
+      DONE: `:make_app_bundle` now uses `BUNDLE_EXE` throughout (bundle dir, plist
+      `CFBundleExecutable`, `CFBundleIdentifier`, final echo). Verified:
+      `APP_NAME` stays `ChameleonDrummer` after both calls, and each bundle gets
+      its own executable name.
 
 ## Phase 3 — Packaging correctness
 
-- [ ] **P3.1** macOS bundle incomplete:
+- [x] **P3.1** macOS bundle incomplete:
       - CLI `ChameleonDrummer` is built to `%TD%`, never into the bundle, so the
         copy at L506-510 never fires.
       - `step_editor.app` is placed at `tools/step_editor.app` (invalid location).
       - `Info.plist` lacks `CFBundleVersion` / `LSMinimumSystemVersion`.
       Fix all three.
       Verify: bundle contains CLI + tools, plist has the keys.
+      DONE: (a) CLI is staged into the bundle dir before `:make_app_bundle` so it
+      lands in `Contents/MacOS/`; (b) `step_editor.app` is moved to the bundle root;
+      (c) plist gains `CFBundleShortVersionString`, `CFBundleVersion`,
+      `LSMinimumSystemVersion`, `NSPrincipalClass`.
+      BONUS BUG FOUND: the plist was **malformed XML**. With delayed expansion on,
+      `!DOCTYPE` loses its `!` and the `//` in the DTD URL is mangled, so `echo`
+      emitted `<//apple.com">` as line 2. Fixed by wrapping the plist write in
+      `setlocal disabledelayedexpansion` + `%VAR%` expansion. Verified the
+      generated `Info.plist` parses as well-formed XML.
+      BONUS BUG FOUND (via full build): macOS `step_editor.app` shipped with an
+      EMPTY `Contents/MacOS`. `lazbuild` links `step_editor.exe` even for darwin
+      (never a `.app`), but the clean step never removed a stale
+      `tools\step_editor\step_editor.app`, so the darwin move branch grabbed the
+      stale `.app` and left the fresh `.exe` to be deleted by the next clean.
+      Fixed: clean removes the stale `.app`; darwin branch moves the `.exe`
+      (keeping its name so `:make_app_bundle` renames it into `Contents/MacOS`);
+      `step_editor.app` is now created INSIDE the main bundle at
+      `Contents/Resources/tools/step_editor.app` (matching commit 2b184473).
+      Verified: `step_editor.app/Contents/MacOS/step_editor` is a real 18 MB Mach-O.
 
-- [ ] **P3.2** `mappings\` vs `src\mappings\` duplication (script uses root,
+- [x] **P3.2** `mappings\` vs `src\mappings\` duplication (script uses root,
       installer uses `src\`). Pick one source of truth and align both.
       Verify: script and installer.iss reference the same path.
+      DONE: the two trees have **real content differences** (e.g. `ad2.json` has
+      `snare_brushes_only_sweep_fast_bright_accent` at note 30 in `mappings/` vs 35
+      in `src/mappings/`). `mappings/` is canonical: it is the newer tree (last
+      touched 2026-10-21 vs 2026-09-15) and it is what `build_all.bat` ships and
+      what the runtime loads (`ExtractFilePath(ParamStr(0)) + 'mappings'`).
+      Changed `installer.iss` to `..\mappings\*.json`. Verified both now resolve to
+      the same root `mappings\` directory.
 
-- [ ] **P3.3** `Assets\version.txt` is mutated on every build (L58-65), making
+- [x] **P3.3** `Assets\version.txt` is mutated on every build (L58-65), making
       builds non-idempotent and dirtying the working tree.
       Decide: keep mutation but make it explicit/optional, or move to a counter.
       Verify: build twice, behaviour is intentional and documented.
+      DONE: the bump is intentional (artifacts are version-stamped, so it must stay
+      monotonic), but it is now **opt-out**: `NO_VERSION_BUMP=1` builds the version
+      already in `version.txt` without rewriting it. Also fixed a trailing space in
+      the written file (`echo ... >file` -> `echo ...>file`). Verified: default run
+      -> `1.1.476` with no trailing space; `NO_VERSION_BUMP=1` -> stays `1.1.475`
+      and the file is byte-identical.
 
 ## Phase 4 — CI hygiene
 
-- [ ] **P4.1** `:print_summary` (L576-608) is never called and ends with `pause`
+- [x] **P4.1** `:print_summary` (L576-608) is never called and ends with `pause`
       (L607), which would block CI. Call it before the final exit; make `pause`
       conditional on an interactive/CI flag.
       Verify: summary prints; no hang when `CI=true`.
+      DONE: `:print_summary` is now called before the final exit and sets
+      `SUMMARY_FAIL`; the script exits 1 when any target failed, 0 otherwise.
+      `pause` is skipped when `CI` or `NO_PAUSE` is defined. Verified: forced
+      failure -> summary shows `[FAIL] win64`, `BATCH_EXIT=1`; success ->
+      `[OK] win64`, `BATCH_EXIT=0`; `CI=true` does not hang.
 
-- [ ] **P4.2** Add a `--check` / dry-run mode that verifies toolchain presence
+- [x] **P4.2** Add a `--check` / dry-run mode that verifies toolchain presence
       and support files without building.
       Verify: `./build_all.bat --check` exits 0 with all tools found.
+      DONE: tool checks moved into a reusable `:verify_tools` label (now also
+      checks `windres.exe`); `--check` runs it and exits without building. Verified:
+      all tools present -> exit 0; bogus `FPC_DIR` -> lists every missing tool and
+      exits 1 without touching `dist\`.
+
+---
+
+## Final verification (full build, 2026-11-22)
+
+`CI=true ./build_all.bat` -> **exit 0**, all 5 targets `[OK]`:
+
+- `win64`: `ChameleonDrummer.exe`, `chameleondrummer_gui.exe`,
+  `tools\midi_to_tab.exe`, `tools\step_editor.exe` + Inno Setup installer
+  `Deploy\ChameleonDrummer_Setup_1.1.477.exe`.
+- `macos-intel` / `macos-aarch64`: `chameleondrummer_gui.app` with
+  `Contents/MacOS/{ChameleonDrummer,chameleondrummer_gui}` and
+  `Contents/Resources/tools/step_editor.app/Contents/MacOS/step_editor`
+  (real Mach-O, 18 MB). Both `Info.plist` files parse as well-formed XML.
+- `linux-x64` / `linux-arm`: version-stamped `.tar.gz` packages.
+
+Binary formats confirmed: Mach-O x86_64, Mach-O arm64, ELF x86-64, ELF ARM EABI5.
+Functional test: `dist\win64\ChameleonDrummer.exe generate --genre rock --style
+classic --tempo 120` writes a valid MIDI file (`MThd` header, 14886 bytes).
+`dist\win64\mappings\` checksums match the canonical root `mappings\` (P3.2).
+
+`./build_all.bat --check` -> exit 0 with all tools found; bogus `FPC_DIR` ->
+exit 1 listing every missing tool, without touching `dist\`.
 
 ---
 
