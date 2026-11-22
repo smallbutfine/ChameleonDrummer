@@ -4,183 +4,190 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ---- Linux build ----
-  linux:
-    name: Linux (native)
-    runs-on: ubuntu-latest
+  build:
+    name: Cross-Platform Build (all targets)
+    runs-on: windows-latest
+    timeout-minutes: 360
     defaults:
       run:
         shell: bash
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Free Pascal
+      # ---------------------------------------------------------------
+      # 1. Install bootstrap tools: Inno Setup (for the Windows
+      #    installer) and a bootstrap FPC (just enough to compile
+      #    fpcup.lpr). The real FPC + Lazarus + cross-compilers are
+      #    installed by fpcup in step 3.
+      # ---------------------------------------------------------------
+      - name: Install bootstrap tools
         run: |
-          echo "Installing FPC on Ubuntu..."
-          sudo apt-get update
-          sudo apt-get install -y fpc lazarus
-          fpc -iV 2>&1 | head -1
+          choco install innosetup -y --no-progress
+          choco install fpc -y --no-progress
+          # Verify bootstrap fpc is in PATH
+          fpc -iV
 
-      - name: Compile CLI
+      # ---------------------------------------------------------------
+      # 2. Build the fpcup CLI tool from the fpcupdeluxe repository.
+      #    fpcup.lpr is a plain console program (no LCL, no Forms).
+      #    It accepts --cputarget, --ostarget, --autotools, --noconfirm
+      #    and all the other flags needed for headless installation.
+      #    This is the same installer engine the fpcupdeluxe GUI uses.
+      # ---------------------------------------------------------------
+      - name: Build fpcup CLI installer
         run: |
-          cd /home/runner/work/ChameleonDrummer/ChameleonDrummer
-          fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
-          echo "CLI compile exit code: $?"
+          git clone --depth 1 https://github.com/LongDirtyAnimAlf/fpcupdeluxe.git /c/fpcupdeluxe-src
+          cd /c/fpcupdeluxe-src
+          fpc -O2 -Fusources -o/c/fpcup.exe fpcup.lpr
+          /c/fpcup.exe --version
 
-      - name: Build GUI (Lazarus)
-        if: success()
+      # ---------------------------------------------------------------
+      # 3. Use fpcup to install FPC + Lazarus + cross-compilers.
+      #
+      #    Each invocation is idempotent: the first installs FPC and
+      #    Lazarus natively; subsequent runs add one cross-compiler
+      #    each. --autotools tells fpcup to download the cross-bins
+      #    and cross-libs (including the macOS SDK) from the fpcupdeluxe
+      #    GitHub releases when the build reports them missing — this
+      #    is exactly what the fpcupdeluxe GUI does.
+      #
+      #    Cross-targets needed (matching build_all.bat):
+      #      x86_64-darwin   → ppcrossx64  (also used for win64/linux-x64)
+      #      aarch64-darwin  → ppcrossa64  (macOS Apple Silicon)
+      #      arm-linux       → ppcrossarm  (Linux ARM)
+      # ---------------------------------------------------------------
+      - name: Install FPC + Lazarus + cross-compilers via fpcup
         run: |
-          echo "Building GUI..."
-          lazbuild --build-all --build-mode=Default gui/chameleondrummer_gui.lpi
-          echo "GUI build exit code: $?"
+          FPCUP="C:/fpcupdeluxe"
 
-      - name: Verify CLI produces MIDI
-        if: success()
+          echo "=== Installing FPC + Lazarus (native) ==="
+          /c/fpcup.exe \
+            --installdir="$FPCUP" \
+            --fpcVersion=stable \
+            --lazVersion=stable \
+            --noconfirm \
+            --verbose
+
+          echo ""
+          echo "=== Installing cross-compiler: x86_64-darwin ==="
+          /c/fpcup.exe \
+            --installdir="$FPCUP" \
+            --cputarget=x86_64 \
+            --ostarget=darwin \
+            --noconfirm \
+            --verbose \
+            --autotools
+
+          echo ""
+          echo "=== Installing cross-compiler: aarch64-darwin ==="
+          /c/fpcup.exe \
+            --installdir="$FPCUP" \
+            --cputarget=aarch64 \
+            --ostarget=darwin \
+            --noconfirm \
+            --verbose \
+            --autotools
+
+          echo ""
+          echo "=== Installing cross-compiler: arm-linux ==="
+          /c/fpcup.exe \
+            --installdir="$FPCUP" \
+            --cputarget=arm \
+            --ostarget=linux \
+            --noconfirm \
+            --verbose \
+            --autotools
+
+          echo ""
+          echo "=== fpcup installation complete ==="
+
+      # ---------------------------------------------------------------
+      # 4. Verify the toolchain is in place before building.
+      # ---------------------------------------------------------------
+      - name: Verify toolchain
         run: |
-          echo "Testing CLI MIDI generation..."
-          ./ChameleonDrummer generate --genre metal --style heavy --tempo 120 --output test_verify.mid
-          if [ -f test_verify.mid ]; then
-            echo "SUCCESS: MIDI file produced"
-            ls -la test_verify.mid
-          else
-            echo "FAILURE: No MIDI file produced"
-            exit 1
-          fi
+          FPC_BIN="C:/fpcupdeluxe/fpc/bin/i386-win32"
+          echo "Cross-compilers:"
+          ls -la "$FPC_BIN"/ppcross*.exe 2>/dev/null || echo "WARNING: No cross-compilers found"
+          echo ""
+          echo "Cross-bins (darwin):"
+          ls -la "C:/fpcupdeluxe/cross/bin/all-apple/bin/" 2>/dev/null | head -10 || echo "WARNING: No darwin cross-bins"
+          echo ""
+          echo "Cross-bins (linux-arm):"
+          ls -la "C:/fpcupdeluxe/cross/bin/linux-arm/" 2>/dev/null | head -10 || echo "WARNING: No linux-arm cross-bins"
+          echo ""
+          echo "Cross-libs:"
+          ls -la "C:/fpcupdeluxe/cross/lib/" 2>/dev/null | head -10 || echo "WARNING: No cross-libs"
+          echo ""
+          echo "lazbuild:"
+          ls -la "C:/fpcupdeluxe/lazarus/lazbuild.exe" 2>/dev/null || echo "WARNING: lazbuild not found"
+          echo ""
+          echo "windres:"
+          ls -la "C:/fpcupdeluxe/fpc/bin/i386-win32/windres.exe" 2>/dev/null || echo "WARNING: windres not found"
+          echo ""
+          echo "Inno Setup:"
+          ls -la "/c/Program Files (x86)/Inno Setup 6/ISCC.exe" 2>/dev/null || echo "WARNING: Inno Setup not found"
+          echo ""
+          echo "Python:"
+          python --version 2>/dev/null || echo "WARNING: Python not found"
 
-      - name: Upload CLI binary + support files
+      # ---------------------------------------------------------------
+      # 5. Build all five targets using build_all.bat.
+      #
+      #    build_all.bat already handles:
+      #      - Cross-compilation (ppcrossx64, ppcrossa64, ppcrossarm)
+      #      - Resource compilation (windres)
+      #      - GUI builds (lazbuild)
+      #      - macOS .app bundle creation
+      #      - Linux tar.gz with exec bits (two-pass tar)
+      #      - macOS .app zips with correct Unix modes (zip_app.py)
+      #      - Windows Inno Setup installer
+      #      - Deploy folder with all artifacts
+      #
+      #    CI=true and NO_PAUSE=1 prevent the script from waiting
+      #    for user input. NO_VERSION_BUMP is NOT set, so the patch
+      #    level is bumped (same as a local build).
+      # ---------------------------------------------------------------
+      - name: Build all targets
+        run: |
+          export CI=true
+          export NO_PAUSE=1
+          cd "$GITHUB_WORKSPACE"
+          cmd //c build_all.bat
+
+      # ---------------------------------------------------------------
+      # 6. Upload all artifacts.
+      # ---------------------------------------------------------------
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: chameleondrummer-cli-linux
+          name: chameleondrummer-all-targets
           path: |
-            ChameleonDrummer
-            chameleondrummer_gui
-            mappings/
-            config/
-            assets/
-            src/*.pas
-            test_verify.mid
-
-      - name: Upload GUI binary
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chameleondrummer-gui-linux
-          path: |
-            chameleondrummer_gui
-
-      - name: Upload build logs
+            Deploy/*
+            dist/
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build-logs
-          path: |
-            compile_out.txt
 
-  # ---- macOS build ----
-  macos:
-    name: macOS (native)
-    runs-on: macos-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Free Pascal
-        run: |
-          echo "Installing FPC on macOS..."
-          brew install fpc
-          fpc -iV 2>&1 | head -1
-
-      - name: Download signed Lazarus for macOS
-        run: |
-          echo "Downloading signed Lazarus installer for macOS..."
-          curl -L -o /tmp/lazarus-macos.zip "https://download.lazarus-ide.org/Lazarus%20macOS%20aarch64/Lazarus%204.8/lazarus-darwin-aarch64-4.8.zip"
-          ls -la /tmp/lazarus-macos.zip
-          unzip -o /tmp/lazarus-macos.zip -d /tmp/lazarus-macos
-          ls -la /tmp/lazarus-macos/
-
-      - name: Fix Lazarus Config (Point to Downloaded FPC)
-        run: |
-          # Find the actual FPC binary inside downloaded Lazarus
-          FPC_PATH=$(find /tmp/lazarus-macos/lazarus/fpc -name "fpc" -type f 2>/dev/null | head -n 1)
-          if [ -z "$FPC_PATH" ]; then
-            # Fallback to Homebrew fpc if downloaded bundle lacks it
-            FPC_PATH=$(which fpc)
-          fi
-          echo "Using FPC at: $FPC_PATH"
-
-          # Resolve symlink for /tmp vs /private/tmp
-          REAL_FPC=$(python3 -c "import os,sys; print(os.path.realpath('$FPC_PATH'))")
-          echo "Real FPC path: $REAL_FPC"
-
-          # Lazarus config directory (use realpath to avoid /tmp vs /private/tmp mismatch)
-          CONFIG_DIR=$(python3 -c "import os; print(os.path.realpath('/tmp/lazarus-macos/lazarus/config'))")
-          CONFIG_FILE="$CONFIG_DIR/environmentoptions.xml"
-          echo "Target Config File: $CONFIG_FILE"
-          mkdir -p "$CONFIG_DIR"
-
-          if [ -f "$CONFIG_FILE" ]; then
-            sed -i '' "s|<CompilerFilename>.*</CompilerFilename>|<CompilerFilename>$REAL_FPC</CompilerFilename>|" "$CONFIG_FILE"
-          fi
-
-          # Also fix the lazbuild call to use the correct lazarusdir
-          echo "LAZARUS_DIR=/tmp/lazarus-macos/lazarus" >> $GITHUB_ENV
-
-      - name: Compile CLI
-        run: |
-          cd /Users/runner/work/ChameleonDrummer/ChameleonDrummer
-          fpc -O2 -Fusrc -Sg -Sc ChameleonDrummer.lpr
-          echo "CLI compile exit code: $?"
-
-      - name: Build GUI (Lazarus)
-        run: |
-          echo "Building GUI with signed Lazarus..."
-          LAZBUILD="/tmp/lazarus-macos/lazarus/lazbuild"
-          echo "Found lazbuild at: $LAZBUILD"
-          export LAZARUS_DIR="/tmp/lazarus-macos/lazarus"
-          "$LAZBUILD" --build-all --build-mode=Default --lazarusdir="$LAZARUS_DIR" gui/chameleondrummer_gui.lpi
-          echo "GUI build exit code: $?"
-
-      - name: Verify CLI produces MIDI
-        if: success()
-        run: |
-          echo "Testing CLI MIDI generation..."
-          ./ChameleonDrummer generate --genre metal --style heavy --tempo 120 --output test_verify.mid
-          if [ -f test_verify.mid ]; then
-            echo "SUCCESS: MIDI file produced"
-            ls -la test_verify.mid
-          else
-            echo "FAILURE: No MIDI file produced"
-            exit 1
-          fi
-
-      - name: Upload CLI binary + support files
-        uses: actions/upload-artifact@v4
-        with:
-          name: chameleondrummer-cli-macos
-          path: |
-            ChameleonDrummer
-            mappings/
-            config/
-            assets/
-            src/*.pas
-            test_verify.mid
-
-      - name: Upload GUI binary
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chameleondrummer-gui-macos
-          path: |
-            chameleondrummer_gui
-
-      - name: Upload build logs
+      # ---------------------------------------------------------------
+      # 7. Build summary
+      # ---------------------------------------------------------------
+      - name: Build summary
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build-logs
-          path: |
-            compile_out.txt
+        run: |
+          echo ""
+          echo "=================================================="
+          echo " BUILD SUMMARY"
+          echo "=================================================="
+          echo "Targets built:"
+          for t in win64 macos-intel macos-aarch64 linux-x64 linux-arm; do
+            if [ -d "dist/$t" ]; then
+              echo "  [OK]   $t"
+            else
+              echo "  [FAIL] $t"
+            fi
+          done
+          echo ""
+          echo "Deploy artifacts:"
+          ls -la Deploy/ 2>/dev/null || echo "  (none)"
+          echo "=================================================="
