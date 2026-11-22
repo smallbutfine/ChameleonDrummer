@@ -202,6 +202,28 @@ if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
     echo   OK: chameleondrummer_gui-macos-aarch64.app
 )
 
+REM Zip the macOS bundles for GitHub Releases.
+REM Do NOT use Compress-Archive or bsdtar here: Windows/NTFS has no executable
+REM bit, so both would store the binaries as 0644 and they would not run after
+REM extraction on macOS. tools/zip_app.py writes explicit Unix modes instead
+REM (0755 for Contents/MacOS and Contents/Resources/tools, 0644 otherwise).
+if exist "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.app" (
+    python "%ROOT%\tools\zip_app.py" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.app" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.zip"
+    if errorlevel 1 (
+        echo   WARNING: failed to zip macos-intel bundle
+    ) else (
+        echo   OK: chameleondrummer_gui!DETECTED_VERSION!-macos-intel.zip
+    )
+)
+if exist "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.app" (
+    python "%ROOT%\tools\zip_app.py" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.app" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.zip"
+    if errorlevel 1 (
+        echo   WARNING: failed to zip macos-aarch64 bundle
+    ) else (
+        echo   OK: chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.zip
+    )
+)
+
 echo.
 echo   All packages copied to %ROOT%\Deploy\
 echo.

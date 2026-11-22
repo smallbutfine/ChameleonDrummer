@@ -212,6 +212,28 @@ Verified: intel bundle = x86_64, aarch64 = arm64, Linux tarballs carry
 `tools/{midi_to_tab,step_editor}` with no extension, no stale `.app`/`.exe`
 anywhere, and the Windows installer still ships `tools/*.exe`.
 
+## Follow-up: zip macOS bundles for GitHub Releases (2026-11-22)
+
+The macOS `.app` bundles were only deployed as loose folders, which are awkward
+to attach to a GitHub Release. Added a zip step.
+
+**Non-obvious constraint:** Windows/NTFS has no executable bit, so the usual
+tools produce archives whose binaries are `0644` and will not run after
+extraction on macOS:
+
+- `Compress-Archive` (PowerShell) -> `mode=0o0`, no permission bits at all
+- `bsdtar` (Windows `tar.exe`) -> `mode=0o666`
+- `chmod +x` before zipping -> does not stick on this NTFS mount
+
+`tools/zip_app.py` writes the archive with explicit Unix modes instead:
+`0755` for `Contents/MacOS/*` and `Contents/Resources/tools/*`, `0644`
+otherwise, with `create_system=3` so macOS Archive Utility honours them.
+Archive paths are relative to the bundle's parent, so extracting yields
+`chameleondrummer_gui<ver>-macos-<arch>.app/` rather than `Deploy/...`.
+
+Verified: both zips contain 55 entries (matching the bundle), store `0755` for
+all four executables, and `bsdtar -tvf` reports `-rwxr-xr-x`.
+
 ---
 
 ## Notes / decisions log

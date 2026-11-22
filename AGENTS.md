@@ -79,6 +79,10 @@ winning a `move`. The real fix was two lines in the build script.
   `TProcess`. Do not wrap them in `.app` bundles.
 - **Executable naming follows the platform:** `tool.exe` on Windows, `tool` with
   no extension on macOS and Linux.
+- **Never zip the macOS bundles with `Compress-Archive` or `bsdtar`.** Windows/NTFS
+  has no executable bit, so both store the binaries as `0644`/`0666` and they will
+  not run after extraction on macOS. Use `tools/zip_app.py`, which writes explicit
+  Unix modes (`0755` for `Contents/MacOS/*` and `Contents/Resources/tools/*`).
 
 ---
 
