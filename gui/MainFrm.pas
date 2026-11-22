@@ -843,7 +843,8 @@ var
   P: TProcess;
   StepExe: String;
 begin
-  StepExe := ExtractFilePath(ParamStr(0)) + 'tools' + PathDelim + 'step_editor.exe';
+  StepExe := ExtractFilePath(ParamStr(0)) + 'tools' + PathDelim + 'step_editor' +
+    {$IFDEF MSWINDOWS}'.exe'{$ELSE}''{$ENDIF};
   if not FileExists(StepExe) then begin
     Log('Step editor not found: ' + StepExe);
     Exit;

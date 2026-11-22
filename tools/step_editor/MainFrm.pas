@@ -502,12 +502,13 @@ begin
     Args[High(Args)] := '--fill';
   end;
 
-  // Always resolve midi_to_tab.exe relative to this exe's parent directory
-  MidiToTab := ExtractFilePath(ParamStr(0)) + 'midi_to_tab.exe';
+  // Always resolve midi_to_tab relative to this exe's own directory
+  MidiToTab := ExtractFilePath(ParamStr(0)) + 'midi_to_tab' +
+    {$IFDEF MSWINDOWS}'.exe'{$ELSE}''{$ENDIF};
 
   if not FileExists(MidiToTab) then
   begin
-    UpdateStatus('midi_to_tab.exe not found at: ' + MidiToTab);
+    UpdateStatus('midi_to_tab not found at: ' + MidiToTab);
     Exit;
   end;
 

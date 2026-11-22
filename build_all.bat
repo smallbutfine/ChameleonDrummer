@@ -188,11 +188,16 @@ if exist "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" (
 )
 
 REM Copy macOS .app bundles
+REM xcopy merges into an existing directory, so a bundle from an earlier build
+REM would keep files that no longer exist (e.g. a removed step_editor.app). Clear
+REM the version-stamped destination first so the deployed bundle is exact.
 if exist "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" (
+    if exist "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.app" rmdir /s /q "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.app"
     xcopy /y /e /i "%OUT_ROOT%\macos-intel\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-intel.app" >nul
     echo   OK: chameleondrummer_gui-macos-intel.app
 )
 if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
+    if exist "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.app" rmdir /s /q "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.app"
     xcopy /y /e /i "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" "%ROOT%\Deploy\chameleondrummer_gui!DETECTED_VERSION!-macos-aarch64.app" >nul
     echo   OK: chameleondrummer_gui-macos-aarch64.app
 )
@@ -385,14 +390,15 @@ if "%T_OS%"=="darwin" (
     echo   WARNING: chameleondrummer_gui not found at expected locations
 )
 
-REM step_editor.lpi target is step_editor.exe; lazbuild links step_editor.exe even
-REM for darwin (it does not emit a .app). Keep the .exe name here: :make_app_bundle
-REM accepts a .exe and renames it to Contents/MacOS/step_editor. A stale
-REM step_editor.app must never win - the clean step removes it.
+REM step_editor is a plain helper tool, not an .app bundle: the main GUI launches
+REM tools\step_editor(.exe) and step_editor itself resolves midi_to_tab as its own
+REM sibling. The executable name must match the platform convention - .exe on
+REM Windows, no extension everywhere else - because the Pascal resolves it
+REM conditionally. lazbuild links step_editor.exe even for darwin, so rename it.
 if "%T_OS%"=="darwin" (
     if exist "%ROOT%\tools\step_editor\step_editor.exe" (
-        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor.exe" >nul 2>&1
-        echo   moved tools\step_editor\step_editor.exe
+        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor" >nul 2>&1
+        echo   moved tools\step_editor\step_editor.exe -^> step_editor
     ) else if exist "%ROOT%\tools\step_editor\step_editor" (
         move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\step_editor" >nul 2>&1
         echo   moved tools\step_editor\step_editor
@@ -400,8 +406,15 @@ if "%T_OS%"=="darwin" (
         echo   WARNING: step_editor build output not found at expected locations
     )
 ) else if exist "%ROOT%\tools\step_editor\step_editor.exe" (
-    move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\" >nul 2>&1
-    echo   moved tools\step_editor\step_editor.exe
+    REM Non-darwin, non-Windows (Linux): the Pascal resolves the extension
+    REM conditionally, so the binary must be named step_editor with no extension.
+    if "%T_OS%"=="win64" (
+        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor.exe" >nul 2>&1
+        echo   moved tools\step_editor\step_editor.exe
+    ) else (
+        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor" >nul 2>&1
+        echo   moved tools\step_editor\step_editor.exe -^> step_editor
+    )
 ) else if exist "%ROOT%\tools\step_editor\step_editor" (
     move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\" >nul 2>&1
     echo   moved tools\step_editor\step_editor
@@ -471,15 +484,33 @@ if "%T_OS%"=="darwin" (
     )
     call :make_app_bundle "%TD%" "chameleondrummer_gui" "ChameleonDrummer"
 
-    REM step_editor.app belongs INSIDE the main bundle (Contents/Resources/tools),
-    REM not as a separate top-level bundle - Deploy only ships chameleondrummer_gui.app.
+    REM step_editor is a plain helper tool, not an .app bundle: the main GUI launches
+    REM tools\step_editor(.exe) directly (gui\MainFrm.pas), and step_editor itself resolves
+    REM midi_to_tab as its own sibling. Both must sit next to each other in
+    REM Contents\Resources\tools, using the platform's executable naming
+    REM (no extension on macOS - the Pascal resolves it conditionally).
+    REM NOTE: MAIN_RES_TOOLS is set and used with delayed expansion (!VAR!). Using
+    REM %VAR% here would expand at parse time - i.e. to the value left over from the
+    REM previous target - and copy this target's tools into the previous bundle.
     set "MAIN_RES_TOOLS=%TD%\chameleondrummer_gui.app\Contents\Resources\tools"
-    if exist "%TD%\tools\step_editor.exe" (
-        if not exist "!MAIN_RES_TOOLS!" mkdir "!MAIN_RES_TOOLS!"
-        copy /y "%TD%\tools\step_editor.exe" "!MAIN_RES_TOOLS!\step_editor.exe" >nul 2>&1
-        call :make_app_bundle "!MAIN_RES_TOOLS!" "step_editor" "StepEditor"
+    if not exist "!MAIN_RES_TOOLS!" mkdir "!MAIN_RES_TOOLS!"
+    if exist "%TD%\tools\step_editor" (
+        copy /y "%TD%\tools\step_editor" "!MAIN_RES_TOOLS!\step_editor" >nul 2>&1
+        echo   OK: step_editor -^> Contents/Resources/tools
+    ) else if exist "%TD%\tools\step_editor.exe" (
+        copy /y "%TD%\tools\step_editor.exe" "!MAIN_RES_TOOLS!\step_editor" >nul 2>&1
+        echo   OK: step_editor -^> Contents/Resources/tools
     ) else (
-        echo   WARNING: step_editor.exe not found - skipping step_editor.app
+        echo   WARNING: step_editor not found - step editor will be unavailable
+    )
+    if exist "%TD%\tools\midi_to_tab" (
+        copy /y "%TD%\tools\midi_to_tab" "!MAIN_RES_TOOLS!\midi_to_tab" >nul 2>&1
+        echo   OK: midi_to_tab -^> Contents/Resources/tools
+    ) else if exist "%TD%\tools\midi_to_tab.exe" (
+        copy /y "%TD%\tools\midi_to_tab.exe" "!MAIN_RES_TOOLS!\midi_to_tab" >nul 2>&1
+        echo   OK: midi_to_tab -^> Contents/Resources/tools
+    ) else (
+        echo   WARNING: midi_to_tab not found
     )
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
