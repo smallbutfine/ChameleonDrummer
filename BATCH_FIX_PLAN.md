@@ -126,6 +126,10 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done + verified, `[-]` dropped (rea
       never copied to `Deploy/`. Fixed both the source and destination names;
       verified `Deploy/ChameleonDrummer1.1.477-linux-{x64,arm}.tar.gz` now appear
       and their `mappings/*.json` checksums match the canonical root.
+      FOLLOW-UP: `src/mappings/` was referenced by nothing after the installer
+      change, so the stale duplicate was deleted (commit 9aae1243). Re-ran the
+      full build: 5/5 OK, no mappings warnings, and the Linux/macOS/Windows
+      artifacts all carry the canonical `mappings/` checksums.
 
 - [x] **P3.3** `Assets\version.txt` is mutated on every build (L58-65), making
       builds non-idempotent and dirtying the working tree.
