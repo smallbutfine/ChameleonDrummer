@@ -177,14 +177,14 @@ echo.
 echo [Deploy] Creating Deploy folder...
 if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 
-REM Copy Linux tar.gz packages
-if exist "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" >nul
-    echo   OK: ChameleonDrummer-linux-x64.tar.gz
+REM Copy Linux tar.gz packages (packaging writes version-stamped names)
+if exist "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" (
+    copy /y "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" >nul
+    echo   OK: ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz
 )
-if exist "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" >nul
-    echo   OK: ChameleonDrummer-linux-arm.tar.gz
+if exist "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" (
+    copy /y "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" >nul
+    echo   OK: ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz
 )
 
 REM Copy macOS .app bundles
