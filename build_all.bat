@@ -141,27 +141,15 @@ for /f "tokens=*" %%i in ('cscript //nologo "%VBS_GUID%"') do set "NEW_GUID=%%i"
 del "%VBS_GUID%" >nul 2>&1
 set "NEW_GUID=%NEW_GUID:~0,38%"
 
-REM --- Verify tools ---
-if not exist "%FPC%" (
-    echo ERROR: fpc.exe not found at %FPC%
-    echo   Install fpcupdeluxe cross-compilers first.
-    exit /b 1
-)
-if not exist "%LAZBUILD%" (
-    echo ERROR: lazbuild.exe not found at %LAZBUILD%
-    exit /b 1
-)
-if not exist "%FPC_DIR%\ppcrossx64.exe" (
-    echo ERROR: ppcrossx64.exe not found - x86_64 cross-compiler missing
-    exit /b 1
-)
-if not exist "%FPC_DIR%\ppcrossa64.exe" (
-    echo ERROR: ppcrossa64.exe not found - aarch64 cross-compiler missing
-    exit /b 1
-)
-if not exist "%FPC_DIR%\ppcrossarm.exe" (
-    echo ERROR: ppcrossarm.exe not found - arm cross-compiler missing
-    exit /b 1
+REM --- Verify tools (also used by --check) ---
+call :verify_tools
+if errorlevel 1 exit /b 1
+
+REM --- --check: report readiness and exit without building ---
+if /i "%~1"=="--check" (
+    echo.
+    echo All required tools found - ready to build.
+    exit /b 0
 )
 
 if not exist "%OUT_ROOT%" mkdir "%OUT_ROOT%"
@@ -637,6 +625,43 @@ endlocal
 
 echo   OK: %BUNDLE_EXE%.app
 goto :eof
+
+REM ============================================================
+REM Helper: verify the toolchain is present
+REM Returns 1 if any required tool is missing.
+REM ============================================================
+:verify_tools
+set "TOOLS_OK=1"
+if not exist "%FPC%" (
+    echo ERROR: fpc.exe not found at %FPC%
+    echo   Install fpcupdeluxe cross-compilers first.
+    set "TOOLS_OK=0"
+)
+if not exist "%LAZBUILD%" (
+    echo ERROR: lazbuild.exe not found at %LAZBUILD%
+    set "TOOLS_OK=0"
+)
+if not exist "%FPC_DIR%\ppcrossx64.exe" (
+    echo ERROR: ppcrossx64.exe not found - x86_64 cross-compiler missing
+    set "TOOLS_OK=0"
+)
+if not exist "%FPC_DIR%\ppcrossa64.exe" (
+    echo ERROR: ppcrossa64.exe not found - aarch64 cross-compiler missing
+    set "TOOLS_OK=0"
+)
+if not exist "%FPC_DIR%\ppcrossarm.exe" (
+    echo ERROR: ppcrossarm.exe not found - arm cross-compiler missing
+    set "TOOLS_OK=0"
+)
+if not exist "%FPC_DIR%\windres.exe" (
+    echo ERROR: windres.exe not found at %FPC_DIR%\windres.exe
+    set "TOOLS_OK=0"
+)
+if "%TOOLS_OK%"=="1" (
+    echo Tools OK: fpc, lazbuild, ppcrossx64, ppcrossa64, ppcrossarm, windres
+    exit /b 0
+)
+exit /b 1
 
 REM ============================================================
 REM Helper: copy a file/glob, warning instead of failing silently
