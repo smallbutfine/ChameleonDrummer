@@ -35,7 +35,10 @@ if not "%APP_NAME_FROM_FILE%"=="" (
     set "LPR_FILE=%APP_NAME%.lpr"
 )
 
-REM --- Read version from assets/version.txt and increment build counter ---
+REM --- Read version from Assets/version.txt and increment build counter ---
+REM The patch level is bumped on every build so that version-stamped artifacts
+REM (installer, tarballs, bundles) never collide. Set NO_VERSION_BUMP=1 to build
+REM the version currently in version.txt without rewriting it (idempotent builds).
 
 set "DETECTED_VERSION=1.1.0"
 
@@ -59,7 +62,7 @@ if exist "%ROOT%\Assets\version.txt" (
 
 )
 
-set /a PATCH=%PATCH% + 1
+if not defined NO_VERSION_BUMP set /a PATCH=%PATCH% + 1
 
 set "DETECTED_VERSION=!MAJOR!.!MINOR!.!PATCH!"
 set "VERSION_COMMAS=!MAJOR!,!MINOR!,!PATCH!"
@@ -67,7 +70,7 @@ set "VERSION_COMMAS=!MAJOR!,!MINOR!,!PATCH!"
 REM --- Clean previous output directory (del cannot remove a directory) ---
 if exist "%ROOT%\dist" rmdir /s /q "%ROOT%\dist"
 
-echo !MAJOR!.!MINOR!.!PATCH! > "%ROOT%\Assets\version.txt"
+if not defined NO_VERSION_BUMP echo !MAJOR!.!MINOR!.!PATCH!>"%ROOT%\Assets\version.txt"
 
 echo Build version: !DETECTED_VERSION!
 
