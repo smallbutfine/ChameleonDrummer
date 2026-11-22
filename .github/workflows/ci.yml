@@ -42,12 +42,33 @@ jobs:
       # ---------------------------------------------------------------
       - name: Build fpcup CLI installer
         run: |
-          # The chocolatey FPC install has no fpc.cfg, so fpc cannot
-          # find its own units (FileUtil, etc.). Generate one with
-          # fpcmkcfg, which ships with every FPC install.
-          fpcmkcfg -d basepath=C:/tools/freepascal -o C:/tools/freepascal/bin/i386-win32/fpc.cfg
+          # --- DEBUG: inspect what the chocolatey FPC install actually ---
+          # --- put on disk, and whether fpcmkcfg works.             ---
+          echo "=== FPC bin dir ==="
+          ls -la /c/tools/freepascal/bin/i386-win32/ | head -20
+          echo ""
+          echo "=== FPC units dir ==="
+          ls -la /c/tools/freepascal/units/ 2>/dev/null || echo "NO units dir"
+          echo ""
+          echo "=== fcl-base units ==="
+          find /c/tools/freepascal/units/ -name 'FileUtil.ppu' 2>/dev/null || echo "FileUtil.ppu NOT FOUND"
+          echo ""
+          echo "=== fpcmkcfg location ==="
+          which fpcmkcfg 2>/dev/null || echo "fpcmkcfg NOT in PATH"
+          echo ""
+          echo "=== Generate fpc.cfg ==="
+          fpcmkcfg -d basepath=C:/tools/freepascal -o C:/tools/freepascal/bin/i386-win32/fpc.cfg 2>&1 || echo "fpcmkcfg FAILED"
+          echo ""
+          echo "=== fpc.cfg contents ==="
+          cat /c/tools/freepascal/bin/i386-win32/fpc.cfg 2>/dev/null || echo "NO fpc.cfg"
+          echo ""
+          echo "=== fpc -iV ==="
           fpc -iV
+          echo ""
+          echo "=== fpc -vu -? (verbose help) ==="
+          fpc -vu 2>&1 | head -5 || true
 
+          # --- Actual build ---
           git clone --depth 1 https://github.com/LongDirtyAnimAlf/fpcupdeluxe.git /c/fpcupdeluxe-src
           cd /c/fpcupdeluxe-src
           fpc -O2 -Fusources -o/c/fpcup.exe fpcup.lpr
