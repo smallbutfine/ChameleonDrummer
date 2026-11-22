@@ -120,6 +120,12 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done + verified, `[-]` dropped (rea
       what the runtime loads (`ExtractFilePath(ParamStr(0)) + 'mappings'`).
       Changed `installer.iss` to `..\mappings\*.json`. Verified both now resolve to
       the same root `mappings\` directory.
+      BONUS BUG FOUND (via full build): the Deploy step looked for the *unstamped*
+      `ChameleonDrummer-linux-x64.tar.gz`, but packaging writes the *stamped*
+      `ChameleonDrummer<ver>-linux-x64.tar.gz`, so Linux tarballs were silently
+      never copied to `Deploy/`. Fixed both the source and destination names;
+      verified `Deploy/ChameleonDrummer1.1.477-linux-{x64,arm}.tar.gz` now appear
+      and their `mappings/*.json` checksums match the canonical root.
 
 - [x] **P3.3** `Assets\version.txt` is mutated on every build (L58-65), making
       builds non-idempotent and dirtying the working tree.
