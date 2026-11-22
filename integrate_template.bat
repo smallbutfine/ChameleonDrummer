@@ -200,10 +200,11 @@ echo  1. Review build_all.bat:
 echo     - Adjust the 'call :do_target' lines if you need
 echo       different targets (default: win64, macos-intel,
 echo       macos-aarch64, linux-x64, linux-arm)
-echo     - Remove or adapt the midi_to_tab and step_editor
-echo       sections if your project doesn't have those tools
 echo     - Adjust the support file copy section at the bottom
 echo       to match your project's assets
+echo     - If your project has helper tools, add their build
+echo       sections following the pattern of the main CLI/GUI
+echo       builds
 echo.
 echo  2. Review installer/installer.iss:
 echo     - Adjust the [Files] section to match your project's

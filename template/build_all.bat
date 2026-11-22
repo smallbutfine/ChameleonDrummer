@@ -267,7 +267,6 @@ echo  Target: %T_NAME%  (%T_OS% %T_CPU% %T_WS%)
 echo ==================================================
 
 if not exist "%TD%" mkdir "%TD%"
-if not exist "%TD%\tools" mkdir "%TD%\tools"
 
 REM --- Clean previous build artifacts ---
 echo [Clean] Removing previous build artifacts...
@@ -275,10 +274,6 @@ del /q "%ROOT%\*.o" "%ROOT%\*.ppu" "%ROOT%\*.exe" "%ROOT%\*.res" 2>nul
 rmdir /s /q "%ROOT%\%APP_NAME%_gui.app" 2>nul
 del /q "%ROOT%\gui\*.o" "%ROOT%\gui\*.ppu" "%ROOT%\gui\*.exe" "%ROOT%\gui\*.res" 2>nul
 del /q "%ROOT%\gui\lib\*.o" "%ROOT%\gui\lib\*.ppu" 2>nul
-del /q "%ROOT%\tools\*.o" "%ROOT%\tools\*.ppu" "%ROOT%\tools\*.exe" "%ROOT%\tools\*.res" 2>nul
-del /q "%ROOT%\tools\step_editor\*.o" "%ROOT%\tools\step_editor\*.ppu" "%ROOT%\tools\step_editor\*.exe" "%ROOT%\tools\step_editor\*.res" 2>nul
-rmdir /s /q "%ROOT%\tools\step_editor\step_editor.app" 2>nul
-del /q "%ROOT%\tools\step_editor\lib\*.o" "%ROOT%\tools\step_editor\lib\*.ppu" 2>nul
 del /q "%ROOT%\src\*.o" "%ROOT%\src\*.ppu" 2>nul
 
 REM --- Select compiler ---
@@ -313,24 +308,10 @@ if "%T_OS%"=="win64" (
         goto :target_failed
     )
     echo   OK
-    echo [Res] Compiling midi_to_tab resource file...
-    "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\tools\midi_to_tab.rc" -o "%ROOT%\tools\midi_to_tab.res" --target=pe-x86-64
-    if errorlevel 1 (
-        echo   ERROR: midi_to_tab resource compilation failed
-        goto :target_failed
-    )
-    echo   OK
     echo [Res] Compiling %APP_NAME%_gui resource file...
     "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\gui\%APP_NAME%_gui.rc" -o "%ROOT%\gui\%APP_NAME%_gui.res" --target=pe-x86-64
     if errorlevel 1 (
         echo   ERROR: %APP_NAME%_gui resource compilation failed
-        goto :target_failed
-    )
-    echo   OK
-    echo [Res] Compiling step_editor resource file...
-    "%FPC_DIR%\windres.exe" --preprocessor="type" -i "%ROOT%\tools\step_editor\step_editor.rc" -o "%ROOT%\tools\step_editor\step_editor.res" --target=pe-x86-64
-    if errorlevel 1 (
-        echo   ERROR: step_editor resource compilation failed
         goto :target_failed
     )
     echo   OK
@@ -353,40 +334,12 @@ if errorlevel 1 (
 popd
 echo   OK
 
-REM --- CLI: midi_to_tab ---
-echo.
-echo [CLI] midi_to_tab...
-if not exist "%TD%\tools" mkdir "%TD%\tools"
-pushd "%ROOT%"
-if errorlevel 1 (
-    echo   ERROR: pushd failed
-    goto :target_failed
-)
-"%CC%" %CC_FLAGS% -Fu"%ROOT%\src" -FE"%TD%\tools" "tools\midi_to_tab.lpr"
-if errorlevel 1 (
-    echo   ERROR: midi_to_tab CLI build failed
-    popd
-    goto :target_failed
-)
-popd
-echo   OK
-
 REM --- GUI: %APP_NAME%_gui ---
 echo.
 echo [GUI] %APP_NAME%_gui...
 "%LAZBUILD%" --os=%T_OS% --cpu=%T_CPU% --ws=%T_WS% --build-all "%ROOT%\gui\%APP_NAME%_gui.lpi"
 if errorlevel 1 (
     echo   ERROR: %APP_NAME%_gui build failed
-    goto :target_failed
-)
-echo   OK
-
-REM --- GUI: step_editor ---
-echo.
-echo [GUI] step_editor...
-"%LAZBUILD%" --os=%T_OS% --cpu=%T_CPU% --ws=%T_WS% --build-all "%ROOT%\tools\step_editor\step_editor.lpi"
-if errorlevel 1 (
-    echo   ERROR: step_editor build failed
     goto :target_failed
 )
 echo   OK
@@ -419,81 +372,30 @@ if "%T_OS%"=="darwin" (
     echo   WARNING: %APP_NAME%_gui not found at expected locations
 )
 
-REM step_editor is a plain helper tool, not an .app bundle: the main GUI launches
-REM tools\step_editor(.exe) and step_editor itself resolves midi_to_tab as its own
-REM sibling. The executable name must match the platform convention - .exe on
-REM Windows, no extension everywhere else - because the Pascal resolves it
-REM conditionally. lazbuild links step_editor.exe even for darwin, so rename it.
-if "%T_OS%"=="darwin" (
-    if exist "%ROOT%\tools\step_editor\step_editor.exe" (
-        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor" >nul 2>&1
-        echo   moved tools\step_editor\step_editor.exe -^> step_editor
-    ) else if exist "%ROOT%\tools\step_editor\step_editor" (
-        move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\step_editor" >nul 2>&1
-        echo   moved tools\step_editor\step_editor
-    ) else (
-        echo   WARNING: step_editor build output not found at expected locations
-    )
-) else if exist "%ROOT%\tools\step_editor\step_editor.exe" (
-    REM Non-darwin, non-Windows (Linux): the Pascal resolves the extension
-    REM conditionally, so the binary must be named step_editor with no extension.
-    if "%T_OS%"=="win64" (
-        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor.exe" >nul 2>&1
-        echo   moved tools\step_editor\step_editor.exe
-    ) else (
-        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor" >nul 2>&1
-        echo   moved tools\step_editor\step_editor.exe -^> step_editor
-    )
-) else if exist "%ROOT%\tools\step_editor\step_editor" (
-    move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\" >nul 2>&1
-    echo   moved tools\step_editor\step_editor
-) else if exist "%ROOT%\tools\step_editor.exe" (
-    move /y "%ROOT%\tools\step_editor.exe" "%TD%\tools\" >nul 2>&1
-    echo   moved tools\step_editor.exe
-) else if exist "%ROOT%\step_editor.exe" (
-    move /y "%ROOT%\step_editor.exe" "%TD%\tools\" >nul 2>&1
-    echo   moved step_editor.exe
-) else if exist "%ROOT%\step_editor" (
-    move /y "%ROOT%\step_editor" "%TD%\tools\" >nul 2>&1
-    echo   moved step_editor
-) else (
-    echo   WARNING: step_editor not found at expected locations
-)
+REM ============================================================
+REM TEMPLATE: If your project has helper tools (CLI or GUI) that
+REM should be built alongside the main programs, add their build
+REM and move sections here. Follow the same pattern as the main
+REM CLI and GUI builds above.
+REM ============================================================
 
 REM --- Copy support files (matches installer.iss expectations) ---
 echo.
 echo [Files] Copying support files...
 
-REM mappings (project root, not src/)
-if not exist "%TD%\mappings" mkdir "%TD%\mappings"
-call :copy_glob "%ROOT%\mappings\*.json" "%TD%\mappings\" "mappings"
+REM TEMPLATE: Adjust these copy commands to match your project's
+REM assets. The examples below cover common directories.
+REM Remove or add lines as needed.
 
-REM Assets/GMD
-if not exist "%TD%\Assets\GMD" mkdir "%TD%\Assets\GMD"
-call :copy_glob "%ROOT%\Assets\GMD\*" "%TD%\Assets\GMD\" "Assets/GMD"
+REM Assets
+if not exist "%TD%\Assets" mkdir "%TD%\Assets"
+call :copy_glob "%ROOT%\Assets\*" "%TD%\Assets\" "Assets"
 
-REM Ardour lua
-if not exist "%TD%\ardour" mkdir "%TD%\ardour"
-call :copy_glob "%ROOT%\ardour\*.lua" "%TD%\ardour\" "ardour"
-
-REM Config root
+REM Config
 if not exist "%TD%\config" mkdir "%TD%\config"
 call :copy_glob "%ROOT%\config\*.ini" "%TD%\config\" "config/*.ini"
 call :copy_glob "%ROOT%\config\*.json" "%TD%\config\" "config/*.json"
 call :copy_glob "%ROOT%\config\*.txt" "%TD%\config\" "config/*.txt"
-
-REM Config subdirs
-if not exist "%TD%\config\grooves" mkdir "%TD%\config\grooves"
-call :copy_glob "%ROOT%\config\grooves\*.tab" "%TD%\config\grooves\" "config/grooves"
-
-if not exist "%TD%\config\fills" mkdir "%TD%\config\fills"
-call :copy_glob "%ROOT%\config\fills\*.tab" "%TD%\config\fills\" "config/fills"
-
-if not exist "%TD%\config\defaults" mkdir "%TD%\config\defaults"
-call :copy_glob "%ROOT%\config\defaults\*.ini" "%TD%\config\defaults" "config/defaults"
-
-if not exist "%TD%\config\sections" mkdir "%TD%\config\sections"
-call :copy_glob "%ROOT%\config\sections\*.json" "%TD%\config\sections" "config/sections"
 
 REM Root docs
 call :copy_glob "%ROOT%\LICENSE" "%TD%\" "LICENSE"
@@ -512,35 +414,6 @@ if "%T_OS%"=="darwin" (
         copy /y "%TD%\%APP_NAME%.exe" "%TD%\%APP_NAME%_gui" >nul 2>&1
     )
     call :make_app_bundle "%TD%" "%APP_NAME%_gui" "%APP_NAME%"
-
-    REM step_editor is a plain helper tool, not an .app bundle: the main GUI launches
-    REM tools\step_editor(.exe) directly, and step_editor itself resolves
-    REM midi_to_tab as its own sibling. Both must sit next to each other in
-    REM Contents\Resources\tools, using the platform's executable naming
-    REM (no extension on macOS - the Pascal resolves it conditionally).
-    REM NOTE: MAIN_RES_TOOLS is set and used with delayed expansion (!VAR!). Using
-    REM %VAR% here would expand at parse time - i.e. to the value left over from the
-    REM previous target - and copy this target's tools into the previous bundle.
-    set "MAIN_RES_TOOLS=%TD%\%APP_NAME%_gui.app\Contents\Resources\tools"
-    if not exist "!MAIN_RES_TOOLS!" mkdir "!MAIN_RES_TOOLS!"
-    if exist "%TD%\tools\step_editor" (
-        copy /y "%TD%\tools\step_editor" "!MAIN_RES_TOOLS!\step_editor" >nul 2>&1
-        echo   OK: step_editor -^> Contents/Resources/tools
-    ) else if exist "%TD%\tools\step_editor.exe" (
-        copy /y "%TD%\tools\step_editor.exe" "!MAIN_RES_TOOLS!\step_editor" >nul 2>&1
-        echo   OK: step_editor -^> Contents/Resources/tools
-    ) else (
-        echo   WARNING: step_editor not found - step editor will be unavailable
-    )
-    if exist "%TD%\tools\midi_to_tab" (
-        copy /y "%TD%\tools\midi_to_tab" "!MAIN_RES_TOOLS!\midi_to_tab" >nul 2>&1
-        echo   OK: midi_to_tab -^> Contents/Resources/tools
-    ) else if exist "%TD%\tools\midi_to_tab.exe" (
-        copy /y "%TD%\tools\midi_to_tab.exe" "!MAIN_RES_TOOLS!\midi_to_tab" >nul 2>&1
-        echo   OK: midi_to_tab -^> Contents/Resources/tools
-    ) else (
-        echo   WARNING: midi_to_tab not found
-    )
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
     pushd "%OUT_ROOT%"
@@ -556,13 +429,13 @@ if "%T_OS%"=="darwin" (
     REM NOTE: use a POSIX-style temp path. GNU tar (first on PATH in Git Bash)
     REM reads "C:/..." as a remote host and fails with "Cannot connect to C:".
     set "TARBALL=/tmp/mytmp_%T_NAME%.tar"
-    tar -cf "!TARBALL!" --exclude="%T_NAME%/%APP_NAME%" --exclude="%T_NAME%/%APP_NAME%_gui" --exclude="%T_NAME%/tools/midi_to_tab" --exclude="%T_NAME%/tools/step_editor" "%T_NAME%"
+    tar -cf "!TARBALL!" --exclude="%T_NAME%/%APP_NAME%" --exclude="%T_NAME%/%APP_NAME%_gui" "%T_NAME%"
     if errorlevel 1 (
         echo   ERROR: tar packaging failed
         popd
         goto :target_failed
     )
-    tar -rf "!TARBALL!" --mode='u=rwx,go=rx' "%T_NAME%/%APP_NAME%" "%T_NAME%/%APP_NAME%_gui" "%T_NAME%/tools/midi_to_tab" "%T_NAME%/tools/step_editor"
+    tar -rf "!TARBALL!" --mode='u=rwx,go=rx' "%T_NAME%/%APP_NAME%" "%T_NAME%/%APP_NAME%_gui"
     if errorlevel 1 (
         echo   ERROR: tar packaging failed
         rm -f "!TARBALL!"
@@ -593,8 +466,6 @@ if "%T_OS%"=="darwin" (
         echo   Copying executables to project root for installer...
         copy /y "%TD%\%APP_NAME%.exe" "%ROOT%\%APP_NAME%.exe" >nul 2>&1
         copy /y "%TD%\%APP_NAME%_gui.exe" "%ROOT%\%APP_NAME%_gui.exe" >nul 2>&1
-        copy /y "%TD%\tools\midi_to_tab.exe" "%ROOT%\tools\midi_to_tab.exe" >nul 2>&1
-        copy /y "%TD%\tools\step_editor.exe" "%ROOT%\tools\step_editor.exe" >nul 2>&1
         echo   Running Inno Setup compiler...
         pushd "%ROOT%\installer"
         if errorlevel 1 (
@@ -665,19 +536,8 @@ if exist "%BUNDLE_DIR%\%APP_NAME%" (
     copy /y "%BUNDLE_DIR%\%APP_NAME%.exe" "%MACOS_DIR%\%APP_NAME%" 2>nul
 )
 
-REM Copy tools into Resources/tools
-if not exist "%RES_DIR%\tools" mkdir "%RES_DIR%\tools"
-if exist "%BUNDLE_DIR%\tools\midi_to_tab" (
-    copy /y "%BUNDLE_DIR%\tools\midi_to_tab" "%RES_DIR%\tools\midi_to_tab" 2>nul
-)
-if exist "%BUNDLE_DIR%\tools\step_editor" (
-    copy /y "%BUNDLE_DIR%\tools\step_editor" "%RES_DIR%\tools\step_editor" 2>nul
-)
-
 REM Copy support files into Resources
-xcopy /y /e /i "%BUNDLE_DIR%\mappings" "%RES_DIR%\mappings" >nul 2>nul
 xcopy /y /e /i "%BUNDLE_DIR%\Assets" "%RES_DIR%\Assets" >nul 2>nul
-xcopy /y /e /i "%BUNDLE_DIR%\ardour" "%RES_DIR%\ardour" >nul 2>nul
 xcopy /y /e /i "%BUNDLE_DIR%\config" "%RES_DIR%\config" >nul 2>nul
 copy /y "%BUNDLE_DIR%\LICENSE" "%RES_DIR%\LICENSE" >nul 2>nul
 copy /y "%BUNDLE_DIR%\README.md" "%RES_DIR%\README.md" >nul 2>nul

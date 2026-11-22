@@ -23,17 +23,10 @@ WizardStyle=modern
 ; TEMPLATE: Adjust the source paths to match your project's executables and assets.
 Source: "..\{#MyAppName}_gui.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\{#MyExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\tools\*.exe"; DestDir: "{app}\tools"; Flags: ignoreversion
-Source: "..\mappings\*.json"; DestDir: "{app}\mappings"; Flags: ignoreversion
 Source: "..\Assets\*"; DestDir: "{app}\Assets"; Flags: ignoreversion
-Source: "..\ardour\*.lua"; DestDir: "{app}\ardour"; Flags: ignoreversion
 Source: "..\config\*.ini"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "..\config\*.json"; DestDir: "{app}\config"; Flags: ignoreversion
 Source: "..\config\*.txt"; DestDir: "{app}\config"; Flags: ignoreversion
-Source: "..\config\grooves\*.tab"; DestDir: "{app}\config\grooves"; Flags: ignoreversion
-Source: "..\config\fills\*.tab"; DestDir: "{app}\config\fills"; Flags: ignoreversion
-Source: "..\config\defaults\*.ini"; DestDir: "{app}\config\defaults"; Flags: ignoreversion
-Source: "..\config\sections\*.json"; DestDir: "{app}\config\sections"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\CONTRIBUTING.md"; DestDir: "{app}"; Flags: ignoreversion
