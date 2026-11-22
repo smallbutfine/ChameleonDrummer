@@ -12,7 +12,7 @@ REM --- Configuration ---
 set "TEMPLATE_DIR=%~dp0template"
 set "GITHUB_USER=smallbutfine"
 set "REPO_NAME=fpc-lazarus-multiplatform-template"
-set "NEW_DIR=%~dp0%REPO_NAME%"
+set "NEW_DIR=%~dp0..\%REPO_NAME%"
 
 echo.
 echo ==================================================
