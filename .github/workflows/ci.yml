@@ -44,7 +44,11 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/LongDirtyAnimAlf/fpcupdeluxe.git /c/fpcupdeluxe-src
           cd /c/fpcupdeluxe-src
-          fpc -O2 -Fusources -o/c/fpcup.exe fpcup.lpr
+          # The chocolatey FPC install does not create fpc.cfg, so fpc
+          # cannot find its own units (FileUtil, etc.). Point -Fu at the
+          # units directory explicitly.
+          FPC_UNITS="C:/tools/freepascal/units/i386-win32"
+          fpc -O2 -Fu"$FPC_UNITS" -Fusources -o/c/fpcup.exe fpcup.lpr
           /c/fpcup.exe --version
 
       # ---------------------------------------------------------------
