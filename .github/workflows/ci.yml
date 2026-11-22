@@ -25,13 +25,23 @@ jobs:
       - name: Install bootstrap tools
         run: |
           choco install innosetup -y --no-progress
-          choco install freepascal -y --no-progress
-          # The chocolatey install updates PATH but the current shell
-          # does not see it. Add the FPC bin dir manually and persist
-          # it for subsequent steps.
-          echo "/c/tools/freepascal/bin/i386-win32" >> "$GITHUB_PATH"
-          export PATH="/c/tools/freepascal/bin/i386-win32:$PATH"
+
+          # The chocolatey 'freepascal' package does not include fcl-base
+          # units (FileUtil.ppu is missing), so fpcup cannot compile.
+          # Download the official FPC installer directly and install with
+          # ALL components, which includes fcl-base.
+          echo "Downloading FPC 3.2.2 installer..."
+          curl -L -o /c/fpc-installer.exe \
+            "https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.i386-win32.exe/download"
+          echo "Installing FPC (all components)..."
+          /c/fpc-installer.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART \
+            /DIR=C:/fpc-bootstrap /COMPONENTS="*"
+          # Add to PATH for this and subsequent steps
+          echo "C:/fpc-bootstrap/bin/i386-win32" >> "$GITHUB_PATH"
+          export PATH="C:/fpc-bootstrap/bin/i386-win32:$PATH"
           fpc -iV
+          echo "FileUtil.ppu check:"
+          find C:/fpc-bootstrap/units -name 'FileUtil.ppu' 2>/dev/null || echo "NOT FOUND"
 
       # ---------------------------------------------------------------
       # 2. Build the fpcup CLI tool from the fpcupdeluxe repository.
@@ -42,33 +52,9 @@ jobs:
       # ---------------------------------------------------------------
       - name: Build fpcup CLI installer
         run: |
-          # --- DEBUG: inspect what the chocolatey FPC install actually ---
-          # --- put on disk, and whether fpcmkcfg works.             ---
-          echo "=== FPC bin dir ==="
-          ls -la /c/tools/freepascal/bin/i386-win32/ | head -20
-          echo ""
-          echo "=== FPC units dir ==="
-          ls -la /c/tools/freepascal/units/ 2>/dev/null || echo "NO units dir"
-          echo ""
-          echo "=== fcl-base units ==="
-          find /c/tools/freepascal/units/ -name 'FileUtil.ppu' 2>/dev/null || echo "FileUtil.ppu NOT FOUND"
-          echo ""
-          echo "=== fpcmkcfg location ==="
-          which fpcmkcfg 2>/dev/null || echo "fpcmkcfg NOT in PATH"
-          echo ""
-          echo "=== Generate fpc.cfg ==="
-          fpcmkcfg -d basepath=C:/tools/freepascal -o C:/tools/freepascal/bin/i386-win32/fpc.cfg 2>&1 || echo "fpcmkcfg FAILED"
-          echo ""
-          echo "=== fpc.cfg contents ==="
-          cat /c/tools/freepascal/bin/i386-win32/fpc.cfg 2>/dev/null || echo "NO fpc.cfg"
-          echo ""
-          echo "=== fpc -iV ==="
-          fpc -iV
-          echo ""
-          echo "=== fpc -vu -? (verbose help) ==="
-          fpc -vu 2>&1 | head -5 || true
+          # Generate fpc.cfg so fpc can find its own units
+          fpcmkcfg -d basepath=C:/fpc-bootstrap -o C:/fpc-bootstrap/bin/i386-win32/fpc.cfg
 
-          # --- Actual build ---
           git clone --depth 1 https://github.com/LongDirtyAnimAlf/fpcupdeluxe.git /c/fpcupdeluxe-src
           cd /c/fpcupdeluxe-src
           fpc -O2 -Fusources -o/c/fpcup.exe fpcup.lpr
