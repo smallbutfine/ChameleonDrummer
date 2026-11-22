@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyProject</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 { border-bottom: 2px solid #e1e4e8; padding-bottom: 0.3em; }
+    h2 { border-bottom: 1px solid #e1e4e8; padding-bottom: 0.3em; margin-top: 2em; }
+    code, pre { background: #f6f8fa; border-radius: 4px; }
+    code { padding: 0.2em 0.4em; font-size: 90%; }
+    pre { padding: 1em; overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    th, td { border: 1px solid #dfe2e5; padding: 0.6em 1em; text-align: left; }
+    th { background: #f6f8fa; }
+    .note { background: #fff8dc; border-left: 4px solid #ffc107; padding: 0.8em 1em; margin: 1em 0; }
+  </style>
+</head>
+<body>
+  <h1>MyProject</h1>
+  <p><strong>One-line description of your project</strong> — a FreePascal/Lazarus application.</p>
+
+  <h2>Downloads</h2>
+  <p>Prebuilt binaries are attached to every <a href="https://github.com/yourname/MyProject/releases">GitHub Release</a>:</p>
+  <table>
+    <tr><th>Platform</th><th>Artifact</th></tr>
+    <tr><td>Windows 64-bit</td><td><code>MyProject_&lt;version&gt;_Setup.exe</code></td></tr>
+    <tr><td>macOS Intel</td><td><code>MyProject_gui&lt;version&gt;-macos-intel.zip</code></td></tr>
+    <tr><td>macOS Apple Silicon</td><td><code>MyProject_gui&lt;version&gt;-macos-aarch64.zip</code></td></tr>
+    <tr><td>Linux x86_64</td><td><code>MyProject&lt;version&gt;-linux-x64.tar.gz</code></td></tr>
+    <tr><td>Linux ARM</td><td><code>MyProject&lt;version&gt;-linux-arm.tar.gz</code></td></tr>
+  </table>
+
+  <div class="note">
+    Unzip the macOS archive and drag <code>MyProject_gui.app</code> to <code>/Applications</code>.
+    The app is not code-signed, so on first launch use <strong>right-click → Open</strong>
+    (or <code>xattr -dr com.apple.quarantine</code> on the terminal).
+  </div>
+
+  <h2>Building from source</h2>
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>FreePascal Compiler (FPC) 3.2.2+ or Lazarus IDE 3.0+</li>
+    <li>Lazarus/LCL for the GUI</li>
+    <li>For a full multi-platform build: FPC cross-compilers (<code>ppcrossx64</code>, <code>ppcrossa64</code>, <code>ppcrossarm</code>) and Inno Setup 6</li>
+    <li>Python 3 (for <code>tools/zip_app.py</code>)</li>
+  </ul>
+
+  <h3>Build everything</h3>
+  <pre><code>./build_all.bat            # all 5 targets + packages into Deploy/
+./build_all.bat --check    # verify the toolchain only</code></pre>
+
+  <h3>Build a single program</h3>
+  <pre><code># CLI
+fpc -O2 -Fusrc -Sg -Sc MyProject.lpr
+
+# GUI
+lazbuild --build-all gui/MyProject_gui.lpi</code></pre>
+
+  <h2>Project structure</h2>
+  <pre><code>MyProject/
+├── NAME                        # Project name
+├── LICENSE                     # MIT license
+├── CONTRIBUTING.md             # Contribution guidelines
+├── AGENTS.md                   # Working principles for AI agents
+├── README.md                   # Overview
+├── build_all.bat               # Multi-platform build script
+├── .github/workflows/ci.yml    # GitHub Actions CI
+├── Assets/version.txt          # Version number
+├── src/                        # Pascal source files
+├── gui/                        # Lazarus GUI project
+├── tools/                      # Helper tools and scripts
+├── installer/installer.iss     # Inno Setup script
+├── config/                     # Runtime configuration
+├── docs/                       # GitHub Pages site
+├── dist/                       # Build output (gitignored)
+└── Deploy/                     # Release artifacts (gitignored)</code></pre>
+
+  <h2>License</h2>
+  <p>MIT — see <a href="https://github.com/yourname/MyProject/blob/main/LICENSE">LICENSE</a>.</p>
+</body>
+</html>
