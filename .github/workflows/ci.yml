@@ -25,8 +25,20 @@ jobs:
       - name: Install bootstrap tools
         run: |
           choco install innosetup -y --no-progress
-          choco install fpc -y --no-progress
-          # Verify bootstrap fpc is in PATH
+
+          # Download a bootstrap FPC directly from freepascal.org.
+          # The chocolatey 'fpc' package does not exist, so we fetch
+          # the official Windows x86_64 installer and extract it silently.
+          # fpcup only needs a working fpc.exe to compile fpcup.lpr.
+          FPC_VER="3.2.2"
+          FPC_URL="https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.win32.exe/download"
+          echo "Downloading FPC $FPC_VER bootstrap..."
+          curl -L -o /c/fpc-bootstrap.exe "$FPC_URL"
+          echo "Installing FPC silently..."
+          /c/fpc-bootstrap.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=C:/fpc-bootstrap
+          # Add to PATH for this and subsequent steps
+          echo "C:/fpc-bootstrap/bin/i386-win32" >> "$GITHUB_PATH"
+          export PATH="C:/fpc-bootstrap/bin/i386-win32:$PATH"
           fpc -iV
 
       # ---------------------------------------------------------------
