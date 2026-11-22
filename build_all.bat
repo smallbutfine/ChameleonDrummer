@@ -243,6 +243,7 @@ del /q "%ROOT%\gui\*.o" "%ROOT%\gui\*.ppu" "%ROOT%\gui\*.exe" "%ROOT%\gui\*.res"
 del /q "%ROOT%\gui\lib\*.o" "%ROOT%\gui\lib\*.ppu" 2>nul
 del /q "%ROOT%\tools\*.o" "%ROOT%\tools\*.ppu" "%ROOT%\tools\*.exe" "%ROOT%\tools\*.res" 2>nul
 del /q "%ROOT%\tools\step_editor\*.o" "%ROOT%\tools\step_editor\*.ppu" "%ROOT%\tools\step_editor\*.exe" "%ROOT%\tools\step_editor\*.res" 2>nul
+rmdir /s /q "%ROOT%\tools\step_editor\step_editor.app" 2>nul
 del /q "%ROOT%\tools\step_editor\lib\*.o" "%ROOT%\tools\step_editor\lib\*.ppu" 2>nul
 del /q "%ROOT%\src\*.o" "%ROOT%\src\*.ppu" 2>nul
 
@@ -384,13 +385,19 @@ if "%T_OS%"=="darwin" (
     echo   WARNING: chameleondrummer_gui not found at expected locations
 )
 
-REM step_editor.lpi target is ../step_editor relative to tools/step_editor/
+REM step_editor.lpi target is step_editor.exe; lazbuild links step_editor.exe even
+REM for darwin (it does not emit a .app). Keep the .exe name here: :make_app_bundle
+REM accepts a .exe and renames it to Contents/MacOS/step_editor. A stale
+REM step_editor.app must never win - the clean step removes it.
 if "%T_OS%"=="darwin" (
-    if exist "%ROOT%\tools\step_editor\step_editor.app" (
-        move /y "%ROOT%\tools\step_editor\step_editor.app" "%TD%\tools\" >nul 2>&1
-        echo   moved tools\step_editor\step_editor.app
+    if exist "%ROOT%\tools\step_editor\step_editor.exe" (
+        move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\step_editor.exe" >nul 2>&1
+        echo   moved tools\step_editor\step_editor.exe
+    ) else if exist "%ROOT%\tools\step_editor\step_editor" (
+        move /y "%ROOT%\tools\step_editor\step_editor" "%TD%\tools\step_editor" >nul 2>&1
+        echo   moved tools\step_editor\step_editor
     ) else (
-        echo   WARNING: step_editor.app not found at expected locations
+        echo   WARNING: step_editor build output not found at expected locations
     )
 ) else if exist "%ROOT%\tools\step_editor\step_editor.exe" (
     move /y "%ROOT%\tools\step_editor\step_editor.exe" "%TD%\tools\" >nul 2>&1
@@ -463,11 +470,16 @@ if "%T_OS%"=="darwin" (
         copy /y "%TD%\ChameleonDrummer.exe" "%TD%\chameleondrummer_gui" >nul 2>&1
     )
     call :make_app_bundle "%TD%" "chameleondrummer_gui" "ChameleonDrummer"
-    call :make_app_bundle "%TD%\tools" "step_editor" "StepEditor"
-    REM step_editor.app must live beside the other tools, not inside tools\.
-    if exist "%TD%\tools\step_editor.app" (
-        move /y "%TD%\tools\step_editor.app" "%TD%\step_editor.app" >nul 2>&1
-        echo   moved step_editor.app to bundle root
+
+    REM step_editor.app belongs INSIDE the main bundle (Contents/Resources/tools),
+    REM not as a separate top-level bundle - Deploy only ships chameleondrummer_gui.app.
+    set "MAIN_RES_TOOLS=%TD%\chameleondrummer_gui.app\Contents\Resources\tools"
+    if exist "%TD%\tools\step_editor.exe" (
+        if not exist "!MAIN_RES_TOOLS!" mkdir "!MAIN_RES_TOOLS!"
+        copy /y "%TD%\tools\step_editor.exe" "!MAIN_RES_TOOLS!\step_editor.exe" >nul 2>&1
+        call :make_app_bundle "!MAIN_RES_TOOLS!" "step_editor" "StepEditor"
+    ) else (
+        echo   WARNING: step_editor.exe not found - skipping step_editor.app
     )
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
