@@ -212,6 +212,14 @@ if exist "%OUT_ROOT%\macos-aarch64\chameleondrummer_gui.app" (
 echo.
 echo   All packages copied to %ROOT%\Deploy\
 echo.
+
+REM --- Build summary + exit code ---
+call :print_summary
+echo.
+if !SUMMARY_FAIL! GTR 0 (
+    echo Build finished with !SUMMARY_FAIL! failed target^(s^).
+    exit /b 1
+)
 exit /b 0
 
 REM ============================================================
@@ -686,11 +694,13 @@ for %%T in (win64 macos-intel macos-aarch64 linux-x64 linux-arm) do (
         set /a SKIP+=1
     )
 )
+set "SUMMARY_FAIL=!FAIL!"
 echo.
-echo   Passed: %PASS%
-echo   Failed: %FAIL%
-echo   Skipped: %SKIP%
+echo   Passed: !PASS!
+echo   Failed: !FAIL!
+echo   Skipped: !SKIP!
 echo ==================================================
 
-pause
+REM Only pause when running interactively (never in CI).
+if not defined CI if not defined NO_PAUSE pause
 goto :eof
