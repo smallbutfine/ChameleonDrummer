@@ -173,9 +173,10 @@ Legend: `[ ]` todo, `[~]` in progress, `[x]` done + verified, `[-]` dropped (rea
   `Deploy\ChameleonDrummer_Setup_1.1.477.exe`.
 - `macos-intel` / `macos-aarch64`: `chameleondrummer_gui.app` with
   `Contents/MacOS/{ChameleonDrummer,chameleondrummer_gui}` and
-  `Contents/Resources/tools/step_editor.app/Contents/MacOS/step_editor`
-  (real Mach-O, 18 MB). Both `Info.plist` files parse as well-formed XML.
-- `linux-x64` / `linux-arm`: version-stamped `.tar.gz` packages.
+  `Contents/Resources/tools/{midi_to_tab,step_editor}` (plain sibling binaries,
+  no `.app`, no `.exe`). Both `Info.plist` files parse as well-formed XML.
+- `linux-x64` / `linux-arm`: version-stamped `.tar.gz` packages with
+  `tools/{midi_to_tab,step_editor}` (no extension).
 
 Binary formats confirmed: Mach-O x86_64, Mach-O arm64, ELF x86-64, ELF ARM EABI5.
 Functional test: `dist\win64\ChameleonDrummer.exe generate --genre rock --style
@@ -184,6 +185,32 @@ classic --tempo 120` writes a valid MIDI file (`MThd` header, 14886 bytes).
 
 `./build_all.bat --check` -> exit 0 with all tools found; bogus `FPC_DIR` ->
 exit 1 listing every missing tool, without touching `dist\`.
+
+## Follow-up: platform-independent tool names (2026-11-22)
+
+User feedback: `step_editor` is **not** a separate program - it is a helper the
+main GUI launches, and it must sit next to `midi_to_tab` in `tools/`. Two real
+bugs were found and fixed:
+
+1. **Pascal hardcoded `.exe`** - `gui/MainFrm.pas` looked for
+   `tools/step_editor.exe` and `tools/step_editor/MainFrm.pas` for
+   `midi_to_tab.exe`. Both now use the same conditional as `CliLookup.pas`:
+   `{$IFDEF MSWINDOWS}'.exe'{$ELSE}''{$ENDIF}`. Verified per platform:
+   win64 -> `step_editor.exe`, linux/darwin -> `step_editor`.
+2. **`step_editor.app` was wrong** - an earlier fix of mine created a bogus
+   `.app` bundle. `lazbuild` links `step_editor.exe` even for darwin, so the
+   build now renames it to `step_editor` (no extension) and copies it beside
+   `midi_to_tab` in `Contents/Resources/tools`. No `.app`, no `.exe` on macOS.
+3. **Parse-time expansion bug** - `MAIN_RES_TOOLS` was set inside the
+   `if "%T_OS%"=="darwin" (` block but read with `%MAIN_RES_TOOLS%`, which
+   expands at parse time to the *previous* target's value. Result: the intel
+   bundle received the aarch64 binaries. Fixed with `!MAIN_RES_TOOLS!`.
+4. **Stale Deploy bundles** - `xcopy` merges, so a bundle from an earlier build
+   kept deleted files. The version-stamped destination is now `rmdir`'d first.
+
+Verified: intel bundle = x86_64, aarch64 = arm64, Linux tarballs carry
+`tools/{midi_to_tab,step_editor}` with no extension, no stale `.app`/`.exe`
+anywhere, and the Windows installer still ships `tools/*.exe`.
 
 ---
 
