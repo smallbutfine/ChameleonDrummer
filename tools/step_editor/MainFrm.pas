@@ -105,6 +105,8 @@ type
     cbBlockStyle: TComboBox;
     lblBlockKind: TLabel;
     cbBlockKind: TComboBox;
+    lblBlockMeter: TLabel;
+    cbBlockMeter: TComboBox;
     lblIntensityLow: TLabel;
     trkIntensityLow: TTrackBar;
     lblIntensityHigh: TLabel;
@@ -121,6 +123,7 @@ type
     procedure btnDeleteBlockClick(Sender: TObject);
     procedure cbBlockStyleChange(Sender: TObject);
     procedure cbBlockKindChange(Sender: TObject);
+    procedure cbBlockMeterChange(Sender: TObject);
     procedure trkIntensityLowChange(Sender: TObject);
     procedure trkIntensityHighChange(Sender: TObject);
 
@@ -280,6 +283,13 @@ begin
   cbMeter.Items.Clear;
   cbMeter.Items.CommaText := '4/4,4/4T,2/4,2/4T,3/4,3/4T,5/4,5/4T,6/8,6/8T,7/8,7/8T,9/8,9/8T,11/8,11/8T,13/8,13/8T,15/16,15/16T';
   cbMeter.ItemIndex := 0;
+
+  // Block-edit meter combo: same list, plus a leading "(default 4/4)" entry that
+      // means "no meter token in the header" (the main app then assumes 4/4).
+  cbBlockMeter.Items.Clear;
+  cbBlockMeter.Items.Add('(default 4/4)');
+  cbBlockMeter.Items.CommaText := '4/4,4/4T,2/4,2/4T,3/4,3/4T,5/4,5/4T,6/8,6/8T,7/8,7/8T,9/8,9/8T,11/8,11/8T,13/8,13/8T,15/16,15/16T';
+  cbBlockMeter.ItemIndex := 0;
 
   // Populate intensity combobox with presets
   cbIntensity.Items.Clear;
@@ -549,6 +559,17 @@ begin
     if Parts.Count >= 2 then begin
       ABlock.Style := Parts[0];
       ABlock.Kind := Parts[1];
+    end;
+
+    { A bare token containing '/' is a meter (e.g. 7/8 or 7/8T), matching the
+      main app's TabFiles parser. Store the first one found in ABlock.Meter.
+      Scan before the intensity loop below, which mutates Parts. }
+    ABlock.Meter := '';
+    for P := 2 to Parts.Count - 1 do begin
+      if (Pos('=', Parts[P]) = 0) and (Pos('/', Parts[P]) > 0) then begin
+        ABlock.Meter := Parts[P];
+        Break;
+      end;
     end;
 
     for P := 2 to Parts.Count - 1 do begin
@@ -1587,6 +1608,8 @@ begin
   
   cbBlockKind.Visible := UIEnabled;
   lblBlockKind.Visible := UIEnabled;
+  cbBlockMeter.Visible := UIEnabled;
+  lblBlockMeter.Visible := UIEnabled;
   trkIntensityLow.Visible := UIEnabled;
   trkIntensityHigh.Visible := UIEnabled;
   lblIntensityLow.Visible := UIEnabled;
@@ -1613,8 +1636,13 @@ var
 begin
   SL := TStringList.Create;
   try
-    SL.Add(Format('[%s %s intensity=%.2f-%.2f]', 
-      [ABlock.Style, ABlock.Kind, ABlock.IntensityLow, ABlock.IntensityHigh]));
+    if ABlock.Meter <> '' then
+      SL.Add(Format('[%s %s intensity=%.2f-%.2f %s]',
+        [ABlock.Style, ABlock.Kind, ABlock.IntensityLow, ABlock.IntensityHigh,
+         ABlock.Meter]))
+    else
+      SL.Add(Format('[%s %s intensity=%.2f-%.2f]',
+        [ABlock.Style, ABlock.Kind, ABlock.IntensityLow, ABlock.IntensityHigh]));
 
     for I := 0 to High(FInstOrder) do
     begin
@@ -1680,6 +1708,21 @@ begin
 
       trkIntensityLow.Position := Round(FTabBlocks[FSelectedBlock].IntensityLow * 100);
       trkIntensityHigh.Position := Round(FTabBlocks[FSelectedBlock].IntensityHigh * 100);
+
+      // Sync the block meter combo with the block's meter token.
+      if Assigned(cbBlockMeter) then begin
+        if FTabBlocks[FSelectedBlock].Meter = '' then
+          cbBlockMeter.ItemIndex := 0
+        else begin
+          StyleIdx := cbBlockMeter.Items.IndexOf(FTabBlocks[FSelectedBlock].Meter);
+          if StyleIdx >= 0 then
+            cbBlockMeter.ItemIndex := StyleIdx
+          else begin
+            cbBlockMeter.Items.Add(FTabBlocks[FSelectedBlock].Meter);
+            cbBlockMeter.ItemIndex := cbBlockMeter.Items.Count - 1;
+          end;
+        end;
+      end;
     end;
     FBlockModified := False;
   end;
@@ -1763,6 +1806,12 @@ begin
   // Read intensity from trackbars
   Block.IntensityLow := trkIntensityLow.Position / 100.0;
   Block.IntensityHigh := trkIntensityHigh.Position / 100.0;
+
+  // Read meter from combo box. "(default 4/4)" (index 0) means no meter token.
+  if Assigned(cbBlockMeter) and (cbBlockMeter.ItemIndex > 0) then
+    Block.Meter := cbBlockMeter.Items[cbBlockMeter.ItemIndex]
+  else
+    Block.Meter := '';
   FTabBlocks[FSelectedBlock] := Block;
   
   SL := TStringList.Create;
@@ -1805,6 +1854,13 @@ end;
 procedure TMainForm.cbBlockKindChange(Sender: TObject);
 begin
   if Assigned(cbBlockKind) and (cbBlockKind.ItemIndex < 0) then Exit;
+  FBlockModified := True;
+  MarkBlockModified(Self);
+end;
+
+procedure TMainForm.cbBlockMeterChange(Sender: TObject);
+begin
+  if Assigned(cbBlockMeter) and (cbBlockMeter.ItemIndex < 0) then Exit;
   FBlockModified := True;
   MarkBlockModified(Self);
 end;

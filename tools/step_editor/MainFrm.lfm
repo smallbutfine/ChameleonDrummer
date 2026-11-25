@@ -325,6 +325,25 @@ object MainForm: TMainForm
     Visible = False
     OnChange = cbBlockKindChange
   end
+  object lblBlockMeter: TLabel
+    Left = 1232
+    Height = 21
+    Top = 544
+    Width = 45
+    Caption = 'Meter:'
+    Visible = False
+  end
+  object cbBlockMeter: TComboBox
+    Left = 1280
+    Height = 29
+    Top = 544
+    Width = 120
+    ItemHeight = 21
+    Style = csDropDownList
+    TabOrder = 27
+    Visible = False
+    OnChange = cbBlockMeterChange
+  end
   object lblIntensityLow: TLabel
     Left = 856
     Height = 21
