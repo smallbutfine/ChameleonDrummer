@@ -546,9 +546,13 @@ if "%T_OS%"=="darwin" (
     REM archive in two passes over an uncompressed tar: everything first, then the
     REM executables with --mode=u+x. (GNU tar cannot append to a .tar.gz.)
     set "PKG=ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz"
-    REM NOTE: use a POSIX-style temp path. GNU tar (first on PATH in Git Bash)
-    REM reads "C:/..." as a remote host and fails with "Cannot connect to C:".
-    set "TARBALL=/tmp/chameleondrummer_%T_NAME%.tar"
+    REM NOTE: use a RELATIVE temp filename inside the already-pushd'd output dir.
+    REM - A POSIX /tmp path fails when build_all.bat is launched from Explorer
+      REM   (pure cmd.exe has no /tmp).
+    REM - A C:/ path makes GNU tar treat the drive as a remote host ("Cannot connect to C:").
+    REM A bare relative name has no slash and no colon, so both cmd.exe and GNU
+    REM tar handle it correctly.
+    set "TARBALL=mytmp_%T_NAME%.tar"
     tar -cf "!TARBALL!" --exclude="%T_NAME%/ChameleonDrummer" --exclude="%T_NAME%/chameleondrummer_gui" --exclude="%T_NAME%/tools/midi_to_tab" --exclude="%T_NAME%/tools/step_editor" "%T_NAME%"
     if errorlevel 1 (
         echo   ERROR: tar packaging failed
