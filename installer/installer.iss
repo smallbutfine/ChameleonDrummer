@@ -21,6 +21,9 @@ SolidCompression=yes
 LicenseFile=..\assets\LICENSE.txt
 WizardStyle=modern
 
+[Tasks]
+Name: "clean"; Description: "Clean install (remove the previous version first)"
+
 [Files]
 ; ANPASSUNG: Alle Source-Pfade holen sich die Dateien aus den neuen Unterordnern (..\)
 Source: "..\chameleondrummer_gui.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -42,10 +45,29 @@ Source: "..\config\sections\*.json"; DestDir: "{app}\config\sections"; Flags: ig
 Filename: "{app}\Readme.txt"; Description: "View Readme (How to use in DAW)"; Flags: postinstall shellexec skipifsilent unchecked
 
 [Code]
+procedure UninstallPrevious();
+var
+  RegKey: String;
+  UninstallPath: String;
+  ResultCode: Integer;
+begin
+  RegKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'UninstallString', UninstallPath) then
+    RegQueryStringValue(HKEY_CURRENT_USER, RegKey, 'UninstallString', UninstallPath);
+  if UninstallPath <> '' then
+  begin
+    UninstallPath := RemoveQuotes(UninstallPath);
+    Exec(UninstallPath, '/SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Sleep(1000);
+  end;
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ReadmeLines: TArrayOfString;
 begin
+  if (CurStep = ssInstall) and WizardIsTaskSelected('clean') then UninstallPrevious;
+
   if CurStep = ssPostInstall then
   begin
     SetArrayLength(ReadmeLines, 14);
@@ -72,25 +94,3 @@ begin
     Result := ExpandConstant('{userappdata}');
 end;
 
-function InitializeSetup(): Boolean;
-var
-  RegKey: String;
-  UninstallPath: String;
-  ResultCode: Integer;
-begin
-  Result := True;
-  RegKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
-
-  // KORREKTUR: Wir prüfen die Existenz direkt über RegQueryStringValue
-  if not RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'UninstallString', UninstallPath) then
-  begin
-    RegQueryStringValue(HKEY_CURRENT_USER, RegKey, 'UninstallString', UninstallPath);
-  end;
-
-  if UninstallPath <> '' then
-  begin
-    UninstallPath := RemoveQuotes(UninstallPath);
-    Exec(UninstallPath, '/SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Sleep(1000);
-  end;
-end;
