@@ -57,146 +57,146 @@ T2 .x.. .x..
 T3 ..x. ..x.
 T4 ...x ...x
 C X... .... .... ....
-[roeder_fill_odd_7_8 energy=0.4]
+[roeder_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.6]
+[roeder_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.5]
+[roeder_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.3]
+[roeder_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.7]
+[roeder_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.4]
+[roeder_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.2]
+[roeder_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.8]
+[roeder_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.3]
+[roeder_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.1]
+[roeder_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.9]
+[roeder_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.2]
+[roeder_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.4]
+[roeder_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.6]
+[roeder_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.5]
+[roeder_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.3]
+[roeder_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.7]
+[roeder_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.4]
+[roeder_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.2]
+[roeder_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.8]
+[roeder_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.3]
+[roeder_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.1]
+[roeder_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[roeder_fill_odd_5_4 energy=0.9]
+[roeder_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.2]
+[roeder_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.4]
+[roeder_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 T1 .... .... .... x.
 K .... .... .... x.
 
-[roeder_fill_odd_5_4 energy=0.6]
+[roeder_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 T2 .... .... .... .x.
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.5]
+[roeder_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.3]
+[roeder_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 T1 .... .... .... x.
 K .... .... .... x.
 
-[roeder_fill_odd_5_4 energy=0.7]
+[roeder_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 T2 .... .... .... .x.
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.4]
+[roeder_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
@@ -206,42 +206,42 @@ S .... .... .... x.
 T1 .... .... .... x.
 K .... .... .... x.
 
-[roeder_fill_odd_5_4 energy=0.8]
+[roeder_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 T2 .... .... .... .x.
 K .... .... .... x..
 
-[roeder_fill_odd_3_4 energy=0.4]
+[roeder_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_odd_7_8 energy=0.1]
+[roeder_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 T1 .... .... .... x.
 K .... .... .... x.
 
-[roeder_fill_odd_5_4 energy=0.9]
+[roeder_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 T2 .... .... .... .x.
 K .... .... .... x..
 C X... .... .... ...
 
-[roeder_fill_odd_3_4 energy=0.2]
+[roeder_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[roeder_fill_tom_roll_4_4 energy=0.6]
+[roeder_fill_tom_roll_4_4 energy=0.6 4/4]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
 T4 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_tom_crash_4_4 energy=0.7]
+[roeder_fill_tom_crash_4_4 energy=0.7 4/4]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
@@ -249,14 +249,14 @@ T4 .... .... .... x..
 K .... .... .... x..
 C X... .... .... ....
 
-[roeder_fill_triplet_tom_4_4 energy=0.6]
+[roeder_fill_triplet_tom_4_4 energy=0.6 4/4]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
 T4 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_crash_tom_4_4 energy=0.6]
+[roeder_fill_crash_tom_4_4 energy=0.6 4/4]
 C X... .... .... ....
 T1 .... x.. .... x..
 T2 .... .... x.. ....
@@ -264,7 +264,7 @@ T3 .... .... .... x..
 T4 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_snare_tom_4_4 energy=0.5]
+[roeder_fill_snare_tom_4_4 energy=0.5 4/4]
 S .... x.. .... x..
 T1 .... .... x.. ....
 T2 .... .... .... x..
@@ -272,14 +272,14 @@ T3 .... .... .... x..
 T4 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_double_tom_4_4 energy=0.6]
+[roeder_fill_double_tom_4_4 energy=0.6 4/4]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
 T4 .... .... .... x..
 K .... .... .... x..
 
-[roeder_fill_crash_tom_snare_4_4 energy=0.7]
+[roeder_fill_crash_tom_snare_4_4 energy=0.7 4/4]
 C X... .... .... ....
 T1 .... x.. .... x..
 T2 .... .... x.. ....
@@ -288,7 +288,7 @@ T4 .... .... .... x..
 S .... .... .... x.x.
 K .... .... .... x..
 
-[roeder_fill_4_4_v1 energy=0.6]
+[roeder_fill_4_4_v1 energy=0.6 4/4]
 K .... .... .... x..
 S .... .... .... x.x.
 H .... .... .... ....
@@ -297,7 +297,7 @@ T1 .... x.. .... ....
 T2 .... .... x.. ....
 T3 .... .... .... x..
 
-[roeder_fill_4_4_v2 energy=0.8]
+[roeder_fill_4_4_v2 energy=0.8 4/4]
 K .... .... .... x..
 S .... .... .... x.x.
 H .... .... .... ....

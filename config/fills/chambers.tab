@@ -38,150 +38,150 @@ S .... gxgx xxxx gxgx
 T2 .... .... .... ...x
 K .... .... x... ....
 
-[chambers_fill_odd_7_8 energy=0.4]
+[chambers_fill_odd_7_8 energy=0.4 7/8]
 S .... gxgx xxgx..
 K .... ..x. ......
 
-[chambers_fill_odd_5_4 energy=0.6]
+[chambers_fill_odd_5_4 energy=0.6 5/4]
 S .... gxgx xxxx gxg
 K .... ..x. .x.. x..
 
-[chambers_fill_odd_3_4 energy=0.5]
+[chambers_fill_odd_3_4 energy=0.5 3/4]
 S .... gxgx xxgx
 K .... ..x. ....
-[chambers_fill_odd_7_8 energy=0.4]
+[chambers_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.6]
+[chambers_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.5]
+[chambers_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.3]
+[chambers_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.7]
+[chambers_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.4]
+[chambers_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.2]
+[chambers_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.8]
+[chambers_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.3]
+[chambers_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.1]
+[chambers_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.9]
+[chambers_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.2]
+[chambers_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.4]
+[chambers_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.6]
+[chambers_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.5]
+[chambers_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.3]
+[chambers_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.7]
+[chambers_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.4]
+[chambers_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.2]
+[chambers_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.8]
+[chambers_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.3]
+[chambers_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.1]
+[chambers_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[chambers_fill_odd_5_4 energy=0.9]
+[chambers_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[chambers_fill_odd_3_4 energy=0.2]
+[chambers_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[chambers_fill_odd_7_8 energy=0.4]
+[chambers_fill_odd_7_8 energy=0.4 7/8]
 S .... gxgx xxgx..
 K .... ..x. ......
 
-[chambers_fill_odd_5_4 energy=0.6]
+[chambers_fill_odd_5_4 energy=0.6 5/4]
 S .... gxgx xxxx gxg
 K .... ..x. .x.. x..
 
-[chambers_fill_odd_3_4 energy=0.5]
+[chambers_fill_odd_3_4 energy=0.5 3/4]
 S .... gxgx xxgx
 K .... ..x. ....
 
-[chambers_fill_odd_7_8 energy=0.3]
+[chambers_fill_odd_7_8 energy=0.3 7/8]
 S .... .... gxgx..
 K .... .... ..x...
 
-[chambers_fill_odd_5_4 energy=0.7]
+[chambers_fill_odd_5_4 energy=0.7 5/4]
 S .... gxgx xxxx gxg
 K .... ..x. .x.. x..
 
-[chambers_fill_odd_3_4 energy=0.4]
+[chambers_fill_odd_3_4 energy=0.4 3/4]
 S .... .... gxgx
 K .... .... ..x.
 
@@ -189,22 +189,22 @@ K .... .... ..x.
 S .... .... .... xg
 K .... .... .... ..
 
-[chambers_fill_odd_5_4 energy=0.8]
+[chambers_fill_odd_5_4 energy=0.8 5/4]
 S .... gxgx xxxx gxg
 K .... ..x. .x.. x..
 
-[chambers_fill_odd_3_4 energy=0.3]
+[chambers_fill_odd_3_4 energy=0.3 3/4]
 S .... .... gxgx
 K .... .... ..x.
 
-[chambers_fill_odd_7_8 energy=0.1]
+[chambers_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... xg
 K .... .... .... ..
 
-[chambers_fill_odd_5_4 energy=0.9]
+[chambers_fill_odd_5_4 energy=0.9 5/4]
 S .... gxgx xxxx gxg
 K .... ..x. .x.. x..
 
-[chambers_fill_odd_3_4 energy=0.2]
+[chambers_fill_odd_3_4 energy=0.2 3/4]
 S .... .... gxgx
 K .... .... ..x.

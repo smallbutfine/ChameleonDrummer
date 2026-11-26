@@ -39,169 +39,169 @@ T1 ... ... x.x. ...
 T2 ... ... ... x..
 T3 ... ... ... .x.
 K .... .... .... x..
-[porcaro_fill_odd_7_8 energy=0.4]
+[porcaro_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.6]
+[porcaro_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.5]
+[porcaro_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.3]
+[porcaro_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.7]
+[porcaro_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.4]
+[porcaro_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.2]
+[porcaro_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.8]
+[porcaro_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.3]
+[porcaro_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.1]
+[porcaro_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.9]
+[porcaro_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.2]
+[porcaro_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.4]
+[porcaro_fill_odd_7_8 energy=0.4 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.6]
+[porcaro_fill_odd_5_4 energy=0.6 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.5]
+[porcaro_fill_odd_3_4 energy=0.5 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.3]
+[porcaro_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.7]
+[porcaro_fill_odd_5_4 energy=0.7 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.4]
+[porcaro_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.2]
+[porcaro_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.8]
+[porcaro_fill_odd_5_4 energy=0.8 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.3]
+[porcaro_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.1]
+[porcaro_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.9]
+[porcaro_fill_odd_5_4 energy=0.9 5/4]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.2]
+[porcaro_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[porcaro_fill_odd_7_8 energy=0.4]
+[porcaro_fill_odd_7_8 energy=0.4 7/8]
 S ... g.g x.x .....
 T1 ... ... ... x.x..
 T2 ... ... ... .x...
 
-[porcaro_fill_odd_5_4 energy=0.6]
+[porcaro_fill_odd_5_4 energy=0.6 5/4]
 S ... g.g x.x .
 T1 ... ... ... x
 T2 ... ... ... .
 
-[porcaro_fill_odd_3_4 energy=0.5]
+[porcaro_fill_odd_3_4 energy=0.5 3/4]
 S ... g.g x.x ...
 T1 ... ... ... x..
 
-[porcaro_fill_odd_7_8 energy=0.3]
+[porcaro_fill_odd_7_8 energy=0.3 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.7]
+[porcaro_fill_odd_5_4 energy=0.7 5/4]
 S ... g.g x.x .
 T1 ... ... ... x
 T2 ... ... ... .
 
-[porcaro_fill_odd_3_4 energy=0.4]
+[porcaro_fill_odd_3_4 energy=0.4 3/4]
 S .... .... .... x.x...
 K .... .... .... .x.x..
 
-[porcaro_fill_odd_7_8 energy=0.2]
+[porcaro_fill_odd_7_8 energy=0.2 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.8]
+[porcaro_fill_odd_5_4 energy=0.8 5/4]
 S ... g.g x.x .
 T1 ... ... ... x
 T2 ... ... ... .
 
-[porcaro_fill_odd_3_4 energy=0.3]
+[porcaro_fill_odd_3_4 energy=0.3 3/4]
 S .... .... .... x.x...
 K .... .... .... .x.x..
 
-[porcaro_fill_odd_7_8 energy=0.1]
+[porcaro_fill_odd_7_8 energy=0.1 7/8]
 S .... .... .... x.
 K .... .... .... .x
 
-[porcaro_fill_odd_5_4 energy=0.9]
+[porcaro_fill_odd_5_4 energy=0.9 5/4]
 S ... g.g x.x .
 T1 ... ... ... x
 T2 ... ... ... .
 T3 ... ... ... .
 K .... .... .... x..
 
-[porcaro_fill_odd_3_4 energy=0.2]
+[porcaro_fill_odd_3_4 energy=0.2 3/4]
 S .... .... .... x.x...
 K .... .... .... .x.x..
