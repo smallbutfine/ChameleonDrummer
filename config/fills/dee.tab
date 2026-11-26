@@ -45,171 +45,171 @@ K .... .... .xxx .xxx
 K .... xxxx xxxx xxxx
 S .... x... x... x...
 
-[dee_fill_odd_7_8 energy=0.4 7/8]
+[dee_fill_odd 7/8 energy=0.4]
 K .... x.x
 
-[dee_fill_odd_5_4 energy=0.6 5/4]
+[dee_fill_odd 5/4 energy=0.6]
 K .... x. .x ..
 
-[dee_fill_odd_3_4 energy=0.5 3/4]
+[dee_fill_odd 3/4 energy=0.5]
 K .... x. .x.
-K  .... XXXX XXXX XXXX..
-[dee_fill_odd_7_8 energy=0.4 7/8]
+KK .... XXXX XXXX XXXX..
+[dee_fill_odd 7/8 energy=0.4]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.6 5/4]
+[dee_fill_odd 5/4 energy=0.6]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.5 3/4]
+[dee_fill_odd 3/4 energy=0.5]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.3 7/8]
+[dee_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.7 5/4]
+[dee_fill_odd 5/4 energy=0.7]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.4 3/4]
+[dee_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.2 7/8]
+[dee_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.8 5/4]
+[dee_fill_odd 5/4 energy=0.8]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.3 3/4]
+[dee_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.1 7/8]
+[dee_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.9 5/4]
+[dee_fill_odd 5/4 energy=0.9]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.2 3/4]
+[dee_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.4 7/8]
+[dee_fill_odd 7/8 energy=0.4]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.6 5/4]
+[dee_fill_odd 5/4 energy=0.6]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.5 3/4]
+[dee_fill_odd 3/4 energy=0.5]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.3 7/8]
+[dee_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.7 5/4]
+[dee_fill_odd 5/4 energy=0.7]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.4 3/4]
+[dee_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.2 7/8]
+[dee_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.8 5/4]
+[dee_fill_odd 5/4 energy=0.8]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.3 3/4]
+[dee_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.1 7/8]
+[dee_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[dee_fill_odd_5_4 energy=0.9 5/4]
+[dee_fill_odd 5/4 energy=0.9]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[dee_fill_odd_3_4 energy=0.2 3/4]
+[dee_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[dee_fill_odd_7_8 energy=0.4 7/8]
+[dee_fill_odd 7/8 energy=0.4]
 K .... x.x
 S .... x..
 
-[dee_fill_odd_5_4 energy=0.6 5/4]
+[dee_fill_odd 5/4 energy=0.6]
 K .... x. .x ..
 S .... x.. x.. x....
 
-[dee_fill_odd_3_4 energy=0.5 3/4]
+[dee_fill_odd 3/4 energy=0.5]
 K .... x. .x.
 S .... x.. x.
 
-[dee_fill_odd_7_8 energy=0.3 7/8]
+[dee_fill_odd 7/8 energy=0.3]
 K .... .... x.x x.x
 S .... .... x.. x..
 
-[dee_fill_odd_5_4 energy=0.7 5/4]
+[dee_fill_odd 5/4 energy=0.7]
 K .... x. .x ..
 S .... x.. x.. x....
 
-[dee_fill_odd_3_4 energy=0.4 3/4]
+[dee_fill_odd 3/4 energy=0.4]
 K .... .... x. .x
 S .... .... x.. x
 
-[dee_fill_odd_7_8 energy=0.2 7/8]
+[dee_fill_odd 7/8 energy=0.2]
 K .... .... .... x.x x.x...
 S .... .... .... x.. x.....
 
-[dee_fill_odd_5_4 energy=0.8 5/4]
+[dee_fill_odd 5/4 energy=0.8]
 K .... x. .x ..
 S .... x.. x.. x....
 
-[dee_fill_odd_3_4 energy=0.3 3/4]
+[dee_fill_odd 3/4 energy=0.3]
 K .... .... x. .x
 S .... .... x.. x
 
-[dee_fill_odd_7_8 energy=0.1 7/8]
+[dee_fill_odd 7/8 energy=0.1]
 K .... .... .... x.x x.x...
 S .... .... .... x.. x.....
 
-[dee_fill_odd_5_4 energy=0.9 5/4]
+[dee_fill_odd 5/4 energy=0.9]
 K .... x. .x ..
 S .... x.. x.. x....
 
-[dee_fill_odd_3_4 energy=0.2 3/4]
+[dee_fill_odd 3/4 energy=0.2]
 K .... .... x. .x
 S .... .... x.. x

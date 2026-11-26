@@ -47,164 +47,164 @@ K .... .... .x.x .x.x
 [hoglan_fill_big3 energy=0.95]
 S x.x. x.x. x.x. x.x.
 K .x.x .x.x .x.x .x.x
-K  .... XXXX XXXX XXXX
-[hoglan_fill_odd_7_8 energy=0.4 7/8]
+KK .... XXXX XXXX XXXX
+[hoglan_fill_odd 7/8 energy=0.4]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.6 5/4]
+[hoglan_fill_odd 5/4 energy=0.6]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.5 3/4]
+[hoglan_fill_odd 3/4 energy=0.5]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.3 7/8]
+[hoglan_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.7 5/4]
+[hoglan_fill_odd 5/4 energy=0.7]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.4 3/4]
+[hoglan_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.2 7/8]
+[hoglan_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.8 5/4]
+[hoglan_fill_odd 5/4 energy=0.8]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.3 3/4]
+[hoglan_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.1 7/8]
+[hoglan_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.9 5/4]
+[hoglan_fill_odd 5/4 energy=0.9]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.2 3/4]
+[hoglan_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.4 7/8]
+[hoglan_fill_odd 7/8 energy=0.4]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.6 5/4]
+[hoglan_fill_odd 5/4 energy=0.6]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.5 3/4]
+[hoglan_fill_odd 3/4 energy=0.5]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.3 7/8]
+[hoglan_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.7 5/4]
+[hoglan_fill_odd 5/4 energy=0.7]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.4 3/4]
+[hoglan_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.2 7/8]
+[hoglan_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.8 5/4]
+[hoglan_fill_odd 5/4 energy=0.8]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.3 3/4]
+[hoglan_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.1 7/8]
+[hoglan_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.9 5/4]
+[hoglan_fill_odd 5/4 energy=0.9]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[hoglan_fill_odd_3_4 energy=0.2 3/4]
+[hoglan_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[hoglan_fill_odd_7_8 energy=0.4 7/8]
+[hoglan_fill_odd 7/8 energy=0.4]
 S x.x. x.x. x.x. x.
 K .x.x .x.x .x.x .x
 
-[hoglan_fill_odd_5_4 energy=0.6 5/4]
+[hoglan_fill_odd 5/4 energy=0.6]
 S x.x. x.x. x.x. x.x
 K .x.x .x.x .x.x .x.
 
-[hoglan_fill_odd_3_4 energy=0.5 3/4]
+[hoglan_fill_odd 3/4 energy=0.5]
 S x.x. x.x. x.x.
 K .x.x .x.x .x.x
 
-[hoglan_fill_odd_7_8 energy=0.3 7/8]
+[hoglan_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.7 5/4]
+[hoglan_fill_odd 5/4 energy=0.7]
 S x.x. x.x. x.x. x.x
 K .x.x .x.x .x.x .x.
 
-[hoglan_fill_odd_3_4 energy=0.4 3/4]
+[hoglan_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 K .... .... .... .x.x..
 
-[hoglan_fill_odd_7_8 energy=0.2 7/8]
+[hoglan_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.8 5/4]
+[hoglan_fill_odd 5/4 energy=0.8]
 S x.x. x.x. x.x. x.x
 K .x.x .x.x .x.x .x.
 
-[hoglan_fill_odd_3_4 energy=0.3 3/4]
+[hoglan_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 K .... .... .... .x.x..
 
-[hoglan_fill_odd_7_8 energy=0.1 7/8]
+[hoglan_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[hoglan_fill_odd_5_4 energy=0.9 5/4]
+[hoglan_fill_odd 5/4 energy=0.9]
 S x.x. x.x. x.x. x.x
 K .x.x .x.x .x.x .x.
-K  .... XXXX XXXX XXX
+KK .... XXXX XXXX XXX
 
-[hoglan_fill_odd_3_4 energy=0.2 3/4]
+[hoglan_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 K .... .... .... .x.x..

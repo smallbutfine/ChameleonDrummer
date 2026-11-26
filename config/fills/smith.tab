@@ -52,189 +52,189 @@ T1 .... .... .... .xx.
 T2 .... .... .... ...x
 C X... .... .... ....
 
-[smith_fill_odd_7_8 energy=0.4 7/8]
+[smith_fill_odd 7/8 energy=0.4]
 S .... .... .... xx
 
-[smith_fill_odd_5_4 energy=0.6 5/4]
+[smith_fill_odd 5/4 energy=0.6]
 S .... .... x... x.x
 
-[smith_fill_odd_3_4 energy=0.5 3/4]
+[smith_fill_odd 3/4 energy=0.5]
 S .... .... x... x.x...
-[smith_fill_odd_7_8 energy=0.4 7/8]
+[smith_fill_odd 7/8 energy=0.4]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.6 5/4]
+[smith_fill_odd 5/4 energy=0.6]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.5 3/4]
+[smith_fill_odd 3/4 energy=0.5]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.3 7/8]
+[smith_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.7 5/4]
+[smith_fill_odd 5/4 energy=0.7]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.4 3/4]
+[smith_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.2 7/8]
+[smith_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.8 5/4]
+[smith_fill_odd 5/4 energy=0.8]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.3 3/4]
+[smith_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.1 7/8]
+[smith_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.9 5/4]
+[smith_fill_odd 5/4 energy=0.9]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.2 3/4]
+[smith_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.4 7/8]
+[smith_fill_odd 7/8 energy=0.4]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.6 5/4]
+[smith_fill_odd 5/4 energy=0.6]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.5 3/4]
+[smith_fill_odd 3/4 energy=0.5]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.3 7/8]
+[smith_fill_odd 7/8 energy=0.3]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.7 5/4]
+[smith_fill_odd 5/4 energy=0.7]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.4 3/4]
+[smith_fill_odd 3/4 energy=0.4]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.2 7/8]
+[smith_fill_odd 7/8 energy=0.2]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.8 5/4]
+[smith_fill_odd 5/4 energy=0.8]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.3 3/4]
+[smith_fill_odd 3/4 energy=0.3]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.1 7/8]
+[smith_fill_odd 7/8 energy=0.1]
 S .... .... .... x.
 K .... .... .... .x
 
-[smith_fill_odd_5_4 energy=0.9 5/4]
+[smith_fill_odd 5/4 energy=0.9]
 S .... .... x..x ...
 T1 .... .... .... x..
 K .... .... .... x..
 
-[smith_fill_odd_3_4 energy=0.2 3/4]
+[smith_fill_odd 3/4 energy=0.2]
 S .... .... .... x.x...
 T1 .... .... ....
 K .... .... ....
 
-[smith_fill_odd_7_8 energy=0.4 7/8]
+[smith_fill_odd 7/8 energy=0.4]
 S .... .... .... xx
 T1 .... .... .... ..
 T2 .... .... .... ..
 
-[smith_fill_odd_5_4 energy=0.6 5/4]
+[smith_fill_odd 5/4 energy=0.6]
 S .... .... x... x.x
 T1 .... .... .... ...
 T2 .... .... .... .x.
 
-[smith_fill_odd_3_4 energy=0.5 3/4]
+[smith_fill_odd 3/4 energy=0.5]
 S .... .... x... x.x...
 T1 .... .... .... ...x..
 
-[smith_fill_odd_7_8 energy=0.3 7/8]
+[smith_fill_odd 7/8 energy=0.3]
 S .... .... .... xx
 T1 .... .... .... ..
 
-[smith_fill_odd_5_4 energy=0.7 5/4]
+[smith_fill_odd 5/4 energy=0.7]
 S .... .... x... x.x
 T1 .... .... .... ...
 T2 .... .... .... .x.
 
-[smith_fill_odd_3_4 energy=0.4 3/4]
+[smith_fill_odd 3/4 energy=0.4]
 S .... .... .... xx....
 T1 .... .... .... ..xx..
 
-[smith_fill_odd_7_8 energy=0.2 7/8]
+[smith_fill_odd 7/8 energy=0.2]
 S .... .... .... xx
 T1 .... .... .... ..
 
-[smith_fill_odd_5_4 energy=0.8 5/4]
+[smith_fill_odd 5/4 energy=0.8]
 S .... .... x... x.x
 T1 .... .... .... ...
 T2 .... .... .... .x.
 
-[smith_fill_odd_3_4 energy=0.3 3/4]
+[smith_fill_odd 3/4 energy=0.3]
 S .... .... .... xx....
 T1 .... .... .... ..xx..
 
-[smith_fill_odd_7_8 energy=0.1 7/8]
+[smith_fill_odd 7/8 energy=0.1]
 S .... .... .... xx
 T1 .... .... .... ..
 
-[smith_fill_odd_5_4 energy=0.9 5/4]
+[smith_fill_odd 5/4 energy=0.9]
 S .... .... x... x.x
 T1 .... .... .... ...
 T2 .... .... .... .x.
 T3 .... .... .... ..x
 C X... .... .... ...
 
-[smith_fill_odd_3_4 energy=0.2 3/4]
+[smith_fill_odd 3/4 energy=0.2]
 S .... .... .... xx....
 T1 .... .... .... ..xx..
 
-[smith_fill_tom_roll_4_4 energy=0.6 4/4]
+[smith_fill_tom_roll 4/4 energy=0.6]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
 T4 .... .... .... x..
 K .... .... .... ....
 
-[smith_fill_tom_crash_4_4 energy=0.7 4/4]
+[smith_fill_tom_crash 4/4 energy=0.7]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
@@ -242,14 +242,14 @@ T4 .... .... .... x..
 K .... .... .... ....
 C X... .... .... ....
 
-[smith_fill_triplet_tom_4_4 energy=0.6 4/4]
+[smith_fill_triplet_tom 4/4 energy=0.6]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
 T4 .... .... .... x..
 K .... .... .... ....
 
-[smith_fill_crash_tom_4_4 energy=0.6 4/4]
+[smith_fill_crash_tom 4/4 energy=0.6]
 C X... .... .... ....
 T1 .... x.. .... x..
 T2 .... .... x.. ....
@@ -257,7 +257,7 @@ T3 .... .... .... x..
 T4 .... .... .... x..
 K .... .... .... ....
 
-[smith_fill_snare_tom_4_4 energy=0.5 4/4]
+[smith_fill_snare_tom 4/4 energy=0.5]
 S .... x.. .... x..
 T1 .... .... x.. ....
 T2 .... .... .... x..
@@ -265,14 +265,14 @@ T3 .... .... .... x..
 T4 .... .... .... x..
 K .... .... .... ....
 
-[smith_fill_double_tom_4_4 energy=0.6 4/4]
+[smith_fill_double_tom 4/4 energy=0.6]
 T1 x.. .... .... ....
 T2 .... x.. .... ....
 T3 .... .... x.. ....
 T4 .... .... .... x..
 K .... .... .... ....
 
-[smith_fill_crash_tom_snare_4_4 energy=0.7 4/4]
+[smith_fill_crash_tom_snare 4/4 energy=0.7]
 C X... .... .... ....
 T1 .... x.. .... x..
 T2 .... .... x.. ....
@@ -281,7 +281,7 @@ T4 .... .... .... x..
 S .... .... .... xx..
 K .... .... .... ....
 
-[smith_fill_4_4_v1 energy=0.6 4/4]
+[smith_fill 4/4 v1 energy=0.6]
 K .... .... .... ....
 S .... .... .... xx..
 H .... .... .... ....
@@ -290,7 +290,7 @@ T1 .... x.. .... ....
 T2 .... .... x.. ....
 T3 .... .... .... x..
 
-[smith_fill_4_4_v2 energy=0.8 4/4]
+[smith_fill 4/4 v2 energy=0.8]
 K .... .... .... ....
 S .... .... .... xx..
 H .... .... .... ....
