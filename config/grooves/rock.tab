@@ -1952,3 +1952,25 @@ S ......
 H X.X.X.
 C X.....
 
+
+[triplet verse 4/4T intensity=0.20-0.60]
+K x..... ..x... x..... ..x... | x..... ..x... x..... ..x..x
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[triplet chorus 4/4T intensity=0.45-0.85]
+K x..... ..x... x..... ..x... | x..... ..x... x..x.. ..x...
+S ...... x..... ...... x..... | ...... x..... ...... x..x..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[triplet verse 7/8T intensity=0.25-0.65]
+K x...... ..x.... x...... | x...... ..x.... x....x.
+S ......x ......x ......x | ......x ......x ......x
+H x.x.x.x x.x.x.x x.x.x.x | x.x.x.x x.x.x.x x.x.x.x
+
+[triplet chorus 7/8T intensity=0.50-0.90]
+K x...... ..x.... x...... | x...... ..x..x. x......
+S ......x ......x ......x | ......x ......x ..x...x
+R x.x.x.x x.x.x.x x.x.x.x | x.x.x.x x.x.x.x x.x.x.x
+C X...... ....... ....... | X...... ....... .......
