@@ -838,3 +838,378 @@ H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
 K x..... ...... ...... ...... | x..... ...... ...... ......
 S ...... ...... x..... ...... | ...... ...... x..... ......
 H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[shuffle verse 4/4T intensity=0.15-0.35]
+K x..x.. x..x.. x..x.. x..x.x | x..x.. x..x.. x..x.. x..x..
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle verse 4/4T intensity=0.35-0.55]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x.x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle verse 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. x..x.x x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle verse 4/4T intensity=0.75-0.90]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle verse 4/4T intensity=0.90-1.00]
+K x..x.. x..x.x x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle chorus 4/4T intensity=0.15-0.35]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle chorus 4/4T intensity=0.35-0.55]
+K x..x.. x..x.. x..x.. x..x.x | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle chorus 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[shuffle chorus 4/4T intensity=0.75-0.90]
+K x..x.. x..x.x x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle chorus 4/4T intensity=0.90-1.00]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... X..... ...... | X..... ...... X..... ......
+
+[shuffle bridge 4/4T intensity=0.15-0.35]
+K x..x.. ...... x..x.. ...... | x..x.. ...... x..x.. ......
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle bridge 4/4T intensity=0.35-0.55]
+K x..x.. ...... ...... x..x.. | x..x.. ...... ...... x..x..
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle bridge 4/4T intensity=0.55-0.75]
+K x..x.. ...... x..x.. ...... | x..x.. ...... x..x.. ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle bridge 4/4T intensity=0.75-0.90]
+K x..x.. ...... ...... x..x.. | x..x.. ...... ...... x..x..
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[shuffle bridge 4/4T intensity=0.90-1.00]
+K x..x.. ...... x..x.. ...... | x..x.. ...... x..x.. ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans verse 4/4T intensity=0.15-0.35]
+K x..x.. x..x.. x..x.. x..x.x | x..x.. x..x.. x..x.. x..x..
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans verse 4/4T intensity=0.35-0.55]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x.x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans verse 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. x..x.x x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans verse 4/4T intensity=0.75-0.90]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans verse 4/4T intensity=0.90-1.00]
+K x..x.. x..x.x x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans chorus 4/4T intensity=0.15-0.35]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans chorus 4/4T intensity=0.35-0.55]
+K x..x.. x..x.. x..x.. x..x.x | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans chorus 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[new_orleans chorus 4/4T intensity=0.75-0.90]
+K x..x.. x..x.x x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans chorus 4/4T intensity=0.90-1.00]
+K x..x.. x..x.. x..x.. x..x.. | x..x.. x..x.. x..x.. x..x..
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... X..... ...... | X..... ...... X..... ......
+
+[new_orleans bridge 4/4T intensity=0.15-0.35]
+K x..x.. ...... x..x.. ...... | x..x.. ...... x..x.. ......
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans bridge 4/4T intensity=0.35-0.55]
+K x..x.. ...... ...... x..x.. | x..x.. ...... ...... x..x..
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans bridge 4/4T intensity=0.55-0.75]
+K x..x.. ...... x..x.. ...... | x..x.. ...... x..x.. ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans bridge 4/4T intensity=0.75-0.90]
+K x..x.. ...... ...... x..x.. | x..x.. ...... ...... x..x..
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[new_orleans bridge 4/4T intensity=0.90-1.00]
+K x..x.. ...... x..x.. ...... | x..x.. ...... x..x.. ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk verse 4/4T intensity=0.15-0.35]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk verse 4/4T intensity=0.35-0.55]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk verse 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. ..x..x ..x... | x..x.. x..x.. ..x..x ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk verse 4/4T intensity=0.75-0.90]
+K x..x.. ..x..x x..x.. ..x..x | x..x.. ..x..x x..x.. ..x...
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk verse 4/4T intensity=0.90-1.00]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk chorus 4/4T intensity=0.15-0.35]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk chorus 4/4T intensity=0.35-0.55]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk chorus 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. ..x..x ..x... | x..x.. x..x.. ..x..x ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[pfunk chorus 4/4T intensity=0.75-0.90]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[pfunk chorus 4/4T intensity=0.90-1.00]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+C X..... ...... X..... ...... | X..... ...... X..... ......
+
+[pfunk bridge 4/4T intensity=0.15-0.35]
+K x..... ..x... x..... ...... | x..... ..x... x..... ..x...
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[pfunk bridge 4/4T intensity=0.35-0.55]
+K x..... ...... x..... ...... | x..... ...... x..... ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[pfunk bridge 4/4T intensity=0.55-0.75]
+K x..... ..x... ...... ...... | x..... ..x... ...... ......
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[pfunk bridge 4/4T intensity=0.75-0.90]
+K x..... ...... x..... ...... | x..... ...... x..... ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[pfunk bridge 4/4T intensity=0.90-1.00]
+K x..... ...... ...... x..... | x..... ...... ...... x.....
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[fusion verse 4/4T intensity=0.15-0.35]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion verse 4/4T intensity=0.35-0.55]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion verse 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. ..x..x ..x... | x..x.. x..x.. ..x..x ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion verse 4/4T intensity=0.75-0.90]
+K x..x.. ..x..x x..x.. ..x..x | x..x.. ..x..x x..x.. ..x...
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion verse 4/4T intensity=0.90-1.00]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion chorus 4/4T intensity=0.15-0.35]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion chorus 4/4T intensity=0.35-0.55]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion chorus 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. ..x..x ..x... | x..x.. x..x.. ..x..x ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[fusion chorus 4/4T intensity=0.75-0.90]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..g.. ...... x..g.. | ...... x..g.. ...... x..g..
+R x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[fusion chorus 4/4T intensity=0.90-1.00]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..... ...... x..g.. | ...... x..... ...... x..g..
+C X..... ...... X..... ...... | X..... ...... X..... ......
+
+[fusion bridge 4/4T intensity=0.15-0.35]
+K x..... ..x... x..... ...... | x..... ..x... x..... ..x...
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[fusion bridge 4/4T intensity=0.35-0.55]
+K x..... ...... x..... ...... | x..... ...... x..... ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[fusion bridge 4/4T intensity=0.55-0.75]
+K x..... ..x... ...... ...... | x..... ..x... ...... ......
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[fusion bridge 4/4T intensity=0.75-0.90]
+K x..... ...... x..... ...... | x..... ...... x..... ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[fusion bridge 4/4T intensity=0.90-1.00]
+K x..... ...... ...... x..... | x..... ...... ...... x.....
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[heavy verse 4/4T intensity=0.15-0.35]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[heavy verse 4/4T intensity=0.35-0.55]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[heavy verse 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. ..x..x ..x... | x..x.. x..x.. ..x..x ..x..x
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[heavy verse 4/4T intensity=0.75-0.90]
+K x..x.. ..x..x x..x.. ..x..x | x..x.. ..x..x x..x.. ..x...
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[heavy verse 4/4T intensity=0.90-1.00]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x.x.x. x.x.x. x.x.x. x.x.x. | x.x.x. x.x.x. x.x.x. x.x.x.
+
+[heavy chorus 4/4T intensity=0.15-0.35]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[heavy chorus 4/4T intensity=0.35-0.55]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[heavy chorus 4/4T intensity=0.55-0.75]
+K x..x.. x..x.. ..x..x ..x... | x..x.. x..x.. ..x..x ..x..x
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... X..... ...... | X..... ...... X..... ......
+
+[heavy chorus 4/4T intensity=0.75-0.90]
+K x..x.. ..x... x..x.. ..x..x | x..x.. ..x... x..x.. ..x..x
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... ...... ...... | X..... ...... ...... ......
+
+[heavy chorus 4/4T intensity=0.90-1.00]
+K x..x.. ..x..x x..x.. ..x... | x..x.. ..x..x x..x.. ..x..x
+S ...... x..... ...... x..x.. | ...... x..... ...... x.....
+C X..... ...... X..... ...... | X..... ...... X..... ......
+
+[heavy bridge 4/4T intensity=0.15-0.35]
+K x..... ..x... x..... ...... | x..... ..x... x..... ..x...
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[heavy bridge 4/4T intensity=0.35-0.55]
+K x..... ...... x..... ...... | x..... ...... x..... ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[heavy bridge 4/4T intensity=0.55-0.75]
+K x..... ..x... ...... ...... | x..... ..x... ...... ......
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[heavy bridge 4/4T intensity=0.75-0.90]
+K x..... ...... x..... ...... | x..... ...... x..... ......
+S ...... ...... x..... ...... | ...... ...... x..... ......
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
+
+[heavy bridge 4/4T intensity=0.90-1.00]
+K x..... ...... ...... x..... | x..... ...... ...... x.....
+S ...... x..... ...... x..... | ...... x..... ...... x.....
+H x...x. x...x. x...x. x...x. | x...x. x...x. x...x. x...x.
