@@ -41,6 +41,24 @@ Name: "{group}\{#MyAppName} CLI"; Filename: "{app}\{#MyExeName}"
 Filename: "{app}\README.md"; Description: "View README"; Flags: postinstall shellexec skipifsilent unchecked
 
 [Code]
+{ Uninstall any previous version (same AppId) before installing. }
+function InitializeSetup(): Boolean;
+var
+  RegKey: String;
+  UninstallPath: String;
+  ResultCode: Integer;
+begin
+  Result := True;
+  RegKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'UninstallString', UninstallPath) then
+    RegQueryStringValue(HKEY_CURRENT_USER, RegKey, 'UninstallString', UninstallPath);
+  if UninstallPath <> '' then
+  begin
+    UninstallPath := RemoveQuotes(UninstallPath);
+    Exec(UninstallPath, '/SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Sleep(1000);
+  end;
+end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ReadmeLines: TArrayOfString;
