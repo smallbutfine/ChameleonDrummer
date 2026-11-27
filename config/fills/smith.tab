@@ -25,8 +25,8 @@ K xx..........x.|x...........x.
 S x.....x.......|x.....x.......
 
 [smith_sig_under_the_bridge]
-K xx..x...x...x...|x...x...x...x...
-S x.....x.x.....x.|x.....x.x.....x.
+K ....x...x...x...|x...x...x...x...
+S x.g...x.x.g...x.|x.g...x.x.g...x.
 
 [smith_sig_give_it_away]
 K xx.x..x.x..x..x.|x..x..x.x..x..x.
@@ -48,11 +48,11 @@ T1 ................|..............x.
 
 [smith_sig_cant_stop]
 K x.....x.......x.|......x.......x.
-S x.....x.x.....x.|x.....x.x.....x.
+S x..g..x.x..g..x.|x..g..x.x..g..x.
 
 [smith_sig_ghost_notes]
 K x...x...x...x...|................
-S x.....x.x.....x.|................
+S x.gg..xgx.gg..xg|................
 
 [smith_sig_fast_right_foot]
 K .xxxxxxxxxxxxxxx|................
