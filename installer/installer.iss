@@ -41,6 +41,11 @@ Source: "..\config\fills\*.tab"; DestDir: "{app}\config\fills"; Flags: ignorever
 Source: "..\config\defaults\*.ini"; DestDir: "{app}\config\defaults"; Flags: ignoreversion
 Source: "..\config\sections\*.json"; DestDir: "{app}\config\sections"; Flags: ignoreversion
 
+[Icons]
+; Start Menu shortcuts (the GUI is the user-facing program; the CLI is the console tool).
+Name: "{group}\{#MyAppName}"; Filename: "{app}\chameleondrummer_gui.exe"; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName} CLI"; Filename: "{app}\{#MyExeName}"; WorkingDir: "{app}"
+
 [Run]
 Filename: "{app}\Readme.txt"; Description: "View Readme (How to use in DAW)"; Flags: postinstall shellexec skipifsilent unchecked
 
