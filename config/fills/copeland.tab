@@ -1,31 +1,22 @@
-# Copeland's fills, one bar each.
+# Copeland's fills (playable, one drummer).
 #
-Valid, distinct per-drummer fills (4/4 plus 5/4 and 7/8 odd).
+Hands: snare/crash/tom1/tom3 right, hihat/ride/tom2 left, kick foot.
 #
 [copeland_fill_big energy=0.9]
-S ......x...x...x.|......x...xxxxxx
-K x.......x.......|......x...x...x.
-T1 ......x...x...x.|......x...x...x.
-T2 ......x...x...x.|......x...x...x.
-T3 ......x...x...x.|......x...x...x.
+K x.....x....x....|x.....x....x....
+S x..x..x.x..x..x.|x..x..x.x..x..x.
 
 [copeland_fill_half energy=0.55]
-S ..........x...x.|..............xx
-K x.......x.......|..........x...x.
-T1 ..........x...x.|..........x...x.
+K ................|x.....x....x....
+S ..............x.|x..x..x.x..x..x.
 
 [copeland_fill_short energy=0.25]
-S ..............x.|...............x
-K ........x.......|..............x.
-T1 ..............x.|..............x.
-H ...o............|...o............
+S ................|..............x.
 
 [copeland_fill_odd5 energy=0.6 5/4]
-S ......x...xxxxxx....|......x...xxxxxx....
-K ......x...x...x.....|......x...x...x.....
-H ...o................|...o................
+K x.....x....x........|x.....x....x........
+S x..x..x.x..x..x.....|x..x..x.x..x..x.....
 
 [copeland_fill_odd7 energy=0.6 7/8]
-S ......x...xxxx|......x...xxxx
-K ......x...x...|......x...x...
-H ...o..........|...o..........
+K ...x..........|...x..........
+S x..x..x.......|x..x..x.......
