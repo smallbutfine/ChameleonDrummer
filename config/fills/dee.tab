@@ -1,6 +1,4 @@
-# Dee's fills (playable, one drummer).
-#
-Hands: snare/crash/tom1/tom3 right, hihat/ride/tom2 left, kick foot.
+# dee.tab (distinct playable fills).
 #
 [dee_fill_big energy=0.9]
 K x...............|x...............
@@ -29,8 +27,6 @@ S x.............|x.............
 T1 ....x.........|....x.........
 T2 ....x.........|....x.........
 
-# Signature fills (researched style).
-#
 [dee_sig_ace_drive energy=0.85]
 K x.x.x.x.x.x.x.x.|x.x.x.x.x.x.x.x.
 S x...x...x...x...|x...x...x...x...
