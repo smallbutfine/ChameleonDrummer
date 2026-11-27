@@ -1,17 +1,7 @@
 # Rock grooves.
 #
-# One block per groove:  [style kind intensity=low-high]
-#   kind       verse, chorus or bridge (intro/outro play verse, solo/breakdown bridge)
-#   intensity  the bar intensities (0-1) this groove suits; neighbours overlap on purpose
-# Then one line per instrument:  <instrument>[@min complexity] <bar 1> | <bar 2> ...
-#   instruments  K S RS SS H HO HP R RB C C2 CH SP T1 T2 T3 T4
-#   steps        . rest   x hit   X accent   o soft   g ghost
-#   a bar has 4, 8, 12, 16, 24 or 32 steps; spaces inside a bar are ignored
-# Add a block to add a groove; the blocks of a style and kind are its variants,
-# lightest first. A new style name makes a new style of this genre.
-# Playable by one drummer: snare, crash and toms 1/3 right hand; hi-hat, ride,
-# tom 2 left hand; kick and hi-hat pedal feet; at most 3 hits on one step.
-
+Generated odd-meter patterns are hand-authored per style.
+#
 [classic verse intensity=0.20-0.60]
 K x... .... x... .... | x... .... x... ..x.
 S .... x... .... x... | .... x... .... x...
@@ -261,9 +251,6 @@ S .... x... .... x... | .... x... .... x...
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 T3@0.5 .... .... .... .... | .... .... .... .xxx
 
-# Triplet-feel grooves (24 steps per bar for 4/4T, 21 for 7/8T)
-# The T suffix in the header marks triplet feel.
-
 [classic verse 4/4T intensity=0.20-0.60]
 K x..... x..... x..... x..... | x..... x..... x..... x.....
 S .....x .....x .....x .....x | .....x .....x .....x .....x
@@ -313,7 +300,7 @@ S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 
 [hard chorus intensity=0.40-0.80]
-K x... x... x... x... | x... x... x... x...
+K x..x ..x. x... ..x. | x... ..x. x... ..x.
 S .... x... .... x... | .... x... .... x...
 HO x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 C X... .... .... .... | .... .... .... ....
@@ -322,7 +309,7 @@ C X... .... .... .... | .... .... .... ....
 K x.x. ..x. x.x. ..x. | x.x. ..x. x.x. ..x.
 S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
-C X... .... X... .... | X... .... X... ....
+C X... .... .... .... | X... .... .... ....
 
 [hard chorus intensity=0.75-1.00]
 K x.xx ..x. x.xx ..x. | x.xx ..x. x.xx ..x.
@@ -363,13 +350,13 @@ S .... x... .... x... | .... x... .... x...
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 
 [pop chorus intensity=0.40-0.80]
-K x... x... x... x... | x... x... x... x...
+K x..x x... x..x x... | x... x... x... x...
 S .... x... .... x... | .... x... .... x...
 HO x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 C X... .... .... .... | .... .... .... ....
 
 [pop chorus intensity=0.60-0.95]
-K x... ..x. x... ..x. | x... ..x. x... ..x.
+K x..x ..x. x... ..x. | x... ..x. x... ..x.
 S .... x... .... x... | .... x... .... x...
 R x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 C X... .... .... .... | X... .... .... ....
@@ -381,7 +368,7 @@ H xxxx xxxx xxxx xxxx | xxxx xxxx xxxx xxxx
 C X... .... .... .... | X... .... .... ....
 
 [pop bridge intensity=0.10-0.50]
-K x... .... .... .... | x... .... .... ....
+K x... .... ..x. .... | x... .... .... ....
 SS .... x... .... x... | .... x... .... x...
 H x... x... x... x... | x... x... x... x...
 
@@ -395,163 +382,6 @@ K x... .... x... ..x. | x... ..x. x... ....
 SS .... x... .... x... | .... x... .... x...
 H x.x. x.x. x.x. x.x. | x.x. x.x. x.x. x.x.
 C@0.5 X... .... .... .... | .... .... .... ....
-
-# ---- odd meters (hand written, tools/write_meter_grooves.py) ----
-# The step counts divide the bar: 7/8 takes 7, 14, 21 ... steps; spaces are only for reading.
-# Jazz /4 meters count triplets (3 steps per quarter), the others eighths.
-
-[classic verse 3/4 intensity=0.20-0.60]
-K     x. .. .x
-S     .. x. x.
-H     x. x. x.
-
-[classic verse 3/4 intensity=0.40-0.80]
-K     x. .x .x
-S     .. x. x.
-H     xx xx xx
-C@0.7 X. .. ..
-
-[classic verse 3/4 intensity=0.60-1.00]
-K     xx .x .x
-S     .. x. x.
-R     xx xx xx
-C     X. .. ..
-
-[classic chorus 3/4 intensity=0.40-0.80]
-K     x. .x ..
-S     .. x. x.
-R     x. x. x.
-C     X. .. ..
-
-[classic chorus 3/4 intensity=0.60-1.00]
-K     x. .x .x
-S     .. x. x.
-R     xx xx xx
-C     X. .. ..
-
-[classic chorus 3/4 intensity=0.75-1.00]
-K     xx .. .x
-S     .. x. x.
-R     xx xx xx
-C     X. .. ..
-S@0.9 .. .g .g
-
-[classic bridge 3/4 intensity=0.10-0.50]
-K     x. .. ..
-S     .. x. ..
-R     x. x. x.
-
-[classic bridge 3/4 intensity=0.30-0.70]
-K     x. .. .x
-S     .. x. x.
-H     x. x. x.
-
-[classic bridge 3/4 intensity=0.50-0.90]
-K     x. .x .x
-S     .. x. x.
-R     xx xx xx
-
-[classic verse 5/4 intensity=0.20-0.60]
-K     x. .. .x .. ..
-S     .. .. .. x. ..
-H     x. x. x. x. x.
-
-[classic verse 5/4 intensity=0.40-0.80]
-K     x. .. x. .. x.
-S     .. .. .. x. ..
-H     xx xx xx xx xx
-
-[classic verse 5/4 intensity=0.60-1.00]
-K     x. .. .. .x .x
-S     .. .. .. x. ..
-H     xx xx xx xx xx
-C@0.7 X. .. .. .. ..
-S@0.8 .. g. .. .. g.
-
-[classic chorus 5/4 intensity=0.40-0.80]
-K     x. .. .x .. x.
-S     .. .. .. x. ..
-R     x. x. x. x. x.
-C     X. .. .. .. ..
-
-[classic chorus 5/4 intensity=0.60-1.00]
-K     x. .x .. .. xx
-S     .. .. .. x. ..
-R     xx xx xx xx xx
-C     X. .. .. .. ..
-
-[classic chorus 5/4 intensity=0.75-1.00]
-K     x. .. .x .. .x
-S     .. .. .. x. ..
-R     xx xx xx xx xx
-S@0.9 .. g. .. .. g.
-C     X. .. .. .. ..
-
-[classic bridge 5/4 intensity=0.10-0.50]
-K     x. .. .. .. ..
-S     .. .. .. x. ..
-R     x. x. x. x. x.
-
-[classic bridge 5/4 intensity=0.30-0.70]
-K     x. .. .x .. ..
-S     .. .. .. x. ..
-H     x. x. x. x. x.
-
-[classic bridge 5/4 intensity=0.50-0.90]
-K     x. .. x. .x ..
-S     .. .. .. x. ..
-R     xx xx xx xx xx
-
-[classic verse 7/8 intensity=0.20-0.60]
-K     x.. .. .x
-S     ... x. x.
-H     xxx xx xx
-
-[classic verse 7/8 intensity=0.40-0.80]
-K     x.. .x ..
-S     ... x. x.
-H     x.x x. x.
-
-[classic verse 7/8 intensity=0.60-1.00]
-K     x.. .. .x
-S     ... x. x.
-H     xxx xx xx
-C@0.7 X.. .. ..
-S@0.8 .g. .. .g
-
-[classic chorus 7/8 intensity=0.40-0.80]
-K     x.. .. .x
-S     ... x. x.
-R     xxx xx xx
-C     X.. .. ..
-
-[classic chorus 7/8 intensity=0.60-1.00]
-K     x.x .. .x
-S     ... x. x.
-R     xxx xx xx
-C     X.. .. ..
-
-[classic chorus 7/8 intensity=0.75-1.00]
-K     x.. .x .x
-S     ... x. x.
-R     xxx xx xx
-C     X.. .. ..
-S@0.9 .g. .. .g
-
-[classic bridge 7/8 intensity=0.10-0.50]
-K     x.. .. ..
-S     ... x. ..
-R     x.x x. x.
-
-[classic bridge 7/8 intensity=0.30-0.70]
-K     x.. .. .x
-S     ... x. x.
-H     x.x x. x.
-
-[classic bridge 7/8 intensity=0.50-0.90]
-K     x.x .. .x
-S     ... x. x.
-R     xxx xx xx
 
 [classic verse 9/8 intensity=0.20-0.60]
 K     x.. ... ..x
@@ -700,1258 +530,6 @@ H     xxx xxx xxx xx xx
 K     x.. ..x ..x .. ..
 S     ... x.. ... x. x.
 R     xxx xxx xxx xx xx
-
-[rock verse 7/8 intensity=0.20-0.60]
-K     x.x .x .x
-S     .. x. x..
-H     xx xx xxx
-S@0.6 .g .. .g.
-C     X.. .. ..
-
-[rock verse 5/4 intensity=0.40-0.80]
-K     x. .x .. .x ..
-S     .. .. x. .. x.
-H     xx xx xx xx xx
-S@0.6 .g .. .. g...
-
-[rock verse 3/4 intensity=0.20-0.60]
-K     x. .x .x
-S@0.6 .g .. g.
-H     xx xx xx
-S@0.6 .g .. g.
-
-[rock chorus 7/8 intensity=0.40-0.80]
-K     xxx xx xx
-S     ... x. x.
-R     xxx xx xx
-C     X.. .. ..
-
-[rock chorus 5/4 intensity=0.60-1.00]
-K     x. .x x. x...
-S     .. .. x. .. x.
-H     x. x. x. x...
-C     X. .. .. ....
-
-[rock chorus 3/4 intensity=0.80-1.00]
-K     xx .x .x
-S     .. x. x.
-H     xx xx xx
-C     X.. .. .
-
-[rock bridge 7/8 intensity=0.20-0.60]
-K     x.x .x .x
-S@0.6 .g .. .g.
-H     x.x x. x.
-C     X.. .. ..
-
-[rock verse 7/8 intensity=0.40-1.00]
-K     x.xx xx xx x.x...
-S     ... x. x.
-H     x.x x. x.
-C     X.. .. ..
-
-[rock chorus 7/8 intensity=0.40-1.00]
-K     xxx xx xx
-S     ... x. x.
-R     xxx xx xx
-C     X.. .. ..
-
-[rock chorus 5/4 intensity=0.60-1.00]
-K     x. .x x. x...
-S     .. .. x. .. x.
-H     x. x. x. x...
-C     X. .. .. ....
-
-[rock bridge 7/8 intensity=0.20-0.60]
-K     x.. x.. x.. x....
-S     ... x. x.
-H     x.x x. x.
-C     X.. .. ..
-
-# ── Odd-meter rock grooves (7/8, 5/4, 3/4) ──
-
-# Odd-meter rock grooves.
-# Styles: classic, blues, alternative, progressive, punk, hard, pop
-# 7/8=14 steps | 5/4=10 steps | 3/4=6 steps | 9/8=18 steps | 11/8=22 steps | 13/8=26 steps
-# Beat groups: 7/8=3+2+2, 5/4=3+2, 3/4=1+1+1, 9/8=3+3+3, 11/8=3+3+3+2, 13/8=3+3+3+2+2
-# X = accented hit, x = regular hit, . = rest, o = soft, g = ghost
-
-[classic verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[classic verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[classic verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[classic chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[classic chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[classic chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[classic bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[classic bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[classic bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[classic verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[classic verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[classic verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[classic chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[classic chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[classic chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[classic bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[classic bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[classic bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[classic verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[classic verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[classic verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[classic chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[classic chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[classic chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[classic bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[classic bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[classic bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
-[blues verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[blues verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[blues verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[blues chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[blues chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[blues chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[blues bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[blues bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[blues bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[blues verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[blues verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[blues verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[blues chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[blues chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[blues chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[blues bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[blues bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[blues bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[blues verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[blues verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[blues verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[blues chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[blues chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[blues chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[blues bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[blues bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[blues bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
-[alternative verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[alternative verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[alternative verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[alternative chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[alternative chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[alternative chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[alternative bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[alternative bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[alternative bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[alternative verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[alternative verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[alternative verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[alternative chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[alternative chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[alternative chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[alternative bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[alternative bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[alternative bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[alternative verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[alternative verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[alternative verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[alternative chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[alternative chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[alternative chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[alternative bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[alternative bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[alternative bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
-[progressive verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[progressive verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[progressive verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[progressive chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[progressive chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[progressive chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[progressive bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[progressive bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[progressive bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[progressive verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[progressive verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[progressive verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[progressive chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[progressive chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[progressive chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[progressive bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[progressive bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[progressive bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[progressive verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[progressive verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[progressive verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[progressive chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[progressive chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[progressive chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[progressive bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[progressive bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[progressive bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
-[punk verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[punk verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[punk verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[punk chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[punk chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[punk chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[punk bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[punk bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[punk bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[punk verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[punk verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[punk verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[punk chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[punk chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[punk chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[punk bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[punk bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[punk bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[punk verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[punk verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[punk verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[punk chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[punk chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[punk chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[punk bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[punk bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[punk bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
-[hard verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[hard verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[hard verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[hard chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[hard chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[hard chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[hard bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[hard bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[hard bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[hard verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[hard verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[hard verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[hard chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[hard chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[hard chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[hard bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[hard bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[hard bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[hard verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[hard verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[hard verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[hard chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[hard chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[hard chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[hard bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[hard bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[hard bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
-[pop verse 7/8 intensity=0.20-0.60]
-K X.x.x.X.x.x.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[pop verse 7/8 intensity=0.40-0.80]
-K X.X...X...X.X.
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-S@0.6 ............g.
-
-[pop verse 7/8 intensity=0.60-1.00]
-K X.X...X.X.....
-S ......X...X...
-H xxxxxxxxxxxxxx
-C X.............
-
-[pop chorus 7/8 intensity=0.40-0.80]
-K X.....X.....X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[pop chorus 7/8 intensity=0.60-0.95]
-K X.X...X...X.X.
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-
-[pop chorus 7/8 intensity=0.75-1.00]
-K X.X...X.X.....
-S ......X...X...
-R xxxxxxxxxxxxxx
-C X...xx........
-CH@0.6 ..............
-
-[pop bridge 7/8 intensity=0.10-0.50]
-K X.............
-S ..............
-H X.............
-C X.............
-
-[pop bridge 7/8 intensity=0.30-0.70]
-K X.....X.....X.
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[pop bridge 7/8 intensity=0.50-0.90]
-K X.X...X.X.....
-S ......X...X...
-H X.X.X.X.X.X.X.
-C X.............
-
-[pop verse 5/4 intensity=0.20-0.60]
-K X.x.x.X.x.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[pop verse 5/4 intensity=0.40-0.80]
-K X.X...X...
-S ......X...
-H xxxxxxxxxx
-C X.........
-S@0.6 ..........
-
-[pop verse 5/4 intensity=0.60-1.00]
-K X.X...X.X.
-S ......X...
-H xxxxxxxxxx
-C X.........
-
-[pop chorus 5/4 intensity=0.40-0.80]
-K X.....X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[pop chorus 5/4 intensity=0.60-0.95]
-K X.X...X...
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-
-[pop chorus 5/4 intensity=0.75-1.00]
-K X.X...X.X.
-S ......X...
-R xxxxxxxxxx
-C X...xx....
-CH@0.6 ..........
-
-[pop bridge 5/4 intensity=0.10-0.50]
-K X.........
-S ..........
-H X.........
-C X.........
-
-[pop bridge 5/4 intensity=0.30-0.70]
-K X.....X...
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[pop bridge 5/4 intensity=0.50-0.90]
-K X.X...X.X.
-S ......X...
-H X.X.X.X.X.
-C X.........
-
-[pop verse 3/4 intensity=0.20-0.60]
-K X.x.x.
-S ......
-H xxxxxx
-C X.....
-
-[pop verse 3/4 intensity=0.40-0.80]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-S@0.6 ......
-
-[pop verse 3/4 intensity=0.60-1.00]
-K X.X...
-S ......
-H xxxxxx
-C X.....
-
-[pop chorus 3/4 intensity=0.40-0.80]
-K X.....
-S ......
-R xxxxxx
-C X...xx
-
-[pop chorus 3/4 intensity=0.60-0.95]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-
-[pop chorus 3/4 intensity=0.75-1.00]
-K X.X...
-S ......
-R xxxxxx
-C X...xx
-CH@0.6 ......
-
-[pop bridge 3/4 intensity=0.10-0.50]
-K X.....
-S ......
-H X.....
-C X.....
-
-[pop bridge 3/4 intensity=0.30-0.70]
-K X.....
-S ......
-H X.X.X.
-C X.....
-
-[pop bridge 3/4 intensity=0.50-0.90]
-K X.X...
-S ......
-H X.X.X.
-C X.....
-
 
 [triplet verse 4/4T intensity=0.20-0.60]
 K x..x.. x..x.. x..x.. x..x.x | x..x.. x..x.. x..x.. x..x..
@@ -4304,3 +2882,1131 @@ H x...x. x...x. x...x. | x...x. x...x. x...x.
 K x..... x..... ...... | x..... ...... x.....
 S ...... ...... x..... | ...... ...... x.....
 H x...x. x...x. x...x. | x...x. x...x. x...x.
+
+[classic verse 3/4 intensity=0.20-0.60]
+K x...x.|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[classic verse 3/4 intensity=0.40-0.80]
+K x...x.|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[classic verse 3/4 intensity=0.60-1.00]
+K x...x.|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[classic chorus 3/4 intensity=0.40-0.80]
+K x..xx.|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[classic chorus 3/4 intensity=0.60-0.95]
+K x..xx.|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+C X.....|......
+
+[classic chorus 3/4 intensity=0.75-1.00]
+K x..xx.|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+C X.....|......
+
+[classic bridge 3/4 intensity=0.10-0.50]
+K x.....|x...x.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[classic bridge 3/4 intensity=0.30-0.70]
+K x.....|x...x.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[classic bridge 3/4 intensity=0.50-0.90]
+K x.....|x...x.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[blues verse 3/4 intensity=0.20-0.60]
+K x..x..|x...x.
+S ..x.x.|..x.x.
+H x.xxx.|x.x.x.
+
+[blues verse 3/4 intensity=0.40-0.80]
+K x..x..|x...x.
+S ..x.x.|..x.x.
+H x.xxx.|x.x.x.
+
+[blues verse 3/4 intensity=0.60-1.00]
+K x..x..|x...x.
+S ..x.x.|..x.x.
+H x.xxx.|x.x.x.
+
+[blues chorus 3/4 intensity=0.40-0.80]
+K x..x.x|x..x..
+S ..x.x.|..x.x.
+H x.xxx.|x.xxx.
+
+[blues chorus 3/4 intensity=0.60-0.95]
+K x..x.x|x..x..
+S ..x.x.|..x.x.
+H x.xxx.|x.xxx.
+C X.....|......
+
+[blues chorus 3/4 intensity=0.75-1.00]
+K x..x.x|x..x..
+S ..x.x.|..x.x.
+H x.xxx.|x.xxx.
+C X.....|......
+
+[blues bridge 3/4 intensity=0.10-0.50]
+K x.....|x..x..
+S ..x...|..x.x.
+H x.xx..|x.x.x.
+
+[blues bridge 3/4 intensity=0.30-0.70]
+K x.....|x..x..
+S ..x...|..x.x.
+H x.xx..|x.x.x.
+
+[blues bridge 3/4 intensity=0.50-0.90]
+K x.....|x..x..
+S ..x...|..x.x.
+H x.xx..|x.x.x.
+
+[alternative verse 3/4 intensity=0.20-0.60]
+K x.x...|..x.x.
+S ..x.x.|..x..x
+H xx.x.x|x.x.x.
+
+[alternative verse 3/4 intensity=0.40-0.80]
+K x.x...|..x.x.
+S ..x.x.|..x..x
+H xx.x.x|x.x.x.
+
+[alternative verse 3/4 intensity=0.60-1.00]
+K x.x...|..x.x.
+S ..x.x.|..x..x
+H xx.x.x|x.x.x.
+
+[alternative chorus 3/4 intensity=0.40-0.80]
+K x.x..x|x.x...
+S ..x.x.|..x.x.
+H xx.x.x|x.x.x.
+
+[alternative chorus 3/4 intensity=0.60-0.95]
+K x.x..x|x.x...
+S ..x.x.|..x.x.
+H xx.x.x|x.x.x.
+C X.....|......
+
+[alternative chorus 3/4 intensity=0.75-1.00]
+K x.x..x|x.x...
+S ..x.x.|..x.x.
+H xx.x.x|x.x.x.
+C X.....|......
+
+[alternative bridge 3/4 intensity=0.10-0.50]
+K x.x...|x.....
+S ..x...|..x.x.
+H xx.x.x|x.x.x.
+
+[alternative bridge 3/4 intensity=0.30-0.70]
+K x.x...|x.....
+S ..x...|..x.x.
+H xx.x.x|x.x.x.
+
+[alternative bridge 3/4 intensity=0.50-0.90]
+K x.x...|x.....
+S ..x...|..x.x.
+H xx.x.x|x.x.x.
+
+[progressive verse 3/4 intensity=0.20-0.60]
+K x..x.x|..x..x
+S ..x.x.|..x.x.
+H xxx.xx|x.x.xx
+
+[progressive verse 3/4 intensity=0.40-0.80]
+K x..x.x|..x..x
+S ..x.x.|..x.x.
+H xxx.xx|x.x.xx
+
+[progressive verse 3/4 intensity=0.60-1.00]
+K x..x.x|..x..x
+S ..x.x.|..x.x.
+H xxx.xx|x.x.xx
+
+[progressive chorus 3/4 intensity=0.40-0.80]
+K x.xx.x|x..x.x
+S ..x.x.|..x.x.
+H xxx.xx|x.x.xx
+
+[progressive chorus 3/4 intensity=0.60-0.95]
+K x.xx.x|x..x.x
+S ..x.x.|..x.x.
+H xxx.xx|x.x.xx
+C X.....|......
+
+[progressive chorus 3/4 intensity=0.75-1.00]
+K x.xx.x|x..x.x
+S ..x.x.|..x.x.
+H xxx.xx|x.x.xx
+C X.....|......
+
+[progressive bridge 3/4 intensity=0.10-0.50]
+K x..x..|..x..x
+S ..x...|..x.x.
+H xxx.xx|x.x.xx
+
+[progressive bridge 3/4 intensity=0.30-0.70]
+K x..x..|..x..x
+S ..x...|..x.x.
+H xxx.xx|x.x.xx
+
+[progressive bridge 3/4 intensity=0.50-0.90]
+K x..x..|..x..x
+S ..x...|..x.x.
+H xxx.xx|x.x.xx
+
+[punk verse 3/4 intensity=0.20-0.60]
+K x.x.x.|x.x.x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[punk verse 3/4 intensity=0.40-0.80]
+K x.x.x.|x.x.x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[punk verse 3/4 intensity=0.60-1.00]
+K x.x.x.|x.x.x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[punk chorus 3/4 intensity=0.40-0.80]
+K x.x.xx|x.x.x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[punk chorus 3/4 intensity=0.60-0.95]
+K x.x.xx|x.x.x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+C X.....|......
+
+[punk chorus 3/4 intensity=0.75-1.00]
+K x.x.xx|x.x.x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+C X.....|......
+
+[punk bridge 3/4 intensity=0.10-0.50]
+K x.x...|x.x.x.
+S ..x...|..x.x.
+H xxxxxx|xxxxxx
+
+[punk bridge 3/4 intensity=0.30-0.70]
+K x.x...|x.x.x.
+S ..x...|..x.x.
+H xxxxxx|xxxxxx
+
+[punk bridge 3/4 intensity=0.50-0.90]
+K x.x...|x.x.x.
+S ..x...|..x.x.
+H xxxxxx|xxxxxx
+
+[hard verse 3/4 intensity=0.20-0.60]
+K x..xx.|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[hard verse 3/4 intensity=0.40-0.80]
+K x..xx.|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[hard verse 3/4 intensity=0.60-1.00]
+K x..xx.|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[hard chorus 3/4 intensity=0.40-0.80]
+K x.xxx.|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[hard chorus 3/4 intensity=0.60-0.95]
+K x.xxx.|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+C X.....|......
+
+[hard chorus 3/4 intensity=0.75-1.00]
+K x.xxx.|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+C X.....|......
+
+[hard bridge 3/4 intensity=0.10-0.50]
+K x..x..|x..xx.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[hard bridge 3/4 intensity=0.30-0.70]
+K x..x..|x..xx.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[hard bridge 3/4 intensity=0.50-0.90]
+K x..x..|x..xx.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[pop verse 3/4 intensity=0.20-0.60]
+K x..x.x|x...x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[pop verse 3/4 intensity=0.40-0.80]
+K x..x.x|x...x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[pop verse 3/4 intensity=0.60-1.00]
+K x..x.x|x...x.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[pop chorus 3/4 intensity=0.40-0.80]
+K x..x.x|x..xx.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+
+[pop chorus 3/4 intensity=0.60-0.95]
+K x..x.x|x..xx.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+C X.....|......
+
+[pop chorus 3/4 intensity=0.75-1.00]
+K x..x.x|x..xx.
+S ..x.x.|..x.x.
+H xxxxxx|xxxxxx
+C X.....|......
+
+[pop bridge 3/4 intensity=0.10-0.50]
+K x..x..|x...x.
+S ..x...|..x.x.
+H xxxxxx|xxxxxx
+
+[pop bridge 3/4 intensity=0.30-0.70]
+K x..x..|x...x.
+S ..x...|..x.x.
+H xxxxxx|xxxxxx
+
+[pop bridge 3/4 intensity=0.50-0.90]
+K x..x..|x...x.
+S ..x...|..x.x.
+H xxxxxx|xxxxxx
+
+[rock verse 3/4 intensity=0.20-0.60]
+K x..x.x|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[rock verse 3/4 intensity=0.40-0.80]
+K x..x.x|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[rock verse 3/4 intensity=0.60-1.00]
+K x..x.x|x...x.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[rock chorus 3/4 intensity=0.40-0.80]
+K x..x.x|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+
+[rock chorus 3/4 intensity=0.60-0.95]
+K x..x.x|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+C X.....|......
+
+[rock chorus 3/4 intensity=0.75-1.00]
+K x..x.x|x..xx.
+S ..x.x.|..x.x.
+H x.x.x.|x.x.x.
+C X.....|......
+
+[rock bridge 3/4 intensity=0.10-0.50]
+K x..x..|x...x.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[rock bridge 3/4 intensity=0.30-0.70]
+K x..x..|x...x.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[rock bridge 3/4 intensity=0.50-0.90]
+K x..x..|x...x.
+S ..x...|..x.x.
+H x.x.x.|x.x.x.
+
+[classic verse 5/4 intensity=0.20-0.60]
+K x...x...x.|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic verse 5/4 intensity=0.40-0.80]
+K x...x...x.|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic verse 5/4 intensity=0.60-1.00]
+K x...x...x.|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic chorus 5/4 intensity=0.40-0.80]
+K x...x..xx.|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic chorus 5/4 intensity=0.60-0.95]
+K x...x..xx.|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+C X.........|..........
+
+[classic chorus 5/4 intensity=0.75-1.00]
+K x...x..xx.|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+C X.........|..........
+
+[classic bridge 5/4 intensity=0.10-0.50]
+K x.........|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic bridge 5/4 intensity=0.30-0.70]
+K x.........|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic bridge 5/4 intensity=0.50-0.90]
+K x.........|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[blues verse 5/4 intensity=0.20-0.60]
+K x...x..x..|x...x...x.
+S ..x...x...|..x...x...
+H x.xxx.x.xx|x.x.x.x.x.
+
+[blues verse 5/4 intensity=0.40-0.80]
+K x...x..x..|x...x...x.
+S ..x...x...|..x...x...
+H x.xxx.x.xx|x.x.x.x.x.
+
+[blues verse 5/4 intensity=0.60-1.00]
+K x...x..x..|x...x...x.
+S ..x...x...|..x...x...
+H x.xxx.x.xx|x.x.x.x.x.
+
+[blues chorus 5/4 intensity=0.40-0.80]
+K x...x..x.x|x...x..x..
+S ..x...x...|..x...x...
+H x.xxx.x.xx|x.xxx.x.xx
+
+[blues chorus 5/4 intensity=0.60-0.95]
+K x...x..x.x|x...x..x..
+S ..x...x...|..x...x...
+H x.xxx.x.xx|x.xxx.x.xx
+C X.........|..........
+
+[blues chorus 5/4 intensity=0.75-1.00]
+K x...x..x.x|x...x..x..
+S ..x...x...|..x...x...
+H x.xxx.x.xx|x.xxx.x.xx
+C X.........|..........
+
+[blues bridge 5/4 intensity=0.10-0.50]
+K x.........|x...x..x..
+S ..x...x...|..x...x...
+H x.xx.x.x.x|x.x.x.x.x.
+
+[blues bridge 5/4 intensity=0.30-0.70]
+K x.........|x...x..x..
+S ..x...x...|..x...x...
+H x.xx.x.x.x|x.x.x.x.x.
+
+[blues bridge 5/4 intensity=0.50-0.90]
+K x.........|x...x..x..
+S ..x...x...|..x...x...
+H x.xx.x.x.x|x.x.x.x.x.
+
+[alternative verse 5/4 intensity=0.20-0.60]
+K x.x.....x.|..x.x...x.
+S ..x...x...|..x...x..x
+H xx.x.x.x.x|x.x.x.x.x.
+
+[alternative verse 5/4 intensity=0.40-0.80]
+K x.x.....x.|..x.x...x.
+S ..x...x...|..x...x..x
+H xx.x.x.x.x|x.x.x.x.x.
+
+[alternative verse 5/4 intensity=0.60-1.00]
+K x.x.....x.|..x.x...x.
+S ..x...x...|..x...x..x
+H xx.x.x.x.x|x.x.x.x.x.
+
+[alternative chorus 5/4 intensity=0.40-0.80]
+K x.x....xx.|x.x.....x.
+S ..x...x...|..x...x...
+H xx.x.x.x.x|x.x.x.x.x.
+
+[alternative chorus 5/4 intensity=0.60-0.95]
+K x.x....xx.|x.x.....x.
+S ..x...x...|..x...x...
+H xx.x.x.x.x|x.x.x.x.x.
+C X.........|..........
+
+[alternative chorus 5/4 intensity=0.75-1.00]
+K x.x....xx.|x.x.....x.
+S ..x...x...|..x...x...
+H xx.x.x.x.x|x.x.x.x.x.
+C X.........|..........
+
+[alternative bridge 5/4 intensity=0.10-0.50]
+K x.x.......|x...x...x.
+S ..x...x...|..x...x...
+H xx.x.x.x.x|x.x.x.x.x.
+
+[alternative bridge 5/4 intensity=0.30-0.70]
+K x.x.......|x...x...x.
+S ..x...x...|..x...x...
+H xx.x.x.x.x|x.x.x.x.x.
+
+[alternative bridge 5/4 intensity=0.50-0.90]
+K x.x.......|x...x...x.
+S ..x...x...|..x...x...
+H xx.x.x.x.x|x.x.x.x.x.
+
+[progressive verse 5/4 intensity=0.20-0.60]
+K x..x.x..x.|..x..x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[progressive verse 5/4 intensity=0.40-0.80]
+K x..x.x..x.|..x..x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[progressive verse 5/4 intensity=0.60-1.00]
+K x..x.x..x.|..x..x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[progressive chorus 5/4 intensity=0.40-0.80]
+K x.xx.x..x.|x..x.x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[progressive chorus 5/4 intensity=0.60-0.95]
+K x.xx.x..x.|x..x.x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+C X.........|..........
+
+[progressive chorus 5/4 intensity=0.75-1.00]
+K x.xx.x..x.|x..x.x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+C X.........|..........
+
+[progressive bridge 5/4 intensity=0.10-0.50]
+K x..x......|..x..x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[progressive bridge 5/4 intensity=0.30-0.70]
+K x..x......|..x..x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[progressive bridge 5/4 intensity=0.50-0.90]
+K x..x......|..x..x...x
+S ..x...x...|..x...x...
+H xxx.xx.xx.|x.x.xx.x.x
+
+[punk verse 5/4 intensity=0.20-0.60]
+K x.x.x.x.x.|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[punk verse 5/4 intensity=0.40-0.80]
+K x.x.x.x.x.|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[punk verse 5/4 intensity=0.60-1.00]
+K x.x.x.x.x.|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[punk chorus 5/4 intensity=0.40-0.80]
+K x.x.x.x.xx|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[punk chorus 5/4 intensity=0.60-0.95]
+K x.x.x.x.xx|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+C X.........|..........
+
+[punk chorus 5/4 intensity=0.75-1.00]
+K x.x.x.x.xx|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+C X.........|..........
+
+[punk bridge 5/4 intensity=0.10-0.50]
+K x.x.x.....|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[punk bridge 5/4 intensity=0.30-0.70]
+K x.x.x.....|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[punk bridge 5/4 intensity=0.50-0.90]
+K x.x.x.....|x.x.x.x.x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[hard verse 5/4 intensity=0.20-0.60]
+K x..xx..xx.|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[hard verse 5/4 intensity=0.40-0.80]
+K x..xx..xx.|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[hard verse 5/4 intensity=0.60-1.00]
+K x..xx..xx.|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[hard chorus 5/4 intensity=0.40-0.80]
+K x..xx..xxx|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[hard chorus 5/4 intensity=0.60-0.95]
+K x..xx..xxx|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+C X.........|..........
+
+[hard chorus 5/4 intensity=0.75-1.00]
+K x..xx..xxx|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+C X.........|..........
+
+[hard bridge 5/4 intensity=0.10-0.50]
+K x..x....x.|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[hard bridge 5/4 intensity=0.30-0.70]
+K x..x....x.|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[hard bridge 5/4 intensity=0.50-0.90]
+K x..x....x.|x..xx..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[pop verse 5/4 intensity=0.20-0.60]
+K x..x...x..|x...x...x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[pop verse 5/4 intensity=0.40-0.80]
+K x..x...x..|x...x...x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[pop verse 5/4 intensity=0.60-1.00]
+K x..x...x..|x...x...x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[pop chorus 5/4 intensity=0.40-0.80]
+K x..x...x..|x...x..xx.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[pop chorus 5/4 intensity=0.60-0.95]
+K x..x...x..|x...x..xx.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+C X.........|..........
+
+[pop chorus 5/4 intensity=0.75-1.00]
+K x..x...x..|x...x..xx.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+C X.........|..........
+
+[pop bridge 5/4 intensity=0.10-0.50]
+K x..x......|x...x...x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[pop bridge 5/4 intensity=0.30-0.70]
+K x..x......|x...x...x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[pop bridge 5/4 intensity=0.50-0.90]
+K x..x......|x...x...x.
+S ..x...x...|..x...x...
+H xxxxxxxxxx|xxxxxxxxxx
+
+[rock verse 5/4 intensity=0.20-0.60]
+K x...x..x..|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[rock verse 5/4 intensity=0.40-0.80]
+K x...x..x..|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[rock verse 5/4 intensity=0.60-1.00]
+K x...x..x..|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[rock chorus 5/4 intensity=0.40-0.80]
+K x...x..x..|x...x..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[rock chorus 5/4 intensity=0.60-0.95]
+K x...x..x..|x...x..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+C X.........|..........
+
+[rock chorus 5/4 intensity=0.75-1.00]
+K x...x..x..|x...x..xx.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+C X.........|..........
+
+[rock bridge 5/4 intensity=0.10-0.50]
+K x...x.....|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[rock bridge 5/4 intensity=0.30-0.70]
+K x...x.....|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[rock bridge 5/4 intensity=0.50-0.90]
+K x...x.....|x...x...x.
+S ..x...x...|..x...x...
+H x.x.x.x.x.|x.x.x.x.x.
+
+[classic verse 7/8 intensity=0.20-0.60]
+K x..x.x.|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[classic verse 7/8 intensity=0.40-0.80]
+K x..x.x.|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[classic verse 7/8 intensity=0.60-1.00]
+K x..x.x.|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[classic chorus 7/8 intensity=0.40-0.80]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[classic chorus 7/8 intensity=0.60-0.95]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+C X......|.......
+
+[classic chorus 7/8 intensity=0.75-1.00]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+C X......|.......
+
+[classic bridge 7/8 intensity=0.10-0.50]
+K x..x...|x..x.x.
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[classic bridge 7/8 intensity=0.30-0.70]
+K x..x...|x..x.x.
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[classic bridge 7/8 intensity=0.50-0.90]
+K x..x...|x..x.x.
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[blues verse 7/8 intensity=0.20-0.60]
+K x..x.x.|x..x..x
+S ...x.x.|...x.x.
+H xxxx.xx|xxx.x.x
+
+[blues verse 7/8 intensity=0.40-0.80]
+K x..x.x.|x..x..x
+S ...x.x.|...x.x.
+H xxxx.xx|xxx.x.x
+
+[blues verse 7/8 intensity=0.60-1.00]
+K x..x.x.|x..x..x
+S ...x.x.|...x.x.
+H xxxx.xx|xxx.x.x
+
+[blues chorus 7/8 intensity=0.40-0.80]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxxx.xx|xxxx.xx
+
+[blues chorus 7/8 intensity=0.60-0.95]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxxx.xx|xxxx.xx
+C X......|.......
+
+[blues chorus 7/8 intensity=0.75-1.00]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxxx.xx|xxxx.xx
+C X......|.......
+
+[blues bridge 7/8 intensity=0.10-0.50]
+K x..x...|x..x..x
+S ...x...|...x.x.
+H xxx..xx|xxx.x.x
+
+[blues bridge 7/8 intensity=0.30-0.70]
+K x..x...|x..x..x
+S ...x...|...x.x.
+H xxx..xx|xxx.x.x
+
+[blues bridge 7/8 intensity=0.50-0.90]
+K x..x...|x..x..x
+S ...x...|...x.x.
+H xxx..xx|xxx.x.x
+
+[alternative verse 7/8 intensity=0.20-0.60]
+K x.x.x.x|..x.x.x
+S ...x.x.|...x..x
+H xx.x.xx|x.x.x.x
+
+[alternative verse 7/8 intensity=0.40-0.80]
+K x.x.x.x|..x.x.x
+S ...x.x.|...x..x
+H xx.x.xx|x.x.x.x
+
+[alternative verse 7/8 intensity=0.60-1.00]
+K x.x.x.x|..x.x.x
+S ...x.x.|...x..x
+H xx.x.xx|x.x.x.x
+
+[alternative chorus 7/8 intensity=0.40-0.80]
+K x.x.xxx|x.x.x.x
+S ...x.x.|...x.x.
+H xx.x.xx|x.x.x.x
+
+[alternative chorus 7/8 intensity=0.60-0.95]
+K x.x.xxx|x.x.x.x
+S ...x.x.|...x.x.
+H xx.x.xx|x.x.x.x
+C X......|.......
+
+[alternative chorus 7/8 intensity=0.75-1.00]
+K x.x.xxx|x.x.x.x
+S ...x.x.|...x.x.
+H xx.x.xx|x.x.x.x
+C X......|.......
+
+[alternative bridge 7/8 intensity=0.10-0.50]
+K x.x.x..|x..x...
+S ...x...|...x.x.
+H xx.x.xx|x.x.x.x
+
+[alternative bridge 7/8 intensity=0.30-0.70]
+K x.x.x..|x..x...
+S ...x...|...x.x.
+H xx.x.xx|x.x.x.x
+
+[alternative bridge 7/8 intensity=0.50-0.90]
+K x.x.x..|x..x...
+S ...x...|...x.x.
+H xx.x.xx|x.x.x.x
+
+[progressive verse 7/8 intensity=0.20-0.60]
+K x..xx.x|..x..xx
+S ...x.x.|...x.x.
+H xxxx.xx|x.x.xxx
+
+[progressive verse 7/8 intensity=0.40-0.80]
+K x..xx.x|..x..xx
+S ...x.x.|...x.x.
+H xxxx.xx|x.x.xxx
+
+[progressive verse 7/8 intensity=0.60-1.00]
+K x..xx.x|..x..xx
+S ...x.x.|...x.x.
+H xxxx.xx|x.x.xxx
+
+[progressive chorus 7/8 intensity=0.40-0.80]
+K x.xx.xx|x..xx.x
+S ...x.x.|...x.x.
+H xxxx.xx|x.x.xxx
+
+[progressive chorus 7/8 intensity=0.60-0.95]
+K x.xx.xx|x..xx.x
+S ...x.x.|...x.x.
+H xxxx.xx|x.x.xxx
+C X......|.......
+
+[progressive chorus 7/8 intensity=0.75-1.00]
+K x.xx.xx|x..xx.x
+S ...x.x.|...x.x.
+H xxxx.xx|x.x.xxx
+C X......|.......
+
+[progressive bridge 7/8 intensity=0.10-0.50]
+K x..xx..|..x..xx
+S ...x...|...x.x.
+H xxxx.xx|x.x.xxx
+
+[progressive bridge 7/8 intensity=0.30-0.70]
+K x..xx..|..x..xx
+S ...x...|...x.x.
+H xxxx.xx|x.x.xxx
+
+[progressive bridge 7/8 intensity=0.50-0.90]
+K x..xx..|..x..xx
+S ...x...|...x.x.
+H xxxx.xx|x.x.xxx
+
+[punk verse 7/8 intensity=0.20-0.60]
+K x.x.x.x|x.x.x.x
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[punk verse 7/8 intensity=0.40-0.80]
+K x.x.x.x|x.x.x.x
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[punk verse 7/8 intensity=0.60-1.00]
+K x.x.x.x|x.x.x.x
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[punk chorus 7/8 intensity=0.40-0.80]
+K x.x.xxx|x.x.x.x
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[punk chorus 7/8 intensity=0.60-0.95]
+K x.x.xxx|x.x.x.x
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+C X......|.......
+
+[punk chorus 7/8 intensity=0.75-1.00]
+K x.x.xxx|x.x.x.x
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+C X......|.......
+
+[punk bridge 7/8 intensity=0.10-0.50]
+K x.x.x..|x.x.x.x
+S ...x...|...x.x.
+H xxxxxxx|xxxxxxx
+
+[punk bridge 7/8 intensity=0.30-0.70]
+K x.x.x..|x.x.x.x
+S ...x...|...x.x.
+H xxxxxxx|xxxxxxx
+
+[punk bridge 7/8 intensity=0.50-0.90]
+K x.x.x..|x.x.x.x
+S ...x...|...x.x.
+H xxxxxxx|xxxxxxx
+
+[hard verse 7/8 intensity=0.20-0.60]
+K x..xx.x|x..xx.x
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[hard verse 7/8 intensity=0.40-0.80]
+K x..xx.x|x..xx.x
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[hard verse 7/8 intensity=0.60-1.00]
+K x..xx.x|x..xx.x
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[hard chorus 7/8 intensity=0.40-0.80]
+K x..xx.x|x..xx.x
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[hard chorus 7/8 intensity=0.60-0.95]
+K x..xx.x|x..xx.x
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+C X......|.......
+
+[hard chorus 7/8 intensity=0.75-1.00]
+K x..xx.x|x..xx.x
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+C X......|.......
+
+[hard bridge 7/8 intensity=0.10-0.50]
+K x..x.x.|x..xx.x
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[hard bridge 7/8 intensity=0.30-0.70]
+K x..x.x.|x..xx.x
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[hard bridge 7/8 intensity=0.50-0.90]
+K x..x.x.|x..xx.x
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[pop verse 7/8 intensity=0.20-0.60]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[pop verse 7/8 intensity=0.40-0.80]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[pop verse 7/8 intensity=0.60-1.00]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[pop chorus 7/8 intensity=0.40-0.80]
+K x..x.xx|x..x.xx
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+
+[pop chorus 7/8 intensity=0.60-0.95]
+K x..x.xx|x..x.xx
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+C X......|.......
+
+[pop chorus 7/8 intensity=0.75-1.00]
+K x..x.xx|x..x.xx
+S ...x.x.|...x.x.
+H xxxxxxx|xxxxxxx
+C X......|.......
+
+[pop bridge 7/8 intensity=0.10-0.50]
+K x..x.x.|x..x.x.
+S ...x...|...x.x.
+H xxxxxxx|xxxxxxx
+
+[pop bridge 7/8 intensity=0.30-0.70]
+K x..x.x.|x..x.x.
+S ...x...|...x.x.
+H xxxxxxx|xxxxxxx
+
+[pop bridge 7/8 intensity=0.50-0.90]
+K x..x.x.|x..x.x.
+S ...x...|...x.x.
+H xxxxxxx|xxxxxxx
+
+[rock verse 7/8 intensity=0.20-0.60]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[rock verse 7/8 intensity=0.40-0.80]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[rock verse 7/8 intensity=0.60-1.00]
+K x..x.xx|x..x.x.
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[rock chorus 7/8 intensity=0.40-0.80]
+K x..x.xx|x..x.xx
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+
+[rock chorus 7/8 intensity=0.60-0.95]
+K x..x.xx|x..x.xx
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+C X......|.......
+
+[rock chorus 7/8 intensity=0.75-1.00]
+K x..x.xx|x..x.xx
+S ...x.x.|...x.x.
+H xxx.x.x|xxx.x.x
+C X......|.......
+
+[rock bridge 7/8 intensity=0.10-0.50]
+K x..x.x.|x..x.x.
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[rock bridge 7/8 intensity=0.30-0.70]
+K x..x.x.|x..x.x.
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
+
+[rock bridge 7/8 intensity=0.50-0.90]
+K x..x.x.|x..x.x.
+S ...x...|...x.x.
+H xxx.x.x|xxx.x.x
