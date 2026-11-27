@@ -536,53 +536,17 @@ if "%T_OS%"=="darwin" (
     )
 ) else if "%T_OS%"=="linux" (
     echo [Pkg] Creating Linux .tar.gz package...
-    pushd "%OUT_ROOT%"
-    if errorlevel 1 (
-        echo   ERROR: pushd failed
-        goto :target_failed
-    )
     REM Windows/NTFS has no executable bit, so a plain tar stores every binary as
-    REM 0644 and the programs will not run after extraction on Linux. Build the
-    REM archive in two passes over an uncompressed tar: everything first, then the
-    REM executables with --mode=u+x. (GNU tar cannot append to a .tar.gz.)
+    REM 0644 and the programs will not run after extraction on Linux. Use the pure
+    REM Python packager (tools/make_tar.py) which writes explicit Unix modes (0755 for
+    REM the four executables, 0644 otherwise). This works identically from cmd.exe or
+    REM Git Bash with no external tar/gzip/cp/rm and no /tmp or C:/ path quirks.
     set "PKG=ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz"
-    REM NOTE: use a RELATIVE temp filename inside the already-pushd'd output dir.
-    REM - A POSIX /tmp path fails when build_all.bat is launched from Explorer
-      REM   (pure cmd.exe has no /tmp).
-    REM - A C:/ path makes GNU tar treat the drive as a remote host ("Cannot connect to C:").
-    REM A bare relative name has no slash and no colon, so both cmd.exe and GNU
-    REM tar handle it correctly.
-    set "TARBALL=mytmp_%T_NAME%.tar"
-    tar -cf "!TARBALL!" --exclude="%T_NAME%/ChameleonDrummer" --exclude="%T_NAME%/chameleondrummer_gui" --exclude="%T_NAME%/tools/midi_to_tab" --exclude="%T_NAME%/tools/step_editor" "%T_NAME%"
+    python "%ROOT%\tools\make_tar.py" "%OUT_ROOT%\%T_NAME%" "%OUT_ROOT%\!PKG!"
     if errorlevel 1 (
         echo   ERROR: tar packaging failed
-        popd
         goto :target_failed
     )
-    tar -rf "!TARBALL!" --mode='u=rwx,go=rx' "%T_NAME%/ChameleonDrummer" "%T_NAME%/chameleondrummer_gui" "%T_NAME%/tools/midi_to_tab" "%T_NAME%/tools/step_editor"
-    if errorlevel 1 (
-        echo   ERROR: tar packaging failed
-        rm -f "!TARBALL!"
-        popd
-        goto :target_failed
-    )
-    gzip -f "!TARBALL!"
-    if errorlevel 1 (
-        echo   ERROR: tar packaging failed
-        rm -f "!TARBALL!.gz"
-        popd
-        goto :target_failed
-    )
-    REM Use cp (Git Bash), not move: cmd.exe's move cannot handle POSIX /tmp paths.
-    cp -f "!TARBALL!.gz" "!PKG!"
-    if errorlevel 1 (
-        echo   ERROR: tar packaging failed
-        rm -f "!TARBALL!.gz"
-        popd
-        goto :target_failed
-    )
-    rm -f "!TARBALL!.gz"
-    popd
     echo   OK: !PKG!
 ) else if "%T_OS%"=="win64" (
     echo [Pkg] Windows installer...
