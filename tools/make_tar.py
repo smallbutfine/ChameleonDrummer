@@ -40,6 +40,10 @@ def main() -> int:
     src = os.path.abspath(src)
     base = os.path.dirname(src)
 
+    # Create the output directory (Deploy/) if it does not exist yet.
+    out = os.path.abspath(out)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+
     entries = []
     for root, dirs, files in os.walk(src):
         dirs.sort()

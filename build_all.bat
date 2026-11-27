@@ -177,15 +177,8 @@ echo.
 echo [Deploy] Creating Deploy folder...
 if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 
-REM Copy Linux tar.gz packages (packaging writes version-stamped names)
-if exist "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz" >nul
-    echo   OK: ChameleonDrummer!DETECTED_VERSION!-linux-x64.tar.gz
-)
-if exist "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" (
-    copy /y "%OUT_ROOT%\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" "%ROOT%\Deploy\ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz" >nul
-    echo   OK: ChameleonDrummer!DETECTED_VERSION!-linux-arm.tar.gz
-)
+REM Linux tar.gz packages are written directly into Deploy by tools/make_tar.py
+REM during the target loop, so there is nothing to copy here.
 
 REM Copy macOS .app bundles
 REM xcopy merges into an existing directory, so a bundle from an earlier build
@@ -542,7 +535,7 @@ if "%T_OS%"=="darwin" (
     REM the four executables, 0644 otherwise). This works identically from cmd.exe or
     REM Git Bash with no external tar/gzip/cp/rm and no /tmp or C:/ path quirks.
     set "PKG=ChameleonDrummer!DETECTED_VERSION!-%T_NAME%.tar.gz"
-    python "%ROOT%\tools\make_tar.py" "%OUT_ROOT%\%T_NAME%" "%OUT_ROOT%\!PKG!"
+    python "%ROOT%\tools\make_tar.py" "%OUT_ROOT%\%T_NAME%" "%ROOT%\Deploy\!PKG!"
     if errorlevel 1 (
         echo   ERROR: tar packaging failed
         goto :target_failed
